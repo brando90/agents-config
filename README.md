@@ -87,7 +87,7 @@ agent-config/
 
 ## How to Use This with Your Project Repo
 
-Each project repo (e.g., `veribench`, `harbor`) should have its own `docs/agent-docs/INDEX.md` with project-specific documentation. The home-level `agent-config` covers environment, machine, and personal convention context that spans all projects.
+Each project repo (e.g., [`beyond-scale-language-data-diversity`](https://github.com/brando90/beyond-scale-language-data-diversity), `harbor`) should have its own `docs/agent-docs/INDEX.md` with project-specific documentation. The home-level `agent-config` covers environment, machine, and personal convention context that spans all projects.
 
 ### Step 1: Add a project-level entry point
 
