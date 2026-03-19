@@ -195,7 +195,7 @@ This repo is open source under the [Apache 2.0 License](LICENSE).
   author = {Brando Miranda and Claude (Anthropic)},
   title = {Agent-Config: A Modular, Agent-Agnostic Documentation Architecture for Multi-Agent Coding Workflows},
   year = {2026},
-  howpublished = {\url{https://github.com/brando90/agent-config}},
+  howpublished = {\url{https://github.com/brando90/agents-config}},
 }
 ```
 
@@ -206,3 +206,13 @@ We list Claude (Anthropic) as co-author because this system was designed collabo
 ## Acknowledgments
 
 We thank [Yegor Denisov-Blanch](https://x.com/yegordb) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)
+
+---
+
+## Contributing
+
+Contributions welcomed and encouraged! If you have ideas, improvements, or want to share how you've adapted this for your own setup:
+
+- **Open an issue:** [GitHub Issues](https://github.com/brando90/agents-config/issues)
+- **Start a discussion:** [GitHub Discussions](https://github.com/brando90/agents-config/discussions)
+- **Submit a PR:** Fork, make your changes, and open a pull request.
