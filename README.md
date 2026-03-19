@@ -1,6 +1,6 @@
-# agent-config
+# Agent-Config: Modular Documentation Architecture for Multi-Agent Coding Workflows
 
-A modular, agent-agnostic documentation system for AI coding agents.
+A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond).
 
 As codebases scale past 30-50k LOC, monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
 
