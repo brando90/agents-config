@@ -4,7 +4,7 @@ A modular, agent-agnostic documentation system for AI coding agents.
 
 As codebases scale past 30-50k LOC, monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
 
-**Designed by [Brando Miranda](https://brando90.github.io/brandomiranda/) (Stanford CS PhD).** Inspired by [Yegor Denisov-Blanch](https://x.com/yaboroda1989)'s insight that modular documentation is essential for multi-agent workflows at scale.
+**Designed by [Brando Miranda](https://brando90.github.io/brandomiranda/) (Stanford CS PhD).** Inspired by [Yegor Denisov-Blanch](https://x.com/yegordb)'s insight that modular documentation is essential for multi-agent workflows at scale.
 
 ---
 
@@ -205,4 +205,4 @@ We list Claude (Anthropic) as co-author because this system was designed collabo
 
 ## Acknowledgments
 
-We thank [Yegor Denisov-Blanch](https://x.com/yaboroda1989) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)
+We thank [Yegor Denisov-Blanch](https://x.com/yegordb) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)
