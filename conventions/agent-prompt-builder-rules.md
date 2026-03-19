@@ -1,5 +1,7 @@
 # Conventions: Agent Prompt Builder Rules
 
+<!-- TODO: owner has additional ideas to add -->
+
 Meta-rules for writing effective agent instruction files (CLAUDE.md, agents.md, experiment prompts).
 
 ---

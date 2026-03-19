@@ -1,5 +1,7 @@
 # Workflow: Parallel Agent Sessions with Byobu
 
+<!-- TODO: clarify why byobu over tmux more thoroughly, document broken-install edge cases -->
+
 Run multiple AI coding agents in parallel using byobu terminal multiplexer sessions.
 
 ---

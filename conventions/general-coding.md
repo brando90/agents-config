@@ -1,5 +1,7 @@
 # Conventions: General Coding
 
+<!-- TODO: owner skeptical of AI-generated conventions, needs manual curation -->
+
 Language-agnostic coding conventions for all projects.
 
 ---

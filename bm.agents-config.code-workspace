@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "agents-config",
+			"path": "."
+		},
+		{
+			"name": "veribench",
+			"path": "../veribench"
+		}
+	]
+}

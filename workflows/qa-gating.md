@@ -1,5 +1,7 @@
 # Workflow: Cross-Agent QA Review (Opt-In)
 
+<!-- TODO: define scoring criteria for QA pass/fail -->
+
 A protocol for using a second AI agent to review code before pushing or creating a PR.
 
 ---

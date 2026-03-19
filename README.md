@@ -76,7 +76,8 @@ agent-config/
 │
 └── examples/
     └── project-level-setup/     ← how a project repo integrates with agent-config
-        ├── CLAUDE.md
+        ├── CLAUDE.md            ← points to both home + project indexes
+        ├── agents.md            ← same for Codex
         └── docs/agent-docs/
             ├── INDEX.md
             └── architecture.md
@@ -141,17 +142,67 @@ cp machine/public/TEMPLATE.md machine/private/my-server.md
 
 ---
 
-## Citation
+## How to Integrate with Your Project Repos
 
-If you find this useful, a star or mention is appreciated. This repo is open source under the [Apache 2.0 License](LICENSE).
+Each project repo should have **two entry points** (`CLAUDE.md` for Claude Code, `agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX.md` (environment context) and the project's own `docs/agent-docs/INDEX.md` (project-specific docs).
+
+Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
 
 ```
+your-project/
+├── CLAUDE.md                         ← points to BOTH indexes
+├── agents.md                         ← same for Codex
+├── docs/
+│   └── agent-docs/
+│       ├── INDEX.md                  ← project-specific routing table
+│       ├── architecture.md           ← how the codebase is structured
+│       ├── eval-pipeline.md          ← evaluation workflow docs
+│       └── conventions.md            ← project-specific conventions
+├── src/
+└── tests/
+```
+
+Your project's `CLAUDE.md` looks like:
+
+```markdown
+# Project: your-project
+
+Read the home-level agent index for environment context:
+- `~/agent-config/INDEX.md`
+
+Read the project-level agent index for project-specific docs:
+- `docs/agent-docs/INDEX.md`
+```
+
+See `examples/project-level-setup/` for a complete working example with both `CLAUDE.md` and `agents.md`.
+
+---
+
+## Security: Public/Private Boundary
+
+This is a **public repo**. Never include real IPs, SSH paths, API keys, or internal server details in tracked files. All machine templates in `machine/public/` use `<PLACEHOLDER>` markers.
+
+Sensitive configs go in `machine/private/`, which is gitignored. Copy a template from `machine/public/` to `machine/private/` and fill in your actual values — they'll never be committed.
+
+---
+
+## Citation
+
+This repo is open source under the [Apache 2.0 License](LICENSE).
+
+```bibtex
 @misc{miranda2026agentconfig,
-  author = {Miranda, Brando},
-  title = {agent-config: Modular Documentation for AI Coding Agents},
+  author = {Brando Miranda and Claude (Anthropic)},
+  title = {Agent-Config: A Modular, Agent-Agnostic Documentation Architecture for Multi-Agent Coding Workflows},
   year = {2026},
-  url = {https://github.com/brando90/agent-config}
+  howpublished = {\url{https://github.com/brando90/agent-config}},
 }
 ```
 
-Core insight on modular multi-agent documentation from [Yegor Denisov-Blanch](https://x.com/yaboroda1989).
+We list Claude (Anthropic) as co-author because this system was designed collaboratively between human and AI. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
+
+---
+
+## Acknowledgments
+
+We thank [Yegor Denisov-Blanch](https://x.com/yaboroda1989) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)

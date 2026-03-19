@@ -9,7 +9,7 @@ This is the central index for all agent documentation. Load only the docs releva
 These rules apply to every task, every agent, every repo. Do not skip them.
 
 1. **Never commit secrets.** No API keys, tokens, passwords, or private IPs in tracked files. Use environment variables or files in gitignored `private/` directories.
-2. **Prefer pointers over full context loading.** Only inline content the agent always needs regardless of task. For everything else, reference the file path and let the agent load it on demand.
+2. **Prefer pointers over full context loading.** Only inline content the agent always needs regardless of task. For everything else, reference the file path and let the agent load it on demand. <!-- TODO: define pointer-vs-full-load policy precisely (default: pointers, inline only for critical global rules) -->
 3. **Verify before pushing.** After completing code edits, review the diff before pushing or creating a PR. Check for accidental secret inclusion, unintended file changes, and broken imports.
 4. **Match scope to request.** Only modify what was asked for. Don't refactor surrounding code, add unsolicited features, or "improve" files you weren't asked to touch.
 5. **Record exact model IDs.** When running experiments or evaluations, always log the exact model identifier used (e.g., `claude-opus-4-6`, `gpt-5.4`) for reproducibility.
