@@ -1,0 +1,19 @@
+# Private machine configs (contain real IPs, SSH paths, etc.)
+machine/private/*
+!machine/private/.gitkeep
+!machine/private/EXAMPLE.md
+
+# Secrets
+.env
+*.secret
+*.key
+
+# OS junk
+.DS_Store
+Thumbs.db
+*~
+.*.swp
+
+# Editor
+.vscode/
+.idea/
