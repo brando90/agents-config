@@ -1,3 +1,6 @@
+# Optional private machine configs
+machine/private/
+
 # Secrets
 .env
 *.secret

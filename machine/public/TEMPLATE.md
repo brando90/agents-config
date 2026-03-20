@@ -7,12 +7,12 @@ One-line description of this machine and its primary use case.
 ## Connection
 
 ```bash
-ssh <YOUR_USERNAME>@<HOSTNAME_OR_IP>
+ssh <SSH_ALIAS_FROM_CONFIG>
 ```
 
-- **Hostname:** `<HOSTNAME>`
-- **Jump host (if any):** `<JUMP_HOST>` or N/A
-- **Port:** `<PORT>` (default 22)
+- **SSH alias:** `<SSH_ALIAS>` (defined in `~/.ssh/config`)
+- **Hostname / IP:** Keep in `~/.ssh/config`, not in this tracked doc
+- **Jump host / Port:** Keep in `~/.ssh/config`, not in this tracked doc
 
 ---
 

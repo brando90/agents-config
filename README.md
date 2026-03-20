@@ -146,7 +146,7 @@ ln -s ~/agent-config/claude.md ~/CLAUDE.md
 ln -s ~/agent-config/agents.md ~/agents.md
 
 # Fill in your machine doc (non-sensitive specs, point to ~/.ssh/config etc. for secrets)
-cp machine/public/TEMPLATE.md machine/public/my-server.md
+cp ~/agent-config/machine/public/TEMPLATE.md ~/agent-config/machine/public/my-server.md
 
 # Claude Code will automatically read claude.md → INDEX.md
 # Codex will automatically read agents.md → INDEX.md

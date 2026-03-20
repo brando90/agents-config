@@ -6,6 +6,10 @@
 
 This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
 
+Use the opposite agent as reviewer. For unattended review runs, use that agent's non-interactive auto-approved entrypoint:
+- Codex reviewer: `codex exec --full-auto`
+- Claude Code reviewer: `clauded -p` (`claude --dangerously-skip-permissions`)
+
 Skip review ONLY for trivial changes (typo fixes, comment edits, single-line config changes).
 
 ---
@@ -20,7 +24,13 @@ Flag critical and major issues: logic errors, missing edge cases, incorrect beha
 inconsistencies with docs/agent-docs/ if it exists. \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
 do not overcomplicate what is already committed. Prefer the simplest correct fix. \
-If everything looks correct, just say VERDICT: PASS."
+End with exactly: \
+VERDICT: PASS | FAIL | FIXED \
+CRITICAL_ISSUES: [count] \
+MAJOR_ISSUES: [count] \
+FIXES_APPLIED: [count] \
+SUMMARY: [1-2 sentences] \
+If everything looks correct, use PASS with all counts set to 0."
 ```
 
 ### If you are Codex, dispatch Claude Code (CC):
@@ -31,7 +41,13 @@ Flag critical and major issues: logic errors, missing edge cases, incorrect beha
 inconsistencies with docs/agent-docs/ if it exists. \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
 do not overcomplicate what is already committed. Prefer the simplest correct fix. \
-If everything looks correct, just say VERDICT: PASS."
+End with exactly: \
+VERDICT: PASS | FAIL | FIXED \
+CRITICAL_ISSUES: [count] \
+MAJOR_ISSUES: [count] \
+FIXES_APPLIED: [count] \
+SUMMARY: [1-2 sentences] \
+If everything looks correct, use PASS with all counts set to 0."
 ```
 
 ### If you are CC and Codex is unavailable, dispatch another CC instance:
@@ -39,7 +55,14 @@ If everything looks correct, just say VERDICT: PASS."
 ```bash
 clauded -p "Review all changes in this directory since the last commit on main. \
 Flag critical and major issues only. Fix with minimal changes. \
-Do not refactor or overcomplicate. VERDICT: PASS if clean."
+Do not refactor or overcomplicate. \
+End with exactly: \
+VERDICT: PASS | FAIL | FIXED \
+CRITICAL_ISSUES: [count] \
+MAJOR_ISSUES: [count] \
+FIXES_APPLIED: [count] \
+SUMMARY: [1-2 sentences] \
+If everything looks correct, use PASS with all counts set to 0."
 ```
 
 ---
@@ -67,6 +90,8 @@ MAJOR_ISSUES: [count]
 FIXES_APPLIED: [count]
 SUMMARY: [1-2 sentences]
 ```
+
+Do not omit this block, even on PASS. The caller should relay it in the final QA summary.
 
 - **PASS** — no issues found, nothing changed.
 - **FIXED** — found issues and applied minimal fixes. Changes are committed.
