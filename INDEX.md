@@ -41,7 +41,7 @@ Context about the machines you're working on. Load the one matching your current
 |:----|:-----|:------------|
 | Ampere1 | [`machine/public/ampere1.md`](machine/public/ampere1.md) | GPU cluster node template (A100/H100) |
 | SNAP | [`machine/public/snap.md`](machine/public/snap.md) | Stanford SNAP cluster template |
-| Mac | [`machine/public/mac.md`](machine/public/mac.md) | Local macOS dev machine template |
+| Mac | [`machine/public/mac.md`](machine/public/mac.md) | Local macOS development machine profile |
 | Sherlock | [`machine/public/sherlock.md`](machine/public/sherlock.md) | Stanford Sherlock HPC cluster template |
 | Marlowe | [`machine/public/marlowe.md`](machine/public/marlowe.md) | Stanford Marlowe cluster template |
 | Template | [`machine/public/TEMPLATE.md`](machine/public/TEMPLATE.md) | Blank template for new machines |

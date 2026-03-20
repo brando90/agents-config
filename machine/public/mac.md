@@ -6,7 +6,7 @@ MacBook Pro 16" (2021), Apple M1 Max, 64 GB unified memory. Primary local develo
 
 ## Connection
 
-Local machine — no SSH needed. Hostname: `Brandos-MacBook-Pro-7.local`
+Local machine — no SSH needed.
 
 ---
 
@@ -28,7 +28,7 @@ Local machine — no SSH needed. Hostname: `Brandos-MacBook-Pro-7.local`
 
 | Path | Description |
 |:-----|:------------|
-| `~/` | Home directory (`/Users/brandomiranda`) |
+| `~/` | Home directory |
 | `~/keys/` | API keys and tokens (loaded by `.zshrc`, never committed) |
 | `~/uv_envs/` | uv-managed Python virtual environments |
 | `~/agent-config/` | This repo — agent documentation system |
@@ -82,8 +82,8 @@ Key sections (read `~/.zshrc` directly for full details):
 
 - **PATH:** Homebrew (`/opt/homebrew/bin`), Docker, elan, TeXLive, gcloud, nvm
 - **Default venv:** `no-gold-ref-judge` auto-activated on shell start
-- **API keys:** Loaded from `~/keys/` files — GitHub token, HuggingFace token, Skampere password
-- **SSH aliases:** Quick access to Stanford cluster machines (`ampere1`, `skampere1-3`, `hyperturing1-2`, `mercury1-2`, `rambo`)
+- **API keys and credentials:** Loaded from `~/keys/` files
+- **SSH aliases:** Quick access to cluster machines
 - **Claude Code aliases:** `clauded` / `claude-yolo` → `claude --dangerously-skip-permissions`
 - **Other:** Kerberos config (commented out), opam init, Docker Desktop init
 

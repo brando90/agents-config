@@ -29,8 +29,11 @@ From agent-config/ (this repo):│  INDEX.md" │                  │───�
                                                                            └─────────────────────────┘
 From any project repo:
 ┌──────────────────┐
-│ CLAUDE.md        │──▸ ~/agent-config/INDEX.md  (shared — same Layer 2 above)
-│ agents.md        │──▸ docs/agent-docs/INDEX.md (project-specific Layer 2 + 3)
+│ CLAUDE.md        │──┬──▸ ~/agent-config/INDEX.md
+│                  │  └──▸ docs/agent-docs/INDEX.md
+├──────────────────┤
+│ agents.md        │──┬──▸ ~/agent-config/INDEX.md
+│                  │  └──▸ docs/agent-docs/INDEX.md
 └──────────────────┘
 ```
 
@@ -45,7 +48,7 @@ From any project repo:
 1. **Context window efficiency.** An agent working on a Python formatting issue doesn't need your GPU cluster docs. The index lets it pick only what's relevant.
 2. **Multi-agent compatibility.** Claude Code, Codex, and future agents all read from the same doc set. Only Layer 1 differs per agent.
 3. **Scalability.** Adding a new machine, workflow, or convention is one file + one line in the index. No monolithic file to maintain.
-4. **Public/private separation.** Templates and conventions are public. Actual IPs, SSH configs, and secrets stay in gitignored `private/` dirs.
+4. **Public/private separation.** Public docs and templates are safe to share. Secrets, real IPs, SSH configs, and sensitive internal details stay in gitignored `private/` dirs.
 
 ---
 
@@ -61,7 +64,7 @@ agent-config/
 ├── .gitignore
 │
 ├── machine/
-│   ├── public/                  ← templates with <PLACEHOLDERS> (tracked)
+│   ├── public/                  ← public machine docs + templates (tracked)
 │   │   ├── TEMPLATE.md
 │   │   ├── ampere1.md
 │   │   ├── snap.md
@@ -188,7 +191,7 @@ See `examples/project-level-setup/` for a complete working example with both `CL
 
 ## Security: Public/Private Boundary
 
-This is a **public repo**. Never include real IPs, SSH paths, API keys, or internal server details in tracked files. All machine templates in `machine/public/` use `<PLACEHOLDER>` markers.
+This is a **public repo**. Never include real IPs, SSH paths, API keys, or sensitive internal server details in tracked files. Public machine docs in `machine/public/` should stay safe to share, and reusable templates should use `<PLACEHOLDER>` markers.
 
 Sensitive configs go in `machine/private/`, which is gitignored. Copy a template from `machine/public/` to `machine/private/` and fill in your actual values — they'll never be committed.
 
@@ -235,4 +238,3 @@ We list Claude (Anthropic) as co-author because this system was designed collabo
 ## Acknowledgments
 
 We thank [Yegor Denisov-Blanch](https://x.com/yegordb) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)
-
