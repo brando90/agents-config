@@ -15,7 +15,7 @@ Skip review ONLY for trivial changes (typo fixes, comment edits, single-line con
 ### If you are Claude Code (CC), dispatch Codex:
 
 ```bash
-codex "Review all changes in this directory since the last commit on main. \
+codex exec --full-auto "Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
 inconsistencies with docs/agent-docs/ if it exists. \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
