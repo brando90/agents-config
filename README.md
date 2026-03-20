@@ -48,7 +48,7 @@ From any project repo:
 1. **Context window efficiency.** An agent working on a Python formatting issue doesn't need your GPU cluster docs. The index lets it pick only what's relevant.
 2. **Multi-agent compatibility.** Claude Code, Codex, and future agents all read from the same doc set. Only Layer 1 differs per agent.
 3. **Scalability.** Adding a new machine, workflow, or convention is one file + one line in the index. No monolithic file to maintain.
-4. **Public/private separation.** Public docs and templates are safe to share. Secrets, real IPs, SSH configs, and sensitive internal details stay in gitignored `private/` dirs.
+4. **Secrets stay out of the repo.** Machine docs reference existing config files (`~/.ssh/config`, `~/keys/`, `~/.zshrc`) rather than duplicating secrets. Nothing sensitive is tracked.
 
 ---
 
@@ -71,9 +71,6 @@ agent-config/
 │   │   ├── mac.md
 │   │   ├── sherlock.md
 │   │   └── marlowe.md
-│   └── private/                 ← real configs with actual values (gitignored)
-│       ├── .gitkeep
-│       └── EXAMPLE.md
 │
 ├── workflows/
 │   ├── byobu-agents.md          ← parallel agent sessions with byobu
@@ -132,7 +129,7 @@ See `examples/project-level-setup/` for a complete working example.
 ### Step 3: Fork and customize
 
 1. Fork this repo
-2. Fill in `machine/private/` with your actual machine configs (gitignored)
+2. Fill in `machine/public/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
 3. Customize `conventions/` for your team's standards
 4. Add your own workflow docs
 
@@ -144,9 +141,12 @@ See `examples/project-level-setup/` for a complete working example.
 # Clone to your home directory
 git clone https://github.com/brando90/agents-config.git ~/agent-config
 
-# Create private machine configs (gitignored, never pushed)
-cp machine/public/TEMPLATE.md machine/private/my-server.md
-# Edit with your actual IPs, paths, etc.
+# Symlink entry points from home dir
+ln -s ~/agent-config/claude.md ~/CLAUDE.md
+ln -s ~/agent-config/agents.md ~/agents.md
+
+# Fill in your machine doc (non-sensitive specs, point to ~/.ssh/config etc. for secrets)
+cp machine/public/TEMPLATE.md machine/public/my-server.md
 
 # Claude Code will automatically read claude.md → INDEX.md
 # Codex will automatically read agents.md → INDEX.md
@@ -190,11 +190,11 @@ See `examples/project-level-setup/` for a complete working example with both `CL
 
 ---
 
-## Security: Public/Private Boundary
+## Security
 
-This is a **public repo**. Never include real IPs, SSH paths, API keys, or sensitive internal server details in tracked files. Public machine docs in `machine/public/` should stay safe to share, and reusable templates should use `<PLACEHOLDER>` markers.
+This is a **public repo**. Never commit API keys, tokens, passwords, or private IPs. Machine docs should reference existing config files (`~/.ssh/config`, `~/keys/`, `~/.zshrc`) for sensitive details rather than duplicating them. Reusable templates should use `<PLACEHOLDER>` markers.
 
-Sensitive configs go in `machine/private/`, which is gitignored. Copy a template from `machine/public/` to `machine/private/` and fill in your actual values — they'll never be committed.
+> **For teams that need a private layer:** You could add a gitignored `machine/private/` directory with full machine configs containing real values. We removed this to keep the default setup minimal — most single-user setups don't need it since machine docs can just point to existing config files.
 
 ---
 
@@ -215,7 +215,7 @@ The AI coding agent ecosystem is growing fast. Here's how `agents-config` relate
 | Runs agents | Yes | No | No |
 | Provides agent docs | Sometimes | Yes (Claude-only) | Yes (agent-agnostic) |
 | Scales past monolithic files | N/A | No | Yes (three-layer index) |
-| Public/private separation | No | No | Yes (gitignored `private/`) |
+| Secrets stay out of repo | No | No | Yes (reference existing config files) |
 
 ---
 

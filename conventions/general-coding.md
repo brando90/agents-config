@@ -78,5 +78,5 @@ Every Python/Lean file should have a single-sentence TLDR comment at the top des
 ## Secrets
 
 - Never commit API keys, tokens, passwords, or private IPs.
-- Use environment variables or files in gitignored directories (`~/keys/`, `machine/private/`).
+- Use environment variables or reference existing config files (`~/keys/`, `~/.ssh/config`).
 - If you accidentally commit a secret: rotate the key immediately, then force-push to remove it from history.

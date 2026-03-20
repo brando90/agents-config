@@ -6,7 +6,7 @@ Load only the docs relevant to your current task.
 
 ## Global Rules (always active)
 
-1. **Never commit secrets.** Use environment variables or gitignored `private/` dirs.
+1. **Never commit secrets.** Use environment variables or reference existing config files (`~/keys/`, `~/.ssh/config`).
 2. **Prefer pointers over full context loading.** Reference file paths; load on demand.
 3. **Verify before pushing.** Review diffs for secrets, unintended changes, broken imports.
 4. **Match scope to request.** Only modify what was asked for.
