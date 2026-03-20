@@ -55,6 +55,7 @@ How to run agents, manage parallel sessions, and review code.
 | Git Worktrees | [`workflows/git-worktrees.md`](workflows/git-worktrees.md) | Worktree isolation for parallel agents |
 | QA Gating | [`workflows/qa-gating.md`](workflows/qa-gating.md) | Cross-agent review protocol (**default after every non-trivial task**) |
 | clauded Usage | [`workflows/clauded-usage.md`](workflows/clauded-usage.md) | `clauded` alias and skip-permissions patterns |
+| Experiments & Results | [`workflows/expts-and-results.md`](workflows/expts-and-results.md) | Experiment structure, results storage, reporting conventions |
 
 ### Conventions
 

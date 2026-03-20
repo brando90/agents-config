@@ -23,9 +23,11 @@ Layer 1: Agent Entry Points          Layer 2: Shared Index           Layer 3: Sc
 │ agents.md    │──┘                  │  Doc Registry    │     │     │ workflows/git-worktrees │
 │ (Codex, etc.)│                     │                  │     │     │ workflows/qa-gating.md  │
 └──────────────┘                     └──────────────────┘     │     ├─────────────────────────┤
-                                                              └────▸│ conventions/coding.md   │
-                                                                    │ conventions/prompts.md  │
-                                                                    └─────────────────────────┘
+                                                              └────▸│ conventions/general-  │
+                                                                    │   coding.md           │
+                                                                    │ conventions/agent-    │
+                                                                    │   prompt-builder-rules│
+                                                                    └───────────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** Thin pointer files that each agent natively reads. `claude.md` for Claude Code, `agents.md` for Codex. Each one says: "Read `INDEX.md`." One line. No logic.
