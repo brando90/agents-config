@@ -51,20 +51,16 @@ Harbor framework docs: https://harborframework.com/
 
 ---
 
-## When to Use Opus vs Sonnet
+## Model Selection
 
-| Use Case | Model | Why |
-|:---------|:------|:----|
-| Architecture decisions | Opus | Needs deep reasoning about trade-offs |
-| Experiment design | Opus | Complex multi-step planning |
-| Writing prompts for other agents | Opus | Meta-cognitive task |
-| Code review | Opus | Needs to reason about correctness |
-| Straightforward edits | Sonnet | Faster, cheaper, sufficient for mechanical changes |
-| Renaming, reformatting | Sonnet | No deep reasoning needed |
-| Running established patterns | Sonnet | Following existing conventions |
-| Bulk file operations | Sonnet | Repetitive, well-defined tasks |
+Always use the current SOTA models:
 
-Default to Opus when uncertain. The cost of using a weaker model on a complex task is higher than the cost of using a stronger model on a simple task.
+| Agent | Model | Notes |
+|:------|:------|:------|
+| Claude Code | Claude Opus 4.6 | Default for all CC tasks |
+| Codex | GPT-5.4 | Default for all Codex tasks (no `--model` flag needed) |
+
+Do not use older or weaker models (o3, Sonnet, etc.) unless the user explicitly requests them for a specific reason. The cost of using a weaker model on a complex task far exceeds the cost of using SOTA on a simple task.
 
 ---
 
