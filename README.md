@@ -132,7 +132,7 @@ See `examples/project-level-setup/` for a complete working example.
 
 ```bash
 # Clone to your home directory
-git clone https://github.com/brando90/agent-config.git ~/agent-config
+git clone https://github.com/brando90/agents-config.git ~/agent-config
 
 # Create private machine configs (gitignored, never pushed)
 cp machine/public/TEMPLATE.md machine/private/my-server.md
