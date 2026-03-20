@@ -14,6 +14,7 @@ These rules apply to every task, every agent, every repo. Do not skip them.
 4. **Match scope to request.** Only modify what was asked for. Don't refactor surrounding code, add unsolicited features, or "improve" files you weren't asked to touch.
 5. **Record exact model IDs.** When running experiments or evaluations, always log the exact model identifier used (e.g., `claude-opus-4-6`, `gpt-5.4`) for reproducibility.
 6. **After completing any non-trivial task, dispatch a cross-agent reviewer before reporting done.** See [`workflows/qa-gating.md`](workflows/qa-gating.md) for dispatch commands. Reviewers fix with minimal changes only — never refactor or overcomplicate what was already committed.
+7. **Keep `agents-config` self-consistent.** When you modify any file in this repo, check that `INDEX.md`, `README.md`, and the doc registry tables still match the actual files. If you add, rename, or remove a doc, update the registry. If you change conventions, check that other docs don't contradict the change. The repo is the source of truth for all agents — inconsistencies propagate everywhere.
 
 ---
 
