@@ -65,6 +65,7 @@ Examples:
 - Don't add docstrings, comments, or type annotations to code you didn't change.
 - Only add comments where the logic isn't self-evident.
 - Avoid over-engineering: don't add abstractions, feature flags, or configurability beyond what's needed.
+- Prefer `pathlib.Path` over `os.path` for all path manipulation in Python.
 
 ---
 
