@@ -68,6 +68,12 @@ Examples:
 
 ---
 
+## File Documentation
+
+Every Python/Lean file should have a single-sentence TLDR comment at the top describing what it does.
+
+---
+
 ## Secrets
 
 - Never commit API keys, tokens, passwords, or private IPs.

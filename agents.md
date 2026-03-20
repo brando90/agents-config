@@ -1,1 +1,1 @@
-# Codex / other agents: read `INDEX.md` in this directory for all agent documentation and routing.
+# Codex / other agents: read `~/agent-config/INDEX.md` for all agent documentation and routing.
