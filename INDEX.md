@@ -13,14 +13,20 @@ These rules apply to every task, every agent, every repo. Do not skip them.
 3. **Verify before pushing.** After completing code edits, review the diff before pushing or creating a PR. Check for accidental secret inclusion, unintended file changes, and broken imports.
 4. **Match scope to request.** Only modify what was asked for. Don't refactor surrounding code, add unsolicited features, or "improve" files you weren't asked to touch.
 5. **Record exact model IDs.** When running experiments or evaluations, always log the exact model identifier used (e.g., `claude-opus-4-6`, `gpt-5.4`) for reproducibility.
+6. **After completing any non-trivial task, dispatch a cross-agent reviewer before reporting done.** See [`workflows/qa-gating.md`](workflows/qa-gating.md) for dispatch commands. Reviewers fix with minimal changes only — never refactor or overcomplicate what was already committed.
 
 ---
 
-## QA Gating (opt-in)
+## QA Gating (default-on)
 
-Cross-agent review is available but **only triggered when the user explicitly requests it.** After completing code edits and before pushing or creating a PR, the user can ask for a second agent of a different type to audit the work.
+**This is default-on, not opt-in.** After completing any non-trivial task, dispatch a cross-agent reviewer:
+- If you are CC → dispatch `codex` (or `clauded -p` if Codex unavailable)
+- If you are Codex → dispatch `clauded -p`
+- Reviewer fixes with **minimal changes only** — no refactoring, no overcomplicating
+- Skip only for trivial edits, or if user says "skip review"
+- Reviewers do NOT dispatch reviewers (no recursion)
 
-See: [`workflows/qa-gating.md`](workflows/qa-gating.md)
+Full protocol + dispatch commands: [`workflows/qa-gating.md`](workflows/qa-gating.md)
 
 ---
 
@@ -47,7 +53,7 @@ How to run agents, manage parallel sessions, and review code.
 |:----|:-----|:------------|
 | Byobu Agents | [`workflows/byobu-agents.md`](workflows/byobu-agents.md) | Run parallel agent sessions using byobu |
 | Git Worktrees | [`workflows/git-worktrees.md`](workflows/git-worktrees.md) | Worktree isolation for parallel agents |
-| QA Gating | [`workflows/qa-gating.md`](workflows/qa-gating.md) | Cross-agent review protocol (opt-in) |
+| QA Gating | [`workflows/qa-gating.md`](workflows/qa-gating.md) | Cross-agent review protocol (**default after every non-trivial task**) |
 | clauded Usage | [`workflows/clauded-usage.md`](workflows/clauded-usage.md) | `clauded` alias and skip-permissions patterns |
 
 ### Conventions

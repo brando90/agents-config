@@ -1,70 +1,90 @@
-# Workflow: Cross-Agent QA Review (Opt-In)
+# Workflow: QA Gating — Cross-Agent Review
 
-<!-- TODO: define scoring criteria for QA pass/fail -->
+## Default Behavior
 
-A protocol for using a second AI agent to review code before pushing or creating a PR.
+**After completing your task, dispatch a review agent before reporting done.**
 
----
+This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
 
-## When to Trigger
-
-This is **opt-in only.** The human must explicitly request it. Do not auto-trigger.
-
-Good times to use QA gating:
-- Before creating a PR for a complex change
-- Before pushing to a shared branch
-- When the primary agent made architectural decisions you want a second opinion on
-- When you explicitly ask: "have Codex review this" or "cross-agent review"
+Skip review ONLY for trivial changes (typo fixes, comment edits, single-line config changes).
 
 ---
 
-## How It Works
+## How to Dispatch a Reviewer
 
-1. **Primary agent** completes its code edits (e.g., Claude Code writes a feature).
-2. **Human** reviews the diff and decides a second opinion would be valuable.
-3. **Human** spawns a second agent of a different type in the same repo (or worktree).
-4. **Reviewer agent** audits the diff, looking for:
-   - Logic errors or edge cases
-   - Security issues (injection, secrets, auth bypass)
-   - Missing error handling at system boundaries
-   - Unintended side effects
-   - Style/convention violations per project rules
-5. **Reviewer agent** reports findings. It does NOT make edits unless asked.
-6. **Human** is always the final reviewer. The QA agent's findings are advisory.
+### If you are Claude Code (CC), dispatch Codex:
 
----
-
-## Review Prompt Template
-
-Paste this to the reviewer agent:
-
+```bash
+codex "Review all changes in this directory since the last commit on main. \
+Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
+inconsistencies with docs/agent-docs/ if it exists. \
+If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
+do not overcomplicate what is already committed. Prefer the simplest correct fix. \
+If everything looks correct, just say VERDICT: PASS."
 ```
-Review the changes on this branch vs main. Check for:
-1. Logic errors or edge cases that would cause bugs
-2. Security issues (injection, secrets, auth bypass)
-3. Missing error handling at system boundaries
-4. Unintended side effects or regressions
-5. Convention violations per this project's CLAUDE.md / agents.md
 
-Do NOT make edits. Report findings as a numbered list with file:line references.
-If everything looks good, say so.
+### If you are Codex, dispatch Claude Code (CC):
+
+```bash
+clauded -p "Review all changes in this directory since the last commit on main. \
+Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
+inconsistencies with docs/agent-docs/ if it exists. \
+If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
+do not overcomplicate what is already committed. Prefer the simplest correct fix. \
+If everything looks correct, just say VERDICT: PASS."
+```
+
+### If you are CC and Codex is unavailable, dispatch another CC instance:
+
+```bash
+clauded -p "Review all changes in this directory since the last commit on main. \
+Flag critical and major issues only. Fix with minimal changes. \
+Do not refactor or overcomplicate. VERDICT: PASS if clean."
 ```
 
 ---
 
-## Cross-Agent Pairings
+## Reviewer Rules
 
-| Primary Agent | Reviewer Agent | Why |
-|:--------------|:---------------|:----|
-| Claude Code | Codex | Different model, different blind spots |
-| Codex | Claude Code | Same reasoning |
-| Claude Code (Sonnet) | Claude Code (Opus) | Stronger model for architecture review |
+The reviewer MUST follow these principles:
+
+1. **Fix, don't rewrite.** If the code works but could be "better", leave it alone. Only fix things that are wrong.
+2. **Minimal changes only.** A 2-line fix is better than a 50-line refactor that happens to also fix the bug.
+3. **Don't overcomplicate what was already committed.** Even if the original approach was suboptimal, if it's correct and simple, keep it.
+4. **Correctness over elegance.** Always.
+5. **If unsure, leave it and flag it** rather than making a speculative change.
 
 ---
 
-## Important
+## Verdict Format
 
-- The human is always the final reviewer. QA gating is advisory, not a gate.
-- The reviewer agent should NOT push, commit, or create PRs. Read-only review.
-- If the reviewer finds issues, the primary agent (or human) fixes them.
-- This is not a substitute for CI/CD, tests, or human code review.
+The reviewer should end with:
+
+```
+VERDICT: PASS | FAIL | FIXED
+CRITICAL_ISSUES: [count]
+MAJOR_ISSUES: [count]
+FIXES_APPLIED: [count]
+SUMMARY: [1-2 sentences]
+```
+
+- **PASS** — no issues found, nothing changed.
+- **FIXED** — found issues and applied minimal fixes. Changes are committed.
+- **FAIL** — found issues too complex or risky to auto-fix. Flagged for human.
+
+---
+
+## When to Skip Review
+
+- Typo fixes, comment-only edits, single-line config changes.
+- User explicitly says "skip review" or "no QA."
+- The task was itself a review task (don't recurse — reviewers don't dispatch reviewers).
+
+---
+
+## When Human Review is Still Needed
+
+- Reviewer returns FAIL.
+- Changes touch security-critical code (auth, secrets, permissions).
+- Changes modify evaluation metrics or scoring logic.
+- Merging to main or any shared branch (human makes final merge decision).
