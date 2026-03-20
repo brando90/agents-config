@@ -2,37 +2,41 @@
 
 A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond). Designed for scalability and context-window efficiency.
 
-As codebases scale past 30-50k LOC, monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
+As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
 
 **Designed by [Brando Miranda](https://brando90.github.io/brandomiranda/) (Stanford CS PhD).** Inspired by [Yegor Denisov-Blanch](https://x.com/yegordb)'s insight that modular documentation is essential for multi-agent workflows at scale.
 
-**Contributions welcomed and encouraged!** Open a [GitHub Issue](https://github.com/brando90/agents-config/issues), start a [Discussion](https://github.com/brando90/agents-config/discussions), or submit a PR.
+**Contributions welcomed and encouraged!** Open a [GitHub Issue](https://github.com/brando90/agents-config/issues), start a [Discussion](https://github.com/brando90/agents-config/discussions), or submit a PR (pull request).
 
 ---
 
 ## The Three-Layer Architecture
 
 ```
-Layer 1: Agent Entry Points          Layer 2: Shared Index           Layer 3: Scoped Docs
-┌──────────────┐                     ┌──────────────────┐           ┌─────────────────────────┐
-│ claude.md    │──┐                  │                  │     ┌────▸│ machine/public/snap.md  │
-│ (Claude Code)│  │                  │   INDEX.md       │     │     │ machine/public/mac.md   │
-└──────────────┘  │    "read         │                  │─────┤     │ machine/public/...      │
-                  ├───▸ INDEX.md"    │  Global Rules    │     │     ├─────────────────────────┤
-┌──────────────┐  │                  │  QA Gating       │     ├────▸│ workflows/byobu.md      │
-│ agents.md    │──┘                  │  Doc Registry    │     │     │ workflows/git-worktrees │
-│ (Codex, etc.)│                     │                  │     │     │ workflows/qa-gating.md  │
-└──────────────┘                     └──────────────────┘     │     ├─────────────────────────┤
-                                                              └────▸│ conventions/general-  │
-                                                                    │   coding.md           │
-                                                                    │ conventions/agent-    │
-                                                                    │   prompt-builder-rules│
-                                                                    └───────────────────────┘
+Layer 1: Entry Points                       Layer 2: Shared Index           Layer 3: Scoped Docs
+
+From ~/ (home directory):
+┌──────────────────┐
+│ ~/CLAUDE.md      │─ symlink ─┐
+│ ~/agents.md      │─ symlink ─┤            ┌──────────────────┐           ┌─────────────────────────┐
+└──────────────────┘           │            │                  │     ┌────▸│ machine/public/snap.md  │
+                               ├──"read     │   INDEX.md       │     │     │ machine/public/mac.md   │
+From agent-config/ (this repo):│  INDEX.md" │                  │─────┤     │ machine/public/...      │
+┌──────────────────┐           │            │  Global Rules    │     │     ├─────────────────────────┤
+│ claude.md        │───────────┤            │  QA Gating       │     ├────▸│ workflows/...           │
+│ agents.md        │───────────┘            │  Doc Registry    │     │     ├─────────────────────────┤
+└──────────────────┘                        └──────────────────┘     └────▸│ conventions/...         │
+                                                                           └─────────────────────────┘
+From any project repo:
+┌──────────────────┐
+│ CLAUDE.md        │──▸ ~/agent-config/INDEX.md  (shared — same Layer 2 above)
+│ agents.md        │──▸ docs/agent-docs/INDEX.md (project-specific Layer 2 + 3)
+└──────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** Thin pointer files that each agent natively reads. `claude.md` for Claude Code, `agents.md` for Codex. Each one says: "Read `INDEX.md`." One line. No logic. These files live in the repo root so they serve double duty: (1) when an agent is launched inside `agent-config` itself, it reads them directly; (2) `~/CLAUDE.md` (or `~/agents.md`) can symlink here so the same routing works from the home directory.
 
-**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It lists all available docs by topic with one-line descriptions so the agent only loads what's relevant to the current task. It also contains global rules (QA gating, critical constraints) that always apply.
+**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It lists all available docs by topic with one-line descriptions so the agent only loads what's relevant to the current task. It also contains global rules (QA (Quality Assurance) gating, critical constraints) that always apply.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, coding conventions.
 
