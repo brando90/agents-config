@@ -188,6 +188,27 @@ Sensitive configs go in `machine/private/`, which is gitignored. Copy a template
 
 ---
 
+## Related Work
+
+The AI coding agent ecosystem is growing fast. Here's how `agents-config` relates to existing tools:
+
+**Multi-Agent Orchestration** — [Ruflo](https://github.com/ruvnet/ruflo) (21.9K stars), [Agent Orchestrator](https://github.com/ComposioHQ/agent-orchestrator) (4.9K), [Emdash](https://github.com/generalaction/emdash) (2.8K), and [Gas Town](https://github.com/steveyegge/gastown) (12.6K) focus on *running* multiple agents — spawning, coordinating, and merging their work. `agents-config` is complementary: it standardizes the *documentation* agents read, not how they're orchestrated.
+
+**Parallel Agent Execution** — [parallel-code](https://github.com/johannesjo/parallel-code) (387 stars) and [parallel-worktrees](https://github.com/SpillwaveSolutions/parallel-worktrees) run agents side-by-side in git worktrees. Our `workflows/` docs (byobu, git-worktrees) describe the same patterns but as portable documentation rather than tooling.
+
+**CLAUDE.md Templates & Best Practices** — [claude-code-templates](https://github.com/davila7/claude-code-templates) (23.2K stars), [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) (19K), [claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) (5.5K), and [claude-md-templates](https://github.com/abhishekray07/claude-md-templates) (95) provide example `CLAUDE.md` files and configurations. These are Claude-specific. `agents-config` is agent-agnostic (Layer 1 adapts per agent; Layers 2–3 are shared) and uses a routing index instead of a monolithic file.
+
+**Curated Lists** — [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) (29.2K stars) and [awesome-claude-md](https://github.com/josix/awesome-claude-md) (159) catalog plugins, skills, and example configs across the ecosystem.
+
+| Concern | Orchestration tools | Template repos | `agents-config` |
+|:--------|:-------------------|:---------------|:-----------------|
+| Runs agents | Yes | No | No |
+| Provides agent docs | Sometimes | Yes (Claude-only) | Yes (agent-agnostic) |
+| Scales past monolithic files | N/A | No | Yes (three-layer index) |
+| Public/private separation | No | No | Yes (gitignored `private/`) |
+
+---
+
 ## Citation
 
 This repo is open source under the [Apache 2.0 License](LICENSE).
