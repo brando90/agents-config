@@ -23,8 +23,8 @@ From ~/ (home directory):
                                ├──"read     │   INDEX.md       │     │     │ machine/public/mac.md   │
 From agent-config/ (this repo):│  INDEX.md" │                  │─────┤     │ machine/public/...      │
 ┌──────────────────┐           │            │  Global Rules    │     │     ├─────────────────────────┤
-│ claude.md        │───────────┤            │  QA Gating       │     ├────▸│ workflows/...           │
-│ agents.md        │───────────┘            │  Doc Registry    │     │     ├─────────────────────────┤
+│ claude.md        │───────────┤            │  Doc Groups      │     ├────▸│ workflows/...           │
+│ agents.md        │───────────┘            │  Load on demand  │     │     ├─────────────────────────┤
 └──────────────────┘                        └──────────────────┘     └────▸│ conventions/...         │
                                                                            └─────────────────────────┘
 From any project repo:
@@ -39,7 +39,7 @@ From any project repo:
 
 **Layer 1 — Agent-specific entry points.** Thin pointer files that each agent natively reads. `claude.md` for Claude Code, `agents.md` for Codex. Each one says: "Read `INDEX.md`." One line. No logic. These files live in the repo root so they serve double duty: (1) when an agent is launched inside `agent-config` itself, it reads them directly; (2) `~/CLAUDE.md` (or `~/agents.md`) can symlink here so the same routing works from the home directory.
 
-**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It lists all available docs by topic with one-line descriptions so the agent only loads what's relevant to the current task. It also contains global rules (QA (Quality Assurance) gating, critical constraints) that always apply.
+**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based pointers so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, coding conventions.
 
@@ -79,7 +79,8 @@ agent-config/
 │   ├── byobu-agents.md          ← parallel agent sessions with byobu
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── qa-gating.md             ← cross-agent review protocol
-│   └── clauded-usage.md         ← `clauded` alias and skip-permissions usage
+│   ├── clauded-usage.md         ← `clauded` alias and skip-permissions usage
+│   └── expts-and-results.md     ← experiment structure and results reporting
 │
 ├── conventions/
 │   ├── general-coding.md        ← commit, branch, PR conventions
