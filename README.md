@@ -37,9 +37,7 @@ From any project repo (eg. ~/veribench/):
 └──────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** Thin pointer files (e.g., symlink or text with the path) that each agent natively reads. 
-`claude.md` for Claude Code, `agents.md` for Codex. 
-Each one says: "Read `INDEX.md`." One line. These files live in the repo root so they serve double duty: (1) when an agent is launched inside `agent-config` itself, it reads them directly; (2) `~/CLAUDE.md` (or `~/agents.md`) can symlink here so the same routing works from the home directory.
+**Layer 1 — Agent-specific entry points.** `claude.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
 
 **Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based pointers so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 
