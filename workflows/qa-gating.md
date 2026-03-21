@@ -6,9 +6,11 @@
 
 This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
 
-Use the opposite agent as reviewer. For unattended review runs, use that agent's non-interactive auto-approved entrypoint:
+Use the opposite agent as reviewer. If the opposite agent is unavailable, use the same-agent fallback below. For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
 - Codex reviewer: `codex exec --full-auto`
-- Claude Code reviewer: `clauded -p` (`claude --dangerously-skip-permissions`)
+- Claude Code reviewer: `clauded -p` (`claude --dangerously-skip-permissions`; see [`clauded-usage.md`](clauded-usage.md))
+
+If skip-permissions mode is not appropriate for your environment, do not treat Claude Code as an unattended reviewer; run the same prompt in interactive `claude` instead.
 
 Skip review ONLY for trivial changes (typo fixes, comment edits, single-line config changes).
 
@@ -50,10 +52,27 @@ SUMMARY: [1-2 sentences] \
 If everything looks correct, use PASS with all counts set to 0."
 ```
 
+If skip-permissions mode is not appropriate for your environment, run the same prompt in interactive `claude` instead of using the unattended `clauded -p` path.
+
 ### If you are CC and Codex is unavailable, dispatch another CC instance:
 
 ```bash
 clauded -p "Review all changes in this directory since the last commit on main. \
+Flag critical and major issues only. Fix with minimal changes. \
+Do not refactor or overcomplicate. \
+End with exactly: \
+VERDICT: PASS | FAIL | FIXED \
+CRITICAL_ISSUES: [count] \
+MAJOR_ISSUES: [count] \
+FIXES_APPLIED: [count] \
+SUMMARY: [1-2 sentences] \
+If everything looks correct, use PASS with all counts set to 0."
+```
+
+### If you are Codex and Claude Code is unavailable, dispatch another Codex instance:
+
+```bash
+codex exec --full-auto "Review all changes in this directory since the last commit on main. \
 Flag critical and major issues only. Fix with minimal changes. \
 Do not refactor or overcomplicate. \
 End with exactly: \
@@ -92,6 +111,8 @@ SUMMARY: [1-2 sentences]
 ```
 
 Do not omit this block, even on PASS. The caller should relay it in the final QA summary.
+
+`CRITICAL_ISSUES` and `MAJOR_ISSUES` count issues found during review, even if the reviewer later fixes them. Use `FIXES_APPLIED` to report how many fixes were made.
 
 - **PASS** — no issues found, nothing changed.
 - **FIXED** — found issues and applied minimal fixes. Changes are committed.

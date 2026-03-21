@@ -20,24 +20,26 @@ From ~/ (home directory):
 │ ~/CLAUDE.md      │─ symlink ─┐
 │ ~/agents.md      │─ symlink ─┤            ┌──────────────────┐           ┌─────────────────────────┐
 └──────────────────┘           │            │                  │     ┌────▸│ machine/public/snap.md  │
-                               ├──"read     │   INDEX.md       │     │     │ machine/public/mac.md   │
-From agent-config/ (this repo):│  INDEX.md" │                  │─────┤     │ machine/public/...      │
+                               ├────────────────> INDEX.md     │     │     │ machine/public/mac.md   │
+From ~/agent-config/           │            │                  │─────┤     │ machine/public/...      │
 ┌──────────────────┐           │            │  Global Rules    │     │     ├─────────────────────────┤
-│ claude.md        │───────────┤            │  Doc Groups      │     ├────▸│ workflows/...           │
-│ agents.md        │───────────┘            │  Load on demand  │     │     ├─────────────────────────┤
+│ ~/ac/claude.md   │───────────┤            │  Doc Groups      │     ├────▸│ workflows/...           │
+│ ~/ac/agents.md   │───────────┘            │  Load on demand  │     │     ├─────────────────────────┤
 └──────────────────┘                        └──────────────────┘     └────▸│ conventions/...         │
                                                                            └─────────────────────────┘
-From any project repo:
+From any project repo (eg. ~/veribench/):
 ┌──────────────────┐
-│ CLAUDE.md        │──┬──▸ ~/agent-config/INDEX.md
+│ ~/vb/CLAUDE.md        │──┬──▸ ~/agent-config/INDEX.md
 │                  │  └──▸ docs/agent-docs/INDEX.md
 ├──────────────────┤
-│ agents.md        │──┬──▸ ~/agent-config/INDEX.md
+│ ~/vb/agents.md        │──┬──▸ ~/agent-config/INDEX.md
 │                  │  └──▸ docs/agent-docs/INDEX.md
 └──────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** Thin pointer files that each agent natively reads. `claude.md` for Claude Code, `agents.md` for Codex. Each one says: "Read `INDEX.md`." One line. No logic. These files live in the repo root so they serve double duty: (1) when an agent is launched inside `agent-config` itself, it reads them directly; (2) `~/CLAUDE.md` (or `~/agents.md`) can symlink here so the same routing works from the home directory.
+**Layer 1 — Agent-specific entry points.** Thin pointer files (e.g., symlink or text with the path) that each agent natively reads. 
+`claude.md` for Claude Code, `agents.md` for Codex. 
+Each one says: "Read `INDEX.md`." One line. These files live in the repo root so they serve double duty: (1) when an agent is launched inside `agent-config` itself, it reads them directly; (2) `~/CLAUDE.md` (or `~/agents.md`) can symlink here so the same routing works from the home directory.
 
 **Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based pointers so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 
