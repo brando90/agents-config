@@ -18,9 +18,9 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 From ~/            agents-config/
 ┌──────────────┐   ┌──────────────┐
 │ ~/CLAUDE.md  │──▸│ CLAUDE.md    │            ┌─────────────┐            ┌──────────────┐
-│              │   │              │            │             │            │ machine/     │ # hw, env
-│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # how-tos
-│              │   │              │            │             │            │ conventions/ │ # standards
+│              │   │              │            │             │            │ machine/     │ # e.g., mac, snap
+│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # e.g., QA gating
+│              │   │              │            │             │            │ conventions/ │ # e.g., coding rules
 └──────────────┘   └──────────────┘            │ Global      │            └──────────────┘
   (symlinks)       "read INDEX.md"             │ Rules       │
                                                │ Doc Groups  │
