@@ -13,25 +13,26 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-Layer 1: Entry Points         Layer 2: Index       Layer 3: Docs
+Layer 1: Entry Points           Layer 2: Index         Layer 3: Docs
 
-From ~/:          agent-config/:
-┌──────────────┐  ┌──────────────┐
-│ ~/CLAUDE.md  │─▸│ CLAUDE.md    │  ┌────────────┐  ┌──────────────┐
-│ ~/agents.md  │─▸│ agents.md    │─▸│  INDEX.md  │─▸│ machine/     │
-└──────────────┘  └──────────────┘  │            │  │ workflows/   │
-  (symlinks)     "read INDEX.md"    │ Global     │  │ conventions/ │
-                                    │ Rules      │  └──────────────┘
-                                    │ Doc Groups │
-                                    └────────────┘
+From ~/:            agent-config/:
+┌──────────────┐    ┌──────────────┐
+│ ~/CLAUDE.md  │───▸│ CLAUDE.md    │    ┌────────────┐    ┌──────────┐
+│              │    │              │    │            │    │ machine/ │
+│ ~/agents.md  │───▸│ agents.md    │───▸│  INDEX.md  │───▸│workflows/│
+│              │    │              │    │            │    │ conven-  │
+└──────────────┘    └──────────────┘    │ Global     │    │  tions/  │
+   (symlinks)       "read INDEX.md"     │ Rules      │    └──────────┘
+                                        │ Doc Groups │
+                                        └────────────┘
 
-From any project repo:
+From any project repo (also Layer 1):
 ┌──────────────┐
-│ CLAUDE.md    │─▸ ~/agent-config/INDEX.md (shared)
-│              │─▸ docs/agent-docs/INDEX.md (project)
+│ CLAUDE.md    │───▸ ~/agent-config/INDEX.md   (shared)
+│              │───▸ docs/agent-docs/INDEX.md  (project)
 ├──────────────┤
-│ agents.md    │─▸ ~/agent-config/INDEX.md
-│              │─▸ docs/agent-docs/INDEX.md
+│ agents.md    │───▸ ~/agent-config/INDEX.md
+│              │───▸ docs/agent-docs/INDEX.md
 └──────────────┘
 ```
 
