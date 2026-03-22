@@ -25,15 +25,14 @@ From ~/            agents-config/
   (symlinks)       "read INDEX.md"             │ Rules       │
                                                │ Doc Groups  │
                                                └─────────────┘
-
-From any project repo (also Layer 1):
-┌──────────────┐
-│ CLAUDE.md    │───────────▸ ~/agents-config/INDEX.md    (shared)
-│              │───────────▸ docs/agent-docs/INDEX.md    (project)
-├──────────────┤
-│ agents.md    │───────────▸ ~/agents-config/INDEX.md
-│              │───────────▸ docs/agent-docs/INDEX.md
-└──────────────┘
+From any repo (e.g., ~/veribench/):
+┌────────────────────┐
+│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX.md         # shared
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # project
+├────────────────────┤
+│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX.md         # shared
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # project
+└────────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
