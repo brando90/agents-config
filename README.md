@@ -13,22 +13,17 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-Layer 1: Entry Points                                Layer 2: Shared Index           Layer 3: Scoped Docs
+Layer 1: Entry Points                                   Layer 2: Shared Index           Layer 3: Scoped Docs
 
 From ~/ (home dir):           From agent-config/:
 ┌──────────────────┐          ┌──────────────────┐
-│ ~/CLAUDE.md      │─symlink─▸│ CLAUDE.md        │
-│ ~/agents.md      │─symlink─▸│ agents.md        │
-└──────────────────┘          └────────┬─────────┘
-                                       │ content: "read INDEX.md"
-                                       ▼
-                              ┌──────────────────┐           ┌─────────────────────────┐
-                              │   INDEX.md       │     ┌────▸│ machine/public/...      │
-                              │                  │─────┤     ├─────────────────────────┤
-                              │  Global Rules    │     ├────▸│ workflows/...           │
-                              │  Doc Groups      │     │     ├─────────────────────────┤
-                              │  Load on demand  │     └────▸│ conventions/...         │
-                              └──────────────────┘           └─────────────────────────┘
+│ ~/CLAUDE.md      │─symlink─▸│ CLAUDE.md        │      ┌──────────────────┐           ┌─────────────────────────┐
+│ ~/agents.md      │─symlink─▸│ agents.md        │─────▸│   INDEX.md       │     ┌────▸│ machine/public/...      │
+└──────────────────┘          └──────────────────┘      │                  │─────┤     ├─────────────────────────┤
+                               content: "read INDEX.md" │  Global Rules    │     ├────▸│ workflows/...           │
+                                                        │  Doc Groups      │     │     ├─────────────────────────┤
+                                                        │  Load on demand  │     └────▸│ conventions/...         │
+                                                        └──────────────────┘           └─────────────────────────┘
 
 From any project repo:
 ┌──────────────────┐
