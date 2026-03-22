@@ -18,20 +18,20 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 From ~/            agents-config/
 ┌──────────────┐   ┌──────────────┐
 │ ~/CLAUDE.md  │──▸│ CLAUDE.md    │            ┌─────────────┐            ┌──────────────┐
-│              │   │              │            │             │            │ machine/     │
-│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │
-│              │   │              │            │             │            │ conventions/ │
+│              │   │              │            │             │            │ machine/     │ # hw, env
+│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # how-tos
+│              │   │              │            │             │            │ conventions/ │ # standards
 └──────────────┘   └──────────────┘            │ Global      │            └──────────────┘
   (symlinks)       "read INDEX.md"             │ Rules       │
                                                │ Doc Groups  │
                                                └─────────────┘
 From any repo (e.g., ~/veribench/):
 ┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX.md         # shared
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # project
+│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX.md         # shared via agents-config
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # repo
 ├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX.md         # shared
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # project
+│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX.md         # shared via agents-config
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # repo
 └────────────────────┘
 ```
 
