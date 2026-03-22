@@ -13,26 +13,27 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-←── Layer 1: Entry Points ──→       ← Layer 2 →       ← Layer 3 →
+←──── Layer 1: Entry Points ────→              ← Layer 2 →              ← Layer 3 →
 
-From ~/          agents-config/
-┌─────────────┐  ┌─────────────┐     ┌───────────┐     ┌─────────────┐
-│ ~/CLAUDE.md │─▸│ CLAUDE.md   │     │           │     │ machine/    │
-│ ~/agents.md │─▸│ agents.md   │────▸│ INDEX.md  │────▸│ workflows/  │
-└─────────────┘  └─────────────┘     │           │     │conventions/ │
- (symlinks)     "read INDEX.md"      │ Global    │     └─────────────┘
-                                     │ Rules     │
-                                     │ Doc Grps  │
-                                     └───────────┘
+From ~/            agents-config/
+┌──────────────┐   ┌──────────────┐
+│ ~/CLAUDE.md  │──▸│ CLAUDE.md    │            ┌─────────────┐            ┌──────────────┐
+│              │   │              │            │             │            │ machine/     │
+│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │
+│              │   │              │            │             │            │ conventions/ │
+└──────────────┘   └──────────────┘            │ Global      │            └──────────────┘
+  (symlinks)       "read INDEX.md"             │ Rules       │
+                                               │ Doc Groups  │
+                                               └─────────────┘
 
 From any project repo (also Layer 1):
-┌─────────────┐
-│ CLAUDE.md   │────▸ ~/agents-config/INDEX.md   (shared)
-│             │────▸ docs/agent-docs/INDEX.md   (project)
-├─────────────┤
-│ agents.md   │────▸ ~/agents-config/INDEX.md
-│             │────▸ docs/agent-docs/INDEX.md
-└─────────────┘
+┌──────────────┐
+│ CLAUDE.md    │───────────▸ ~/agents-config/INDEX.md    (shared)
+│              │───────────▸ docs/agent-docs/INDEX.md    (project)
+├──────────────┤
+│ agents.md    │───────────▸ ~/agents-config/INDEX.md
+│              │───────────▸ docs/agent-docs/INDEX.md
+└──────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
