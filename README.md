@@ -13,26 +13,29 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-Layer 1: Entry Points                       Layer 2: Shared Index           Layer 3: Scoped Docs
+Layer 1: Entry Points                                Layer 2: Shared Index           Layer 3: Scoped Docs
 
-From ~/ (home directory):
+From ~/ (home dir):           From agent-config/:
+┌──────────────────┐          ┌──────────────────┐
+│ ~/CLAUDE.md      │─symlink─▸│ claude.md        │
+│ ~/agents.md      │─symlink─▸│ agents.md        │
+└──────────────────┘          └────────┬─────────┘
+                                       │ content: "read INDEX.md"
+                                       ▼
+                              ┌──────────────────┐           ┌─────────────────────────┐
+                              │   INDEX.md       │     ┌────▸│ machine/public/...      │
+                              │                  │─────┤     ├─────────────────────────┤
+                              │  Global Rules    │     ├────▸│ workflows/...           │
+                              │  Doc Groups      │     │     ├─────────────────────────┤
+                              │  Load on demand  │     └────▸│ conventions/...         │
+                              └──────────────────┘           └─────────────────────────┘
+
+From any project repo:
 ┌──────────────────┐
-│ ~/CLAUDE.md      │─ symlink ─┐
-│ ~/agents.md      │─ symlink ─┤            ┌──────────────────┐           ┌─────────────────────────┐
-└──────────────────┘           │            │                  │     ┌────▸│ machine/public/snap.md  │
-                               ├────────────────> INDEX.md     │     │     │ machine/public/mac.md   │
-From ~/agent-config/           │            │                  │─────┤     │ machine/public/...      │
-┌──────────────────┐           │            │  Global Rules    │     │     ├─────────────────────────┤
-│ ~/ac/claude.md   │───────────┤            │  Doc Groups      │     ├────▸│ workflows/...           │
-│ ~/ac/agents.md   │───────────┘            │  Load on demand  │     │     ├─────────────────────────┤
-└──────────────────┘                        └──────────────────┘     └────▸│ conventions/...         │
-                                                                           └─────────────────────────┘
-From any project repo (eg. ~/veribench/):
-┌──────────────────┐
-│ ~/vb/CLAUDE.md        │──┬──▸ ~/agent-config/INDEX.md
-│                  │  └──▸ docs/agent-docs/INDEX.md
+│ CLAUDE.md        │──┬──▸ ~/agent-config/INDEX.md  (shared context above)
+│                  │  └──▸ docs/agent-docs/INDEX.md (project-specific)
 ├──────────────────┤
-│ ~/vb/agents.md        │──┬──▸ ~/agent-config/INDEX.md
+│ agents.md        │──┬──▸ ~/agent-config/INDEX.md
 │                  │  └──▸ docs/agent-docs/INDEX.md
 └──────────────────┘
 ```
