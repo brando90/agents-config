@@ -17,7 +17,7 @@ Layer 1: Entry Points                                Layer 2: Shared Index      
 
 From ~/ (home dir):           From agent-config/:
 ┌──────────────────┐          ┌──────────────────┐
-│ ~/CLAUDE.md      │─symlink─▸│ claude.md        │
+│ ~/CLAUDE.md      │─symlink─▸│ CLAUDE.md        │
 │ ~/agents.md      │─symlink─▸│ agents.md        │
 └──────────────────┘          └────────┬─────────┘
                                        │ content: "read INDEX.md"
@@ -40,7 +40,7 @@ From any project repo:
 └──────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `claude.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
 
 **Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based pointers so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 
@@ -61,7 +61,7 @@ From any project repo:
 agent-config/
 ├── README.md                    ← you are here
 ├── INDEX.md                     ← Layer 2: master routing table
-├── claude.md                    ← Layer 1: Claude Code entry point
+├── CLAUDE.md                    ← Layer 1: Claude Code entry point
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
 ├── .gitignore
@@ -145,13 +145,13 @@ See `examples/project-level-setup/` for a complete working example.
 git clone https://github.com/brando90/agents-config.git ~/agent-config
 
 # Symlink entry points from home dir
-ln -s ~/agent-config/claude.md ~/CLAUDE.md
+ln -s ~/agent-config/CLAUDE.md ~/CLAUDE.md
 ln -s ~/agent-config/agents.md ~/agents.md
 
 # Fill in your machine doc (non-sensitive specs, point to ~/.ssh/config etc. for secrets)
 cp ~/agent-config/machine/public/TEMPLATE.md ~/agent-config/machine/public/my-server.md
 
-# Claude Code will automatically read claude.md → INDEX.md
+# Claude Code will automatically read CLAUDE.md → INDEX.md
 # Codex will automatically read agents.md → INDEX.md
 ```
 
