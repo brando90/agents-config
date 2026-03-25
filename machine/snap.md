@@ -107,12 +107,13 @@ source ~/.bashrc
 ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 
 # 5. Symlink agent-config entry points
-ln -sf ~/agent-config/CLAUDE.md ~/CLAUDE.md
-ln -sf ~/agent-config/agents.md ~/agents.md
+ln -sf /dfs/scratch0/<user>/agent-config/CLAUDE.md ~/CLAUDE.md
+ln -sf /dfs/scratch0/<user>/agent-config/agents.md ~/agents.md
 
 # 6. Create DFS project symlinks in LFS home
 # (symlink each DFS project into LFS home so paths are short)
-for proj in $(ls /dfs/scratch0/<user>/ -d */ 2>/dev/null); do
+for proj in /dfs/scratch0/<user>/*/; do
+  [ -d "$proj" ] || continue
   name=$(basename "$proj")
   [ ! -e ~/"$name" ] && ln -s "/dfs/scratch0/<user>/$name" ~/"$name"
 done
