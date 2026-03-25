@@ -9,7 +9,7 @@ Load only the docs relevant to your current task.
 1. **Never commit secrets.** Use environment variables or reference existing config files (`~/keys/`, `~/.ssh/config`).
 2. **Prefer pointers over full context loading.** Reference file paths; load on demand.
 3. **Verify before pushing.** Review diffs for secrets, unintended changes, broken imports.
-4. **Before reporting done on any non-trivial task, dispatch a cross-agent reviewer.** See [`workflows/qa-gating.md`](workflows/qa-gating.md).
+4. **Before sending your final response on any non-trivial user request, dispatch a cross-agent reviewer.** One QA pass per user-assigned task, not per commit. See [`workflows/qa-gating.md`](workflows/qa-gating.md).
 5. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX.md, README.md, and listed doc paths remain accurate.
 
 ---
