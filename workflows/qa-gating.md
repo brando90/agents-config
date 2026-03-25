@@ -8,7 +8,7 @@ This is the default, not opt-in. Every agent that finishes work should spawn a r
 
 Use the opposite agent as reviewer. If the opposite agent is unavailable, use the same-agent fallback below. For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
 - Codex reviewer: `codex exec --full-auto`
-- Claude Code reviewer: `clauded -p` (`claude --dangerously-skip-permissions`; see [`clauded-usage.md`](clauded-usage.md))
+- Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
 
 If skip-permissions mode is not appropriate for your environment, do not treat Claude Code as an unattended reviewer; run the same prompt in interactive `claude` instead.
 

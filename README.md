@@ -15,12 +15,11 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ```
 ←──── Layer 1: Entry Points ────→              ← Layer 2 →              ← Layer 3 →
 
-From ~/            agents-config/
+From ~/            agents-config/              agents-config/             vb/ (repo)
 ┌──────────────┐   ┌──────────────┐
 │ ~/CLAUDE.md  │──▸│ CLAUDE.md    │            ┌─────────────┐            ┌──────────────┐
 │              │   │              │            │             │            │ machine/     │ # e.g., mac, snap
-│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # e.g., QA gating
-│              │   │              │            │             │            │ conventions/ │ # e.g., coding rules
+│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # e.g., QA gating, worktrees
 └──────────────┘   └──────────────┘            │ Global      │            └──────────────┘
   (symlinks)       "read INDEX.md"             │ Rules       │
                                                │ Doc Groups  │
@@ -62,32 +61,16 @@ agent-config/
 ├── .gitignore
 │
 ├── machine/
-│   ├── public/                  ← public machine docs + templates (tracked)
-│   │   ├── TEMPLATE.md
-│   │   ├── ampere1.md
-│   │   ├── snap.md
-│   │   ├── mac.md
-│   │   ├── sherlock.md
-│   │   └── marlowe.md
+│   ├── ampere1.md
+│   ├── snap.md
+│   ├── mac.md
+│   ├── sherlock.md
+│   └── marlowe.md
 │
 ├── workflows/
-│   ├── byobu-agents.md          ← parallel agent sessions with byobu
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── qa-gating.md             ← cross-agent review protocol
-│   ├── clauded-usage.md         ← `clauded` alias and skip-permissions usage
 │   └── expts-and-results.md     ← experiment structure and results reporting
-│
-├── conventions/
-│   ├── general-coding.md        ← commit, branch, PR conventions
-│   └── agent-prompt-builder-rules.md  ← meta-rules for writing agent prompts
-│
-└── examples/
-    └── project-level-setup/     ← how a project repo integrates with agent-config
-        ├── CLAUDE.md            ← points to both home + project indexes
-        ├── agents.md            ← same for Codex
-        └── docs/agent-docs/
-            ├── INDEX.md
-            └── architecture.md
 ```
 
 ---
@@ -122,14 +105,11 @@ my-project/
     └── deployment.md                 ← deployment procedures
 ```
 
-See `examples/project-level-setup/` for a complete working example.
-
 ### Step 3: Fork and customize
 
 1. Fork this repo
-2. Fill in `machine/public/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
-3. Customize `conventions/` for your team's standards
-4. Add your own workflow docs
+2. Fill in `machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
+3. Add your own workflow docs
 
 ---
 
@@ -143,8 +123,6 @@ git clone https://github.com/brando90/agents-config.git ~/agent-config
 ln -s ~/agent-config/CLAUDE.md ~/CLAUDE.md
 ln -s ~/agent-config/agents.md ~/agents.md
 
-# Fill in your machine doc (non-sensitive specs, point to ~/.ssh/config etc. for secrets)
-cp ~/agent-config/machine/public/TEMPLATE.md ~/agent-config/machine/public/my-server.md
 
 # Claude Code will automatically read CLAUDE.md → INDEX.md
 # Codex will automatically read agents.md → INDEX.md
@@ -184,7 +162,6 @@ Read the project-level agent index for project-specific docs:
 - `docs/agent-docs/INDEX.md`
 ```
 
-See `examples/project-level-setup/` for a complete working example with both `CLAUDE.md` and `agents.md`.
 
 ---
 
@@ -192,7 +169,6 @@ See `examples/project-level-setup/` for a complete working example with both `CL
 
 This is a **public repo**. Never commit API keys, tokens, passwords, or private IPs. Machine docs should reference existing config files (`~/.ssh/config`, `~/keys/`, `~/.zshrc`) for sensitive details rather than duplicating them. Reusable templates should use `<PLACEHOLDER>` markers.
 
-> **For teams that need a private layer:** You could add a gitignored `machine/private/` directory with full machine configs containing real values. We removed this to keep the default setup minimal — most single-user setups don't need it since machine docs can just point to existing config files.
 
 ---
 
@@ -202,7 +178,7 @@ The AI coding agent ecosystem is growing fast. Here's how `agents-config` relate
 
 **Multi-Agent Orchestration** — [Ruflo](https://github.com/ruvnet/ruflo) (21.9K stars), [Agent Orchestrator](https://github.com/ComposioHQ/agent-orchestrator) (4.9K), [Emdash](https://github.com/generalaction/emdash) (2.8K), and [Gas Town](https://github.com/steveyegge/gastown) (12.6K) focus on *running* multiple agents — spawning, coordinating, and merging their work. `agents-config` is complementary: it standardizes the *documentation* agents read, not how they're orchestrated.
 
-**Parallel Agent Execution** — [parallel-code](https://github.com/johannesjo/parallel-code) (387 stars) and [parallel-worktrees](https://github.com/SpillwaveSolutions/parallel-worktrees) run agents side-by-side in git worktrees. Our `workflows/` docs (byobu, git-worktrees) describe the same patterns but as portable documentation rather than tooling.
+**Parallel Agent Execution** — [parallel-code](https://github.com/johannesjo/parallel-code) (387 stars) and [parallel-worktrees](https://github.com/SpillwaveSolutions/parallel-worktrees) run agents side-by-side in git worktrees. Our [`workflows/git-worktrees.md`](workflows/git-worktrees.md) describes the same pattern as portable documentation. Agents are run in byobu sessions named `<agent>-<project>-<task>` (e.g. `cc-veribench-exp04`).
 
 **CLAUDE.md Templates & Best Practices** — [claude-code-templates](https://github.com/davila7/claude-code-templates) (23.2K stars), [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) (19K), [claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) (5.5K), and [claude-md-templates](https://github.com/abhishekray07/claude-md-templates) (95) provide example `CLAUDE.md` files and configurations. These are Claude-specific. `agents-config` is agent-agnostic (Layer 1 adapts per agent; Layers 2–3 are shared) and uses a routing index instead of a monolithic file.
 
