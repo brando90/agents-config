@@ -16,7 +16,7 @@ Load only the docs relevant to your current task.
 
 ## Machine Configs
 
-Load the one matching your current environment.
+Load the one matching your current environment. Machine docs contain only behavioral constraints and gotchas — not discoverable specs. Run bash commands (`uname -m`, `nvidia-smi`, etc.) to inspect hardware at runtime.
 
 - [`machine/ampere1.md`](machine/ampere1.md) — GPU cluster node (A100/H100)
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
