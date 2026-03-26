@@ -74,8 +74,8 @@ Key paths and vars set in `.bashrc`:
 - `$DFS` = `/dfs/scratch0/<user>`
 - `~/keys/` — API keys and tokens (loaded by `.bashrc`, never committed)
 - `/dfs/scratch0/<user>/bin/` — shared binaries on PATH (claude, clauded, vibe, etc.)
-- `~/.nvm/` — Node.js via nvm (on DFS, shared)
-- `~/.virtualenvs/` — Python virtual environments
+- `/dfs/scratch0/<user>/.nvm/` — Node.js via nvm (shared on DFS via `NVM_DIR`)
+- `~/.virtualenvs/` — Python virtual environments under LFS `$HOME` by default
 - `BYOBU_CONFIG_DIR` = `/dfs/scratch0/<user>/.byobu_shared` (shared tmux config)
 
 ### Claude Code
