@@ -2,7 +2,10 @@
 
 Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. No job scheduler — direct SSH to nodes.
 
-Full storage docs: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles
+Cluster wiki:
+- Storage: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles
+- Long jobs: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs
+- Server inventory: https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo
 
 ---
 
