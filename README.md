@@ -13,24 +13,27 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←────── Layer 3 ───────→
+←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
 
-       ~/        ~/agents-config/ (~/ac)  ~/agents-config/         ~/vb/ (repo)
+agent-config flow (shared env — abbreviating ~/agent-config/ as ~/ac/ for width):
+
+       ~/                ~/ac/                  ~/ac/                ~/ac/
 ┌──────────────┐   ┌──────────────────┐
 │ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
-│              │   │                  │   │              │   │ ~/vb/machine/        │ # mac, snap
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/vb/workflows/      │ # QA, worktrees
+│              │   │                  │   │              │   │ ~/ac/machine/        │
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/ac/workflows/      │
 │              │   │                  │   │              │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └──────────────┘
-   (symlinks)         "read INDEX.md"
+   (symlinks)       "read INDEX.md"       (routing table)    (loaded on demand)
 
-From any repo (e.g., ~/vb/):
+Project repo flow (e.g., ~/vb/ — layers span two repos):
+
 ┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX.md         # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md   # repo-specific docs
+│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 ├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX.md         # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md   # repo-specific docs
+│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 └────────────────────┘
 ```
 

@@ -6,7 +6,7 @@
 
 This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
 
-Use the opposite agent as reviewer. If the opposite agent is unavailable, use the same-agent fallback below. For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
+Use the opposite agent as reviewer. If the opposite agent is unavailable, fall back to the smartest model available in the current session (e.g., if you are Claude Code, use extended thinking with the SOTA Opus model; if you are Codex, use the highest-capability model available). For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
 - Codex reviewer: `codex exec --full-auto`
 - Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
 
