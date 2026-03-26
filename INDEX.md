@@ -7,10 +7,11 @@ Load only the docs relevant to your current task.
 ## Global Rules (always active)
 
 1. **Never commit secrets.** Use environment variables or reference existing config files (`~/keys/`, `~/.ssh/config`).
-2. **Prefer pointers over full context loading.** Reference file paths; load on demand.
+2. **Prefer references over full context loading.** Cite file paths as text (e.g., `~/agent-config/machine/mac.md`); load the file only when the task needs it. A "reference" here is a written path to a doc — not a symlink or memory address.
 3. **Verify before pushing.** Review diffs for secrets, unintended changes, broken imports.
 4. **Before sending your final response on any non-trivial user request, dispatch a cross-agent reviewer.** One QA pass per user-assigned task, not per commit. See [`workflows/qa-gating.md`](workflows/qa-gating.md).
 5. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX.md, README.md, and listed doc paths remain accurate.
+6. **Use explicit anchored paths in prose doc references and commands.** Write `~/agent-config/INDEX.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
 
 ---
 
@@ -29,4 +30,3 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/qa-gating.md`](workflows/qa-gating.md) — cross-agent review protocol (default-on)
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and results reporting
-
