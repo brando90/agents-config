@@ -13,15 +13,13 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-# ~/ac/ = short for ~/agent-config/
-
 ←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←────── Layer 3 ───────→
 
-       ~/                 ~/ac/                ~/ac/                  ~/ac/
+       ~/        ~/agents-config/ (~/ac)  ~/agents-config/         ~/vb/ (repo)
 ┌──────────────┐   ┌──────────────────┐
 │ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
-│              │   │                  │   │              │   │ ~/ac/machine/        │ # mac, snap
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/ac/workflows/      │ # QA, worktrees
+│              │   │                  │   │              │   │ ~/vb/machine/        │ # mac, snap
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/vb/workflows/      │ # QA, worktrees
 │              │   │                  │   │              │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └──────────────┘
    (symlinks)         "read INDEX.md"
