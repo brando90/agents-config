@@ -13,30 +13,32 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-←──── Layer 1: Entry Points ────→              ← Layer 2 →              ← Layer 3 →
+# ~/ac/ = short for ~/agent-config/
 
-From ~/            agents-config/              agents-config/             vb/ (repo)
-┌──────────────┐   ┌──────────────┐
-│ ~/CLAUDE.md  │──▸│ CLAUDE.md    │            ┌─────────────┐            ┌──────────────┐
-│              │   │              │            │             │            │ machine/     │ # e.g., mac, snap
-│ ~/agents.md  │──▸│ agents.md    │───────────▸│  INDEX.md   │───────────▸│ workflows/   │ # e.g., QA gating, worktrees
-└──────────────┘   └──────────────┘            │ Global      │            └──────────────┘
-  (symlinks)       "read INDEX.md"             │ Rules       │
-                                               │ Doc Groups  │
-                                               └─────────────┘
-From any repo (e.g., ~/veribench/):
+←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←────── Layer 3 ───────→
+
+       ~/                 ~/ac/                ~/ac/                  ~/ac/
+┌──────────────┐   ┌──────────────────┐
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
+│              │   │                  │   │              │   │ ~/ac/machine/        │ # mac, snap
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/ac/workflows/      │ # QA, worktrees
+│              │   │                  │   │              │   └──────────────────────┘
+└──────────────┘   └──────────────────┘   └──────────────┘
+   (symlinks)         "read INDEX.md"
+
+From any repo (e.g., ~/vb/):
 ┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX.md         # shared via agents-config
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # repo
+│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX.md         # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md   # repo-specific docs
 ├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX.md         # shared via agents-config
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md    # repo
+│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX.md         # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md   # repo-specific docs
 └────────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
 
-**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based pointers so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
+**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agent-config/machine/mac.md`) that tell the agent where to look, not symlinks or memory addresses — so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
 
@@ -77,11 +79,11 @@ agent-config/
 
 ## How to Use This with Your Project Repo
 
-Each project repo (e.g., [`beyond-scale-language-data-diversity`](https://github.com/brando90/beyond-scale-language-data-diversity), `harbor`) should have its own `docs/agent-docs/INDEX.md` with project-specific documentation. The home-level `agent-config` covers environment, machine, and shared workflow context that spans all projects.
+Each project repo (e.g., [`beyond-scale-language-data-diversity`](https://github.com/brando90/beyond-scale-language-data-diversity), `harbor`) should have its own `~/my-project/docs/agent-docs/INDEX.md` with project-specific documentation. The home-level `~/agent-config/` covers environment, machine, and shared workflow context that spans all projects.
 
 ### Step 1: Add a project-level entry point
 
-In your project repo, create `CLAUDE.md` (or `agents.md`):
+In your project repo, create `~/my-project/CLAUDE.md` (or `~/my-project/agents.md`):
 
 ```markdown
 # Project: my-project
@@ -90,13 +92,13 @@ Read the home-level agent index for environment context:
 - `~/agent-config/INDEX.md`
 
 Read the project-level agent index for project-specific docs:
-- `docs/agent-docs/INDEX.md`
+- `~/my-project/docs/agent-docs/INDEX.md`
 ```
 
 ### Step 2: Create project-specific docs
 
 ```
-my-project/
+~/my-project/
 ├── CLAUDE.md                         ← points to both indexes
 └── docs/agent-docs/
     ├── INDEX.md                      ← project routing table
@@ -108,7 +110,7 @@ my-project/
 ### Step 3: Fork and customize
 
 1. Fork this repo
-2. Fill in `machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
+2. Fill in `~/agent-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
 3. Add your own workflow docs
 
 ---
@@ -132,12 +134,12 @@ ln -s ~/agent-config/agents.md ~/agents.md
 
 ## How to Integrate with Your Project Repos
 
-Each project repo should have **two entry points** (`CLAUDE.md` for Claude Code, `agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX.md` (environment context) and the project's own `docs/agent-docs/INDEX.md` (project-specific docs).
+Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
 
 Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
 
 ```
-your-project/
+~/your-project/
 ├── CLAUDE.md                         ← points to BOTH indexes
 ├── agents.md                         ← same for Codex
 ├── docs/
@@ -150,7 +152,7 @@ your-project/
 └── tests/
 ```
 
-Your project's `CLAUDE.md` looks like:
+Your project's `~/your-project/CLAUDE.md` looks like:
 
 ```markdown
 # Project: your-project
@@ -159,9 +161,130 @@ Read the home-level agent index for environment context:
 - `~/agent-config/INDEX.md`
 
 Read the project-level agent index for project-specific docs:
-- `docs/agent-docs/INDEX.md`
+- `~/your-project/docs/agent-docs/INDEX.md`
 ```
 
+
+---
+
+## Migrating from a Monolithic CLAUDE.md
+
+If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to migrate that content into the three-layer architecture.
+
+### What migration looks like
+
+**Before** — monolithic CLAUDE.md (200+ lines, everything in one file):
+```
+my-project/
+└── CLAUDE.md    ← project overview, build commands, architecture, conventions, etc.
+```
+
+**After** — modular docs with shared environment context:
+```
+~/my-project/
+├── CLAUDE.md                         ← 5-line reference to both indexes
+├── agents.md                         ← same reference for Codex
+└── docs/agent-docs/
+    ├── INDEX.md                      ← project routing table
+    ├── overview.md                   ← project overview + key entry points
+    ├── build-and-dev.md              ← setup, build, test commands
+    ├── architecture.md               ← codebase structure + key patterns
+    └── conventions.md                ← project-specific conventions
+```
+
+### Step-by-step migration
+
+#### 1. Back up your old CLAUDE.md
+
+```bash
+cd ~/my-project
+cp CLAUDE.md CLAUDE.md.bak
+```
+
+#### 2. Triage the content
+
+Read through your old CLAUDE.md and sort each section into one of these buckets:
+
+| Bucket | Where it goes | Examples |
+|:-------|:-------------|:---------|
+| **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
+| **Already in agent-config** | Drop it (`~/agent-config/` provides it) | Machine specs, SSH config, general workflow rules (QA gating, worktrees), global rules (no secrets, verify before push) |
+| **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
+| **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
+
+#### 3. Create the project docs directory and split the content
+
+```bash
+mkdir -p ~/my-project/docs/agent-docs
+```
+
+Split your old CLAUDE.md into focused files. A typical project needs 2–4 files. **Don't over-split** — if your old CLAUDE.md was under 80 lines, a single `~/my-project/docs/agent-docs/overview.md` with everything is fine.
+
+**Suggested split for a typical research project:**
+
+- **`overview.md`** — Project purpose (1–3 sentences), environment variables, key entry points
+- **`build-and-dev.md`** — Setup, build, test, and lint commands
+- **`architecture.md`** — Directory structure, core components, key patterns
+- **`conventions.md`** — Only if there are project-specific rules (file naming, experiment layout, etc.)
+
+#### 4. Create the project INDEX.md
+
+```markdown
+# INDEX.md — my-project
+
+Load only the docs relevant to your current task.
+
+## Docs
+
+- [`overview.md`](overview.md) — project purpose, env vars, entry points
+- [`build-and-dev.md`](build-and-dev.md) — setup, build, test commands
+- [`architecture.md`](architecture.md) — codebase structure and key patterns
+```
+
+#### 5. Replace CLAUDE.md with the two-reference format
+
+```markdown
+# Project: my-project
+
+Read the home-level agent index for environment context:
+- `~/agent-config/INDEX.md`
+
+Read the project-level agent index for project-specific docs:
+- `~/my-project/docs/agent-docs/INDEX.md`
+```
+
+Optionally create `~/my-project/agents.md` with the same content for Codex compatibility.
+
+#### 6. Delete the backup
+
+Once you've verified the migration, remove the backup:
+```bash
+rm ~/my-project/CLAUDE.md.bak
+```
+
+### Handling common patterns in old CLAUDE.md files
+
+**`@/path/to/other/CLAUDE.md` references** (e.g., `@/dfs/scratch0/brando9/CLAUDE.md`):
+These were used to pull in shared context from a cluster-level CLAUDE.md. Agent-config replaces this — the shared context now lives in `~/agent-config/machine/` and `~/agent-config/workflows/`. Drop the `@` reference.
+
+**Machine-specific sections** (GPU setup, cluster paths, Docker auth):
+These belong in `~/agent-config/machine/*.md`, not in individual projects. If a machine doc doesn't exist yet, create one in agent-config.
+
+**Experiment-specific sections** (e.g., "Harbor x VeriBench Experiment 35"):
+These are project-specific and should go into `~/my-project/docs/agent-docs/`. For large experiment sections, give them their own file (e.g., `~/my-project/docs/agent-docs/experiment-35.md`).
+
+**SOTA model ID lookups** (e.g., "web-search for current models before each run"):
+This is a workflow convention. If it applies across projects, add it to `~/agent-config/workflows/`. If project-specific, keep it in `~/my-project/docs/agent-docs/conventions.md`.
+
+### Migration checklist
+
+For each project, verify:
+- [ ] `~/my-project/CLAUDE.md` contains only the two-reference format (under 10 lines)
+- [ ] `~/my-project/docs/agent-docs/INDEX.md` exists and lists all project doc files
+- [ ] No secrets, API keys, or tokens appear in any doc file
+- [ ] No hardcoded machine specs (reference `~/agent-config/machine/` instead)
+- [ ] Old `~/my-project/CLAUDE.md.bak` has been deleted
+- [ ] Agent can still find build/test commands by reading the project INDEX
 
 ---
 
