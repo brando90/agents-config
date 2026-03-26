@@ -16,23 +16,23 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
        ~/           ~/agent-config/        ~/agent-config/               ~/vb/ (repo)
 ┌──────────────┐   ┌──────────────────┐       (~/ac/)
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌───────────────────────┐
 │              │   │                  │   │              │   │ ~/vb/CLAUDE.md        │  # text ref ──▸ both INDEX.md's
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/vb/agents.md       │  # text ref (same, for Codex)
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/vb/agents.md        │  # text ref (same, for Codex)
 │              │   │                  │   │              │   │ ~/vb/docs/agent-docs/ │  # project-scoped docs (Layer 3)
-│              │   │                  │   │              │   └──────────────────────┘
+│              │   │                  │   │              │   └───────────────────────┘
 └──────────────┘   └──────────────────┘   └──────────────┘
    (symlinks)       "read INDEX.md"       (routing table)    (loaded on demand)
 
 ~/agent-config/ (~/ac/) outline:
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│ CLAUDE.md      ← Layer 1 entry; text ref ──▸ INDEX.md                              │
-│ agents.md      ← Layer 1 entry; text ref ──▸ INDEX.md                              │
-│ INDEX.md       ← Layer 2 routing table; markdown links ──▸ machine/, workflows/    │
-│ README.md      ← repo docs (you are here)                                          │
-│ machine/       ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)    │
-│ workflows/     ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …)  │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│ CLAUDE.md      ← Layer 1 entry; text ref ──▸ INDEX.md                            │
+│ agents.md      ← Layer 1 entry; text ref ──▸ INDEX.md                            │
+│ INDEX.md       ← Layer 2 routing table; markdown links ──▸ machine/, workflows/  │
+│ README.md      ← repo docs (you are here)                                        │
+│ machine/       ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)  │
+│ workflows/     ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …) │
+└──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
