@@ -107,7 +107,7 @@ source ~/.bashrc
 ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 
 # 5. Symlink agent-config repo and entry points
-ln -sf /dfs/scratch0/<user>/agents-config ~/agent-config
+ln -sfn /dfs/scratch0/<user>/agents-config ~/agent-config
 ln -sf ~/agent-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agent-config/agents.md ~/agents.md
 
