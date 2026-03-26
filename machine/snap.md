@@ -91,7 +91,7 @@ cat ~/keys/<ghcr_token_file> | docker login ghcr.io -u <github_username> --passw
 
 ## New Node Setup
 
-When SSH-ing into a new SNAP node for the first time:
+When SSH-ing into a new SNAP node for the first time (assumes DFS is already set up with `.bashrc`, repos, etc.):
 
 ```bash
 # 1. Create LFS home
@@ -106,9 +106,10 @@ source ~/.bashrc
 # 4. Also symlink in LFS home (for after HOME is set)
 ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 
-# 5. Symlink agent-config entry points
-ln -sf /dfs/scratch0/<user>/agent-config/CLAUDE.md ~/CLAUDE.md
-ln -sf /dfs/scratch0/<user>/agent-config/agents.md ~/agents.md
+# 5. Symlink agent-config repo and entry points
+ln -sf /dfs/scratch0/<user>/agents-config ~/agent-config
+ln -sf ~/agent-config/CLAUDE.md ~/CLAUDE.md
+ln -sf ~/agent-config/agents.md ~/agents.md
 
 # 6. Create DFS project symlinks in LFS home
 # (symlink each DFS project into LFS home so paths are short)
@@ -121,6 +122,8 @@ done
 # 7. Verify
 which claude && which clauded
 ```
+
+For **first-time-ever cluster setup** (fresh user, no DFS yet), see `veribench/snap_setup.sh`.
 
 ---
 
