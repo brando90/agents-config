@@ -123,7 +123,7 @@ done
 which claude && which clauded
 ```
 
-For **first-time-ever cluster setup** (fresh user, no DFS yet), see `veribench/snap_setup.sh`.
+For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench/snap_setup.sh`.
 
 ---
 
