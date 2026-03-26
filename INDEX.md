@@ -12,6 +12,7 @@ Load only the docs relevant to your current task.
 4. **Before sending your final response on any non-trivial user request, dispatch a cross-agent reviewer.** One QA pass per user-assigned task, not per commit. See [`workflows/qa-gating.md`](workflows/qa-gating.md).
 5. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX.md, README.md, and listed doc paths remain accurate.
 6. **Use explicit anchored paths in prose doc references and commands.** Write `~/agent-config/INDEX.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
+7. **Re-read agent-config files after any edit.** If you or the user modify any file under `~/agent-config/` (INDEX.md, rules, workflows, machine configs, etc.), immediately re-read the changed file(s) so your context stays current for the rest of the conversation.
 
 ---
 
