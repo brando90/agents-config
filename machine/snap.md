@@ -5,7 +5,8 @@ Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. 
 Cluster wiki:
 - Storage: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles
 - Long jobs: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs
-- Koyejo Server inventory: https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo
+- Server inventory (Jure/SNAP): https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers
+- Server inventory (Koyejo): https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo
 
 ---
 
