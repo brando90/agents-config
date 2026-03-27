@@ -13,27 +13,16 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
-agent-config flow (shared env — abbreviating ~/agent-config/ as ~/ac/ for width):
-
-       ~/                ~/ac/                  ~/ac/                ~/ac/
-┌──────────────┐   ┌──────────────────┐
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
-│              │   │                  │   │                    │   │ ~/ac/machine/        │
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
-│              │   │                  │   │                    │   └──────────────────────┘
+←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←─── Layer 3: Scoped Docs ───→
+       ~/           ~/agent-config/        ~/agent-config/                ~/vb/ (repo)
+┌──────────────┐   ┌──────────────────┐       (~/ac/)
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌───────────────────────┐
+│              │   │                  │   │                    │   │ ~/vb/CLAUDE.md        │  # text ref ──▸ both INDEX's
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/vb/agents.md        │  # text ref (same, for Codex)
+│              │   │                  │   │                    │   │ ~/vb/docs/agent-docs/ │  # project-scoped docs
+│              │   │                  │   │                    │   └───────────────────────┘
 └──────────────┘   └──────────────────┘   └────────────────────┘
-   (symlinks)       "read ~/agent-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
-
-Project repo flow (e.g., ~/vb/ — layers span two repos):
-
-┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX_RULES.md  # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
-├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX_RULES.md  # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
-└────────────────────┘
+   (symlinks)       "read INDEX_RULES.md"  (rules + routing)    (loaded on demand)
 
 ~/agent-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
