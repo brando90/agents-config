@@ -1,6 +1,6 @@
 # Machine: SNAP — Stanford SNAP / Infolab Cluster
 
-Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. No job scheduler — direct SSH to nodes.
+Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. No job scheduler — direct SSH to nodes. **Shell: bash** (`~/.bashrc`).
 
 Cluster wiki:
 - Storage: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles

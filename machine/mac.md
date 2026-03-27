@@ -1,6 +1,6 @@
 # Machine: Mac — macOS (Apple Silicon)
 
-Read `~/.zshrc` for paths, envs, aliases, and tool locations.
+**Shell: zsh** (`~/.zshrc`). Read `~/.zshrc` for paths, envs, aliases, and tool locations.
 
 ## Behavioral Constraints
 
