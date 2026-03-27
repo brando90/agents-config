@@ -1,1 +1,1 @@
-# Claude Code: read `~/agent-config/INDEX.md` for all agent documentation and routing.
+# Claude Code: read `~/agent-config/INDEX_RULES.md` for all agent documentation and routing.

@@ -18,37 +18,37 @@ agent-config flow (shared env — abbreviating ~/agent-config/ as ~/ac/ for widt
 
        ~/                ~/ac/                  ~/ac/                ~/ac/
 ┌──────────────┐   ┌──────────────────┐
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
-│              │   │                  │   │              │   │ ~/ac/machine/        │
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/ac/workflows/      │
-│              │   │                  │   │              │   └──────────────────────┘
-└──────────────┘   └──────────────────┘   └──────────────┘
-   (symlinks)       "read ~/agent-config/INDEX.md"   (routing table)    (loaded on demand)
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
+│              │   │                  │   │                    │   │ ~/ac/machine/        │
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
+│              │   │                  │   │                    │   └──────────────────────┘
+└──────────────┘   └──────────────────┘   └────────────────────┘
+   (symlinks)       "read ~/agent-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
 
 Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 ┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX_RULES.md  # shared env context
 │                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 ├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX_RULES.md  # shared env context
 │                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 └────────────────────┘
 
 ~/agent-config/ (~/ac/) outline:
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│ CLAUDE.md      ← Layer 1 entry; text ref ──▸ INDEX.md                            │
-│ agents.md      ← Layer 1 entry; text ref ──▸ INDEX.md                            │
-│ INDEX.md       ← Layer 2 routing table; markdown links ──▸ machine/, workflows/  │
-│ README.md      ← repo docs (you are here)                                        │
-│ machine/       ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)  │
-│ workflows/     ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …) │
-└──────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│ CLAUDE.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
+│ agents.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
+│ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/     │
+│ README.md        ← repo docs (you are here)                                              │
+│ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
+│ workflows/       ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …)       │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agent-config/INDEX.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agent-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agent-config/machine/mac.md`) that tell the agent where to look, not symlinks or memory addresses — so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
+**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA gating, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agent-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
 
@@ -66,7 +66,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 ```
 agent-config/
 ├── README.md                    ← you are here
-├── INDEX.md                     ← Layer 2: master routing table
+├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
 ├── CLAUDE.md                    ← Layer 1: Claude Code entry point
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
@@ -87,44 +87,6 @@ agent-config/
 
 ---
 
-## How to Use This with Your Project Repo
-
-Each project repo (e.g., [`beyond-scale-language-data-diversity`](https://github.com/brando90/beyond-scale-language-data-diversity), `harbor`) should have its own `~/my-project/docs/agent-docs/INDEX.md` with project-specific documentation. The home-level `~/agent-config/` covers environment, machine, and shared workflow context that spans all projects.
-
-### Step 1: Add a project-level entry point
-
-In your project repo, create `~/my-project/CLAUDE.md` (or `~/my-project/agents.md`):
-
-```markdown
-# Project: my-project
-
-Read the home-level agent index for environment context:
-- `~/agent-config/INDEX.md`
-
-Read the project-level agent index for project-specific docs:
-- `~/my-project/docs/agent-docs/INDEX.md`
-```
-
-### Step 2: Create project-specific docs
-
-```
-~/my-project/
-├── CLAUDE.md                         ← points to both indexes
-└── docs/agent-docs/
-    ├── INDEX.md                      ← project routing table
-    ├── architecture.md               ← how the codebase is structured
-    ├── testing.md                    ← how to run tests
-    └── deployment.md                 ← deployment procedures
-```
-
-### Step 3: Fork and customize
-
-1. Fork this repo
-2. Fill in `~/agent-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
-3. Add your own workflow docs
-
----
-
 ## Quick Start
 
 ```bash
@@ -135,16 +97,15 @@ git clone https://github.com/brando90/agents-config.git ~/agent-config
 ln -s ~/agent-config/CLAUDE.md ~/CLAUDE.md
 ln -s ~/agent-config/agents.md ~/agents.md
 
-
-# Claude Code will automatically read CLAUDE.md → INDEX.md
-# Codex will automatically read agents.md → INDEX.md
+# Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
+# Codex will automatically read agents.md → INDEX_RULES.md
 ```
 
 ---
 
 ## How to Integrate with Your Project Repos
 
-Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
+Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
 
 Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
 
@@ -154,7 +115,7 @@ Project docs live in the repo so they're versioned with the code and available t
 ├── agents.md                         ← same for Codex
 ├── docs/
 │   └── agent-docs/
-│       ├── INDEX.md                  ← project-specific routing table
+│       ├── INDEX.md                  ← project-specific doc routing
 │       ├── architecture.md           ← how the codebase is structured
 │       ├── eval-pipeline.md          ← evaluation workflow docs
 │       └── conventions.md            ← project-specific conventions
@@ -168,12 +129,17 @@ Your project's `~/your-project/CLAUDE.md` looks like:
 # Project: your-project
 
 Read the home-level agent index for environment context:
-- `~/agent-config/INDEX.md`
+- `~/agent-config/INDEX_RULES.md`
 
 Read the project-level agent index for project-specific docs:
 - `~/your-project/docs/agent-docs/INDEX.md`
 ```
 
+### Fork and customize
+
+1. Fork this repo
+2. Fill in `~/agent-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
+3. Add your own workflow docs
 
 ---
 
@@ -195,7 +161,7 @@ my-project/
 ├── CLAUDE.md                         ← 5-line reference to both indexes
 ├── agents.md                         ← same reference for Codex
 └── docs/agent-docs/
-    ├── INDEX.md                      ← project routing table
+    ├── INDEX.md                      ← project doc routing
     ├── overview.md                   ← project overview + key entry points
     ├── build-and-dev.md              ← setup, build, test commands
     ├── architecture.md               ← codebase structure + key patterns
@@ -257,7 +223,7 @@ Load only the docs relevant to your current task.
 # Project: my-project
 
 Read the home-level agent index for environment context:
-- `~/agent-config/INDEX.md`
+- `~/agent-config/INDEX_RULES.md`
 
 Read the project-level agent index for project-specific docs:
 - `~/my-project/docs/agent-docs/INDEX.md`
@@ -313,7 +279,7 @@ The AI coding agent ecosystem is growing fast. Here's how `agents-config` relate
 
 **Parallel Agent Execution** — [parallel-code](https://github.com/johannesjo/parallel-code) (387 stars) and [parallel-worktrees](https://github.com/SpillwaveSolutions/parallel-worktrees) run agents side-by-side in git worktrees. Our [`workflows/git-worktrees.md`](workflows/git-worktrees.md) describes the same pattern as portable documentation, including an example that combines worktrees with byobu.
 
-**CLAUDE.md Templates & Best Practices** — [claude-code-templates](https://github.com/davila7/claude-code-templates) (23.2K stars), [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) (19K), [claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) (5.5K), and [claude-md-templates](https://github.com/abhishekray07/claude-md-templates) (95) provide example `CLAUDE.md` files and configurations. These are Claude-specific. `agents-config` is agent-agnostic (Layer 1 adapts per agent; Layers 2–3 are shared) and uses a routing index instead of a monolithic file.
+**CLAUDE.md Templates & Best Practices** — [claude-code-templates](https://github.com/davila7/claude-code-templates) (23.2K stars), [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) (19K), [claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) (5.5K), and [claude-md-templates](https://github.com/abhishekray07/claude-md-templates) (95) provide example `CLAUDE.md` files and configurations. These are Claude-specific. `agents-config` is agent-agnostic (Layer 1 adapts per agent; Layers 2–3 are shared) and uses doc routing instead of a monolithic file.
 
 **Curated Lists** — [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) (29.2K stars) and [awesome-claude-md](https://github.com/josix/awesome-claude-md) (159) catalog plugins, skills, and example configs across the ecosystem.
 

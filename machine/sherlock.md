@@ -7,7 +7,7 @@ Template for Stanford's Sherlock high-performance computing cluster.
 ## Connection
 
 ```bash
-ssh <YOUR_USERNAME>@login.sherlock.stanford.edu
+ssh <user>@login.sherlock.stanford.edu
 ```
 
 - **Hostname:** `login.sherlock.stanford.edu`

@@ -19,7 +19,7 @@ This file only lists ampere1-specific hardware. Everything else (DFS/AFS/LFS lay
 
 ```bash
 # Quick verify
-ssh brando9@ampere1.stanford.edu
+ssh <user>@ampere1.stanford.edu
 nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader
 ```
 

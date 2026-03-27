@@ -12,7 +12,7 @@ Cluster wiki:
 ## Connection
 
 ```bash
-ssh <username>@<hostname>.stanford.edu
+ssh <user>@<hostname>.stanford.edu
 ```
 
 - **Access:** Direct SSH from Stanford network or VPN. No jump host.
@@ -32,7 +32,7 @@ ssh <username>@<hostname>.stanford.edu
 
 **Key rules:**
 - `$HOME` is set to `/lfs/<hostname>/0/<user>` (LFS) in `.bashrc` — fast local scratch.
-- `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes.
+- `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/experiments/.bashrc` by `snap_setup.sh`.
 - **Clone repos to DFS** (`/dfs/scratch0/<user>/`), then symlink from LFS home. Never clone directly to LFS — it's node-local and not backed up.
 - **Run Docker/Harbor from LFS**, not AFS/DFS. NFS/AFS has root-squash that blocks Docker writes.
 - If a `/dfs/` mount is missing, `cd /dfs/scratch0` triggers AutoFS. If still missing, check https://ilwiki.stanford.edu/doku.php?id=hints:storefiles.
@@ -73,16 +73,25 @@ Key paths and vars set in `.bashrc`:
 - `$AFS` = `/afs/cs.stanford.edu/u/<user>`
 - `$DFS` = `/dfs/scratch0/<user>`
 - `~/keys/` — API keys and tokens (loaded by `.bashrc`, never committed)
-- `/dfs/scratch0/<user>/bin/` — shared binaries on PATH (claude, clauded, vibe, etc.)
+- `/dfs/scratch0/<user>/bin/` — shared binaries on PATH (vibe, etc.). Note: `claude` resolves from NVM and `clauded` from AFS `bin/` — see [Claude Code](#claude-code) below.
 - `/dfs/scratch0/<user>/.nvm/` — Node.js via nvm (shared on DFS via `NVM_DIR`)
-- `~/.virtualenvs/` — Python virtual environments under LFS `$HOME` by default
+- `~/.virtualenvs/` — legacy Python venvs under LFS `$HOME` (contains `venv_for_poetry`, activated conditionally by `.bashrc`)
+- `~/uv_envs/veribench/` — uv-managed venv for VeriBench (created by `veribench_setup.sh`; activate: `source ~/uv_envs/veribench/bin/activate`)
+- `~/.elan/bin/` — Lean 4 toolchain (lean, lake, elan) installed by `veribench_setup.sh`
 - `BYOBU_CONFIG_DIR` = `/dfs/scratch0/<user>/.byobu_shared` (shared tmux config)
 
 ### Claude Code
 
-- `claude` binary: `/dfs/scratch0/<user>/bin/claude` (DFS — shared, no per-node install)
-- `clauded` script: `/dfs/scratch0/<user>/bin/clauded` (runs `claude --dangerously-skip-permissions "$@"`)
+- `claude` binary: installed via `npm` under NVM (resolves from `$NVM_DIR/versions/node/…/bin/claude`). A stale copy also exists at `/dfs/scratch0/<user>/bin/claude` but NVM takes precedence on PATH.
+- `clauded` script: `/afs/cs.stanford.edu/u/<user>/bin/clauded` (AFS `bin/` is on PATH; runs `claude --dangerously-skip-permissions "$@"`). A duplicate exists at `/dfs/scratch0/<user>/bin/clauded`.
 - Auth: `CLAUDE_CODE_OAUTH_TOKEN` set in `.bashrc`
+
+### Vibe (Mistral)
+
+- Binary: `/dfs/scratch0/<user>/bin/vibe` (DFS, shared across nodes)
+- Packages: `/dfs/scratch0/<user>/lib/python3.12/site-packages` (needs `PYTHONPATH`)
+- API key: `MISTRAL_API_KEY` loaded from `~/keys/mistral_personal_key.txt`
+- If missing, reinstall: `python3.12 -m pip install mistral-vibe --prefix /dfs/scratch0/<user>`
 
 ### Docker
 
@@ -126,11 +135,20 @@ done
 which claude && which clauded
 ```
 
-For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench/snap_setup.sh`.
+For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench/snap_setup.sh`. It:
+1. Creates DFS/LFS directories and symlinks `.bashrc` (AFS → DFS, LFS → DFS)
+2. Clones `veribench` and `agents-config` to DFS, symlinks entry points
+3. Calls `~/veribench/veribench_setup.sh` which installs uv, Lean/elan, Mathlib, and Python deps
+
+**Warning:** `snap_setup.sh` unconditionally copies `veribench/experiments/.bashrc` over `$DFS/.bashrc`. If your `.bashrc` has diverged (check with `wc -c`), back it up first or the copy will overwrite your customizations.
 
 ---
 
 ## Common Issues
+
+### DFS scratch nearly full
+**Symptom:** Write failures or slow I/O on `/dfs/scratch0`.
+**Fix:** `df -h /dfs/scratch0` — if above 90%, clean up old checkpoints, logs, and unused repos.
 
 ### AFS token expiration
 **Symptom:** Home directory unresponsive. `ls /afs/cs/...` hangs.

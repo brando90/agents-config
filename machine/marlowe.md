@@ -7,7 +7,7 @@ Template for Stanford's Marlowe cluster.
 ## Connection
 
 ```bash
-ssh <YOUR_USERNAME>@<MARLOWE_HOSTNAME>
+ssh <user>@<MARLOWE_HOSTNAME>
 ```
 
 - **Hostname:** `<MARLOWE_HOSTNAME>`
