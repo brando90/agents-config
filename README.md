@@ -22,7 +22,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 │              │   │                  │   │                    │   │ ~/vb/docs/agent-docs/ │  # project-scoped docs
 │              │   │                  │   │                    │   └───────────────────────┘
 └──────────────┘   └──────────────────┘   └────────────────────┘
-   (symlinks)       "read INDEX_RULES.md"  (rules + routing)    (loaded on demand)
+   (symlinks)      "read INDEX_RULES.md"   (rules + routing)        (loaded on demand)
 
 ~/agent-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
