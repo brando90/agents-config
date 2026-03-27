@@ -14,15 +14,26 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 
 ```
 ←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
-       ~/           ~/agent-config/        ~/agent-config/               ~/vb/ (repo)
-┌──────────────┐   ┌──────────────────┐       (~/ac/)
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌───────────────────────┐
-│              │   │                  │   │              │   │ ~/vb/CLAUDE.md        │  # text ref ──▸ both INDEX.md's
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/vb/agents.md        │  # text ref (same, for Codex)
-│              │   │                  │   │              │   │ ~/vb/docs/agent-docs/ │  # project-scoped docs (Layer 3)
-│              │   │                  │   │              │   └───────────────────────┘
+agent-config flow (shared env — abbreviating ~/agent-config/ as ~/ac/ for width):
+
+       ~/                ~/ac/                  ~/ac/                ~/ac/
+┌──────────────┐   ┌──────────────────┐
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌──────────────┐   ┌──────────────────────┐
+│              │   │                  │   │              │   │ ~/ac/machine/        │
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│ ~/ac/INDEX.md│──▸│ ~/ac/workflows/      │
+│              │   │                  │   │              │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └──────────────┘
-   (symlinks)       "read INDEX.md"       (routing table)    (loaded on demand)
+   (symlinks)       "read ~/agent-config/INDEX.md"   (routing table)    (loaded on demand)
+
+Project repo flow (e.g., ~/vb/ — layers span two repos):
+
+┌────────────────────┐
+│ ~/vb/CLAUDE.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
+├────────────────────┤
+│ ~/vb/agents.md     │──▸ ~/agent-config/INDEX.md        # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
+└────────────────────┘
 
 ~/agent-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────┐
@@ -35,7 +46,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is one line: "Read `INDEX.md`." From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agent-config/INDEX.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same routing regardless of where it's launched.
 
 **Layer 2 — Shared agent-agnostic index.** `INDEX.md` is the master routing table. It groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agent-config/machine/mac.md`) that tell the agent where to look, not symlinks or memory addresses — so the agent only loads what's relevant to the current task. It also contains the global rules that always apply.
 

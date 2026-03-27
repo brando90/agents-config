@@ -23,7 +23,7 @@ Skip review ONLY for trivial changes (typo fixes, comment edits, single-line con
 ```bash
 codex exec --full-auto "Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
-inconsistencies with docs/agent-docs/ if it exists. \
+inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
 do not overcomplicate what is already committed. Prefer the simplest correct fix. \
 End with exactly: \
@@ -40,7 +40,7 @@ If everything looks correct, use PASS with all counts set to 0."
 ```bash
 clauded -p "Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
-inconsistencies with docs/agent-docs/ if it exists. \
+inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
 do not overcomplicate what is already committed. Prefer the simplest correct fix. \
 End with exactly: \
