@@ -17,7 +17,8 @@ ssh <user>@<hostname>.stanford.edu
 
 - **Access:** Direct SSH from Stanford network or VPN. No jump host.
 - **Port:** 22
-- **Persistent sessions:** Use `byobu` (tmux-based). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
+- **Agent SSH:** Claude Code can run one-shot remote commands via `ssh host "command"` (e.g., `ssh ampere1.stanford.edu "nvidia-smi"`). It cannot maintain interactive sessions. Auth via `~/.ssh/config` and `~/keys/`.
+- **Persistent sessions:** Use `byobu` (tmux-based, human-only — agents cannot interact with tmux). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
 
 ---
 
