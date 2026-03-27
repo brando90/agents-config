@@ -5,7 +5,7 @@ Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. 
 Cluster wiki:
 - Storage: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles
 - Long jobs: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs
-- Server inventory: https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo
+- Koyejo Server inventory: https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo
 
 ---
 
@@ -20,6 +20,7 @@ ssh <user>@<hostname>.stanford.edu
 - **Access:** Direct SSH from Stanford network or VPN. No jump host.
 - **Port:** 22
 - **Persistent sessions:** Use `byobu` (tmux-based, human-only — agents cannot interact with tmux). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
+- **Kerberos reauth for persistent sessions:** Kerberos tickets expire (~3 days), breaking AFS access inside detached sessions. Use `/afs/cs/software/bin/krbtmux` (or `krbscreen`) to launch the multiplexer, then run `/afs/cs/software/bin/reauth` inside to keep tickets renewed. See https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
 
 ---
 
