@@ -14,6 +14,7 @@ Load only the docs relevant to your current task.
 6. **Use explicit anchored paths in prose doc references and commands.** Write `~/agent-config/INDEX_RULES.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
 7. **Re-read agent-config files after any edit.** If you or the user modify any file under `~/agent-config/` (for example `~/agent-config/INDEX_RULES.md`, `~/agent-config/README.md`, files under `~/agent-config/workflows/`, or files under `~/agent-config/machine/`), immediately re-read the changed file(s) so your context stays current for the rest of the conversation.
 8. **End with a TLDR.** After completing a task, finish your response with a 1–2 sentence summary of what was done.
+9. **Refresh agents-config before each new user task.** At the start of every non-trivial user request, run `git -C ~/agent-config pull` and re-read `~/agent-config/INDEX_RULES.md`. For long sessions (over 1 hour), also refresh mid-task — check with `date` and compare to your last pull. After refreshing, push any uncommitted agents-config changes and run QA if changes were pulled from another agent.
 
 ---
 
