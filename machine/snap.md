@@ -127,6 +127,10 @@ ln -sfn /dfs/scratch0/<user>/agents-config ~/agents-config
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agents-config/agents.md ~/agents.md
 
+# 5b. Symlink Claude Code settings (model=opus, effortLevel=high)
+mkdir -p ~/.claude
+ln -sf /dfs/scratch0/<user>/agents-config/claude-code-settings.json ~/.claude/settings.json
+
 # 6. Create DFS project symlinks in LFS home
 # (symlink each DFS project into LFS home so paths are short)
 for proj in /dfs/scratch0/<user>/*/; do
