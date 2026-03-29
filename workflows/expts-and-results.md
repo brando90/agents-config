@@ -54,21 +54,22 @@ experiments/<NN>_<name>/
 
 ## Post-Experiment GPU Cleanup
 
-After any training or eval run completes, check that no GPU processes are left behind:
+After any training, eval, or QA run completes, check that no GPU processes are left behind. Handle this autonomously — only escalate to the user if there is a critical ambiguity.
 
 1. **Confirm the experiment is actually finished:**
    - The process exited (exit code 0 or non-zero)
    - W&B sync/push completed (if applicable)
    - No checkpoint save or model upload is still in progress
+   - No other experiment or pipeline stage depends on the process
 2. **Check for lingering GPU processes:**
    ```bash
    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader
    ```
-3. **If your processes remain and the experiment is confirmed done**, and no other experiment is using that process, kill them:
+3. **If all checks pass**, kill lingering processes owned by the user without asking:
    ```bash
    kill <pid>
    ```
-4. **If unsure whether the experiment is truly finished** (e.g., ambiguous state, shared process, multi-stage pipeline), ask the user before killing anything.
+4. **Only ask the user if there is a critical ambiguity** — e.g., the process is shared across experiments, a multi-stage pipeline has unclear state, or the exit status is unclear. This follows the same escalation rule as QA gating: autonomous unless critical.
 
 ---
 
