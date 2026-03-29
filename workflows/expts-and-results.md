@@ -52,6 +52,26 @@ experiments/<NN>_<name>/
 
 ---
 
+## Post-Experiment GPU Cleanup
+
+After any training or eval run completes, check that no GPU processes are left behind:
+
+1. **Confirm the experiment is actually finished:**
+   - The process exited (exit code 0 or non-zero)
+   - W&B sync/push completed (if applicable)
+   - No checkpoint save or model upload is still in progress
+2. **Check for lingering GPU processes:**
+   ```bash
+   nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader
+   ```
+3. **If your processes remain and the experiment is confirmed done**, and no other experiment is using that process, kill them:
+   ```bash
+   kill <pid>
+   ```
+4. **If unsure whether the experiment is truly finished** (e.g., ambiguous state, shared process, multi-stage pipeline), ask the user before killing anything.
+
+---
+
 ## Prompt Templates
 
 Each experiment keeps its own prompts under its folder — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment they belong to.
