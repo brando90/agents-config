@@ -1,4 +1,4 @@
-# Workflow: QA Gating — Cross-Agent Review
+# Workflow: QA Correctness — Cross-Agent Review
 
 ## Default Behavior
 
