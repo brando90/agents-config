@@ -113,7 +113,7 @@ Run tests after each change. Revert and skip if tests break.
 ## Phase 4: Measure & Report
 
 Report:
-- RAMP level + missing artifacts
+- RAMP level + missing artifacts + config quality notes
 - Erosion (before -> after)
 - Verbosity (before -> after)
 - Highest-CC function (before -> after)
@@ -213,7 +213,7 @@ Run tests after each change. Revert and skip if tests break.
 ## Phase 4: Measure & Report
 
 Report:
-- RAMP level + missing artifacts
+- RAMP level + missing artifacts + config quality notes
 - Erosion (before -> after)
 - Verbosity (before -> after)
 - Highest-CC function (before -> after)
