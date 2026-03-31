@@ -23,6 +23,23 @@ This experiment designs a tooling-side intervention: a refactoring QA gate that
 runs between implementation iterations, hypothesized to reduce (not necessarily
 arrest) the degradation slope. Whether it actually bends the slope is untested.
 
+### RAMP: Why committed config is the highest-ROI intervention
+
+RAMP (Denisov-Blanch, Agarwal, Azaletskiy, He, Schaeffer, Miranda, Vasilescu,
+Koyejo, ASE 2026) provides complementary evidence from 508 repos in a staggered
+difference-in-differences study of coding agent adoption:
+
+- Repos **without** committed AI config (Level 1) see **~3.3x more** complexity
+  growth and **~3.4x more** warning increases than repos with config (Level 2+)
+- Duplication: ~33% increase at L1 vs. near-zero at L2+
+- Velocity gains (~26% more commits) are **identical** regardless of config level
+- **80% of AI config is set-and-forget** — committed once, never modified
+- The **L1→L2 gap** (nothing vs. basic rules+standards) is larger than L2→L3→L4
+
+This means the single highest-ROI action is ensuring the repo has committed
+rules and coding standards *before* any code refactoring. The v3 prompt adds
+a Phase -1 (Configuration Audit) to check this first.
+
 ## Relevance to agents-config
 
 Our agents-config workflow (~/agent-config/) uses cross-agent QA gating
@@ -134,6 +151,10 @@ to control, it's worth the cost even if verbosity improvement is smaller.
 - Orlanski, G., Roy, D., Yun, A., Shin, C., Gu, A., Ge, A., Adila, D., Sala, F.,
   & Albarghouthi, A. (2026). SlopCodeBench: Benchmarking How Coding Agents Degrade
   Over Long-Horizon Iterative Tasks. arXiv:2603.24755.
+- Denisov-Blanch, Y., Agarwal, S., Azaletskiy, P., He, H., Schaeffer, R.,
+  Miranda, B., Vasilescu, B., & Koyejo, S. (2026). Repository AI Configuration Is
+  Associated with Three-Fold Differences in Code Quality After Agent Adoption. ASE 2026.
 - Existing correctness QA workflow: `~/agent-config/workflows/qa-correctness.md`
 - Refactoring QA gate prompt v1: `~/agent-config/experiments/00_refactor_qa_gate/cc_prompt.md`
 - Refactoring QA gate prompt v2: `~/agent-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v2.md`
+- Refactoring QA gate prompt v3 (consolidated): `~/agent-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v3.md`

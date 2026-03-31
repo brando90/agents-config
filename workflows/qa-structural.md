@@ -1,10 +1,20 @@
 # Workflow: QA Structural — Anti-Degradation Refactoring Gate
 
-Motivated by SlopCodeBench (Orlanski et al., 2026, arXiv:2603.24755), which
-shows that agent-generated code degrades monotonically under iterative extension:
-erosion rises in 80% of trajectories, verbosity in 89.8%. Prompt-side
-interventions lower the starting point but not the degradation rate. This gate
-is a tooling-side intervention targeting the rate.
+Motivated by two complementary findings:
+
+1. **SlopCodeBench** (Orlanski et al., 2026, arXiv:2603.24755): agent code
+   degrades monotonically — erosion rises in 80% of trajectories, verbosity
+   in 89.8%. Prompt-side interventions lower the intercept ~34% but not the
+   degradation rate.
+
+2. **RAMP** (Denisov-Blanch, Agarwal, Azaletskiy et al., ASE 2026): repos
+   with committed AI config (rules, standards, architecture docs) see ~3.3x
+   less complexity growth and ~3.4x less warning increases. The L1→L2 gap
+   (nothing vs. basic config) is the biggest jump. 80% of AI config is
+   set-and-forget.
+
+This gate combines both: check config first (RAMP), then measure and fix
+code quality (SlopCodeBench).
 
 **This is the second step of the QA chain.** Run it after
 [`qa-correctness.md`](qa-correctness.md) passes.
@@ -44,76 +54,86 @@ experiment is still unvalidated, so keep the skip conditions below and report
 
 ```bash
 codex exec --full-auto "$(cat <<'PROMPT'
-You are a refactoring specialist. Your ONLY job is to improve the structural
-quality of the existing codebase. You must NOT add features, change behavior,
-or modify any public API. Every test that passed before must pass after.
+You are a refactoring and configuration specialist. Your job is to improve
+both the structural quality of the codebase AND the quality of the repo's AI
+configuration. You must NOT add features, change behavior, or modify any
+public API. Every test that passed before must pass after.
 
-## Phase 0: Measure Baseline
+## Phase -1: Configuration Audit (RAMP-motivated)
 
-Before changing anything, compute quantitative baselines. Use actual tools,
-not estimates.
+Before touching code, check whether the repo has committed AI config artifacts
+that RAMP associates with 3x less quality degradation. The L1→L2 gap is the
+biggest jump — bigger than any code refactoring.
 
-1. **Cyclomatic complexity per function.** Run `radon cc -s -a -n B .`
-   (or equivalent for your language) to get exact CC scores. Filter to
-   functions with CC > 10 (following Radon's established bounds). Note:
-   `-n B` shows rank B and above (CC >= 6), giving visibility into
-   functions approaching the threshold too.
+Check for: (1) Rules file (CLAUDE.md, .cursorrules, copilot-instructions.md,
+agents.md) with actionable directives, (2) Coding standards with conventions,
+(3) Architecture docs with module boundaries/data flow, (4) Agent definitions
+with roles/tool restrictions (Level 3), (5) Workflow coordination (Level 4).
 
-2. **Structural erosion.** Compute:
-   - mass(f) = CC(f) * sqrt(SLOC(f))
-   - Erosion = sum(mass(f) for f where CC(f) > 10) / sum(mass(f) for all f)
+Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 priority — recommend
+creating rules file + coding standards before any code refactoring. Since 80%
+of AI config is never modified after commit, emphasize getting it right first
+time. If L2+: note level and proceed.
 
-3. **Verbosity (SlopCodeBench-inspired proxy).**
-   - Run ast-grep rules or a linter to identify verbose anti-patterns.
-   - Run clone detection (jscpd, duplo, or pylint duplicate-code).
-   - Verbosity = |flagged_lines UNION clone_lines| / total_LOC
-     (union with deduplication, not sum)
+## Phase 0: Measure Baseline (SlopCodeBench-motivated)
 
-Exclude test files, docs (*.md), generated code, and vendored dependencies.
-If tools are unavailable, fall back to manual estimation and flag as "estimated."
+1. Run radon cc -s -a -n B . — filter to CC > 10.
+2. Erosion = sum(mass(f) for CC>10) / sum(mass(f) for all f),
+   where mass(f) = CC(f) * sqrt(SLOC(f)).
+3. Verbosity = |flagged_lines UNION clone_lines| / total_LOC.
+   Use ast-grep/linter + clone detection (jscpd, duplo, pylint duplicate-code).
+   Union with deduplication, not sum.
 
-## Phase 1: Audit
+Exclude tests, docs, generated code, vendored deps.
+If tools unavailable, estimate and flag as "estimated."
 
-Identify and list (do NOT fix yet):
-1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first
-2. Structural duplication across files
-3. Verbose anti-patterns (single-use vars, identity wrappers, defensive
-   checks for impossible states, unnecessary casts, 3+ nesting levels,
-   if/elif ladders, silent except blocks, obvious-restatement comments,
-   unused imports, dead code)
-4. Architectural dead-ends (flag only, for human review — do NOT fix)
+## Phase 1: Audit (do NOT fix yet)
+
+1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first.
+   (Note: duplication is where committed config helps most — 33% at L1 vs
+   near-zero at L2+ per RAMP.)
+2. Structural duplication across files.
+3. Verbose anti-patterns: single-use vars, identity wrappers, defensive checks
+   for impossible states, unnecessary casts, 3+ nesting, if/elif ladders,
+   silent except blocks, obvious-restatement comments, unused imports, dead code.
+4. Architectural dead-ends — flag only, for human review.
 
 ## Phase 2: Refactor Plan
 
-For each audit item (except architectural dead-ends), state the specific
-refactoring. Follow: extract but don't over-extract, deduplicate via
-abstraction, replace ladders with tables, delete don't comment out, preserve
+For each item (except dead-ends): extract but don't over-extract, deduplicate
+via abstraction, replace ladders with tables, delete don't comment out, preserve
 public interface, minimize diff, budget ~100 lines of diff per item max.
 
 ## Phase 3: Execute
 
-Apply in priority order: highest-mass god functions first, then duplication,
-then anti-patterns. Run tests after each significant change. Revert and
-skip anything that breaks tests.
+Priority: highest-mass god functions > duplication > anti-patterns.
+Run tests after each change. Revert and skip if tests break.
 
 ## Phase 4: Measure & Report
 
-Recompute Phase 0 metrics. Report before/after comparison table:
-erosion, verbosity, highest-CC function, total diff size, counts of
-functions extracted / duplications removed / anti-patterns fixed,
-items skipped, architectural dead-ends flagged.
+Report:
+- RAMP level + missing artifacts
+- Erosion (before -> after)
+- Verbosity (before -> after)
+- Highest-CC function (before -> after)
+- Diff size, functions extracted, duplications removed, anti-patterns fixed
+- Items skipped and why
+- Architectural dead-ends flagged
 
 ## Hard Rules
 
 - Zero functional changes. Skip if unsure.
-- No new dependencies.
-- No new files unless extracting a module.
+- No new deps. No new source files unless extracting a module.
+- New AI config files (rules, standards) are the exception to no-new-files.
 - Run tests. Flag as "unverified" if you cannot.
 - Do not touch test files (except shared test utilities).
-- Do not introduce abstractions for single-use cases.
+- No abstractions for single-use cases. Respect diff budget.
+- Config recommendations are recommendations — team decides content.
 
 End with exactly:
 VERDICT: PASS | IMPROVED | SKIP
+RAMP_LEVEL: [L1 | L2 | L3 | L4]
+CONFIG_GAPS: [list or "none"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
@@ -123,7 +143,7 @@ DUPLICATIONS_REMOVED: [count]
 ANTIPATTERNS_FIXED: [count]
 ARCH_DEADENDS_FLAGGED: [count]
 SUMMARY: [1-2 sentences]
-If the codebase has no substantial source code, use SKIP.
+If no substantial source code, use SKIP.
 PROMPT
 )"
 ```
@@ -132,76 +152,86 @@ PROMPT
 
 ```bash
 clauded -p "$(cat <<'PROMPT'
-You are a refactoring specialist. Your ONLY job is to improve the structural
-quality of the existing codebase. You must NOT add features, change behavior,
-or modify any public API. Every test that passed before must pass after.
+You are a refactoring and configuration specialist. Your job is to improve
+both the structural quality of the codebase AND the quality of the repo's AI
+configuration. You must NOT add features, change behavior, or modify any
+public API. Every test that passed before must pass after.
 
-## Phase 0: Measure Baseline
+## Phase -1: Configuration Audit (RAMP-motivated)
 
-Before changing anything, compute quantitative baselines. Use actual tools,
-not estimates.
+Before touching code, check whether the repo has committed AI config artifacts
+that RAMP associates with 3x less quality degradation. The L1→L2 gap is the
+biggest jump — bigger than any code refactoring.
 
-1. **Cyclomatic complexity per function.** Run `radon cc -s -a -n B .`
-   (or equivalent for your language) to get exact CC scores. Filter to
-   functions with CC > 10 (following Radon's established bounds). Note:
-   `-n B` shows rank B and above (CC >= 6), giving visibility into
-   functions approaching the threshold too.
+Check for: (1) Rules file (CLAUDE.md, .cursorrules, copilot-instructions.md,
+agents.md) with actionable directives, (2) Coding standards with conventions,
+(3) Architecture docs with module boundaries/data flow, (4) Agent definitions
+with roles/tool restrictions (Level 3), (5) Workflow coordination (Level 4).
 
-2. **Structural erosion.** Compute:
-   - mass(f) = CC(f) * sqrt(SLOC(f))
-   - Erosion = sum(mass(f) for f where CC(f) > 10) / sum(mass(f) for all f)
+Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 priority — recommend
+creating rules file + coding standards before any code refactoring. Since 80%
+of AI config is never modified after commit, emphasize getting it right first
+time. If L2+: note level and proceed.
 
-3. **Verbosity (SlopCodeBench-inspired proxy).**
-   - Run ast-grep rules or a linter to identify verbose anti-patterns.
-   - Run clone detection (jscpd, duplo, or pylint duplicate-code).
-   - Verbosity = |flagged_lines UNION clone_lines| / total_LOC
-     (union with deduplication, not sum)
+## Phase 0: Measure Baseline (SlopCodeBench-motivated)
 
-Exclude test files, docs (*.md), generated code, and vendored dependencies.
-If tools are unavailable, fall back to manual estimation and flag as "estimated."
+1. Run radon cc -s -a -n B . — filter to CC > 10.
+2. Erosion = sum(mass(f) for CC>10) / sum(mass(f) for all f),
+   where mass(f) = CC(f) * sqrt(SLOC(f)).
+3. Verbosity = |flagged_lines UNION clone_lines| / total_LOC.
+   Use ast-grep/linter + clone detection (jscpd, duplo, pylint duplicate-code).
+   Union with deduplication, not sum.
 
-## Phase 1: Audit
+Exclude tests, docs, generated code, vendored deps.
+If tools unavailable, estimate and flag as "estimated."
 
-Identify and list (do NOT fix yet):
-1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first
-2. Structural duplication across files
-3. Verbose anti-patterns (single-use vars, identity wrappers, defensive
-   checks for impossible states, unnecessary casts, 3+ nesting levels,
-   if/elif ladders, silent except blocks, obvious-restatement comments,
-   unused imports, dead code)
-4. Architectural dead-ends (flag only, for human review — do NOT fix)
+## Phase 1: Audit (do NOT fix yet)
+
+1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first.
+   (Note: duplication is where committed config helps most — 33% at L1 vs
+   near-zero at L2+ per RAMP.)
+2. Structural duplication across files.
+3. Verbose anti-patterns: single-use vars, identity wrappers, defensive checks
+   for impossible states, unnecessary casts, 3+ nesting, if/elif ladders,
+   silent except blocks, obvious-restatement comments, unused imports, dead code.
+4. Architectural dead-ends — flag only, for human review.
 
 ## Phase 2: Refactor Plan
 
-For each audit item (except architectural dead-ends), state the specific
-refactoring. Follow: extract but don't over-extract, deduplicate via
-abstraction, replace ladders with tables, delete don't comment out, preserve
+For each item (except dead-ends): extract but don't over-extract, deduplicate
+via abstraction, replace ladders with tables, delete don't comment out, preserve
 public interface, minimize diff, budget ~100 lines of diff per item max.
 
 ## Phase 3: Execute
 
-Apply in priority order: highest-mass god functions first, then duplication,
-then anti-patterns. Run tests after each significant change. Revert and
-skip anything that breaks tests.
+Priority: highest-mass god functions > duplication > anti-patterns.
+Run tests after each change. Revert and skip if tests break.
 
 ## Phase 4: Measure & Report
 
-Recompute Phase 0 metrics. Report before/after comparison table:
-erosion, verbosity, highest-CC function, total diff size, counts of
-functions extracted / duplications removed / anti-patterns fixed,
-items skipped, architectural dead-ends flagged.
+Report:
+- RAMP level + missing artifacts
+- Erosion (before -> after)
+- Verbosity (before -> after)
+- Highest-CC function (before -> after)
+- Diff size, functions extracted, duplications removed, anti-patterns fixed
+- Items skipped and why
+- Architectural dead-ends flagged
 
 ## Hard Rules
 
 - Zero functional changes. Skip if unsure.
-- No new dependencies.
-- No new files unless extracting a module.
+- No new deps. No new source files unless extracting a module.
+- New AI config files (rules, standards) are the exception to no-new-files.
 - Run tests. Flag as "unverified" if you cannot.
 - Do not touch test files (except shared test utilities).
-- Do not introduce abstractions for single-use cases.
+- No abstractions for single-use cases. Respect diff budget.
+- Config recommendations are recommendations — team decides content.
 
 End with exactly:
 VERDICT: PASS | IMPROVED | SKIP
+RAMP_LEVEL: [L1 | L2 | L3 | L4]
+CONFIG_GAPS: [list or "none"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
@@ -211,7 +241,7 @@ DUPLICATIONS_REMOVED: [count]
 ANTIPATTERNS_FIXED: [count]
 ARCH_DEADENDS_FLAGGED: [count]
 SUMMARY: [1-2 sentences]
-If the codebase has no substantial source code, use SKIP.
+If no substantial source code, use SKIP.
 PROMPT
 )"
 ```
@@ -230,6 +260,8 @@ highest-capability model available.
 
 ```
 VERDICT: PASS | IMPROVED | SKIP
+RAMP_LEVEL: [L1 | L2 | L3 | L4]
+CONFIG_GAPS: [list or "none"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
@@ -271,7 +303,9 @@ STRUCTURAL: PASS | IMPROVED | SKIP
 
 ## Background: Why This Exists
 
-SlopCodeBench shows that when agents iteratively extend their own code:
+Two papers motivate this gate:
+
+**SlopCodeBench** (what degrades and why prompts aren't enough):
 - God functions accumulate branches (e.g., main() growing from 84 to 1099
   lines, CC 29 to 285 over 8 checkpoints)
 - Structural duplication accounts for 66% of verbosity growth
@@ -279,8 +313,17 @@ SlopCodeBench shows that when agents iteratively extend their own code:
 - Prompt-only interventions (anti_slop, plan_first) shift the intercept
   ~34% but the degradation slope is unchanged
 
-The correctness QA gate catches bugs. This structural QA gate catches decay.
-Together they form a more complete quality chain.
+**RAMP** (why committed config matters):
+- Repos without AI config (L1) see ~96% complexity growth vs. ~29% at L2+
+- Static-analysis warnings: ~45% at L1 vs. ~13% at L2+
+- Duplication: ~33% at L1 vs. near-zero at L2+
+- Velocity gains (~26% more commits) are identical regardless — agents
+  accelerate everyone; config determines who pays the quality price
+- 80% of AI config is set-and-forget — initial quality matters
+
+The correctness QA gate catches bugs. This structural QA gate catches decay
+(SlopCodeBench) and missing defenses (RAMP). Together they form a more
+complete quality chain.
 
 For the full analysis and experiment design, see
 `~/agent-config/experiments/00_refactor_qa_gate/analysis.md`.
