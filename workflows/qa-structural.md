@@ -12,11 +12,12 @@ is a tooling-side intervention targeting the rate.
 ## Default Behavior
 
 **After correctness QA passes, run the structural QA gate on any repo with
-substantial source code (not markdown-only repos like agents-config itself).**
+substantial source code (not markdown-only repos like agents-config itself),
+unless a skip condition below applies.**
 
-This is opt-in for now — the effectiveness of this gate at bending the
-degradation slope is untested. Run it when the codebase has been through
-multiple agent-driven iterations and you want to check for structural decay.
+This is step 2 of the default QA chain for source-heavy repos. The underlying
+experiment is still unvalidated, so keep the skip conditions below and report
+`SKIP` when the repo or task does not fit.
 
 ---
 
@@ -131,7 +132,86 @@ PROMPT
 
 ```bash
 clauded -p "$(cat <<'PROMPT'
-<same prompt as above>
+You are a refactoring specialist. Your ONLY job is to improve the structural
+quality of the existing codebase. You must NOT add features, change behavior,
+or modify any public API. Every test that passed before must pass after.
+
+## Phase 0: Measure Baseline
+
+Before changing anything, compute quantitative baselines. Use actual tools,
+not estimates.
+
+1. **Cyclomatic complexity per function.** Run `radon cc -s -a -n B .`
+   (or equivalent for your language) to get exact CC scores. Filter to
+   functions with CC > 10 (following Radon's established bounds). Note:
+   `-n B` shows rank B and above (CC >= 6), giving visibility into
+   functions approaching the threshold too.
+
+2. **Structural erosion.** Compute:
+   - mass(f) = CC(f) * sqrt(SLOC(f))
+   - Erosion = sum(mass(f) for f where CC(f) > 10) / sum(mass(f) for all f)
+
+3. **Verbosity (SlopCodeBench-inspired proxy).**
+   - Run ast-grep rules or a linter to identify verbose anti-patterns.
+   - Run clone detection (jscpd, duplo, or pylint duplicate-code).
+   - Verbosity = |flagged_lines UNION clone_lines| / total_LOC
+     (union with deduplication, not sum)
+
+Exclude test files, docs (*.md), generated code, and vendored dependencies.
+If tools are unavailable, fall back to manual estimation and flag as "estimated."
+
+## Phase 1: Audit
+
+Identify and list (do NOT fix yet):
+1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first
+2. Structural duplication across files
+3. Verbose anti-patterns (single-use vars, identity wrappers, defensive
+   checks for impossible states, unnecessary casts, 3+ nesting levels,
+   if/elif ladders, silent except blocks, obvious-restatement comments,
+   unused imports, dead code)
+4. Architectural dead-ends (flag only, for human review — do NOT fix)
+
+## Phase 2: Refactor Plan
+
+For each audit item (except architectural dead-ends), state the specific
+refactoring. Follow: extract but don't over-extract, deduplicate via
+abstraction, replace ladders with tables, delete don't comment out, preserve
+public interface, minimize diff, budget ~100 lines of diff per item max.
+
+## Phase 3: Execute
+
+Apply in priority order: highest-mass god functions first, then duplication,
+then anti-patterns. Run tests after each significant change. Revert and
+skip anything that breaks tests.
+
+## Phase 4: Measure & Report
+
+Recompute Phase 0 metrics. Report before/after comparison table:
+erosion, verbosity, highest-CC function, total diff size, counts of
+functions extracted / duplications removed / anti-patterns fixed,
+items skipped, architectural dead-ends flagged.
+
+## Hard Rules
+
+- Zero functional changes. Skip if unsure.
+- No new dependencies.
+- No new files unless extracting a module.
+- Run tests. Flag as "unverified" if you cannot.
+- Do not touch test files (except shared test utilities).
+- Do not introduce abstractions for single-use cases.
+
+End with exactly:
+VERDICT: PASS | IMPROVED | SKIP
+EROSION_BEFORE: [score]
+EROSION_AFTER: [score]
+VERBOSITY_BEFORE: [score]
+VERBOSITY_AFTER: [score]
+GOD_FUNCTIONS_FIXED: [count]
+DUPLICATIONS_REMOVED: [count]
+ANTIPATTERNS_FIXED: [count]
+ARCH_DEADENDS_FLAGGED: [count]
+SUMMARY: [1-2 sentences]
+If the codebase has no substantial source code, use SKIP.
 PROMPT
 )"
 ```

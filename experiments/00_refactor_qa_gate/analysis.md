@@ -26,7 +26,8 @@ arrest) the degradation slope. Whether it actually bends the slope is untested.
 ## Relevance to agents-config
 
 Our agents-config workflow (~/agent-config/) uses cross-agent QA gating
-(workflows/qa-correctness.md) but that gate focuses on **correctness** — logic errors,
+(`~/agent-config/workflows/qa-correctness.md`) but that gate focuses on
+**correctness** — logic errors,
 missing edge cases, broken behavior. It does not measure or address **structural
 quality degradation**, which is the compounding problem the paper identifies.
 
@@ -123,15 +124,16 @@ to control, it's worth the cost even if verbosity improvement is smaller.
    iterations with and without the gate. This is the experiment to run.
 
 4. **Integration with existing QA gating:** Resolved — implemented as a separate
-   workflow (`workflows/qa-structural.md`) forming step 2 of the QA chain after
-   `workflows/qa-correctness.md`. Kept separate because it has a different purpose
-   (structural quality vs. correctness) and different skip conditions.
+   workflow (`~/agent-config/workflows/qa-structural.md`) forming step 2 of the
+   QA chain after `~/agent-config/workflows/qa-correctness.md`. Kept separate
+   because it has a different purpose (structural quality vs. correctness) and
+   different skip conditions.
 
 ## References
 
 - Orlanski, G., Roy, D., Yun, A., Shin, C., Gu, A., Ge, A., Adila, D., Sala, F.,
   & Albarghouthi, A. (2026). SlopCodeBench: Benchmarking How Coding Agents Degrade
   Over Long-Horizon Iterative Tasks. arXiv:2603.24755.
-- Existing QA gating workflow: ~/agent-config/workflows/qa-correctness.md
-- Refactoring QA gate prompt v1: cc_prompt.md (this directory)
-- Refactoring QA gate prompt v2: refactor_qa_gate_prompt_v2.md (this directory)
+- Existing correctness QA workflow: `~/agent-config/workflows/qa-correctness.md`
+- Refactoring QA gate prompt v1: `~/agent-config/experiments/00_refactor_qa_gate/cc_prompt.md`
+- Refactoring QA gate prompt v2: `~/agent-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v2.md`

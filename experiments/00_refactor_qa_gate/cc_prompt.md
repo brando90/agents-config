@@ -93,7 +93,7 @@ After all changes, provide:
 ```
 
 What do you think of it? anything we should improve? Summary of that here /Users/brandomiranda/agent-config/experiments/00_refactor_qa_gate
-Like I'm worried our configs workflow we have here in this repo is fucking up our code base as described by that paper. 
+Like I'm worried our configs workflow we have here in this repo is fucking up our code base as described by that paper.
 
 PS: do a high quality qa with codex at the end of this.
 
