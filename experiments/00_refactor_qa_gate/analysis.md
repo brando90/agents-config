@@ -36,9 +36,10 @@ difference-in-differences study of coding agent adoption:
 - **80% of AI config is set-and-forget** — committed once, never modified
 - The **L1→L2 gap** (nothing vs. basic rules+standards) is larger than L2→L3→L4
 
-This means the single highest-ROI action is ensuring the repo has committed
-rules and coding standards *before* any code refactoring. The v3 prompt adds
-a Phase -1 (Configuration Audit) to check this first.
+This means the single largest observed gap is between having no committed
+config and having basic rules and coding standards. The v3 prompt adds
+a Phase -1 (Configuration Audit) to check this first, though RAMP's findings
+are associational, not causal — repos that adopt config may differ in other ways.
 
 ## Relevance to agents-config
 

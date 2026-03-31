@@ -31,10 +31,9 @@ public API. Every test that passed before must pass after.
 ## Phase -1: Configuration Audit (RAMP-motivated)
 
 Before touching any code, check whether the repo has the AI configuration
-artifacts that RAMP associates with 3x less quality degradation. This is
-the highest-ROI check — the gap between having no config (RAMP Level 1)
-and having basic config (RAMP Level 2) is larger than any code refactoring
-can achieve.
+artifacts that RAMP associates with ~3x less quality degradation. This is
+the largest observed gap in RAMP's data — repos without config (Level 1)
+show ~3.3x more complexity growth than repos with basic config (Level 2+).
 
 Check for:
 
@@ -60,12 +59,13 @@ Check for:
 - **L3 (Agent-Augmented):** Has agents/commands/skills definitions.
 - **L4 (Orchestration):** Has workflows/pipelines/session-logs.
 
-**If Level 1:** Before any code refactoring, recommend creating at minimum:
+**If Level 1:** Flag this as the #1 recommendation. Recommend creating at minimum:
 - A rules file with behavioral directives (what to always/never do)
 - A coding standards doc with project-specific conventions
-This single action is associated with ~3x quality improvement per RAMP evidence.
-Since 80% of AI config is never modified after initial commit, emphasize getting
-it right the first time.
+This is associated with the largest quality gap in RAMP's data (~3.3x less
+complexity growth at L2+ vs L1). Since 80% of AI config is never modified
+after initial commit, emphasize getting it right the first time.
+Then proceed to Phase 0 — config gaps don't block code quality assessment.
 
 **If Level 2+:** Note the level and proceed to Phase 0.
 

@@ -62,18 +62,19 @@ public API. Every test that passed before must pass after.
 ## Phase -1: Configuration Audit (RAMP-motivated)
 
 Before touching code, check whether the repo has committed AI config artifacts
-that RAMP associates with 3x less quality degradation. The L1→L2 gap is the
-biggest jump — bigger than any code refactoring.
+that RAMP associates with ~3x less quality degradation. The L1→L2 gap is the
+largest observed difference in RAMP's data.
 
 Check for: (1) Rules file (CLAUDE.md, .cursorrules, copilot-instructions.md,
 agents.md) with actionable directives, (2) Coding standards with conventions,
 (3) Architecture docs with module boundaries/data flow, (4) Agent definitions
 with roles/tool restrictions (Level 3), (5) Workflow coordination (Level 4).
 
-Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 priority — recommend
-creating rules file + coding standards before any code refactoring. Since 80%
-of AI config is never modified after commit, emphasize getting it right first
-time. If L2+: note level and proceed.
+Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 recommendation —
+recommend creating rules file + coding standards. Since 80% of AI config is
+never modified after commit, emphasize getting it right first time.
+Then proceed to Phase 0 (config gaps don't block code assessment).
+If L2+: note level and proceed.
 
 ## Phase 0: Measure Baseline (SlopCodeBench-motivated)
 
@@ -134,6 +135,7 @@ End with exactly:
 VERDICT: PASS | IMPROVED | SKIP
 RAMP_LEVEL: [L1 | L2 | L3 | L4]
 CONFIG_GAPS: [list or "none"]
+CONFIG_QUALITY_NOTES: [brief notes on existing config quality, or "n/a"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
@@ -160,18 +162,19 @@ public API. Every test that passed before must pass after.
 ## Phase -1: Configuration Audit (RAMP-motivated)
 
 Before touching code, check whether the repo has committed AI config artifacts
-that RAMP associates with 3x less quality degradation. The L1→L2 gap is the
-biggest jump — bigger than any code refactoring.
+that RAMP associates with ~3x less quality degradation. The L1→L2 gap is the
+largest observed difference in RAMP's data.
 
 Check for: (1) Rules file (CLAUDE.md, .cursorrules, copilot-instructions.md,
 agents.md) with actionable directives, (2) Coding standards with conventions,
 (3) Architecture docs with module boundaries/data flow, (4) Agent definitions
 with roles/tool restrictions (Level 3), (5) Workflow coordination (Level 4).
 
-Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 priority — recommend
-creating rules file + coding standards before any code refactoring. Since 80%
-of AI config is never modified after commit, emphasize getting it right first
-time. If L2+: note level and proceed.
+Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 recommendation —
+recommend creating rules file + coding standards. Since 80% of AI config is
+never modified after commit, emphasize getting it right first time.
+Then proceed to Phase 0 (config gaps don't block code assessment).
+If L2+: note level and proceed.
 
 ## Phase 0: Measure Baseline (SlopCodeBench-motivated)
 
@@ -232,6 +235,7 @@ End with exactly:
 VERDICT: PASS | IMPROVED | SKIP
 RAMP_LEVEL: [L1 | L2 | L3 | L4]
 CONFIG_GAPS: [list or "none"]
+CONFIG_QUALITY_NOTES: [brief notes on existing config quality, or "n/a"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
@@ -262,6 +266,7 @@ highest-capability model available.
 VERDICT: PASS | IMPROVED | SKIP
 RAMP_LEVEL: [L1 | L2 | L3 | L4]
 CONFIG_GAPS: [list or "none"]
+CONFIG_QUALITY_NOTES: [brief notes on existing config quality, or "n/a"]
 EROSION_BEFORE: [score]
 EROSION_AFTER: [score]
 VERBOSITY_BEFORE: [score]
