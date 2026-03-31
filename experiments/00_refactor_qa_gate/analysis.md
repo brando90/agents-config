@@ -23,7 +23,7 @@ This experiment designs a tooling-side intervention: a refactoring QA gate that
 runs between implementation iterations, hypothesized to reduce (not necessarily
 arrest) the degradation slope. Whether it actually bends the slope is untested.
 
-### RAMP: Why committed config is the highest-ROI intervention
+### RAMP: Why the L1→L2 config gap is the largest observed difference
 
 RAMP (Denisov-Blanch, Agarwal, Azaletskiy, He, Schaeffer, Miranda, Vasilescu,
 Koyejo, ASE 2026) provides complementary evidence from 508 repos in a staggered
