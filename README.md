@@ -136,7 +136,9 @@ Read the project-level agent index for project-specific docs:
 
 ## Migrating from a Monolithic CLAUDE.md
 
-If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to migrate that content into the three-layer architecture.
+> **Quick start:** For most repos, the minimal migration in [`workflows/repo-init.md`](workflows/repo-init.md) is sufficient — add the redirect header, keep project docs inline, add `agents.md`. The full split below is for large projects (200+ line CLAUDE.md) that benefit from modular project docs.
+
+If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to do a **full split** of that content into the three-layer architecture.
 
 ### What migration looks like
 

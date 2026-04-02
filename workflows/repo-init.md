@@ -10,6 +10,12 @@ Old pattern: each repo had a monolithic `CLAUDE.md` (or `/init` command) with al
 
 New pattern: global rules and machine/workflow docs live in `~/agent-config/`. Each project's `CLAUDE.md` redirects to agents-config first, then contains only project-specific instructions.
 
+There are two tiers of migration:
+- **Minimal** (recommended for most projects): Add the redirect header to `CLAUDE.md`, keep project docs inline, add `agents.md`. This is what most repos need.
+- **Full split** (for large projects with 200+ line CLAUDE.md): Split project docs into `docs/agent-docs/` with a project-level `INDEX.md`. See `~/agent-config/README.md` § "Migrating from a Monolithic CLAUDE.md" for the full split procedure.
+
+This checklist covers the **minimal** tier.
+
 ---
 
 ## Migration checklist
@@ -70,8 +76,9 @@ ln -s ~/agent-config/agents.md ~/agents.md
 After migration, verify the full routing chain works:
 1. `~/CLAUDE.md` → redirects to `~/agent-config/INDEX_RULES.md`
 2. `~/agent-config/INDEX_RULES.md` → global rules + doc routing
-3. `~/project/CLAUDE.md` → redirects to agents-config, then project docs
-4. Agent loads the right machine config for current environment
+3. `~/project/CLAUDE.md` → first line is the redirect header, then project docs
+4. `~/project/agents.md` → exists and redirects to both `INDEX_RULES.md` and `CLAUDE.md`
+5. Agent loads the right machine config for current environment
 
 ---
 
