@@ -85,8 +85,8 @@ agents-config/
 git clone https://github.com/brando90/agents-config.git ~/agents-config
 
 # Symlink entry points from home dir
-ln -s ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -s ~/agents-config/agents.md ~/agents.md
+ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
+ln -sf ~/agents-config/agents.md ~/agents.md
 
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md

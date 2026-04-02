@@ -66,9 +66,9 @@ The project's `CLAUDE.md` should still contain:
 ls -la ~/CLAUDE.md      # → ~/agents-config/CLAUDE.md
 ls -la ~/agents.md      # → ~/agents-config/agents.md
 
-# If missing:
-ln -s ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -s ~/agents-config/agents.md ~/agents.md
+# If missing or stale (ln -sf overwrites existing symlinks):
+ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
+ln -sf ~/agents-config/agents.md ~/agents.md
 ```
 
 ### 6. Test the chain
