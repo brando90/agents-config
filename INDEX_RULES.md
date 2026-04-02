@@ -34,3 +34,4 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/qa-structural.md`](workflows/qa-structural.md) — anti-degradation structural refactoring gate (step 2 of QA chain)
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and results reporting
+- [`workflows/repo-init.md`](workflows/repo-init.md) — migrating repos to agents-config (from old monolithic CLAUDE.md / /init)

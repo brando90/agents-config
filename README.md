@@ -72,7 +72,8 @@ agent-config/
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── qa-correctness.md        ← cross-agent correctness review (QA step 1)
 │   ├── qa-structural.md         ← anti-degradation refactoring gate (QA step 2)
-│   └── expts-and-results.md     ← experiment structure and results reporting
+│   ├── expts-and-results.md     ← experiment structure and results reporting
+│   └── repo-init.md             ← migrating repos to agents-config (from old /init)
 ```
 
 ---
