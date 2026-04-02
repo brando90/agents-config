@@ -66,7 +66,9 @@ The project's `CLAUDE.md` should still contain:
 ls -la ~/CLAUDE.md      # → ~/agents-config/CLAUDE.md
 ls -la ~/agents.md      # → ~/agents-config/agents.md
 
-# If missing or stale (ln -sf overwrites existing symlinks):
+# If missing or stale (backs up existing non-symlink files, then force-creates symlinks):
+[ -f ~/CLAUDE.md ] && [ ! -L ~/CLAUDE.md ] && mv ~/CLAUDE.md ~/CLAUDE.md.bak
+[ -f ~/agents.md ] && [ ! -L ~/agents.md ] && mv ~/agents.md ~/agents.md.bak
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agents-config/agents.md ~/agents.md
 ```

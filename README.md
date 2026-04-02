@@ -84,7 +84,9 @@ agents-config/
 # Clone to your home directory
 git clone https://github.com/brando90/agents-config.git ~/agents-config
 
-# Symlink entry points from home dir
+# Symlink entry points from home dir (backs up existing non-symlink files)
+[ -f ~/CLAUDE.md ] && [ ! -L ~/CLAUDE.md ] && mv ~/CLAUDE.md ~/CLAUDE.md.bak
+[ -f ~/agents.md ] && [ ! -L ~/agents.md ] && mv ~/agents.md ~/agents.md.bak
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agents-config/agents.md ~/agents.md
 
