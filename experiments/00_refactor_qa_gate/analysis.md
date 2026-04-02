@@ -43,8 +43,8 @@ are associational, not causal — repos that adopt config may differ in other wa
 
 ## Relevance to agents-config
 
-Our agents-config workflow (~/agent-config/) uses cross-agent QA gating
-(`~/agent-config/workflows/qa-correctness.md`) but that gate focuses on
+Our agents-config workflow (~/agents-config/) uses cross-agent QA gating
+(`~/agents-config/workflows/qa-correctness.md`) but that gate focuses on
 **correctness** — logic errors,
 missing edge cases, broken behavior. It does not measure or address **structural
 quality degradation**, which is the compounding problem the paper identifies.
@@ -142,8 +142,8 @@ to control, it's worth the cost even if verbosity improvement is smaller.
    iterations with and without the gate. This is the experiment to run.
 
 4. **Integration with existing QA gating:** Resolved — implemented as a separate
-   workflow (`~/agent-config/workflows/qa-structural.md`) forming step 2 of the
-   QA chain after `~/agent-config/workflows/qa-correctness.md`. Kept separate
+   workflow (`~/agents-config/workflows/qa-structural.md`) forming step 2 of the
+   QA chain after `~/agents-config/workflows/qa-correctness.md`. Kept separate
    because it has a different purpose (structural quality vs. correctness) and
    different skip conditions.
 
@@ -155,7 +155,7 @@ to control, it's worth the cost even if verbosity improvement is smaller.
 - Denisov-Blanch, Y., Agarwal, S., Azaletskiy, P., He, H., Schaeffer, R.,
   Miranda, B., Vasilescu, B., & Koyejo, S. (2026). Repository AI Configuration Is
   Associated with Three-Fold Differences in Code Quality After Agent Adoption. ASE 2026.
-- Existing correctness QA workflow: `~/agent-config/workflows/qa-correctness.md`
-- Refactoring QA gate prompt v1: `~/agent-config/experiments/00_refactor_qa_gate/cc_prompt.md`
-- Refactoring QA gate prompt v2: `~/agent-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v2.md`
-- Refactoring QA gate prompt v3 (consolidated): `~/agent-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v3.md`
+- Existing correctness QA workflow: `~/agents-config/workflows/qa-correctness.md`
+- Refactoring QA gate prompt v1: `~/agents-config/experiments/00_refactor_qa_gate/cc_prompt.md`
+- Refactoring QA gate prompt v2: `~/agents-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v2.md`
+- Refactoring QA gate prompt v3 (consolidated): `~/agents-config/experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v3.md`

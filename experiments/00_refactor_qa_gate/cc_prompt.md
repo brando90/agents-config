@@ -92,11 +92,11 @@ After all changes, provide:
   that should be extracted to a conftest or shared fixture.
 ```
 
-What do you think of it? anything we should improve? Summary of that here /Users/brandomiranda/agent-config/experiments/00_refactor_qa_gate
+What do you think of it? anything we should improve? Summary of that here /Users/brandomiranda/agents-config/experiments/00_refactor_qa_gate
 Like I'm worried our configs workflow we have here in this repo is fucking up our code base as described by that paper.
 
 PS: do a high quality qa with codex at the end of this.
 
-Ref: /Users/brandomiranda/agent-config/experiments/00_refactor_qa_gate/SlopCodeBench- Benchmarking How Coding Agents Degrade Over Long-Horizon Iterative Tasks.pdf https://arxiv.org/pdf/2603.24755
+Ref: /Users/brandomiranda/agents-config/experiments/00_refactor_qa_gate/SlopCodeBench- Benchmarking How Coding Agents Degrade Over Long-Horizon Iterative Tasks.pdf https://arxiv.org/pdf/2603.24755
 
 https://claude.ai/chat/3b873c0c-1fe7-46b8-a1d2-1fb84e4a92db

@@ -331,4 +331,4 @@ The correctness QA gate catches bugs. This structural QA gate catches decay
 complete quality chain.
 
 For the full analysis and experiment design, see
-`~/agent-config/experiments/00_refactor_qa_gate/analysis.md`.
+`~/agents-config/experiments/00_refactor_qa_gate/analysis.md`.

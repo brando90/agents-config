@@ -14,7 +14,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 
 ```
 ←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←─── Layer 3: Scoped Docs ───→
-       ~/           ~/agent-config/        ~/agent-config/                ~/vb/ (repo)
+       ~/           ~/agents-config/        ~/agents-config/                ~/vb/ (repo)
 ┌──────────────┐   ┌──────────────────┐       (~/ac/)
 │ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌───────────────────────┐
 │              │   │                  │   │                    │   │ ~/vb/CLAUDE.md        │  # text ref ──▸ both INDEX's
@@ -24,7 +24,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 └──────────────┘   └──────────────────┘   └────────────────────┘
    (symlinks)      "read INDEX_RULES.md"   (rules + routing)        (loaded on demand)
 
-~/agent-config/ (~/ac/) outline:
+~/agents-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
 │ CLAUDE.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
 │ agents.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
@@ -35,9 +35,9 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agent-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA chain, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agent-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA chain, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
 
@@ -53,7 +53,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## Directory Structure
 
 ```
-agent-config/
+agents-config/
 ├── README.md                    ← you are here
 ├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
 ├── CLAUDE.md                    ← Layer 1: Claude Code entry point
@@ -82,11 +82,11 @@ agent-config/
 
 ```bash
 # Clone to your home directory
-git clone https://github.com/brando90/agents-config.git ~/agent-config
+git clone https://github.com/brando90/agents-config.git ~/agents-config
 
 # Symlink entry points from home dir
-ln -s ~/agent-config/CLAUDE.md ~/CLAUDE.md
-ln -s ~/agent-config/agents.md ~/agents.md
+ln -s ~/agents-config/CLAUDE.md ~/CLAUDE.md
+ln -s ~/agents-config/agents.md ~/agents.md
 
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md
@@ -96,7 +96,7 @@ ln -s ~/agent-config/agents.md ~/agents.md
 
 ## How to Integrate with Your Project Repos
 
-Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agent-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
+Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agents-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
 
 Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
 
@@ -120,7 +120,7 @@ Your project's `~/your-project/CLAUDE.md` looks like:
 # Project: your-project
 
 Read the home-level agent index for environment context:
-- `~/agent-config/INDEX_RULES.md`
+- `~/agents-config/INDEX_RULES.md`
 
 Read the project-level agent index for project-specific docs:
 - `~/your-project/docs/agent-docs/INDEX.md`
@@ -129,7 +129,7 @@ Read the project-level agent index for project-specific docs:
 ### Fork and customize
 
 1. Fork this repo
-2. Fill in `~/agent-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
+2. Fill in `~/agents-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
 3. Add your own workflow docs
 
 ---
@@ -177,7 +177,7 @@ Read through your old CLAUDE.md and sort each section into one of these buckets:
 | Bucket | Where it goes | Examples |
 |:-------|:-------------|:---------|
 | **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
-| **Already in agent-config** | Drop it (`~/agent-config/` provides it) | Machine specs, SSH config, general workflow rules (QA chain, worktrees), global rules (no secrets, verify before push) |
+| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (QA chain, worktrees), global rules (no secrets, verify before push) |
 | **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
 | **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
 
@@ -216,7 +216,7 @@ Load only the docs relevant to your current task.
 # Project: my-project
 
 Read the home-level agent index for environment context:
-- `~/agent-config/INDEX_RULES.md`
+- `~/agents-config/INDEX_RULES.md`
 
 Read the project-level agent index for project-specific docs:
 - `~/my-project/docs/agent-docs/INDEX.md`
@@ -234,16 +234,16 @@ rm ~/my-project/CLAUDE.md.bak
 ### Handling common patterns in old CLAUDE.md files
 
 **`@/path/to/other/CLAUDE.md` references** (e.g., `@/dfs/scratch0/brando9/CLAUDE.md`):
-These were used to pull in shared context from a cluster-level CLAUDE.md. Agent-config replaces this — the shared context now lives in `~/agent-config/machine/` and `~/agent-config/workflows/`. Drop the `@` reference.
+These were used to pull in shared context from a cluster-level CLAUDE.md. Agent-config replaces this — the shared context now lives in `~/agents-config/machine/` and `~/agents-config/workflows/`. Drop the `@` reference.
 
 **Machine-specific sections** (GPU setup, cluster paths, Docker auth):
-These belong in `~/agent-config/machine/*.md`, not in individual projects. If a machine doc doesn't exist yet, create one in agent-config.
+These belong in `~/agents-config/machine/*.md`, not in individual projects. If a machine doc doesn't exist yet, create one in agent-config.
 
 **Experiment-specific sections** (e.g., "Harbor x VeriBench Experiment 35"):
 These are project-specific and should go into `~/my-project/docs/agent-docs/`. For large experiment sections, give them their own file (e.g., `~/my-project/docs/agent-docs/experiment-35.md`).
 
 **SOTA model ID lookups** (e.g., "web-search for current models before each run"):
-This is a workflow convention. If it applies across projects, add it to `~/agent-config/workflows/`. If project-specific, keep it in `~/my-project/docs/agent-docs/conventions.md`.
+This is a workflow convention. If it applies across projects, add it to `~/agents-config/workflows/`. If project-specific, keep it in `~/my-project/docs/agent-docs/conventions.md`.
 
 ### Migration checklist
 
@@ -251,7 +251,7 @@ For each project, verify:
 - [ ] `~/my-project/CLAUDE.md` contains only the two-reference format (under 10 lines)
 - [ ] `~/my-project/docs/agent-docs/INDEX.md` exists and lists all project doc files
 - [ ] No secrets, API keys, or tokens appear in any doc file
-- [ ] No hardcoded machine specs (reference `~/agent-config/machine/` instead)
+- [ ] No hardcoded machine specs (reference `~/agents-config/machine/` instead)
 - [ ] Old `~/my-project/CLAUDE.md.bak` has been deleted
 - [ ] Agent can still find build/test commands by reading the project INDEX
 
