@@ -48,7 +48,24 @@ experiments/<NN>_<name>/
 
 - **Entity:** `brando-su`
 - **Project:** depends on experiment (e.g., `vb-thm-eq` for judge correlation, `veribench-e3-agents` for agent benchmarks).
+- **API key:** `export WANDB_API_KEY=$(cat ~/keys/brandos_wandb_key.txt)`
 - Log all key metrics, plots, and config as artifacts.
+
+### MANDATORY: Always create a W&B report after every experiment run
+
+After completing any experiment (benchmark run, proof pass, agent evaluation, etc.):
+
+1. **Push metrics to W&B** via the experiment's `push_to_wandb.py` or inline `wandb.log()`.
+2. **Create a formatted W&B report** with:
+   - **Title:** `<Experiment Name> — <Date>` (e.g., `VeriBench E3 Results — 2026-04-03`)
+   - **TL;DR:** 1-2 sentence key finding at the top
+   - **Leaderboard table** (if comparing agents/models)
+   - **Metric plots** (bar charts, scatter, etc.) — use `wandb.Table` + `wandb.plot`
+   - **Config details:** exact model IDs, hyperparameters, dataset version
+   - **Appendix:** verification checklist confirming results are correct
+3. **Log as W&B artifact** if producing CSVs, JSONs, or plot images.
+
+This is non-negotiable — every experiment must have a W&B report for tracking and reproducibility.
 
 ---
 
