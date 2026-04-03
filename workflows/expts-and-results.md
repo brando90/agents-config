@@ -51,21 +51,39 @@ experiments/<NN>_<name>/
 - **API key:** `export WANDB_API_KEY=$(cat ~/keys/brandos_wandb_key.txt)`
 - Log all key metrics, plots, and config as artifacts.
 
-### MANDATORY: Always create a W&B report after every experiment run
+### MANDATORY: Always create a W&B Report after every experiment run
+
+A W&B **Report** (https://docs.wandb.ai/models/reports) is a shareable interactive document — NOT just a logged run. Every experiment MUST produce one.
 
 After completing any experiment (benchmark run, proof pass, agent evaluation, etc.):
 
 1. **Push metrics to W&B** via the experiment's `push_to_wandb.py` or inline `wandb.log()`.
-2. **Create a formatted W&B report** with:
+2. **Create a W&B Report** (the actual Report document, via `wandb.apis.reports` or the API):
    - **Title:** `<Experiment Name> — <Date>` (e.g., `VeriBench E3 Results — 2026-04-03`)
    - **TL;DR:** 1-2 sentence key finding at the top
    - **Leaderboard table** (if comparing agents/models)
-   - **Metric plots** (bar charts, scatter, etc.) — use `wandb.Table` + `wandb.plot`
+   - **Metric plots** (bar charts, scatter, etc.) embedded from the run
    - **Config details:** exact model IDs, hyperparameters, dataset version
    - **Appendix:** verification checklist confirming results are correct
 3. **Log as W&B artifact** if producing CSVs, JSONs, or plot images.
+4. **Print the Report URL** so it can be shared with the team.
 
-This is non-negotiable — every experiment must have a W&B report for tracking and reproducibility.
+**How to create a Report programmatically:**
+```python
+import wandb
+from wandb.apis.reports import Report, PanelGrid, RunSet, LinePlot, BarPlot, MarkdownBlock
+report = Report(
+    entity="brando-su",
+    project="<project>",
+    title="<title>",
+    description="<tldr>",
+    blocks=[MarkdownBlock(text="..."), PanelGrid(panels=[...], runsets=[RunSet(...)])]
+)
+report.save()
+print(f"Report URL: {report.url}")
+```
+
+This is non-negotiable — every experiment must have a W&B Report for tracking and reproducibility. A logged run alone is NOT sufficient.
 
 ---
 
