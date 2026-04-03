@@ -13,16 +13,27 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## The Three-Layer Architecture
 
 ```
-←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←─── Layer 3: Scoped Docs ───→
-       ~/           ~/agents-config/        ~/agents-config/                ~/vb/ (repo)
-┌──────────────┐   ┌──────────────────┐       (~/ac/)
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌───────────────────────┐
-│              │   │                  │   │                    │   │ ~/vb/CLAUDE.md        │  # text ref ──▸ both INDEX's
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/vb/agents.md        │  # text ref (same, for Codex)
-│              │   │                  │   │                    │   │ ~/vb/docs/agent-docs/ │  # project-scoped docs
-│              │   │                  │   │                    │   └───────────────────────┘
+←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
+agent-config flow (shared env — abbreviating ~/agents-config/ as ~/ac/ for width):
+
+       ~/                ~/ac/                  ~/ac/                ~/ac/
+┌──────────────┐   ┌──────────────────┐
+│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
+│              │   │                  │   │                    │   │ ~/ac/machine/        │
+│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
+│              │   │                  │   │                    │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └────────────────────┘
-   (symlinks)      "read INDEX_RULES.md"   (rules + routing)        (loaded on demand)
+   (symlinks)       "read ~/agents-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
+
+Project repo flow (e.g., ~/vb/ — layers span two repos):
+
+┌────────────────────┐
+│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
+├────────────────────┤
+│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
+│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
+└────────────────────┘
 
 ~/agents-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
@@ -31,13 +42,13 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 │ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/     │
 │ README.md        ← repo docs (you are here)                                              │
 │ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
-│ workflows/       ← Layer 3: reusable workflows (qa-correctness.md, qa-structural.md, …)    │
+│ workflows/       ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …)       │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA chain, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA gating, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
 
@@ -53,7 +64,7 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 ## Directory Structure
 
 ```
-agents-config/
+agent-config/
 ├── README.md                    ← you are here
 ├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
 ├── CLAUDE.md                    ← Layer 1: Claude Code entry point
@@ -70,10 +81,8 @@ agents-config/
 │
 ├── workflows/
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
-│   ├── qa-correctness.md        ← cross-agent correctness review (QA step 1)
-│   ├── qa-structural.md         ← anti-degradation refactoring gate (QA step 2)
-│   ├── expts-and-results.md     ← experiment structure and results reporting
-│   └── repo-init.md             ← migrating repos to agents-config (from old /init)
+│   ├── qa-gating.md             ← cross-agent review protocol
+│   └── expts-and-results.md     ← experiment structure and results reporting
 ```
 
 ---
@@ -84,11 +93,9 @@ agents-config/
 # Clone to your home directory
 git clone https://github.com/brando90/agents-config.git ~/agents-config
 
-# Symlink entry points from home dir (backs up existing non-symlink files)
-[ -f ~/CLAUDE.md ] && [ ! -L ~/CLAUDE.md ] && mv ~/CLAUDE.md ~/CLAUDE.md.bak
-[ -f ~/agents.md ] && [ ! -L ~/agents.md ] && mv ~/agents.md ~/agents.md.bak
-ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -sf ~/agents-config/agents.md ~/agents.md
+# Symlink entry points from home dir
+ln -s ~/agents-config/CLAUDE.md ~/CLAUDE.md
+ln -s ~/agents-config/agents.md ~/agents.md
 
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md
@@ -138,9 +145,7 @@ Read the project-level agent index for project-specific docs:
 
 ## Migrating from a Monolithic CLAUDE.md
 
-> **Quick start:** For most repos, the minimal migration in [`workflows/repo-init.md`](workflows/repo-init.md) is sufficient — add the redirect header, keep project docs inline, add `agents.md`. The full split below is for large projects (200+ line CLAUDE.md) that benefit from modular project docs.
-
-If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to do a **full split** of that content into the three-layer architecture.
+If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to migrate that content into the three-layer architecture.
 
 ### What migration looks like
 
@@ -179,7 +184,7 @@ Read through your old CLAUDE.md and sort each section into one of these buckets:
 | Bucket | Where it goes | Examples |
 |:-------|:-------------|:---------|
 | **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
-| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (QA chain, worktrees), global rules (no secrets, verify before push) |
+| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (QA gating, worktrees), global rules (no secrets, verify before push) |
 | **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
 | **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
 
@@ -293,14 +298,14 @@ This repo is open source under the [Apache 2.0 License](LICENSE).
 
 ```bibtex
 @misc{miranda2026agentconfig,
-  author = {Brando Miranda and Claude (Anthropic) and Codex (OpenAI) and Cursor (Anysphere)},
+  author = {Brando Miranda and Claude (Anthropic)},
   title = {Agent-Config: A Modular, Agent-Agnostic Documentation Architecture for Multi-Agent Coding Workflows},
   year = {2026},
   howpublished = {\url{https://github.com/brando90/agents-config}},
 }
 ```
 
-We list Claude (Anthropic), Codex (OpenAI), and Cursor (Anysphere) as co-authors because this system was designed collaboratively between human and AI agents. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
+We list Claude (Anthropic) as co-author because this system was designed collaboratively between human and AI. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
 
 ---
 

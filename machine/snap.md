@@ -57,6 +57,7 @@ nproc && free -h
 |--------|------|-----|
 | `ampere1` | 8x A100-SXM4-80GB | ~2 TiB |
 | `ampere8` | 8x A100-SXM4-80GB | ~2 TiB |
+| `skampere1` | 8x A100-SXM4-80GB | ~2 TiB |
 | `skampere2` | 8x H200 140 GiB | ~3 TiB |
 | `skampere3` | 8x B200 179 GiB | ~3 TiB |
 | `mercury1` | 10x RTX A4000 16 GB | ~487 GB |
@@ -122,7 +123,7 @@ source ~/.bashrc
 # 4. Also symlink in LFS home (for after HOME is set)
 ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 
-# 5. Symlink agents-config repo and entry points
+# 5. Symlink agent-config repo and entry points
 ln -sfn /dfs/scratch0/<user>/agents-config ~/agents-config
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agents-config/agents.md ~/agents.md
