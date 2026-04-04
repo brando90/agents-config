@@ -70,18 +70,30 @@ After completing any experiment (benchmark run, proof pass, agent evaluation, et
 
 **How to create a Report programmatically:**
 ```python
-import wandb
-from wandb.apis.reports import Report, PanelGrid, RunSet, LinePlot, BarPlot, MarkdownBlock
-report = Report(
+# Use wandb-workspaces (pip install wandb-workspaces), NOT the old wandb.apis.reports
+import wandb_workspaces.reports.v2 as wr
+
+report = wr.Report(
     entity="brando-su",
     project="<project>",
     title="<title>",
     description="<tldr>",
-    blocks=[MarkdownBlock(text="..."), PanelGrid(panels=[...], runsets=[RunSet(...)])]
 )
+report.blocks = [
+    wr.H1(text="Title"),
+    wr.MarkdownBlock(text="| Metric | Value |\n|:---|---:|\n| ... | ... |"),
+    wr.PanelGrid(
+        runsets=[wr.Runset(project="<project>", entity="brando-su")],
+        panels=[
+            wr.BarPlot(title="Compile Rate", metrics=[wr.Metric(name="compile_%")], groupby="config.agent"),
+        ],
+    ),
+]
 report.save()
 print(f"Report URL: {report.url}")
 ```
+
+**Ref:** https://docs.wandb.ai/models/reports
 
 This is non-negotiable — every experiment must have a W&B Report for tracking and reproducibility. A logged run alone is NOT sufficient.
 
