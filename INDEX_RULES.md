@@ -34,3 +34,5 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/qa-gating.md`](workflows/qa-gating.md) — cross-agent review protocol (default-on)
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and results reporting
+- [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
+- [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style blog post format for research projects
