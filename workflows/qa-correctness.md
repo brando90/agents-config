@@ -1,10 +1,14 @@
-# Workflow: QA Gating — Cross-Agent Review
+# Workflow: QA Correctness — Cross-Agent Review
 
 ## Default Behavior
 
 **After completing your task, dispatch a review agent before reporting done.**
 
 This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
+
+This is step 1 of the QA chain. On repos with substantial source code, follow it
+with `~/agents-config/workflows/qa-structural.md` unless that workflow's skip
+conditions apply.
 
 Use the opposite agent as reviewer. If the opposite agent is unavailable, dispatch the same-agent fallback below using the highest-capability model or reasoning mode you can invoke in your current environment (e.g., if you are Claude Code, use extended thinking with the best available Opus model; if you are Codex, use the highest-capability model available). For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
 - Codex reviewer: `codex exec --full-auto`

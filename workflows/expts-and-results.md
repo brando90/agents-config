@@ -48,6 +48,7 @@ experiments/<NN>_<name>/
 
 - **Entity:** `brando-su`
 - **Project:** depends on experiment (e.g., `vb-thm-eq` for judge correlation, `veribench-e3-agents` for agent benchmarks).
+- **API key:** `export WANDB_API_KEY=$(cat ~/keys/brandos_wandb_key.txt)`
 - Log all key metrics, plots, and config as artifacts.
 - **Generate a W&B Report** after logging is complete — not just runs/artifacts. A Report is a shareable dashboard with a permanent URL. Use the W&B Reports API: https://docs.wandb.ai/models/reports
 - **Include the Report URL** in the results summary file and in the final response to the user. This is the primary deliverable — the user needs a clickable link to the Report, not just confirmation that metrics were logged.
@@ -89,6 +90,52 @@ After any training, eval, or QA run completes, check that no GPU processes are l
    kill <pid>
    ```
 4. **Only ask the user if there is a critical ambiguity** — e.g., the process is shared across experiments, a multi-stage pipeline has unclear state, or the exit status is unclear. This follows the same escalation rule as QA gating: autonomous unless critical.
+
+### MANDATORY: Always create a W&B Report after every experiment run
+
+A W&B **Report** (https://docs.wandb.ai/models/reports) is a shareable interactive document — NOT just a logged run. Every experiment MUST produce one.
+
+After completing any experiment (benchmark run, proof pass, agent evaluation, etc.):
+
+1. **Push metrics to W&B** via the experiment's `push_to_wandb.py` or inline `wandb.log()`.
+2. **Create a W&B Report** (the actual Report document, via `wandb.apis.reports` or the API):
+   - **Title:** `<Experiment Name> — <Date>` (e.g., `VeriBench E3 Results — 2026-04-03`)
+   - **TL;DR:** 1-2 sentence key finding at the top
+   - **Leaderboard table** (if comparing agents/models)
+   - **Metric plots** (bar charts, scatter, etc.) embedded from the run
+   - **Config details:** exact model IDs, hyperparameters, dataset version
+   - **Appendix:** verification checklist confirming results are correct
+3. **Log as W&B artifact** if producing CSVs, JSONs, or plot images.
+4. **Print the Report URL** so it can be shared with the team.
+
+**How to create a Report programmatically:**
+```python
+# Use wandb-workspaces (pip install wandb-workspaces), NOT the old wandb.apis.reports
+import wandb_workspaces.reports.v2 as wr
+
+report = wr.Report(
+    entity="brando-su",
+    project="<project>",
+    title="<title>",
+    description="<tldr>",
+)
+report.blocks = [
+    wr.H1(text="Title"),
+    wr.MarkdownBlock(text="| Metric | Value |\n|:---|---:|\n| ... | ... |"),
+    wr.PanelGrid(
+        runsets=[wr.Runset(project="<project>", entity="brando-su")],
+        panels=[
+            wr.BarPlot(title="Compile Rate", metrics=[wr.Metric(name="compile_%")], groupby="config.agent"),
+        ],
+    ),
+]
+report.save()
+print(f"Report URL: {report.url}")
+```
+
+**Ref:** https://docs.wandb.ai/models/reports
+
+This is non-negotiable — every experiment must have a W&B Report for tracking and reproducibility. A logged run alone is NOT sufficient.
 
 ---
 

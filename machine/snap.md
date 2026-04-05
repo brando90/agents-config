@@ -57,6 +57,7 @@ nproc && free -h
 |--------|------|-----|
 | `ampere1` | 8x A100-SXM4-80GB | ~2 TiB |
 | `ampere8` | 8x A100-SXM4-80GB | ~2 TiB |
+| `skampere1` | 8x A100-SXM4-80GB | ~2 TiB |
 | `skampere2` | 8x H200 140 GiB | ~3 TiB |
 | `skampere3` | 8x B200 179 GiB | ~3 TiB |
 | `mercury1` | 10x RTX A4000 16 GB | ~487 GB |
@@ -123,9 +124,13 @@ source ~/.bashrc
 ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 
 # 5. Symlink agent-config repo and entry points
-ln -sfn /dfs/scratch0/<user>/agents-config ~/agent-config
-ln -sf ~/agent-config/CLAUDE.md ~/CLAUDE.md
-ln -sf ~/agent-config/agents.md ~/agents.md
+ln -sfn /dfs/scratch0/<user>/agents-config ~/agents-config
+ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
+ln -sf ~/agents-config/agents.md ~/agents.md
+
+# 5b. Symlink Claude Code settings (model=opus, effortLevel=high)
+mkdir -p ~/.claude
+ln -sf /dfs/scratch0/<user>/agents-config/claude-code-settings.json ~/.claude/settings.json
 
 # 6. Create DFS project symlinks in LFS home
 # (symlink each DFS project into LFS home so paths are short)
