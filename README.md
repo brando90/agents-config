@@ -304,14 +304,14 @@ This repo is open source under the [Apache 2.0 License](LICENSE).
 
 ```bibtex
 @misc{miranda2026agentconfig,
-  author = {Brando Miranda and Claude (Anthropic)},
+  author = {Brando Miranda and Claude (Anthropic) and Codex (OpenAI) and Cursor (Anysphere)},
   title = {Agent-Config: A Modular, Agent-Agnostic Documentation Architecture for Multi-Agent Coding Workflows},
   year = {2026},
   howpublished = {\url{https://github.com/brando90/agents-config}},
 }
 ```
 
-We list Claude (Anthropic) as co-author because this system was designed collaboratively between human and AI. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
+We list Claude (Anthropic), Codex (OpenAI), and Cursor (Anysphere) as co-authors because this system was designed collaboratively between human and AI agents. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
 
 ---
 
