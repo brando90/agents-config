@@ -54,6 +54,21 @@ experiments/<NN>_<name>/
 - **Dependency:** Reports require `pip install wandb[workspaces]` (not just `wandb`). Ensure this is installed before calling the Reports API.
 - **Reference test:** See `~/agent-config/tests/dummy_experiment/train.py` for a working example of training + W&B logging + Report creation.
 
+### Local Experiment Reports
+
+In addition to W&B, **always save a local markdown report** in the experiment's `results_summary/` folder. This is the offline-readable copy of what the W&B Report shows.
+
+The local report must include:
+- **TL;DR** — 1-3 sentence summary of results at the top
+- **Config table** — all hyperparameters
+- **Results table** — final metrics
+- **Plots** — saved as PNGs in `results_summary/plots/`, referenced via relative paths in the markdown (e.g., `![Loss](plots/loss_<timestamp>.png)`)
+- **W&B link** — Report URL if available, otherwise "N/A (offline or no API key)"
+
+File naming: `results_summary/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` (same timestamping convention as the rest of this workflow).
+
+Markdown with relative-path PNGs works in GitHub, VS Code, and most editors — no localhost server needed.
+
 ---
 
 ## Post-Experiment GPU Cleanup
