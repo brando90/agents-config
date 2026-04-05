@@ -9,7 +9,7 @@ Load only the docs relevant to your current task.
 1. **Never commit secrets.** Use environment variables or reference existing config files (`~/keys/`, `~/.ssh/config`).
 2. **Prefer references over full context loading.** Cite file paths as text (e.g., `~/agents-config/machine/mac.md`); load the file only when the task needs it. A "reference" here is a written path to a doc — not a symlink or memory address.
 3. **Verify before pushing.** Review diffs for secrets, unintended changes, broken imports.
-4. **Before sending your final response on any non-trivial user request, dispatch a cross-agent reviewer.** One QA pass per user-assigned task, not per commit. See [`workflows/qa-gating.md`](workflows/qa-gating.md).
+4. **Before sending your final response on any non-trivial user request, run the two-step QA chain.** One QA chain per user-assigned task, not per commit. Step 1: correctness ([`workflows/qa-correctness.md`](workflows/qa-correctness.md)). Step 2: structural ([`workflows/qa-structural.md`](workflows/qa-structural.md)) — skipped for markdown-only repos.
 5. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX_RULES.md, README.md, and listed doc paths remain accurate.
 6. **Use explicit anchored paths in prose doc references and commands.** Write `~/agents-config/INDEX_RULES.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
 7. **Re-read agent-config files after any edit.** If you or the user modify any file under `~/agents-config/` (for example `~/agents-config/INDEX_RULES.md`, `~/agents-config/README.md`, files under `~/agents-config/workflows/`, or files under `~/agents-config/machine/`), immediately re-read the changed file(s) so your context stays current for the rest of the conversation.
@@ -33,7 +33,8 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 ## Workflows
 
-- [`workflows/qa-gating.md`](workflows/qa-gating.md) — cross-agent review protocol (default-on)
+- [`workflows/qa-correctness.md`](workflows/qa-correctness.md) — cross-agent correctness review (step 1, default-on)
+- [`workflows/qa-structural.md`](workflows/qa-structural.md) — anti-degradation refactoring gate (step 2, skipped for markdown-only repos)
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and results reporting
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
