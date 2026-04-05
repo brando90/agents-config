@@ -44,11 +44,13 @@ experiments/<NN>_<name>/
 
 ---
 
-## W&B Logging
+## W&B Logging & Reports
 
 - **Entity:** `brando-su`
 - **Project:** depends on experiment (e.g., `vb-thm-eq` for judge correlation, `veribench-e3-agents` for agent benchmarks).
 - Log all key metrics, plots, and config as artifacts.
+- **Generate a W&B Report** after logging is complete — not just runs/artifacts. A Report is a shareable dashboard with a permanent URL. Use the W&B Reports API: https://docs.wandb.ai/models/reports
+- **Include the Report URL** in the results summary file and in the final response to the user. This is the primary deliverable — the user needs a clickable link to the Report, not just confirmation that metrics were logged.
 
 ---
 
