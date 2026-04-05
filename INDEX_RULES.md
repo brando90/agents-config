@@ -15,6 +15,7 @@ Load only the docs relevant to your current task.
 7. **Re-read agent-config files after any edit.** If you or the user modify any file under `~/agents-config/` (for example `~/agents-config/INDEX_RULES.md`, `~/agents-config/README.md`, files under `~/agents-config/workflows/`, or files under `~/agents-config/machine/`), immediately re-read the changed file(s) so your context stays current for the rest of the conversation.
 8. **End with a TLDR.** After completing a task, finish your response with a 1–2 sentence summary of what was done.
 9. **Refresh agents-config before each new user task.** At the start of every non-trivial user request: (1) `git -C ~/agents-config pull` to fetch remote changes, (2) re-read `~/agents-config/INDEX_RULES.md` into your active context so the current session has the latest rules and doc references, (3) if the pull brought changes, also re-read any changed machine or workflow files relevant to your current environment. For long sessions (over 1 hour), also refresh mid-task — check with `date` and compare to your last pull. Push any uncommitted agents-config changes and run QA if changes were pulled from another agent.
+10. **Always use `ls -la` (not `ls`) when listing directories for keys, tokens, configs, or credentials.** Hidden (dot-prefixed) files are common for sensitive data — plain `ls` omits them. This applies to any directory likely to hold secrets (e.g., `~/keys/`, `~/.ssh/`, `~/.config/`).
 
 ---
 
