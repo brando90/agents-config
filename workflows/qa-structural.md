@@ -17,7 +17,11 @@ This gate combines both: check config first (RAMP), then measure and fix
 code quality (SlopCodeBench).
 
 **This is the second step of the QA chain.** Run it after
-[`qa-correctness.md`](qa-correctness.md) passes.
+[`qa-correctness.md`](qa-correctness.md) passes. Refactoring must preserve
+correctness — refactor the correct code while keeping correctness in mind.
+No additional correctness QA pass is needed after this step; the hard rules
+below (zero functional changes, revert if tests break) ensure correctness
+is maintained.
 
 ## Default Behavior
 

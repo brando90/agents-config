@@ -42,7 +42,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 │ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/     │
 │ README.md        ← repo docs (you are here)                                              │
 │ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
-│ workflows/       ← Layer 3: reusable workflows (qa-gating.md, git-worktrees.md, …)       │
+│ workflows/       ← Layer 3: reusable workflows (qa-correctness.md, git-worktrees.md, …)  │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -64,25 +64,31 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 ## Directory Structure
 
 ```
-agent-config/
+agents-config/
 ├── README.md                    ← you are here
 ├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
 ├── CLAUDE.md                    ← Layer 1: Claude Code entry point
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
-├── .gitignore
 │
 ├── machine/
-│   ├── ampere1.md
-│   ├── snap.md
-│   ├── mac.md
-│   ├── sherlock.md
-│   └── marlowe.md
+│   ├── ampere1.md               ← SNAP ampere1 node
+│   ├── snap.md                  ← Stanford SNAP cluster
+│   ├── mac.md                   ← local macOS dev
+│   ├── sherlock.md              ← Stanford Sherlock HPC
+│   └── marlowe.md               ← Stanford Marlowe cluster
 │
 ├── workflows/
+│   ├── qa-correctness.md        ← cross-agent correctness review (step 1)
+│   ├── qa-structural.md         ← anti-degradation refactoring gate (step 2)
+│   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
-│   ├── qa-gating.md             ← cross-agent review protocol
-│   └── expts-and-results.md     ← experiment structure and results reporting
+│   ├── repo-init.md             ← migrating projects to this pattern
+│   ├── tweprints.md             ← tweet thread format
+│   └── blog-posts.md            ← SAIL-style blog posts
+│
+└── tests/
+    └── dummy_experiment/        ← workflow validation (tiny MLP + W&B)
 ```
 
 ---
