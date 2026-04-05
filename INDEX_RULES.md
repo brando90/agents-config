@@ -2,6 +2,8 @@
 
 Load only the docs relevant to your current task.
 
+**Remote fallback:** If `~/agents-config/` is not available locally (e.g., running in a cloud sandbox or on the phone), fetch any needed files from `https://raw.githubusercontent.com/brando90/agents-config/main/`. This applies to this file, all machine docs, all workflow docs, and anything else referenced below.
+
 ---
 
 ## Global Rules (always active)
