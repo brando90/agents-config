@@ -15,7 +15,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import wandb
-import wandb.apis.reports as wr
+import wandb_workspaces.reports.v2 as wr
 
 
 def make_synthetic_data(n=500, d=10, seed=42):
