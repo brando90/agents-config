@@ -91,3 +91,4 @@ Track repos that have completed migration:
 - [x] `~/veribench/` — migrated 2026-04-02
 - [ ] `~/veribench-dt/` — pending
 - [x] `~/veri-veri-bench/` — migrated 2026-04-07
+- [x] `~/agentic-nl-fl-maths/` — migrated 2026-04-07
