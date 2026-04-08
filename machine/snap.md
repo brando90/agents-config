@@ -147,7 +147,8 @@ which claude && which clauded
 For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench/snap_setup.sh`. It:
 1. Creates DFS/LFS directories and symlinks `.bashrc` (AFS → DFS, LFS → DFS)
 2. Clones `veribench` and `agents-config` to DFS, symlinks entry points
-3. Calls `~/veribench/veribench_setup.sh` which installs uv, Lean/elan, Mathlib, and Python deps
+3. Symlinks `~/keys` → DFS keys dir, and all DFS projects into LFS home
+4. Calls `~/veribench/veribench_setup.sh` which installs uv, Lean/elan, Mathlib, and Python deps
 
 **Warning:** `snap_setup.sh` unconditionally copies `veribench/experiments/.bashrc` over `$DFS/.bashrc`. If your `.bashrc` has diverged (check with `wc -c`), back it up first or the copy will overwrite your customizations.
 
