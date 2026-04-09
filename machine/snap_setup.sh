@@ -48,6 +48,11 @@ ln -sfn "$DFS/agents-config" "$HOME/agents-config"
 ln -sf "$HOME/agents-config/CLAUDE.md" "$HOME/CLAUDE.md"
 ln -sf "$HOME/agents-config/agents.md" "$HOME/agents.md"
 
+# ---- Symlink ~/.claude dir to DFS (shared auth + settings across all nodes) ----
+# Run 'claude auth login' once on any node — all nodes share the credential.
+rm -rf "$HOME/.claude" 2>/dev/null
+ln -sfn "$DFS/.claude" "$HOME/.claude"
+
 # ---- Symlink keys directory (DFS → LFS home) ----
 ln -sfn "$DFS/keys" "$HOME/keys"
 

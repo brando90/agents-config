@@ -89,7 +89,7 @@ Key paths and vars set in `.bashrc`:
 
 - `claude` binary: installed via `npm` under NVM (resolves from `$NVM_DIR/versions/node/…/bin/claude`). A stale copy also exists at `/dfs/scratch0/<user>/bin/claude` but NVM takes precedence on PATH.
 - `clauded` script: `/afs/cs.stanford.edu/u/<user>/bin/clauded` (AFS `bin/` is on PATH; runs `claude --dangerously-skip-permissions "$@"`). A duplicate exists at `/dfs/scratch0/<user>/bin/clauded`.
-- Auth: `CLAUDE_CODE_OAUTH_TOKEN` set in `.bashrc`
+- Auth: `~/.claude/` is symlinked to `/dfs/scratch0/<user>/.claude` — shared auth across all SNAP nodes. Run `claude auth login` once on any server, all nodes pick it up.
 
 ### Vibe (Mistral)
 
@@ -128,9 +128,10 @@ ln -sfn /dfs/scratch0/<user>/agents-config ~/agents-config
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
 ln -sf ~/agents-config/agents.md ~/agents.md
 
-# 5b. Symlink Claude Code settings (model=opus, effortLevel=high)
-mkdir -p ~/.claude
-ln -sf /dfs/scratch0/<user>/agents-config/claude-code-settings.json ~/.claude/settings.json
+# 5b. Symlink entire ~/.claude dir to DFS (shared auth + settings across all nodes)
+# Run 'claude auth login' once on any node — all nodes share the credential.
+rm -rf ~/.claude 2>/dev/null
+ln -sfn /dfs/scratch0/<user>/.claude ~/.claude
 
 # 6. Create DFS project symlinks in LFS home
 # (symlink each DFS project into LFS home so paths are short)
