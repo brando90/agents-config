@@ -147,6 +147,13 @@ claude remote-control  # success = Environment ID + Connected + claude.ai/code U
 
 # DO NOT enable — blocks Remote Control by overriding stored credentials
 # [ -f "$HOME/keys/claude_code_oauth_token.txt" ] && export CLAUDE_CODE_OAUTH_TOKEN="..."
+
+# Gotcha: Cursor injects CLAUDE_CODE_OAUTH_TOKEN into its terminal env.
+# tmux/byobu sessions started from a Cursor terminal inherit it, blocking RC.
+# Fix: auto-strip it inside tmux sessions.
+if [ -n "$TMUX" ]; then
+  unset CLAUDE_CODE_OAUTH_TOKEN
+fi
 ```
 
 ### Codex — no RC equivalent (use tmux)
