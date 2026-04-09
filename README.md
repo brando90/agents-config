@@ -48,7 +48,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Global rules & doc routing.** `INDEX_RULES.md` contains two things: (1) global rules that always apply (never commit secrets, verify before pushing, QA gating, etc.) and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, GPU jobs), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
 
@@ -105,6 +105,71 @@ ln -s ~/agents-config/agents.md ~/agents.md
 
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md
+```
+
+---
+
+## Remote Access (Claude Remote Control & Codex)
+
+### Claude Remote Control — per server setup
+
+Remote Control (RC) lets you hand off a Claude Code session to your phone or another device via `claude.ai/code`. It requires a **full claude.ai login** — long-lived env vars like `CLAUDE_CODE_OAUTH_TOKEN` block RC.
+
+On each server (SNAP, Sherlock, etc.):
+
+```bash
+# 1. Find and remove/comment any auth env vars from shell startup
+grep -nH -E 'CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN' \
+  ~/.zshrc ~/.zprofile ~/.bashrc ~/.bash_profile ~/.profile 2>/dev/null
+
+# 2. Unset them in the current session
+unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN \
+  CLAUDE_CODE_OAUTH_REFRESH_TOKEN CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX \
+  CLAUDE_CODE_USE_FOUNDRY CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC DISABLE_TELEMETRY
+
+# 3. Reload shell
+exec zsh  # or: exec bash
+
+# 4. Re-authenticate with full account login (not API key)
+claude auth logout
+claude auth login
+claude auth status --text  # verify: should show claude.ai account, no env overrides
+
+# 5. Start Remote Control
+claude remote-control  # success = Environment ID + Connected + claude.ai/code URL
+```
+
+**Shell config pattern** — keep file-based secrets, but don't auto-export Claude auth:
+
+```bash
+# OK: normal secrets from files
+[ -f "$HOME/keys/brandos_wandb_key.txt" ] && export WANDB_API_KEY="$(cat "$HOME/keys/brandos_wandb_key.txt")"
+
+# DO NOT enable — blocks Remote Control by overriding stored credentials
+# [ -f "$HOME/keys/claude_code_oauth_token.txt" ] && export CLAUDE_CODE_OAUTH_TOKEN="..."
+```
+
+### Codex — no RC equivalent (use tmux)
+
+Codex CLI has no `remote-control` command. Auth is via **ChatGPT login** (interactive) or **API key** (automation). Persistence over SSH uses tmux:
+
+```bash
+# Start a persistent Codex session
+tmux new -As codex
+codex  # sign in with ChatGPT when prompted, or set OPENAI_API_KEY
+
+# Reconnect later from any device
+ssh <server> -t 'tmux attach -t codex'
+```
+
+### Server rollout checklist
+
+```
+[ ] On each server: remove CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_API_KEY from shell startup
+[ ] Reload shell, run: claude auth login
+[ ] Verify: claude auth status --text (no env overrides)
+[ ] Start: claude remote-control
+[ ] For Codex: choose ChatGPT login or API key, run inside tmux
 ```
 
 ---
