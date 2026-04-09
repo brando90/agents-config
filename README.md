@@ -111,49 +111,101 @@ ln -s ~/agents-config/agents.md ~/agents.md
 
 ## Remote Access (Claude Remote Control & Codex)
 
-### Claude Remote Control — per server setup
+### Claude Remote Control — setup
 
 Remote Control (RC) lets you hand off a Claude Code session to your phone or another device via `claude.ai/code`. It requires a **full claude.ai login** — long-lived env vars like `CLAUDE_CODE_OAUTH_TOKEN` block RC.
 
-On each server (SNAP, Sherlock, etc.):
+#### Mac (zsh + Cursor)
+
+Cursor injects `CLAUDE_CODE_OAUTH_TOKEN` into its terminal env. tmux/byobu sessions started from Cursor inherit it, silently blocking RC.
+
+**One-time fix** — add to `~/.zshrc`:
 
 ```bash
-# 1. Find and remove/comment any auth env vars from shell startup
-grep -nH -E 'CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN' \
-  ~/.zshrc ~/.zprofile ~/.bashrc ~/.bash_profile ~/.profile 2>/dev/null
-
-# 2. Unset them in the current session
-unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN \
-  CLAUDE_CODE_OAUTH_REFRESH_TOKEN CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX \
-  CLAUDE_CODE_USE_FOUNDRY CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC DISABLE_TELEMETRY
-
-# 3. Reload shell
-exec zsh  # or: exec bash
-
-# 4. Re-authenticate with full account login (not API key)
-claude auth logout
-claude auth login
-claude auth status --text  # verify: should show claude.ai account, no env overrides
-
-# 5. Start Remote Control
-claude remote-control  # success = Environment ID + Connected + claude.ai/code URL
-```
-
-**Shell config pattern** — keep file-based secrets, but don't auto-export Claude auth:
-
-```bash
-# OK: normal secrets from files
-[ -f "$HOME/keys/brandos_wandb_key.txt" ] && export WANDB_API_KEY="$(cat "$HOME/keys/brandos_wandb_key.txt")"
-
-# DO NOT enable — blocks Remote Control by overriding stored credentials
-# [ -f "$HOME/keys/claude_code_oauth_token.txt" ] && export CLAUDE_CODE_OAUTH_TOKEN="..."
-
-# Gotcha: Cursor injects CLAUDE_CODE_OAUTH_TOKEN into its terminal env.
-# tmux/byobu sessions started from a Cursor terminal inherit it, blocking RC.
-# Fix: auto-strip it inside tmux sessions.
+# Strip Cursor-injected CLAUDE_CODE_OAUTH_TOKEN inside tmux/byobu — blocks RC
 if [ -n "$TMUX" ]; then
   unset CLAUDE_CODE_OAUTH_TOKEN
 fi
+```
+
+Also make sure `CLAUDE_CODE_OAUTH_TOKEN` is NOT exported anywhere in `~/.zshrc` or `~/.zprofile`:
+
+```bash
+# Check:
+grep -n 'CLAUDE_CODE_OAUTH_TOKEN' ~/.zshrc ~/.zprofile 2>/dev/null
+# Any uncommented export lines → comment them out
+```
+
+Then auth (one-time):
+
+```bash
+claude auth logout
+claude auth login        # signs in via browser
+claude auth status --text  # verify: "Claude Max Account", no env overrides
+claude remote-control    # success = Environment ID + claude.ai/code URL
+```
+
+#### SNAP servers (bash + DFS)
+
+On SNAP, shell config lives at `/dfs/scratch0/<user>/.bashrc` (shared across all nodes via symlink). Fix it **once on DFS** and all servers get it.
+
+**Step 1 — Remove `CLAUDE_CODE_OAUTH_TOKEN` from `.bashrc`:**
+
+```bash
+DFS="/dfs/scratch0/brando9"
+
+# Find it
+grep -n 'CLAUDE_CODE_OAUTH_TOKEN' "${DFS}/.bashrc"
+
+# Comment it out (if found)
+sed -i 's/^export CLAUDE_CODE_OAUTH_TOKEN/#export CLAUDE_CODE_OAUTH_TOKEN/' "${DFS}/.bashrc"
+```
+
+**Step 2 — Add tmux guard to `.bashrc`:**
+
+Add this block to `${DFS}/.bashrc` (works for krbtmux, tmux, byobu):
+
+```bash
+# Strip CLAUDE_CODE_OAUTH_TOKEN inside tmux/byobu/krbtmux — blocks Remote Control
+if [ -n "$TMUX" ]; then
+  unset CLAUDE_CODE_OAUTH_TOKEN
+fi
+```
+
+**Step 3 — Share auth across all nodes via DFS:**
+
+Claude stores credentials in `~/.claude/`. On SNAP, `$HOME` is per-server LFS, so auth is per-server by default. Fix by symlinking `~/.claude/` to DFS:
+
+```bash
+# On the FIRST server (after claude auth login succeeds):
+mv ~/.claude "${DFS}/.claude"
+ln -sfn "${DFS}/.claude" ~/.claude
+
+# On every OTHER server (or in new-node setup):
+rm -rf ~/.claude
+ln -sfn "${DFS}/.claude" ~/.claude
+```
+
+**Step 4 — Auth (one-time, from any server):**
+
+```bash
+source ~/.bashrc
+claude auth logout
+claude auth login
+# No browser on server — copy the URL, open on Mac/phone, sign in, paste code back
+claude auth status --text  # verify: "Claude Max Account", no env overrides
+```
+
+**Step 5 — Start RC:**
+
+```bash
+# For persistent sessions, use krbtmux first:
+/afs/cs/software/bin/krbtmux
+/afs/cs/software/bin/reauth
+
+# Then start RC inside the tmux session:
+claude remote-control
+# Open claude.ai/code on phone/Mac to connect
 ```
 
 ### Codex — no RC equivalent (use tmux)
@@ -172,10 +224,13 @@ ssh <server> -t 'tmux attach -t codex'
 ### Server rollout checklist
 
 ```
-[ ] On each server: remove CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_API_KEY from shell startup
-[ ] Reload shell, run: claude auth login
+[ ] Comment out CLAUDE_CODE_OAUTH_TOKEN in DFS .bashrc (one edit, all servers)
+[ ] Add tmux guard (unset inside TMUX) to DFS .bashrc
+[ ] Symlink ~/.claude/ → DFS on each server
+[ ] claude auth login (once, from any server — DFS shares it)
 [ ] Verify: claude auth status --text (no env overrides)
 [ ] Start: claude remote-control
+[ ] Mac: add tmux guard to ~/.zshrc, verify RC works in tmux
 [ ] For Codex: choose ChatGPT login or API key, run inside tmux
 ```
 
