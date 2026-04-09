@@ -226,12 +226,64 @@ ssh <server> -t 'tmux attach -t codex'
 ```
 [ ] Comment out CLAUDE_CODE_OAUTH_TOKEN in DFS .bashrc (one edit, all servers)
 [ ] Add tmux guard (unset inside TMUX) to DFS .bashrc
+[ ] Remove primaryApiKey from ~/.claude/config.json (forces API mode, blocks RC)
 [ ] Symlink ~/.claude/ → DFS on each server
 [ ] claude auth login (once, from any server — DFS shares it)
 [ ] Verify: claude auth status --text (no env overrides)
+[ ] Accept workspace trust: run `claude` in the working directory, accept the trust dialog, then exit
 [ ] Start: claude remote-control
 [ ] Mac: add tmux guard to ~/.zshrc, verify RC works in tmux
 [ ] For Codex: choose ChatGPT login or API key, run inside tmux
+```
+
+### Troubleshooting Remote Control
+
+RC can fail silently for several reasons. Use this diagnostic sequence:
+
+**1. Check env vars in your current shell:**
+
+```bash
+echo "TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-NOT_SET}"
+echo "API_KEY=${ANTHROPIC_API_KEY:-NOT_SET}"
+claude auth status --text
+```
+
+- If `TOKEN` is set → it overrides OAuth login and blocks RC. Fix: `unset CLAUDE_CODE_OAUTH_TOKEN`
+- If auth status says `Auth token: CLAUDE_CODE_OAUTH_TOKEN` → same problem, token is taking priority
+- If auth status says `Claude Max Account` → auth is fine, problem is elsewhere
+
+**2. "Long-lived tokens are limited to inference-only":**
+
+RC requires a browser-based OAuth login. This error means Claude is using either:
+- `CLAUDE_CODE_OAUTH_TOKEN` env var (even if commented out in `.bashrc`, your current shell may still have it from before the fix)
+- `primaryApiKey` in `~/.claude/config.json`
+
+Fix:
+```bash
+# Remove API key from config
+echo '{}' > ~/.claude/config.json
+
+# Unset env var
+unset CLAUDE_CODE_OAUTH_TOKEN
+
+# Re-auth via browser
+claude auth logout && claude auth login
+```
+
+**3. "Workspace not trusted":**
+
+Claude must accept the workspace trust dialog before RC can start. Run `claude` (not `claude remote-control`) in the target directory, accept the trust prompt, then exit and retry `claude remote-control`.
+
+**4. Cursor SSH / IDE-injected tokens:**
+
+Cursor (and similar IDEs) inject `CLAUDE_CODE_OAUTH_TOKEN` into their terminal environment. This token persists for the lifetime of the SSH connection — even after you comment it out of `.bashrc`. Every terminal tab and child process inherits it.
+
+Fix: **Reconnect the SSH extension** (or restart the IDE remote session) after editing `.bashrc`. Alternatively, run `unset CLAUDE_CODE_OAUTH_TOKEN` in each terminal before using `claude`.
+
+**5. Full diagnostic one-liner:**
+
+```bash
+unset CLAUDE_CODE_OAUTH_TOKEN && echo '{}' > ~/.claude/config.json && claude auth status --text && claude remote-control
 ```
 
 ---
