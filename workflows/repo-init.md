@@ -25,19 +25,19 @@ This checklist covers the **minimal** tier.
 The **first two lines** of the project's `CLAUDE.md` must be:
 
 ```
-# Claude Code: read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing.
-# If `~/agents-config/` is not present, clone it: `git clone https://github.com/brando90/agents-config.git ~/agents-config`
+# Claude Code: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+# Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 ```
 
-The first line points to the local config. The second line ensures agents running on phones/cloud (via Remote Control or without a local copy) can bootstrap themselves by cloning from GitHub.
+Line 1 ensures agents always get the latest config from GitHub (clone if missing, pull if present). Line 2 tells them what to read. If GitHub is unreachable, the local copy serves as fallback.
 
 ### 2. Add `agents.md` for Codex / other agents
 
 Create `agents.md` in the project root:
 
 ```
-# Codex / other agents: read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing.
-# If `~/agents-config/` is not present, clone it: `git clone https://github.com/brando90/agents-config.git ~/agents-config`
+# Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+# Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 # Then read `~/PROJECT/CLAUDE.md` for project-specific instructions.
 ```
 
