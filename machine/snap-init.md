@@ -42,13 +42,14 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 3. **Verify RC auth:**
    - `env | grep CLAUDE_CODE_OAUTH_TOKEN` should print NOTHING
    - If it prints a value, find it in `/dfs/scratch0/brando9/.bashrc` and comment it out
+   - `~/.claude/config.json` should NOT contain `primaryApiKey`
    - `.bashrc` should have `if [ -n "$TMUX" ]; then unset CLAUDE_CODE_OAUTH_TOKEN; fi`
    - `claude auth status --text` should show "Claude Max Account", no env overrides
 
 4. **Verify agents-config is current:**
    - `cd ~/agents-config && git pull`
    - `cat ~/agents-config/CLAUDE.md` should show the Mandatory Response Protocol
-   - `cat ~/agents-config/INDEX_RULES.md` should show "Hard Rules" section (not "Global Rules")
+   - `cat ~/agents-config/INDEX_RULES.md` should show a `## Hard Rules` section
 
 5. **Verify tools:**
    - `which claude && claude --version`
@@ -71,7 +72,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 |---|-------|----------|
 | 1 | Paths | `HOME=/lfs/<hostname>/0/brando9`, `DFS=/dfs/scratch0/brando9`, `AFS=/afs/cs.stanford.edu/u/brando9` |
 | 2 | Symlinks (6 + project dirs) | All point to correct DFS/agents-config targets; all `~/` project dirs are symlinks to DFS |
-| 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, TMUX guard present, Claude Max Account |
+| 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
 | 4 | agents-config | Up to date, CLAUDE.md has Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
 | 5 | Tools | `claude` and `codex` on PATH with recent versions |
 | 6 | Keys | `~/keys/` has anthropic, openai, hf, wandb, github keys |
