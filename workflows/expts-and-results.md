@@ -4,35 +4,111 @@ How to structure experiments, store results, and report findings.
 
 ---
 
+## Requirements Checklist (quick reference)
+
+Every experiment **must** have:
+
+- [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name)
+- [ ] **README.md at root** — goal, structure tree, method, dependencies, status table
+- [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
+- [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
+- [ ] **Writing draft** — `writing.tex` at experiment root (mandatory for paper-bound experiments; mark `% Status: DRAFT`)
+- [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
+- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<date>.md` with TL;DR, config, metrics, plots, W&B link
+- [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
+- [ ] **GPU cleanup** — kill zombie processes, verify GPUs freed, report `nvidia-smi` state after completion
+
+Encouraged (not mandatory):
+- [ ] **todo.md** — open tasks / next steps for the experiment
+- [ ] **results/paper_table.tex** — LaTeX table ready to `\input{}` into the paper
+
+---
+
 ## Experiment Directory Structure
 
-Each experiment lives under `experiments/<NN>_<name>/` in the project repo:
+Each experiment lives under `experiments/<NN>_<name>/` in the project repo. Every experiment **must** have a `README.md` at its root and at least one versioned sub-experiment directory.
 
 ```
 experiments/<NN>_<name>/
-├── claude_code.md              ← experiment prompt (paste into Claude Code to run)
+├── README.md                   ← goal, structure, method, dependencies, status table (MANDATORY)
+├── todo.md                     ← open tasks / next steps for this experiment (optional but encouraged)
+├── writing.tex                 ← draft paper section for this experiment (MANDATORY for paper-bound expts)
+│                                  Mark as DRAFT; do not \input{} into main paper until finalized.
+│                                  Example header: % Status: DRAFT — do not include in paper_latex/ yet
+│
+├── expt_v1/                    ← first iteration (self-contained)
+│   ├── cc.md                   ← agent prompt (paste into Claude Code / Codex to run this version)
+│   ├── run_*.sh / run_*.py     ← execution scripts
+│   ├── push_to_wandb.py        ← W&B logging for this version
+│   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<date>.md
+│
+├── expt_v2/                    ← next iteration (e.g., changed metric, added agents, new split)
+│   ├── agents_v2.md            ← updated agent prompt
+│   ├── run_*.sh / run_*.py
+│   └── results/
+│
 ├── adapter/                    ← data → task generation (if using Harbor)
 │   ├── adapter.py
 │   ├── template/               ← Dockerfile, task.toml, test.sh, solve.sh
 │   └── single_call_agent.py    ← custom agent (if needed)
 ├── tasks/                      ← generated task dirs (one per task)
-├── collect_scores.py           ← parse job dirs → CSV
+├── collect_scores.py           ← shared scoring script (or per-version in expt_vN/)
 ├── compute_correlations.py     ← correlation analysis
 ├── generate_plots.py           ← scatter plots + histograms
-├── push_to_wandb.py            ← W&B logging
-├── results_summary/            ← verified, committed summaries
+├── results_summary/            ← top-level verified summaries (if not inside expt_vN/results/)
 │   ├── results_summary_YYYY-MM-DD__HH-MM-SS.md
 │   └── temporary_results/      ← unverified intermediates
-└── expt_results/               ← CSVs, JSONs, plots/
+└── expt_results/               ← top-level CSVs, JSONs, plots/ (if not inside expt_vN/results/)
 ```
+
+### Versioned Sub-Experiments (`expt_v1/`, `expt_v2/`, …)
+
+Most experiments evolve through iterations — changed metrics, added agents, new data splits, etc. Each iteration is a **self-contained directory** with its own agent prompt, scripts, and results. This keeps iterations reproducible and avoids overwriting prior results.
+
+- Name versions sequentially: `expt_v1/`, `expt_v2/`, …
+- Each version has its own agent prompt (`cc.md`, `agents_v2.md`, etc.) — the prompt you paste into Claude Code or Codex to run that version.
+- Results stay inside the version dir: `expt_v1/results/`, `expt_v2/results/`.
+- The top-level `README.md` documents all versions and their status.
+
+### Experiment README.md (mandatory)
+
+Every experiment root **must** contain a `README.md` with:
+
+1. **Goal** — one paragraph: what this experiment tests and why it matters
+2. **Structure** — ASCII tree of the experiment directory (keep it current)
+3. **Method** — numbered steps describing the experimental procedure
+4. **Dependencies** — what prior experiments, data, or API keys this needs
+5. **Status table** — per-step status (`Done`, `TODO`, `In Progress`, `Blocked`)
+
+Example status table:
+```markdown
+| Step | Status | Notes |
+|------|--------|-------|
+| v1 agent runs | Done | 15 agents, results in expt_v1/results/ |
+| v1 paper table | Done | expt_v1/results/paper_table.tex |
+| v2 real eval | In Progress | new metric, 3 agents so far |
+| Writing draft | TODO | writing.tex started |
+```
+
+### Experiment Writing Draft (mandatory for paper-bound experiments)
+
+If the experiment will produce a section or subsection in a paper, keep a **draft `.tex` file** (`writing.tex` or `draft_paper_section.tex`) at the experiment root. This is where you iterate on the paper text alongside the data — not in the main paper directory.
+
+Rules:
+- Mark it `% Status: DRAFT` at the top so no one accidentally `\input{}`s it.
+- Reference the experiment's prompts, proposal, and data files in `%` comments.
+- When the draft is finalized, copy/adapt it into `paper_latex/` — the experiment dir keeps the historical draft.
+- Follow `~/agents-config/writing/ml_research_writing.md` for writing style.
 
 ---
 
 ## Results Storage
 
-- **Timestamped summaries:** Every results summary file is timestamped (`YYYY-MM-DD__HH-MM-SS`). Never overwrite — create a new file per run.
-- **Temporary results:** Unverified intermediates go in `results_summary/temporary_results/`. Never promoted; kept for audit trail.
-- **Verification before commit:** Always run the verification checklist (in the experiment's `claude_code.md`) before committing results to the repo.
+- **Results live inside the version dir:** `expt_v1/results/`, `expt_v2/results/`, etc. This keeps each iteration self-contained and reproducible.
+- **Timestamped summaries:** Every results summary file is timestamped (`YYYY-MM-DD` or `YYYY-MM-DD__HH-MM-SS`). Never overwrite — create a new file per run.
+- **Temporary results:** Unverified intermediates go in `results/temporary_results/` within the version dir. Never promoted; kept for audit trail.
+- **Verification before commit:** Always run the verification checklist (in the experiment's agent prompt) and QA review before committing results to the repo.
+- **Top-level fallback:** If the experiment doesn't use versioned sub-dirs (simple single-run experiments), results go in `results_summary/` and `expt_results/` at the experiment root.
 
 ---
 
