@@ -293,6 +293,51 @@ Fix: **Reconnect the SSH extension** (or restart the IDE remote session) after e
 unset CLAUDE_CODE_OAUTH_TOKEN && echo '{}' > ~/.claude/config.json && claude auth status --text && claude remote-control
 ```
 
+### Verify node setup (paste into Claude Code on the server)
+
+After setup, paste this prompt into Claude Code (or see [`machine/snap-init.md`](machine/snap-init.md)) to check everything is correct:
+
+```
+Check and fix my SNAP node setup. Run these checks and fix anything broken:
+
+1. Verify paths:
+   - echo $HOME — should be /lfs/$(hostname -s)/0/brando9
+   - /dfs/scratch0/brando9 should exist (trigger: cd /dfs/scratch0)
+   - /afs/cs.stanford.edu/u/brando9 should exist
+
+2. Verify symlinks (ls -la each):
+   - ~/.bashrc → /dfs/scratch0/brando9/.bashrc
+   - ~/agents-config → /dfs/scratch0/brando9/agents-config
+   - ~/CLAUDE.md → ~/agents-config/CLAUDE.md
+   - ~/agents.md → ~/agents-config/agents.md
+   - ~/.claude → /dfs/scratch0/brando9/.claude (shared auth)
+   - ~/keys → /dfs/scratch0/brando9/keys
+
+3. Verify RC auth:
+   - env | grep CLAUDE_CODE_OAUTH_TOKEN — should print NOTHING
+   - If set, find and comment it out in /dfs/scratch0/brando9/.bashrc
+   - .bashrc should contain: if [ -n "$TMUX" ]; then unset CLAUDE_CODE_OAUTH_TOKEN; fi
+   - claude auth status --text — should show Claude Max Account, no env overrides
+
+4. Verify agents-config is current:
+   - cd ~/agents-config && git pull
+   - INDEX_RULES.md should show "Hard Rules" (not "Global Rules")
+
+5. Pull all DFS repos:
+   - for repo in /dfs/scratch0/brando9/*/; do [ -d "$repo/.git" ] && git -C "$repo" pull --ff-only; done
+
+6. Verify tools:
+   - which claude && claude --version
+   - which codex && codex --version
+
+7. Verify keys: ls -la ~/keys/
+
+8. Check GPUs:
+   - nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader
+
+Report a pass/fail table and fix anything broken.
+```
+
 ---
 
 ## How to Integrate with Your Project Repos
@@ -453,6 +498,12 @@ For each project, verify:
 - [ ] No hardcoded machine specs (reference `~/agents-config/machine/` instead)
 - [ ] Old `~/my-project/CLAUDE.md.bak` has been deleted
 - [ ] Agent can still find build/test commands by reading the project INDEX
+
+---
+
+## Initialization Guides
+
+- **[Passwordless SSH to SNAP (Kerberos keytab)](init_no_passwords_snap_kinit.md)** — One-time setup so SSH and Cursor never prompt for a password on SNAP servers. Uses a Kerberos keytab + launchd auto-renewal. See also: [Cursor SSH + Kerberos TODO](cursor_ssh_kerberos_todo.md) for the original design notes.
 
 ---
 
