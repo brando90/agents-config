@@ -21,7 +21,7 @@ ssh <user>@<hostname>.stanford.edu
 - **Access:** Direct SSH from Stanford network or VPN. No jump host.
 - **Port:** 22
 - **Persistent sessions:** Use `byobu` (tmux-based, human-only — agents cannot interact with tmux). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
-- **Kerberos reauth for persistent sessions:** Kerberos tickets expire (~3 days), breaking AFS access inside detached sessions. Use `/afs/cs/software/bin/krbtmux` (or `krbscreen`) to launch the multiplexer, then run `/afs/cs/software/bin/reauth` inside to keep tickets renewed. See https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
+- **Kerberos auto-renewal:** Server-side tickets are auto-renewed every 4h by `krenew.sh` (DFS keytab + `.bashrc` background loop + cron). `krbtmux`/`reauth` are no longer needed for ticket renewal. See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for details. Fallback: `/afs/cs/software/bin/krbtmux` and `/afs/cs/software/bin/reauth` still work if auto-renewal is not set up. Ref: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
 
 ---
 

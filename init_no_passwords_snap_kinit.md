@@ -286,6 +286,34 @@ ssh brando9@skampere1.stanford.edu echo "SUCCESS - no password needed"
 
 ---
 
+### Part E: Server-side auto-renewal (eliminates krbtmux/reauth)
+
+Parts A-D handle the **Mac side** (SSH login). But server-side tickets also expire after ~10h,
+breaking AFS access in tmux/byobu/Cursor sessions. This part auto-renews server-side tickets.
+
+**What was deployed:**
+1. **Keytab on DFS:** `/dfs/scratch0/brando9/.keytab` (accessible from all nodes)
+2. **`krenew.sh` script:** `/dfs/scratch0/brando9/bin/krenew.sh` — runs `kinit -kt` + `aklog`
+3. **`.bashrc` background loop:** Runs `krenew.sh` on login + spawns a PID-guarded loop every 4h
+4. **Cron (secondary):** `0 */4 * * *` on each node as backup
+
+**Result:** All sessions (tmux, byobu, Cursor, background jobs) have valid Kerberos tickets
+and AFS tokens forever. No more `krbtmux` or `reauth` needed.
+
+**Logs:** `/tmp/krenew_brando9.log` on each server.
+
+**Verify on any node:**
+```bash
+klist                              # valid ticket
+cat /tmp/krenew_brando9.pid        # PID exists
+ps -p $(cat /tmp/krenew_brando9.pid)  # process alive
+tail -3 /tmp/krenew_brando9.log    # recent OK entries
+```
+
+See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for full details.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
