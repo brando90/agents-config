@@ -26,6 +26,7 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 7. **Keep PRs short.** _Trigger: creating a pull request._ The PR description must start with a **Summary** section of 5–10 bullet points max (one line each). Follow with a short **Test plan** (2–3 bullets). Include links (W&B Report URLs, relevant docs). After these two sections, an optional **Appendix** may contain extended details, file lists, or context — but assume the reader stops after the summary. No walls of text.
 8. **Commit and push after QA passes.** _Trigger: QA verdict is PASS or FIXED with 0 critical issues._ Immediately `git commit` and `git push` without asking the user. Only escalate to the human if the QA verdict includes critical issues (CRITICAL_ISSUES > 0) or is FAIL. Major-only issues in non-active files (archives, historical results) do not block the commit.
 9. **GPU discipline: estimate → suggest → ask → verify → clean up.** _Trigger: about to launch a GPU job._ Before launching GPU experiments, estimate VRAM and utilization. If the job is small (<20 GB), suggest a smaller-GPU machine. If using multiple GPUs, present the plan and ask for approval. Check utilization within 2 min of launch. After experiments, kill zombies and free GPUs. See [`workflows/expts-and-results.md`](workflows/expts-and-results.md) § GPU Allocation Rules and § Post-Experiment Cleanup.
+10. **Load ML writing guide when editing LaTeX.** _Trigger: editing `.tex` files for an ML research paper._ Read [`writing/ml_research_writing.md`](writing/ml_research_writing.md) into your context before making any edits. Follow its persona, abstract structure, and writing rules throughout the editing session.
 
 ---
 
@@ -60,3 +61,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style blog post format for research projects
 - [`workflows/repo-init.md`](workflows/repo-init.md) — migrating a project to the agents-config pattern
+
+## Writing
+
+- [`writing/ml_research_writing.md`](writing/ml_research_writing.md) — ML research paper writing guide (persona, abstract structure, LaTeX rules). **Loaded by Trigger Rule 10** when editing `.tex` files.

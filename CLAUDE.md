@@ -9,3 +9,4 @@ These are duplicated here from INDEX_RULES.md Hard Rules so you see them at sess
 2. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
 3. **No secrets** — Never commit secrets. Review diffs before pushing.
 4. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
+5. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
