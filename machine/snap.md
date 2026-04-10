@@ -158,6 +158,11 @@ For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench
 
 ## Common Issues
 
+### Codex sandbox fails (bwrap)
+**Symptom:** `codex exec --full-auto` errors with `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`.
+**Cause:** SNAP nodes block unprivileged user network namespaces, which bubblewrap requires.
+**Fix:** Set `use_legacy_landlock = true` under `[features]` in `~/.codex/config.toml`. Landlock works on kernel 5.13+ without user namespaces. Also add `[shell_environment_policy]` / `inherit = "all"` so Codex inherits API keys.
+
 ### DFS scratch nearly full
 **Symptom:** Write failures or slow I/O on `/dfs/scratch0`.
 **Fix:** `df -h /dfs/scratch0` — if above 90%, clean up old checkpoints, logs, and unused repos.

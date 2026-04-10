@@ -25,7 +25,7 @@ Skip review ONLY for trivial changes (typo fixes, comment edits, single-line con
 ### If you are Claude Code (CC), dispatch Codex:
 
 ```bash
-codex exec --full-auto "Review all changes in this directory since the last commit on main. \
+QA_PROMPT="Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
 inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
@@ -37,12 +37,16 @@ MAJOR_ISSUES: [count] \
 FIXES_APPLIED: [count] \
 SUMMARY: [1-2 sentences] \
 If everything looks correct, use PASS with all counts set to 0."
+
+codex exec --full-auto "$QA_PROMPT" || claude -p "$QA_PROMPT"
 ```
+
+If Codex fails (sandbox, not installed, API errors), the `||` fallback runs Claude as a self-reviewer. Match the calling agent's permission mode: if you were invoked as `clauded` (yolo), use `clauded -p` in the fallback; if interactive `claude`, use `claude -p`.
 
 ### If you are Codex, dispatch Claude Code (CC):
 
 ```bash
-clauded -p "Review all changes in this directory since the last commit on main. \
+QA_PROMPT="Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
 inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
 If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
@@ -54,39 +58,17 @@ MAJOR_ISSUES: [count] \
 FIXES_APPLIED: [count] \
 SUMMARY: [1-2 sentences] \
 If everything looks correct, use PASS with all counts set to 0."
+
+clauded -p "$QA_PROMPT" || codex exec --full-auto "$QA_PROMPT"
 ```
+
+If Claude Code fails (not installed, auth issues), the `||` fallback runs Codex as a self-reviewer. If you were invoked interactively (not as an unattended Codex exec), adjust accordingly.
 
 If skip-permissions mode is not appropriate for your environment, run the same prompt in interactive `claude` instead of using the unattended `clauded -p` path.
 
-### If you are CC and Codex is unavailable, dispatch another CC instance:
+### Self-fallback (both agents unavailable)
 
-```bash
-clauded -p "Review all changes in this directory since the last commit on main. \
-Flag critical and major issues only. Fix with minimal changes. \
-Do not refactor or overcomplicate. \
-End with exactly: \
-VERDICT: PASS | FAIL | FIXED \
-CRITICAL_ISSUES: [count] \
-MAJOR_ISSUES: [count] \
-FIXES_APPLIED: [count] \
-SUMMARY: [1-2 sentences] \
-If everything looks correct, use PASS with all counts set to 0."
-```
-
-### If you are Codex and Claude Code is unavailable, dispatch another Codex instance:
-
-```bash
-codex exec --full-auto "Review all changes in this directory since the last commit on main. \
-Flag critical and major issues only. Fix with minimal changes. \
-Do not refactor or overcomplicate. \
-End with exactly: \
-VERDICT: PASS | FAIL | FIXED \
-CRITICAL_ISSUES: [count] \
-MAJOR_ISSUES: [count] \
-FIXES_APPLIED: [count] \
-SUMMARY: [1-2 sentences] \
-If everything looks correct, use PASS with all counts set to 0."
-```
+The `||` fallback in the primary dispatch commands above already handles this — if the opposite agent fails, the same-agent reviewer runs automatically. No separate step needed.
 
 ---
 
