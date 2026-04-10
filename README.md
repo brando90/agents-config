@@ -117,6 +117,8 @@ ln -s ~/agents-config/agents.md ~/agents.md
 
 Setting up a new SNAP node? See [`machine/snap-init.md`](machine/snap-init.md) -- copy-paste prompt that checks/fixes all symlinks, auth, tools, keys, and GPUs on a fresh SNAP node.
 
+**Important convention:** On SNAP, all project directories under `~/` (LFS) must be **symlinks** to their canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/brando9/veribench`. This ensures every server sees the same repo state. Never clone or copy repos directly to LFS. See [`machine/snap.md`](machine/snap.md) for details.
+
 ---
 
 ## Remote Access (Claude Remote Control & Codex)

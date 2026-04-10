@@ -38,6 +38,7 @@ ssh <user>@<hostname>.stanford.edu
 - `$HOME` is set to `/lfs/<hostname>/0/<user>` (LFS) in `.bashrc` — fast local scratch.
 - `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/experiments/.bashrc` by `snap_setup.sh`.
 - **Clone repos to DFS** (`/dfs/scratch0/<user>/`), then symlink from LFS home. Never clone directly to LFS — it's node-local and not backed up.
+- **LFS project paths are always symlinks to DFS.** Every project directory under `~/` (LFS) must be a symlink to its canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/<user>/veribench`. This ensures all servers see the same repo state and avoids stale or divergent copies. The `snap_setup.sh` and new-node setup scripts create these symlinks automatically.
 - **Run Docker/Harbor from LFS**, not AFS/DFS. NFS/AFS has root-squash that blocks Docker writes.
 - If a `/dfs/` mount is missing, `cd /dfs/scratch0` triggers AutoFS. If still missing, check https://ilwiki.stanford.edu/doku.php?id=hints:storefiles.
 
