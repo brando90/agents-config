@@ -21,6 +21,7 @@ agent-config flow (shared env — abbreviating ~/agents-config/ as ~/ac/ for wid
 │ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
 │              │   │                  │   │                    │   │ ~/ac/machine/        │
 │ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
+│              │   │                  │   │                    │   │ ~/ac/writing/        │
 │              │   │                  │   │                    │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └────────────────────┘
    (symlinks)       "read ~/agents-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
@@ -39,18 +40,20 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
 │ CLAUDE.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
 │ agents.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
-│ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/     │
+│ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/,     │
+│                  writing/                                                                  │
 │ README.md        ← repo docs (you are here)                                              │
 │ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
 │ workflows/       ← Layer 3: reusable workflows (qa-correctness.md, git-worktrees.md, …)  │
+│ writing/         ← Layer 3: reusable writing guides (ml_research_writing.md, …)           │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their content is a single line directing the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, GPU jobs), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, GPU jobs, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
-**Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, and other scoped docs you choose to add.
+**Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
 ### Why this exists
 
@@ -91,6 +94,9 @@ agents-config/
 │   ├── repo-init.md             ← migrating projects to this pattern
 │   ├── tweprints.md             ← tweet thread format
 │   └── blog-posts.md            ← SAIL-style blog posts
+│
+├── writing/
+│   └── ml_research_writing.md   ← ML research paper writing guide for `.tex` edits
 │
 └── tests/
     └── dummy_experiment/        ← workflow validation (tiny MLP + W&B)

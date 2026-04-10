@@ -3,7 +3,7 @@
 
 ## Mandatory Response Protocol (inline — do not skip)
 
-These are duplicated here from INDEX_RULES.md Hard Rules so you see them at session start without needing to dereference. They apply to EVERY response in EVERY session.
+These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the highest-priority rules at session start without needing to dereference. Hard Rules apply to EVERY response in EVERY session; triggered rules apply when their stated condition is met.
 
 1. **TLDR** — End every response with `**TLDR:**` (1-2 sentences). No exceptions.
 2. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
