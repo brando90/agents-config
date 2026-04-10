@@ -24,7 +24,8 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 
 6. **Commit, push, and re-read agents-config after any edit.** _Trigger: you or the user modify any file under `~/agents-config/`._ (1) Re-read the changed file(s) so your context stays current for the rest of the conversation. (2) Commit and push to the remote before continuing with the next task — other agents on other machines pull from this repo, so stale config causes drift. Also ensure project-level config files that reference agents-config (e.g., a project's `CLAUDE.md`) stay consistent.
 7. **Keep PRs short.** _Trigger: creating a pull request._ The PR description must start with a **Summary** section of 5–10 bullet points max (one line each). Follow with a short **Test plan** (2–3 bullets). Include links (W&B Report URLs, relevant docs). After these two sections, an optional **Appendix** may contain extended details, file lists, or context — but assume the reader stops after the summary. No walls of text.
-8. **GPU discipline: estimate → suggest → ask → verify → clean up.** _Trigger: about to launch a GPU job._ Before launching GPU experiments, estimate VRAM and utilization. If the job is small (<20 GB), suggest a smaller-GPU machine. If using multiple GPUs, present the plan and ask for approval. Check utilization within 2 min of launch. After experiments, kill zombies and free GPUs. See [`workflows/expts-and-results.md`](workflows/expts-and-results.md) § GPU Allocation Rules and § Post-Experiment Cleanup.
+8. **Commit and push after QA passes.** _Trigger: QA verdict is PASS or FIXED with 0 critical issues._ Immediately `git commit` and `git push` without asking the user. Only escalate to the human if the QA verdict includes critical issues (CRITICAL_ISSUES > 0) or is FAIL. Major-only issues in non-active files (archives, historical results) do not block the commit.
+9. **GPU discipline: estimate → suggest → ask → verify → clean up.** _Trigger: about to launch a GPU job._ Before launching GPU experiments, estimate VRAM and utilization. If the job is small (<20 GB), suggest a smaller-GPU machine. If using multiple GPUs, present the plan and ask for approval. Check utilization within 2 min of launch. After experiments, kill zombies and free GPUs. See [`workflows/expts-and-results.md`](workflows/expts-and-results.md) § GPU Allocation Rules and § Post-Experiment Cleanup.
 
 ---
 
@@ -32,10 +33,10 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 
 Follow these as conventions. They improve quality but are lower priority than Hard Rules and Trigger Rules.
 
-9. **Prefer references over full context loading.** Cite file paths as text (e.g., `~/agents-config/machine/mac.md`); load the file only when the task needs it. A "reference" here is a written path to a doc — not a symlink or memory address.
-10. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX_RULES.md, README.md, and listed doc paths remain accurate.
-11. **Use explicit anchored paths in prose doc references and commands.** Write `~/agents-config/INDEX_RULES.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
-12. **Always use `ls -la` (not `ls`) when listing directories for keys, tokens, configs, or credentials.** Hidden (dot-prefixed) files are common for sensitive data — plain `ls` omits them. This applies to any directory likely to hold secrets (e.g., `~/keys/`, `~/.ssh/`, `~/.config/`).
+10. **Prefer references over full context loading.** Cite file paths as text (e.g., `~/agents-config/machine/mac.md`); load the file only when the task needs it. A "reference" here is a written path to a doc — not a symlink or memory address.
+11. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX_RULES.md, README.md, and listed doc paths remain accurate.
+12. **Use explicit anchored paths in prose doc references and commands.** Write `~/agents-config/INDEX_RULES.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
+13. **Always use `ls -la` (not `ls`) when listing directories for keys, tokens, configs, or credentials.** Hidden (dot-prefixed) files are common for sensitive data — plain `ls` omits them. This applies to any directory likely to hold secrets (e.g., `~/keys/`, `~/.ssh/`, `~/.config/`).
 
 ---
 
