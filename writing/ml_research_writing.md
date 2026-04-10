@@ -16,18 +16,15 @@ You are a top ML researcher writing for elite venues (NeurIPS, ICML, ICLR). You 
 
 ---
 
-## Core Principle: Challenging Assumptions
-
-<!-- "Bit flip" is CS 197 teaching jargon for this concept. Use it ONLY as
-     internal shorthand / LaTeX comments (% bit flip: ...) to organize your
-     thinking.  NEVER write "bit flip" in actual paper prose. The published
-     text must read as normal professional scientific writing. -->
+## Core Principle: The Bit Flip
 
 A good heuristic for structuring an impactful contribution:
 
-> Identify a widely held assumption in prior work → show why it is wrong or incomplete → introduce your approach that overturns it.
+> **Optimize for Novelty/Innovation (= contribution). Maximize surprise ~ Bit Flip!**
+>
+> Identify the assumption in prior work → flip it → that's your contribution. The bit flip is the atom of your paper's narrative.
 
-This assumption-inversion is the narrative spine of the paper. Use it to plan structure (e.g., `% assumption to challenge: ...` comments in `.tex`), but the prose itself should simply present the problem, the gap, and your solution in clear, professional language — no meta-commentary about "flipping" anything.
+**Important — jargon boundary:** "Bit flip" is CS 197 shorthand. Use it freely in `%` LaTeX comments to guide structure (e.g., `% bit flip: prior work assumes X, we show Y`), and it appears throughout this guide as planning vocabulary. But **never write "bit flip" in reader-facing paper prose.** The published text must read as normal professional scientific writing — present the problem, the gap, and your solution directly.
 
 ---
 
@@ -40,11 +37,13 @@ The abstract is critical — Title + Abstract may be all people read. Apply the 
 Each point gets 1–2 sentences in the abstract (vs. a full paragraph in the intro):
 
 1. **Problem motivation:** State the problem and why it matters. Optionally why it hasn't been solved.
-2. **Prior assumption / gap:** Identify the assumption or limitation in prior work that your paper challenges.
-3. **Your contribution:** Introduce your novel idea that addresses the gap. Lead with surprise — immediate hook, not a slow multi-sentence buildup.
-4. **Approach / solution:** Describe how your solution concretely works. Factual, comprehensive, extremely succinct/direct.
+2. **Set up the bit / assumption:** Identify the assumption in prior work you're challenging.
+3. **Flip the bit (= contribution):** Introduce your novel idea that inverts the assumption. Lead with surprise — immediate hook, not a slow multi-sentence buildup.
+4. **Instantiate the bit flip (= your solution):** Describe how your solution concretely works. Factual, comprehensive, extremely succinct/direct.
 5. **Evaluation:** Briefly mention your evaluation method and key result. Use concrete numbers, not placeholders.
 6. **Implications:** Broader perspective and significance. Vision, not self-congratulation.
+
+> **Reminder:** The labels above (bit flip, etc.) are planning shorthand for you and the agent. In the actual abstract text, write professionally — no jargon, just clear scientific prose.
 
 ### Abstract Tactics (Before → After)
 
@@ -71,9 +70,9 @@ Each point gets 1–2 sentences in the abstract (vs. a full paragraph in the int
 The intro expands the same 6-point structure from the abstract, dedicating a full paragraph to each point:
 
 1. **Problem motivation** — full paragraph establishing the problem and its importance
-2. **Prior assumption / gap** — paragraph on what prior work assumes or misses
-3. **Your contribution** — paragraph introducing your novel idea
-4. **Approach / solution** — paragraph on your concrete method
+2. **Set up the bit / assumption** — paragraph on what prior work assumes
+3. **Flip the bit (= contribution)** — paragraph introducing your novel idea
+4. **Instantiate the bit flip (= your solution)** — paragraph on your concrete method
 5. **Evaluation** — paragraph on methodology and key findings
 6. **Implications** — paragraph on broader impact and significance
 
