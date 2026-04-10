@@ -12,11 +12,13 @@ Every experiment **must** have:
 - [ ] **README.md at root** — goal, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
-- [ ] **Writing draft** — `writing.tex` at experiment root (mandatory for paper-bound experiments; mark `% Status: DRAFT`)
 - [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
-- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<date>.md` with TL;DR, config, metrics, plots, W&B link
+- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
-- [ ] **GPU cleanup** — kill zombie processes, verify GPUs freed, report `nvidia-smi` state after completion
+- [ ] **GPU cleanup** — if the run used GPUs: kill zombie processes, verify GPUs freed, report `nvidia-smi` state after completion
+
+Paper-bound experiments **must also** have:
+- [ ] **Writing draft** — `writing.tex` at experiment root (mark `% Status: DRAFT`)
 
 Encouraged (not mandatory):
 - [ ] **todo.md** — open tasks / next steps for the experiment
@@ -40,7 +42,7 @@ experiments/<NN>_<name>/
 │   ├── cc.md                   ← agent prompt (paste into Claude Code / Codex to run this version)
 │   ├── run_*.sh / run_*.py     ← execution scripts
 │   ├── push_to_wandb.py        ← W&B logging for this version
-│   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<date>.md
+│   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<YYYY-MM-DD__HH-MM-SS>.md
 │
 ├── expt_v2/                    ← next iteration (e.g., changed metric, added agents, new split)
 │   ├── agents_v2.md            ← updated agent prompt
@@ -55,10 +57,11 @@ experiments/<NN>_<name>/
 ├── collect_scores.py           ← shared scoring script (or per-version in expt_vN/)
 ├── compute_correlations.py     ← correlation analysis
 ├── generate_plots.py           ← scatter plots + histograms
-├── results_summary/            ← top-level verified summaries (if not inside expt_vN/results/)
+├── push_to_wandb.py            ← optional shared W&B logging helper used by one or more versions
+├── results_summary/            ← optional top-level rollup summaries across versions (or legacy location)
 │   ├── results_summary_YYYY-MM-DD__HH-MM-SS.md
 │   └── temporary_results/      ← unverified intermediates
-└── expt_results/               ← top-level CSVs, JSONs, plots/ (if not inside expt_vN/results/)
+└── expt_results/               ← optional shared/aggregated CSVs, JSONs, plots across versions
 ```
 
 ### Versioned Sub-Experiments (`expt_v1/`, `expt_v2/`, …)
@@ -107,8 +110,8 @@ Rules:
 - **Results live inside the version dir:** `expt_v1/results/`, `expt_v2/results/`, etc. This keeps each iteration self-contained and reproducible.
 - **Timestamped summaries:** Every results summary file is timestamped (`YYYY-MM-DD` or `YYYY-MM-DD__HH-MM-SS`). Never overwrite — create a new file per run.
 - **Temporary results:** Unverified intermediates go in `results/temporary_results/` within the version dir. Never promoted; kept for audit trail.
-- **Verification before commit:** Always run the verification checklist (in the experiment's agent prompt) and QA review before committing results to the repo.
-- **Top-level fallback:** If the experiment doesn't use versioned sub-dirs (simple single-run experiments), results go in `results_summary/` and `expt_results/` at the experiment root.
+- **Verification before commit:** Always run the verification checklist (in the active version's agent prompt) and QA review before committing results to the repo.
+- **Top-level rollups (optional):** Use `results_summary/` and `expt_results/` at the experiment root only for cross-version summaries or shared aggregates. New experiment runs should keep per-run outputs in `expt_vN/results/`.
 
 ---
 
@@ -130,9 +133,9 @@ Rules:
 
 ### W&B Reports (mandatory)
 
-Every experiment must produce a W&B Report — a shareable interactive document with a permanent URL. A logged run alone is NOT sufficient. Ref: https://docs.wandb.ai/models/reports
+Every completed experiment version must produce a W&B Report — a shareable interactive document with a permanent URL. A logged run alone is NOT sufficient. Ref: https://docs.wandb.ai/models/reports
 
-After any experiment completes:
+After any experiment version completes:
 
 1. **Push metrics** via `push_to_wandb.py` or inline `wandb.log()`.
 2. **Create a Report** with: title (`<Experiment> — <Date>`), TL;DR, metric plots, config details, leaderboard table (if comparing models).
@@ -166,16 +169,16 @@ print(f"Report URL: {report.url}")
 
 ### Local Experiment Reports
 
-In addition to W&B, **always save a local markdown report** in the experiment's `results_summary/` folder. This is the offline-readable copy of what the W&B Report shows.
+In addition to W&B, **always save a local markdown report** in the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
 
 The local report must include:
 - **TL;DR** — 1-3 sentence summary of results at the top
 - **Config table** — all hyperparameters
 - **Results table** — final metrics
-- **Plots** — saved as PNGs in `results_summary/plots/`, referenced via relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
+- **Plots** — saved as PNGs in `results/plots/`, referenced via relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
 - **W&B link** — Report URL if available, otherwise "N/A (offline or no API key)"
 
-File naming: `results_summary/results_summary_<YYYY-MM-DD__HH-MM-SS>.md`.
+File naming: `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` for experiment-level rollups.
 
 Markdown with relative-path PNGs works in GitHub, VS Code, and most editors — no localhost server needed.
 
@@ -254,4 +257,4 @@ After every experiment run completes (success or failure):
 
 ## Prompt Templates
 
-Each experiment keeps its own prompts under its folder — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment they belong to.
+Each experiment keeps its own prompts under its versioned sub-experiment folders — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment iteration they belong to.
