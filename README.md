@@ -71,6 +71,9 @@ agents-config/
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
 │
+├── init_no_passwords_snap_kinit.md  ← one-time keytab setup for passwordless SSH to SNAP
+├── cursor_ssh_kerberos_todo.md      ← Cursor SSH + Kerberos design notes & TODO tracking
+│
 ├── machine/
 │   ├── ampere1.md               ← SNAP ampere1 node
 │   ├── snap.md                  ← Stanford SNAP cluster
@@ -293,50 +296,9 @@ Fix: **Reconnect the SSH extension** (or restart the IDE remote session) after e
 unset CLAUDE_CODE_OAUTH_TOKEN && echo '{}' > ~/.claude/config.json && claude auth status --text && claude remote-control
 ```
 
-### Verify node setup (paste into Claude Code on the server)
+### Verify node setup
 
-After setup, paste this prompt into Claude Code (or see [`machine/snap-init.md`](machine/snap-init.md)) to check everything is correct:
-
-```
-Check and fix my SNAP node setup. Run these checks and fix anything broken:
-
-1. Verify paths:
-   - echo $HOME — should be /lfs/$(hostname -s)/0/brando9
-   - /dfs/scratch0/brando9 should exist (trigger: cd /dfs/scratch0)
-   - /afs/cs.stanford.edu/u/brando9 should exist
-
-2. Verify symlinks (ls -la each):
-   - ~/.bashrc → /dfs/scratch0/brando9/.bashrc
-   - ~/agents-config → /dfs/scratch0/brando9/agents-config
-   - ~/CLAUDE.md → ~/agents-config/CLAUDE.md
-   - ~/agents.md → ~/agents-config/agents.md
-   - ~/.claude → /dfs/scratch0/brando9/.claude (shared auth)
-   - ~/keys → /dfs/scratch0/brando9/keys
-
-3. Verify RC auth:
-   - env | grep CLAUDE_CODE_OAUTH_TOKEN — should print NOTHING
-   - If set, find and comment it out in /dfs/scratch0/brando9/.bashrc
-   - .bashrc should contain: if [ -n "$TMUX" ]; then unset CLAUDE_CODE_OAUTH_TOKEN; fi
-   - claude auth status --text — should show Claude Max Account, no env overrides
-
-4. Verify agents-config is current:
-   - cd ~/agents-config && git pull
-   - INDEX_RULES.md should show "Hard Rules" (not "Global Rules")
-
-5. Pull all DFS repos:
-   - for repo in /dfs/scratch0/brando9/*/; do [ -d "$repo/.git" ] && git -C "$repo" pull --ff-only; done
-
-6. Verify tools:
-   - which claude && claude --version
-   - which codex && codex --version
-
-7. Verify keys: ls -la ~/keys/
-
-8. Check GPUs:
-   - nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader
-
-Report a pass/fail table and fix anything broken.
-```
+After setup, see [`machine/snap-init.md`](machine/snap-init.md) for a paste-into-Claude-Code prompt that checks paths, symlinks, RC auth, tools, keys, and GPUs.
 
 ---
 
