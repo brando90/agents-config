@@ -73,9 +73,10 @@ Run jobs inside tmux. If Cursor disconnects, your work survives.
 [x] Verify launchd is running: launchctl list | grep kinit && klist (done 2026-04-09)
 [x] Test passwordless SSH from Mac: ssh -o BatchMode=yes brando9@skampere1 (done 2026-04-09)
 [ ] Test Cursor SSH reconnect to a SNAP server without password prompt
-[ ] On each SNAP server, verify krbtmux + reauth are available at /afs/cs/software/bin/
-[ ] Start using krbtmux + reauth + tmux for all long-running sessions
 [ ] If ControlPersist 8h is too short, increase it
+[x] Server-side auto-renewal deployed — krbtmux/reauth no longer needed (done 2026-04-09)
+    See: todo_infinite_reauth_kinit_server_side.md for details.
+    krenew.sh + .bashrc loop + cron handle all ticket renewal automatically.
 ```
 
 ---

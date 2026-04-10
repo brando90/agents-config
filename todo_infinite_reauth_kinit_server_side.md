@@ -33,24 +33,17 @@ No krbtmux, no reauth, no manual intervention ever
 ## TODO
 
 ```
-[ ] Copy keytab to DFS so all nodes can access it:
-      cp /lfs/skampere1/0/brando9/.keytab /dfs/scratch0/brando9/.keytab
-      chmod 600 /dfs/scratch0/brando9/.keytab
-[ ] Check if crontab works on SNAP: ssh into skampere1, run `crontab -l`
-[ ] If cron allowed:
-      crontab -e
-      Add: 0 */4 * * * kinit -kt /dfs/scratch0/brando9/.keytab brando9@CS.STANFORD.EDU && aklog
-      (repeat on each server, or find a way to share crontab via DFS)
-[ ] If cron NOT allowed, add background loop to .bashrc (only starts once per server):
-      Add to /dfs/scratch0/brando9/.bashrc:
-        if [[ -z "$(pgrep -f 'kinit.*keytab.*brando9')" && -f /dfs/scratch0/brando9/.keytab ]]; then
-          (while true; do kinit -kt /dfs/scratch0/brando9/.keytab brando9@CS.STANFORD.EDU && aklog; sleep 14400; done &)
-        fi
-[ ] Test: start a tmux session, wait 10+ hours, verify `klist` still shows valid ticket
-[ ] Test: verify AFS paths still work after 10+ hours
-[ ] Test: Cursor long session — verify no auth failures after hours of use
-[ ] Update init_no_passwords_snap_kinit.md with server-side setup instructions
-[ ] Update cursor_ssh_kerberos_todo.md to mark krbtmux/reauth as no longer needed
+[x] Copy keytab to DFS (done 2026-04-09): /dfs/scratch0/brando9/.keytab (chmod 600)
+[x] Check if crontab works on SNAP: yes, cron is available (done 2026-04-09)
+[x] Created standalone krenew.sh script at /dfs/scratch0/brando9/bin/krenew.sh (done 2026-04-09)
+[x] Added .bashrc background loop with PID-file guard + disown (done 2026-04-09)
+[x] Added cron (0 */4 * * *) on: skampere1-3, mercury1-2, hyperturing1 (done 2026-04-09)
+[x] Fixed .bashrc nvidia-htop noise for non-interactive shells (done 2026-04-09)
+[x] Multi-node sweep: all 6 nodes pass — ticket valid, PID alive, AFS OK, cron set (done 2026-04-09)
+[x] scp test passed (no more "Received message too long") (done 2026-04-09)
+[ ] Long-duration test: tmux session 10+ hours, verify klist + AFS still work
+[ ] Long-duration test: Cursor SSH session 10+ hours, verify no auth failures
+[ ] Add cron to Slurm-gated nodes (ampere1/8/9, hyperturing2) when jobs are running
 ```
 
 ## Dependencies
