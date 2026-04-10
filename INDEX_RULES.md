@@ -45,6 +45,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 - [`machine/ampere1.md`](machine/ampere1.md) — SNAP ampere1 node (8x A100-80GB)
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
+- [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine

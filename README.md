@@ -74,6 +74,7 @@ agents-config/
 ├── machine/
 │   ├── ampere1.md               ← SNAP ampere1 node
 │   ├── snap.md                  ← Stanford SNAP cluster
+│   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
 │   ├── mac.md                   ← local macOS dev
 │   ├── sherlock.md              ← Stanford Sherlock HPC
 │   └── marlowe.md               ← Stanford Marlowe cluster
@@ -106,6 +107,12 @@ ln -s ~/agents-config/agents.md ~/agents.md
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md
 ```
+
+---
+
+## New Server Setup
+
+Setting up a new SNAP node? See [`machine/snap-init.md`](machine/snap-init.md) -- copy-paste prompt that checks/fixes all symlinks, auth, tools, keys, and GPUs on a fresh SNAP node.
 
 ---
 
