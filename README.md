@@ -71,8 +71,9 @@ agents-config/
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
 │
-├── init_no_passwords_snap_kinit.md  ← one-time keytab setup for passwordless SSH to SNAP
-├── cursor_ssh_kerberos_todo.md      ← Cursor SSH + Kerberos design notes & TODO tracking
+├── init_no_passwords_snap_kinit.md              ← one-time keytab setup for passwordless SSH to SNAP
+├── cursor_ssh_kerberos_todo.md                  ← Cursor SSH + Kerberos design notes & TODO tracking
+├── todo_infinite_reauth_kinit_server_side.md    ← TODO: server-side auto-renewal (eliminate krbtmux/reauth)
 │
 ├── machine/
 │   ├── ampere1.md               ← SNAP ampere1 node
@@ -184,7 +185,17 @@ if [ -n "$TMUX" ]; then
 fi
 ```
 
-**Step 3 — Share auth across all nodes via DFS:**
+**Step 3 — Auth (one-time, from any server):**
+
+```bash
+source ~/.bashrc
+claude auth logout
+claude auth login
+# No browser on server — copy the URL, open on Mac/phone, sign in, paste code back
+claude auth status --text  # verify: "Claude Max Account", no env overrides
+```
+
+**Step 4 — Share auth across all nodes via DFS:**
 
 Claude stores credentials in `~/.claude/`. On SNAP, `$HOME` is per-server LFS, so auth is per-server by default. Fix by symlinking `~/.claude/` to DFS:
 
@@ -196,16 +207,6 @@ ln -sfn "${DFS}/.claude" ~/.claude
 # On every OTHER server (or in new-node setup):
 rm -rf ~/.claude
 ln -sfn "${DFS}/.claude" ~/.claude
-```
-
-**Step 4 — Auth (one-time, from any server):**
-
-```bash
-source ~/.bashrc
-claude auth logout
-claude auth login
-# No browser on server — copy the URL, open on Mac/phone, sign in, paste code back
-claude auth status --text  # verify: "Claude Max Account", no env overrides
 ```
 
 **Step 5 — Start RC:**
@@ -239,8 +240,8 @@ ssh <server> -t 'tmux attach -t codex'
 [ ] Comment out CLAUDE_CODE_OAUTH_TOKEN in DFS .bashrc (one edit, all servers)
 [ ] Add tmux guard (unset inside TMUX) to DFS .bashrc
 [ ] Remove primaryApiKey from ~/.claude/config.json (forces API mode, blocks RC)
-[ ] Symlink ~/.claude/ → DFS on each server
 [ ] claude auth login (once, from any server — DFS shares it)
+[ ] Symlink ~/.claude/ → DFS on each server
 [ ] Verify: claude auth status --text (no env overrides)
 [ ] Accept workspace trust: run `claude` in the working directory, accept the trust dialog, then exit
 [ ] Start: claude remote-control
@@ -468,6 +469,7 @@ For each project, verify:
 ## Initialization Guides
 
 - **[Passwordless SSH to SNAP (Kerberos keytab)](init_no_passwords_snap_kinit.md)** — One-time setup so SSH and Cursor never prompt for a password on SNAP servers. Uses a Kerberos keytab + launchd auto-renewal. See also: [Cursor SSH + Kerberos TODO](cursor_ssh_kerberos_todo.md) for the original design notes.
+- **[TODO: Infinite server-side Kerberos renewal](todo_infinite_reauth_kinit_server_side.md)** — Eliminate `krbtmux`/`reauth` by auto-renewing server-side tickets via keytab + cron. Covers tmux, byobu, Cursor, and background jobs.
 
 ---
 
