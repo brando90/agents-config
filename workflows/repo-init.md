@@ -22,13 +22,14 @@ This checklist covers the **minimal** tier.
 
 ### 1. Add the redirect header to the project's `CLAUDE.md`
 
-The **first line** of the project's `CLAUDE.md` must be:
+The **first two lines** of the project's `CLAUDE.md` must be:
 
 ```
 # Claude Code: read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing.
+# If `~/agents-config/` is not present, clone it: `git clone https://github.com/brando90/agents-config.git ~/agents-config`
 ```
 
-This ensures Claude Code loads global rules before project-specific docs.
+The first line points to the local config. The second line ensures agents running on phones/cloud (via Remote Control or without a local copy) can bootstrap themselves by cloning from GitHub.
 
 ### 2. Add `agents.md` for Codex / other agents
 
@@ -36,6 +37,7 @@ Create `agents.md` in the project root:
 
 ```
 # Codex / other agents: read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing.
+# If `~/agents-config/` is not present, clone it: `git clone https://github.com/brando90/agents-config.git ~/agents-config`
 # Then read `~/PROJECT/CLAUDE.md` for project-specific instructions.
 ```
 
@@ -88,7 +90,18 @@ After migration, verify the full routing chain works:
 
 Track repos that have completed migration:
 
-- [x] `~/veribench/` — migrated 2026-04-02
-- [ ] `~/veribench-dt/` — pending
-- [x] `~/veri-veri-bench/` — migrated 2026-04-07
-- [x] `~/agentic-nl-fl-maths/` — migrated 2026-04-07
+- [x] `~/veribench/` — migrated 2026-04-02, GitHub fallback added 2026-04-10
+- [x] `~/veribench-dt/` — migrated 2026-04-10
+- [x] `~/veribench-deps/` — migrated 2026-04-10
+- [x] `~/veri-veri-bench/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
+- [x] `~/agentic-nl-fl-maths/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
+- [x] `~/cert-judge/` — migrated 2026-04-10
+- [x] `~/formal-6-437/` — migrated 2026-04-10
+- [x] `~/harbor-fork/` — migrated 2026-04-10
+- [x] `~/KoyejoLab-Crucible/` — migrated 2026-04-10
+- [x] `~/KoyejoLab-Memorization-Scoring-vs-Sampling/` — migrated 2026-04-10
+- [x] `~/lean-ebm/` — migrated 2026-04-10
+- [x] `~/no-gold-ref-judge/` — migrated 2026-04-10
+- [x] `~/verina/` — migrated 2026-04-10
+- [x] `~/pass-tests-fail-proofs-/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
+- [x] `~/tvdmi-judge-asymptotics/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
