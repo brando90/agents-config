@@ -53,6 +53,40 @@ Skip review ONLY for trivial changes (typo fixes, comment edits, single-line con
 
 ---
 
+## Step 0: Identify yourself
+
+Before dispatching reviewers, the initial agent must determine its own identity
+so it dispatches the **correct** other agents. Use this detection logic:
+
+```bash
+# Detect which agent you are (run at the start of QA)
+if [ -n "${CLAUDE_CODE:-}" ] || command -v claude &>/dev/null && [ "$(basename "$0" 2>/dev/null)" != "codex" ]; then
+    MY_AGENT="claude-code"
+    DISPATCH_SECOND="codex exec --full-auto"
+elif [ -n "${CODEX:-}" ] || command -v codex &>/dev/null && [ "$(basename "$0" 2>/dev/null)" != "claude" ]; then
+    MY_AGENT="codex"
+    DISPATCH_SECOND="clauded -p"
+else
+    MY_AGENT="unknown"
+    DISPATCH_SECOND=""
+fi
+DISPATCH_GEMINI="gemini -p"
+```
+
+**Fallback for prose-only agents:** If you cannot run shell detection (e.g., you
+are an agent reading this doc as instructions), identify yourself by your entry
+point file:
+- Loaded via `CLAUDE.md` → you are **Claude Code**
+- Loaded via `agents.md` → you are **Codex**
+
+**Always state your identity in the QA output** so the aggregation step can
+verify:
+```
+REVIEWER_IDENTITY: claude-code | codex | gemini-cli
+```
+
+---
+
 ## How to Dispatch Reviewers
 
 ### Step A: Define the review prompt
@@ -63,6 +97,7 @@ Flag critical and major issues: logic errors, missing edge cases, incorrect beha
 inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
 Do NOT apply fixes — report only. \
 End with exactly: \
+REVIEWER_IDENTITY: [your agent name: claude-code, codex, or gemini-cli] \
 VERDICT: PASS | FAIL \
 CRITICAL_ISSUES: [count] \
 MAJOR_ISSUES: [count] \
@@ -198,11 +233,16 @@ The reviewer MUST follow these principles:
 ### Individual reviewer verdict (each of the 3 reviewers)
 
 ```
+REVIEWER_IDENTITY: claude-code | codex | gemini-cli
 VERDICT: PASS | FAIL
 CRITICAL_ISSUES: [count]
 MAJOR_ISSUES: [count]
 SUMMARY: [1-2 sentences]
 ```
+
+`REVIEWER_IDENTITY` confirms which model actually handled the review — this
+prevents misrouting (e.g., an agent accidentally dispatching itself instead of
+the other model).
 
 Individual reviewers report only — they do **not** apply fixes. This prevents
 conflicting edits from parallel reviewers.
