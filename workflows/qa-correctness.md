@@ -1,5 +1,7 @@
 # Workflow: QA Correctness — 3-Model Cross-Agent Review
 
+> **Design: AGENT1 → [AGENT1, AGENT2, AGENT3] → AGENT1.** Whichever agent did the work self-reviews (R1), dispatches the other CC/Codex agent (R2) and Gemini (R3), then aggregates all verdicts. Roles swap automatically based on who starts.
+
 ## Default Behavior
 
 **After completing your task, dispatch all three reviewers in parallel before reporting done.**
