@@ -14,18 +14,31 @@ conditions apply.
 
 ### Review models
 
-Three models review every non-trivial change **in parallel**:
+Three models review every non-trivial change **in parallel**. The **initial
+agent** (whichever agent performed the task) always self-reviews; the other two
+are dispatched as independent reviewers.
 
-| Reviewer | Dispatch command | Role |
-|----------|-----------------|------|
-| **Claude Code (CC)** | self-review (same process) | Context-rich reviewer — wrote the code, knows intent |
-| **Codex** | `codex exec --full-auto "$QA_PROMPT"` | Independent cross-agent reviewer |
-| **Gemini CLI** | `gemini -p "$QA_PROMPT"` | Independent cross-model reviewer (different model family) |
+| # | Reviewer | Dispatch command | Role |
+|---|----------|-----------------|------|
+| 1 | **Initial agent** (self-review) | inline (no subprocess) | Context-rich — wrote the code, knows intent |
+| 2 | **Second agent** | see dispatch table below | Independent cross-agent reviewer |
+| 3 | **Gemini CLI** | `gemini -p "$QA_PROMPT"` | Independent cross-model reviewer (different model family) |
+
+**Roles swap depending on who built the code:**
+
+| Initial agent (built the code) | Self-review (reviewer 1) | Dispatched reviewer 2 | Reviewer 3 |
+|---|---|---|---|
+| Claude Code (CC) | CC self-review inline | `codex exec --full-auto "$QA_PROMPT"` | `gemini -p "$QA_PROMPT"` |
+| Codex | Codex self-review inline | `clauded -p "$QA_PROMPT"` | `gemini -p "$QA_PROMPT"` |
+
+Gemini CLI is always reviewer 3 (it doesn't currently serve as an initial build
+agent).
 
 If an agent is unavailable (not installed, auth error, sandbox failure), fall
 back to the next available agent. The minimum viable review is **1 model** — but
 always attempt all 3. Use the highest-capability model or reasoning mode
-available for each (e.g., extended thinking for CC self-review).
+available for each (e.g., extended thinking for CC self-review, highest-capability
+model for Codex self-review).
 
 For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --full-auto`
@@ -66,21 +79,22 @@ If everything looks correct, use PASS with all counts set to 0."
 
 Run all three simultaneously. Each reviewer produces an independent verdict.
 
-#### 1. CC self-review
+#### 1. Initial agent self-review
 
-The initial agent (the one that performed the task) runs the QA prompt against
-its own changes using extended thinking / highest-capability reasoning mode.
+The agent that performed the task reviews its own changes using extended
+thinking / highest-capability reasoning mode. No subprocess needed — run the
+QA prompt inline.
 
-```bash
-# If you ARE Claude Code — self-review inline (no subprocess needed).
-# If you ARE Codex — dispatch CC:
-clauded -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
-```
+#### 2. Second agent review (the other CC/Codex agent)
 
-#### 2. Codex review
+Dispatch the agent you are **not**:
 
 ```bash
+# If you ARE Claude Code → dispatch Codex:
 codex exec --full-auto "$QA_PROMPT"
+
+# If you ARE Codex → dispatch Claude Code:
+clauded -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
 ```
 
 #### 3. Gemini review
@@ -110,11 +124,11 @@ three verdicts and makes the **final decision**. This agent has the most context
 
 **Aggregation rules:**
 
-| CC | Codex | Gemini | Final verdict |
-|----|-------|--------|---------------|
+| Initial agent (self) | Second agent (CC or Codex) | Gemini | Final verdict |
+|---|---|---|---|
 | PASS | PASS | PASS | **PASS** — unanimous, proceed |
 | PASS | PASS | FAIL | **Initial agent reviews Gemini's concerns** → PASS or FAIL |
-| PASS | FAIL | PASS | **Initial agent reviews Codex's concerns** → PASS or FAIL |
+| PASS | FAIL | PASS | **Initial agent reviews second agent's concerns** → PASS or FAIL |
 | FAIL | PASS | PASS | **Initial agent re-examines own finding** → PASS or FAIL |
 | FAIL | FAIL | * | **FAIL** — 2+ failures, escalate |
 | FAIL | * | FAIL | **FAIL** — 2+ failures, escalate |
@@ -132,9 +146,9 @@ three verdicts and makes the **final decision**. This agent has the most context
 You performed a task. Three reviewers (including yourself) reviewed the changes.
 Here are their verdicts:
 
-CC self-review: {verdict, critical_issues, major_issues, summary}
-Codex review:   {verdict, critical_issues, major_issues, summary}
-Gemini review:  {verdict, critical_issues, major_issues, summary}
+Self-review (you):    {verdict, critical_issues, major_issues, summary}
+Second agent review:  {verdict, critical_issues, major_issues, summary}
+Gemini review:        {verdict, critical_issues, major_issues, summary}
 
 Synthesize these into a final verdict. Rules:
 - If 2+ reviewers say FAIL → final is FAIL.
