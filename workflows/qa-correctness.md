@@ -1,6 +1,6 @@
 # Workflow: QA Correctness — 3-Model Cross-Agent Review
 
-> **Design: AGENT1 → [AGENT1, AGENT2, AGENT3] → AGENT1.** Whichever agent did the work self-reviews (R1), dispatches the other CC/Codex agent (R2) and Gemini (R3), then aggregates all verdicts. Roles swap automatically based on who starts.
+> **Design: CC → [CC, Codex, Gemini] → CC.** The agent that did the work (e.g. CC) self-reviews, dispatches the other two (Codex + Gemini), then aggregates all three verdicts. If Codex built instead, it becomes: Codex → [Codex, CC, Gemini] → Codex. Same pattern, roles swap.
 
 ## Default Behavior
 
