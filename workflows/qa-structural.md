@@ -304,9 +304,14 @@ Both verdicts should be reported together:
 
 ```
 ## QA Summary
-CORRECTNESS: PASS | FAIL | FIXED
+CORRECTNESS_FINAL_VERDICT: PASS | FAIL | FIXED
+CORRECTNESS_REVIEWERS_AVAILABLE: [count out of 3]
+CORRECTNESS_DISSENT: [which reviewer(s) disagreed, if any, and resolution]
 STRUCTURAL: PASS | IMPROVED | SKIP
 ```
+
+See [`qa-correctness.md`](qa-correctness.md) for the full 3-model parallel
+review protocol and aggregation rules.
 
 ---
 

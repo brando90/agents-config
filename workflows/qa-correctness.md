@@ -1,74 +1,169 @@
-# Workflow: QA Correctness — Cross-Agent Review
+# Workflow: QA Correctness — 3-Model Cross-Agent Review
 
 ## Default Behavior
 
-**After completing your task, dispatch a review agent before reporting done.**
+**After completing your task, dispatch all three reviewers in parallel before reporting done.**
 
-This is the default, not opt-in. Every agent that finishes work should spawn a reviewer. The reviewer catches mistakes so the human doesn't have to manually review everything.
+This is the default, not opt-in. Every agent that finishes work should spawn
+reviewers. Multiple independent models catch different mistakes so the human
+doesn't have to manually review everything.
 
 This is step 1 of the QA chain. On repos with substantial source code, follow it
 with `~/agents-config/workflows/qa-structural.md` unless that workflow's skip
 conditions apply.
 
-Use the opposite agent as reviewer. If the opposite agent is unavailable, dispatch the same-agent fallback below using the highest-capability model or reasoning mode you can invoke in your current environment (e.g., if you are Claude Code, use extended thinking with the best available Opus model; if you are Codex, use the highest-capability model available). For unattended review runs in a trusted isolated environment, use that agent's non-interactive entrypoint:
+### Review models
+
+Three models review every non-trivial change **in parallel**:
+
+| Reviewer | Dispatch command | Role |
+|----------|-----------------|------|
+| **Claude Code (CC)** | self-review (same process) | Context-rich reviewer — wrote the code, knows intent |
+| **Codex** | `codex exec --full-auto "$QA_PROMPT"` | Independent cross-agent reviewer |
+| **Gemini CLI** | `gemini -p "$QA_PROMPT"` | Independent cross-model reviewer (different model family) |
+
+If an agent is unavailable (not installed, auth error, sandbox failure), fall
+back to the next available agent. The minimum viable review is **1 model** — but
+always attempt all 3. Use the highest-capability model or reasoning mode
+available for each (e.g., extended thinking for CC self-review).
+
+For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --full-auto`
 - Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
+- Gemini reviewer: `gemini -p` (uses cached credentials)
 
-If skip-permissions mode is not appropriate for your environment, do not treat Claude Code as an unattended reviewer; run the same prompt in interactive `claude` instead.
+If skip-permissions mode is not appropriate for your environment, do not treat
+Claude Code as an unattended reviewer; run the same prompt in interactive
+`claude` instead.
 
 Skip review ONLY for trivial changes (typo fixes, comment edits, single-line config changes).
 
 ---
 
-## How to Dispatch a Reviewer
+## How to Dispatch Reviewers
 
-### If you are Claude Code (CC), dispatch Codex:
+### Step A: Define the review prompt
 
 ```bash
 QA_PROMPT="Review all changes in this directory since the last commit on main. \
 Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
 inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
-If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
-do not overcomplicate what is already committed. Prefer the simplest correct fix. \
+Do NOT apply fixes — report only. \
 End with exactly: \
-VERDICT: PASS | FAIL | FIXED \
+VERDICT: PASS | FAIL \
 CRITICAL_ISSUES: [count] \
 MAJOR_ISSUES: [count] \
-FIXES_APPLIED: [count] \
 SUMMARY: [1-2 sentences] \
 If everything looks correct, use PASS with all counts set to 0."
+```
 
+> **Note on verdict format change:** Individual reviewers now report **PASS or
+> FAIL only** (no FIXED). Fixes are applied in the aggregation step by the
+> initial agent if needed — this prevents conflicting edits from parallel
+> reviewers.
+
+### Step B: Dispatch all 3 reviewers in parallel
+
+Run all three simultaneously. Each reviewer produces an independent verdict.
+
+#### 1. CC self-review
+
+The initial agent (the one that performed the task) runs the QA prompt against
+its own changes using extended thinking / highest-capability reasoning mode.
+
+```bash
+# If you ARE Claude Code — self-review inline (no subprocess needed).
+# If you ARE Codex — dispatch CC:
+clauded -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
+```
+
+#### 2. Codex review
+
+```bash
+codex exec --full-auto "$QA_PROMPT"
+```
+
+#### 3. Gemini review
+
+```bash
+gemini -p "$QA_PROMPT"
+```
+
+**Fallback behavior:** If any reviewer fails (not installed, auth error, sandbox
+issue), log the failure and continue with the remaining reviewers. The `||`
+pattern works for chaining fallbacks:
+
+```bash
+# Example: try Codex, fall back to CC self-review
 codex exec --full-auto "$QA_PROMPT" || claude -p "$QA_PROMPT"
+# Example: try Gemini, fall back to CC self-review
+gemini -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
 ```
 
-If Codex fails (sandbox, not installed, API errors), the `||` fallback runs Claude as a self-reviewer. Match the calling agent's permission mode: if you were invoked as `clauded` (yolo), use `clauded -p` in the fallback; if interactive `claude`, use `claude -p`.
+The minimum viable review is **1 model**. Always attempt all 3.
 
-### If you are Codex, dispatch Claude Code (CC):
+### Step C: Aggregate verdicts (initial agent decides)
 
-```bash
-QA_PROMPT="Review all changes in this directory since the last commit on main. \
-Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
-inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
-If you find issues, fix them with MINIMAL changes — do not refactor, do not reorganize, \
-do not overcomplicate what is already committed. Prefer the simplest correct fix. \
-End with exactly: \
-VERDICT: PASS | FAIL | FIXED \
-CRITICAL_ISSUES: [count] \
-MAJOR_ISSUES: [count] \
-FIXES_APPLIED: [count] \
-SUMMARY: [1-2 sentences] \
-If everything looks correct, use PASS with all counts set to 0."
+The agent that performed the original task (the "initial agent") reads all
+three verdicts and makes the **final decision**. This agent has the most context
+— it wrote the code and knows the intent.
 
-clauded -p "$QA_PROMPT" || codex exec --full-auto "$QA_PROMPT"
+**Aggregation rules:**
+
+| CC | Codex | Gemini | Final verdict |
+|----|-------|--------|---------------|
+| PASS | PASS | PASS | **PASS** — unanimous, proceed |
+| PASS | PASS | FAIL | **Initial agent reviews Gemini's concerns** → PASS or FAIL |
+| PASS | FAIL | PASS | **Initial agent reviews Codex's concerns** → PASS or FAIL |
+| FAIL | PASS | PASS | **Initial agent re-examines own finding** → PASS or FAIL |
+| FAIL | FAIL | * | **FAIL** — 2+ failures, escalate |
+| FAIL | * | FAIL | **FAIL** — 2+ failures, escalate |
+| * | FAIL | FAIL | **FAIL** — 2+ failures, escalate |
+
+**When reviewing a single dissenting reviewer:**
+- Read the specific issues they flagged
+- If the concern is valid → apply a minimal fix, change final verdict to FIXED
+- If the concern is a false positive → explain why in the aggregation summary, keep PASS
+- If unsure → treat as FAIL, escalate to human
+
+**Aggregation prompt (for the initial agent):**
+
+```
+You performed a task. Three reviewers (including yourself) reviewed the changes.
+Here are their verdicts:
+
+CC self-review: {verdict, critical_issues, major_issues, summary}
+Codex review:   {verdict, critical_issues, major_issues, summary}
+Gemini review:  {verdict, critical_issues, major_issues, summary}
+
+Synthesize these into a final verdict. Rules:
+- If 2+ reviewers say FAIL → final is FAIL.
+- If exactly 1 reviewer says FAIL → examine their specific concerns.
+  If the concern is valid, apply a MINIMAL fix and use FIXED.
+  If it is a false positive, explain why and use PASS.
+  If unsure, use FAIL and escalate.
+- If any reviewer flagged CRITICAL_ISSUES > 0, treat it as real until
+  you can specifically disprove it.
+
+End with:
+FINAL_VERDICT: PASS | FAIL | FIXED
+CRITICAL_ISSUES: [total confirmed count]
+MAJOR_ISSUES: [total confirmed count]
+FIXES_APPLIED: [count]
+REVIEWERS_AVAILABLE: [count out of 3]
+DISSENT: [which reviewer(s) disagreed, if any, and resolution]
+SUMMARY: [1-2 sentences]
 ```
 
-If Claude Code fails (not installed, auth issues), the `||` fallback runs Codex as a self-reviewer. If you were invoked interactively (not as an unattended Codex exec), adjust accordingly.
+### Fallback: fewer than 3 reviewers available
 
-If skip-permissions mode is not appropriate for your environment, run the same prompt in interactive `claude` instead of using the unattended `clauded -p` path.
+If only 2 reviewers are available:
+- Both PASS → PASS
+- Both FAIL → FAIL
+- Disagreement → initial agent decides (same logic as above)
 
-### Self-fallback (both agents unavailable)
-
-The `||` fallback in the primary dispatch commands above already handles this — if the opposite agent fails, the same-agent reviewer runs automatically. No separate step needed.
+If only 1 reviewer is available:
+- Use that single verdict directly (original pre-Gemini behavior)
 
 ---
 
@@ -84,25 +179,41 @@ The reviewer MUST follow these principles:
 
 ---
 
-## Verdict Format
+## Verdict Formats
 
-The reviewer should end with:
+### Individual reviewer verdict (each of the 3 reviewers)
 
 ```
-VERDICT: PASS | FAIL | FIXED
+VERDICT: PASS | FAIL
 CRITICAL_ISSUES: [count]
 MAJOR_ISSUES: [count]
-FIXES_APPLIED: [count]
 SUMMARY: [1-2 sentences]
 ```
 
-Do not omit this block, even on PASS. The caller should relay it in the final QA summary.
+Individual reviewers report only — they do **not** apply fixes. This prevents
+conflicting edits from parallel reviewers.
 
-`CRITICAL_ISSUES` and `MAJOR_ISSUES` count issues found during review, even if the reviewer later fixes them. Use `FIXES_APPLIED` to report how many fixes were made.
+- **PASS** — no issues found.
+- **FAIL** — found issues. Listed in summary.
 
-- **PASS** — no issues found, nothing changed.
-- **FIXED** — found issues and applied minimal fixes. Changes are committed.
-- **FAIL** — found issues too complex or risky to auto-fix. Flagged for human.
+### Aggregated final verdict (from the initial agent)
+
+```
+FINAL_VERDICT: PASS | FAIL | FIXED
+CRITICAL_ISSUES: [total confirmed count]
+MAJOR_ISSUES: [total confirmed count]
+FIXES_APPLIED: [count]
+REVIEWERS_AVAILABLE: [count out of 3]
+DISSENT: [which reviewer(s) disagreed, if any, and resolution]
+SUMMARY: [1-2 sentences]
+```
+
+Do not omit this block, even on PASS. The caller should relay it in the final
+QA summary.
+
+- **PASS** — all reviewers agree (or dissent was a false positive). Nothing changed.
+- **FIXED** — a dissenting reviewer found a valid issue; the initial agent applied a minimal fix.
+- **FAIL** — 2+ reviewers failed, or a critical issue couldn't be resolved. Escalate to human.
 
 ---
 
