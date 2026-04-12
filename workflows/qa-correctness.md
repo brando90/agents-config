@@ -114,6 +114,67 @@ QA summary.
 
 ---
 
+## Mega QA — Sequential Multi-Model Chain
+
+> **Trigger:** User says "mega QA", "super QA", "extra careful QA", "deep QA",
+> or similar. This is opt-in only — never runs automatically.
+
+For high-stakes moments (end of work day, before major merges, before sleep),
+run all available models **sequentially**. Each model does full QA (correctness
++ structural, with authority to fix), then the next model reviews the improved
+code. No parallel writes, no aggregation — just a chain.
+
+### Chain order
+
+The builder always goes **last** so it has the final pass over all improvements.
+
+| Builder | Chain (default 3 rounds) |
+|---|---|
+| CC built | Codex → Gemini → **CC** |
+| Codex built | CC → Gemini → **Codex** |
+
+### How to run
+
+```bash
+# Round 1: dispatch first reviewer
+codex exec --full-auto "$QA_PROMPT"   # (if CC built)
+
+# Round 2: dispatch second reviewer (after round 1 finishes)
+gemini -p "$QA_PROMPT"
+
+# Round 3: final pass by the builder
+# Run the QA prompt inline (self-review with best model)
+```
+
+Each reviewer uses the same `$QA_PROMPT` from Step 1 above. Each one sees the
+code as improved by the previous reviewer.
+
+### Configuring rounds
+
+Default is **3 rounds** (one per available model). The user can request more:
+
+- "mega QA" → 3 rounds (Codex → Gemini → CC)
+- "mega QA 5 rounds" → cycles through: Codex → Gemini → CC → Codex → Gemini
+- "mega QA 2 rounds" → Codex → Gemini (builder skips final pass)
+
+Each round uses the same QA prompt and the same verdict format. The **last
+reviewer's verdict** is the final verdict.
+
+### When to use
+
+- End of work day / before sleep — let it run overnight
+- Before merging to main or a shared branch
+- After a long multi-commit feature branch
+- Reviewing the overall state of a repo (not just the latest changes)
+
+### Verdict
+
+The last reviewer in the chain produces the final verdict using the standard
+format. No aggregation needed — each reviewer builds on the previous one's
+fixes.
+
+---
+
 ## When to Skip Review
 
 - Typo fixes, comment-only edits, single-line config changes.
