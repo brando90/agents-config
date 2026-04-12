@@ -137,27 +137,30 @@ code. No parallel writes, no aggregation — just a chain.
 
 ### Chain order
 
-The builder always goes **last** so it has the final pass over all improvements.
-If the user requests fewer or more rounds than the number of available models,
-reserve the final requested round for the builder and cycle through the
-non-builder reviewers for the earlier rounds.
+The builder reviews in the **middle** (it knows the code intent best and can
+verify the first reviewer's changes). Gemini always does the **final** pass as
+clean-eyes reviewer. Default is 3 stages (one per model). If the user requests
+more rounds, cycle through the chain again (e.g., 6 rounds = chain × 2, 9
+rounds = chain × 3).
 
-| Builder | Chain (default 3 rounds) |
+| Builder | Chain (default 3 stages) |
 |---|---|
-| CC built | Codex → Gemini → **CC** |
-| Codex built | CC → Gemini → **Codex** |
+| CC built | Codex → **CC** → Gemini |
+| Codex built | CC → **Codex** → Gemini |
 
 ### How to run
 
 ```bash
-# Round 1: dispatch first reviewer
-codex exec --full-auto "$QA_PROMPT"   # (if CC built)
+# Example: CC built the code
 
-# Round 2: dispatch second reviewer (after round 1 finishes)
-gemini -p "$QA_PROMPT"
+# Stage 1: dispatch Codex as first independent reviewer
+codex exec --full-auto "$QA_PROMPT"
 
-# Round 3: final pass by the builder
+# Stage 2: CC (the builder) reviews Codex's changes — knows the intent best
 # Run the QA prompt inline (self-review with best model)
+
+# Stage 3: Gemini does final clean-eyes pass
+gemini -p "$QA_PROMPT"
 ```
 
 Each reviewer uses the same `$QA_PROMPT` from Step 1 above. Each one sees the
@@ -165,16 +168,18 @@ code as improved by the previous reviewer.
 
 ### Configuring rounds
 
-Default is **3 rounds** (one per available model). The user can request more or
-fewer rounds. The last requested round is always the builder.
+Default is **3 stages** (one per available model). The user can request more
+rounds — the chain cycles (e.g., × 2 = 6 stages, × 3 = 9 stages). Gemini
+always occupies the last stage of each cycle.
 
-- If CC built: "mega QA" → Codex → Gemini → CC
-- If CC built: "mega QA 5 rounds" → Codex → Gemini → Codex → Gemini → CC
-- If CC built: "mega QA 2 rounds" → Codex → CC
-- If Codex built, swap CC and Codex in the examples above.
+- If CC built: "mega QA" → Codex → CC → Gemini (3 stages, × 1)
+- If CC built: "mega QA x2" → Codex → CC → Gemini → Codex → CC → Gemini (6 stages)
+- If CC built: "mega QA x3" → (Codex → CC → Gemini) × 3 (9 stages)
+- If CC built: "mega QA 2 rounds" → Codex → Gemini (2 stages, skip builder middle pass)
+- If Codex built: swap CC and Codex positions in the examples above.
 
-Each round uses the same QA prompt and the same verdict format. The **last
-reviewer's verdict** is the final verdict.
+Each stage uses the same QA prompt and the same verdict format. The **last
+reviewer's verdict** (Gemini in the default chain) is the final verdict.
 
 ### Single-model fallback
 
