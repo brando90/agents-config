@@ -87,8 +87,8 @@ agents-config/
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
 ├── workflows/
-│   ├── qa-correctness.md        ← cross-agent correctness review (step 1)
-│   ├── qa-structural.md         ← anti-degradation refactoring gate (step 2)
+│   ├── qa-correctness.md        ← cross-agent QA review (correctness + structural)
+│   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern

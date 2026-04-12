@@ -1,46 +1,72 @@
-# Workflow: QA Correctness — 3-Model Cross-Agent Review
+# Workflow: QA — Cross-Agent Review
 
-> **Design: CC → [CC, Codex, Gemini] → CC.** The agent that did the work (e.g. CC) self-reviews, dispatches the other two (Codex + Gemini), then aggregates all three verdicts. If Codex built instead, it becomes: Codex → [Codex, CC, Gemini] → Codex. Same pattern, roles swap.
+> **Design: A1 builds → A2 does full QA.** The builder dispatches one independent reviewer for full QA (correctness + structural). The reviewer finds AND fixes issues. Fallback: Codex → Gemini CLI → self-review with best model (or CC → Gemini CLI → self-review with best model, if Codex built).
 
 ## Default Behavior
 
-**After completing your task, dispatch all three reviewers in parallel before reporting done.**
+**After completing your task, dispatch one independent reviewer before reporting done.**
 
-This is the default, not opt-in. Every agent that finishes work should spawn
-reviewers. Multiple independent models catch different mistakes so the human
-doesn't have to manually review everything.
+This is the default, not opt-in. Every agent that finishes work should dispatch
+a reviewer. An independent model catches mistakes the builder is blind to — so
+the human doesn't have to manually review everything.
 
-This is step 1 of the QA chain. On repos with substantial source code, follow it
-with `~/agents-config/workflows/qa-structural.md` unless that workflow's skip
-conditions apply.
+The reviewer handles both correctness (logic errors, edge cases, broken behavior)
+and structural quality (god functions, duplication, anti-patterns) in a single
+pass. On repos with substantial source code, the reviewer also runs the
+structural checks defined in
+[`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On
+markdown-only or config-only repos, the reviewer skips structural checks.
 
-### Review models
+Skip review ONLY for trivial changes (typo fixes, comment edits, single-line
+config changes).
 
-Three models review every non-trivial change **in parallel**. The **initial
-agent** (whichever agent performed the task) always self-reviews; the other two
-are dispatched as independent reviewers.
+---
 
-| # | Reviewer | Dispatch command | Role |
-|---|----------|-----------------|------|
-| 1 | **Initial agent** (self-review) | inline (no subprocess) | Context-rich — wrote the code, knows intent |
-| 2 | **Second agent** | see dispatch table below | Independent cross-agent reviewer |
-| 3 | **Gemini CLI** | `gemini -p "$QA_PROMPT"` | Independent cross-model reviewer (different model family) |
+## How to Dispatch
 
-**Roles swap depending on who built the code:**
+### Step 1: Define the review prompt
 
-| Initial agent (built the code) | Self-review (reviewer 1) | Dispatched reviewer 2 | Reviewer 3 |
-|---|---|---|---|
-| Claude Code (CC) | CC self-review inline | `codex exec --full-auto "$QA_PROMPT"` | `gemini -p "$QA_PROMPT"` |
-| Codex | Codex self-review inline | `clauded -p "$QA_PROMPT"` | `gemini -p "$QA_PROMPT"` |
+```bash
+QA_PROMPT="Review all changes in this directory since the last commit on main.
 
-Gemini CLI is always reviewer 3 (it doesn't currently serve as an initial build
-agent).
+CORRECTNESS: Flag and fix critical and major issues — logic errors, missing
+edge cases, incorrect behavior, inconsistencies with project agent docs
+(for example ~/your-project/docs/agent-docs/, if present).
 
-If an agent is unavailable (not installed, auth error, sandbox failure), fall
-back to the next available agent. The minimum viable review is **1 model** — but
-always attempt all 3. Use the highest-capability model or reasoning mode
-available for each (e.g., extended thinking for CC self-review, highest-capability
-model for Codex self-review).
+STRUCTURAL (skip for markdown-only repos): Check for god functions (CC > 10
+or >60 lines), structural duplication, verbose anti-patterns (single-use vars,
+identity wrappers, defensive checks for impossible states, 3+ nesting,
+if/elif ladders, dead code). Fix what you find. Preserve public interfaces.
+Run tests after each change — revert and skip if tests break.
+
+You are empowered to fix issues directly. Apply minimal fixes only.
+
+End with exactly:
+VERDICT: PASS | FAIL | FIXED
+CRITICAL_ISSUES: [count]
+MAJOR_ISSUES: [count]
+FIXES_APPLIED: [count]
+STRUCTURAL: PASS | IMPROVED | SKIP
+SUMMARY: [1-2 sentences]
+If everything looks correct, use PASS with all counts 0."
+```
+
+### Step 2: Dispatch the reviewer
+
+Try the primary cross-agent reviewer first. If unavailable (not installed, auth
+error, sandbox failure), fall through to the next option.
+
+```bash
+# If you ARE Claude Code (CC) — dispatch Codex, fall back to Gemini, then self-review:
+codex exec --full-auto "$QA_PROMPT" \
+  || gemini -p "$QA_PROMPT" \
+  || claude -p "$QA_PROMPT"
+
+# If you ARE Codex — dispatch CC, fall back to Gemini, then self-review:
+clauded -p "$QA_PROMPT" \
+  || gemini -p "$QA_PROMPT" \
+  || codex exec --full-auto "$QA_PROMPT"
+```
 
 For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --full-auto`
@@ -50,136 +76,6 @@ For unattended review runs in a trusted isolated environment:
 If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive
 `claude` instead.
-
-Skip review ONLY for trivial changes (typo fixes, comment edits, single-line config changes).
-
----
-
-## How to Dispatch Reviewers
-
-### Step A: Define the review prompt
-
-```bash
-QA_PROMPT="Review all changes in this directory since the last commit on main. \
-Flag critical and major issues: logic errors, missing edge cases, incorrect behavior, \
-inconsistencies with project agent docs (for example ~/your-project/docs/agent-docs/, if present). \
-Do NOT apply fixes — report only. \
-End with exactly: \
-VERDICT: PASS | FAIL \
-CRITICAL_ISSUES: [count] \
-MAJOR_ISSUES: [count] \
-SUMMARY: [1-2 sentences] \
-If everything looks correct, use PASS with all counts set to 0."
-```
-
-> **Note on verdict format change:** Individual reviewers now report **PASS or
-> FAIL only** (no FIXED). Fixes are applied in the aggregation step by the
-> initial agent if needed — this prevents conflicting edits from parallel
-> reviewers.
-
-### Step B: Dispatch all 3 reviewers in parallel
-
-Run all three simultaneously. Each reviewer produces an independent verdict.
-
-#### 1. Initial agent self-review
-
-The agent that performed the task reviews its own changes using extended
-thinking / highest-capability reasoning mode. No subprocess needed — run the
-QA prompt inline.
-
-#### 2. Second agent review (the other CC/Codex agent)
-
-Dispatch the agent you are **not**:
-
-```bash
-# If you ARE Claude Code → dispatch Codex:
-codex exec --full-auto "$QA_PROMPT"
-
-# If you ARE Codex → dispatch Claude Code:
-clauded -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
-```
-
-#### 3. Gemini review
-
-```bash
-gemini -p "$QA_PROMPT"
-```
-
-**Fallback behavior:** If any reviewer fails (not installed, auth error, sandbox
-issue), log the failure and continue with the remaining reviewers. The `||`
-pattern works for chaining fallbacks:
-
-```bash
-# Example: try Codex, fall back to CC self-review
-codex exec --full-auto "$QA_PROMPT" || claude -p "$QA_PROMPT"
-# Example: try Gemini, fall back to CC self-review
-gemini -p "$QA_PROMPT" || claude -p "$QA_PROMPT"
-```
-
-The minimum viable review is **1 model**. Always attempt all 3.
-
-### Step C: Aggregate verdicts (initial agent decides)
-
-The agent that performed the original task (the "initial agent") reads all
-three verdicts and makes the **final decision**. This agent has the most context
-— it wrote the code and knows the intent.
-
-**Aggregation rules:**
-
-| Initial agent (self) | Second agent (CC or Codex) | Gemini | Final verdict |
-|---|---|---|---|
-| PASS | PASS | PASS | **PASS** — unanimous, proceed |
-| PASS | PASS | FAIL | **Initial agent reviews Gemini's concerns** → PASS or FAIL |
-| PASS | FAIL | PASS | **Initial agent reviews second agent's concerns** → PASS or FAIL |
-| FAIL | PASS | PASS | **Initial agent re-examines own finding** → PASS or FAIL |
-| FAIL | FAIL | * | **FAIL** — 2+ failures, escalate |
-| FAIL | * | FAIL | **FAIL** — 2+ failures, escalate |
-| * | FAIL | FAIL | **FAIL** — 2+ failures, escalate |
-
-**When reviewing a single dissenting reviewer:**
-- Read the specific issues they flagged
-- If the concern is valid → apply a minimal fix, change final verdict to FIXED
-- If the concern is a false positive → explain why in the aggregation summary, keep PASS
-- If unsure → treat as FAIL, escalate to human
-
-**Aggregation prompt (for the initial agent):**
-
-```
-You performed a task. Three reviewers (including yourself) reviewed the changes.
-Here are their verdicts:
-
-Self-review (you):    {verdict, critical_issues, major_issues, summary}
-Second agent review:  {verdict, critical_issues, major_issues, summary}
-Gemini review:        {verdict, critical_issues, major_issues, summary}
-
-Synthesize these into a final verdict. Rules:
-- If 2+ reviewers say FAIL → final is FAIL.
-- If exactly 1 reviewer says FAIL → examine their specific concerns.
-  If the concern is valid, apply a MINIMAL fix and use FIXED.
-  If it is a false positive, explain why and use PASS.
-  If unsure, use FAIL and escalate.
-- If any reviewer flagged CRITICAL_ISSUES > 0, treat it as real until
-  you can specifically disprove it.
-
-End with:
-FINAL_VERDICT: PASS | FAIL | FIXED
-CRITICAL_ISSUES: [total confirmed count]
-MAJOR_ISSUES: [total confirmed count]
-FIXES_APPLIED: [count]
-REVIEWERS_AVAILABLE: [count out of 3]
-DISSENT: [which reviewer(s) disagreed, if any, and resolution]
-SUMMARY: [1-2 sentences]
-```
-
-### Fallback: fewer than 3 reviewers available
-
-If only 2 reviewers are available:
-- Both PASS → PASS
-- Both FAIL → FAIL
-- Disagreement → initial agent decides (same logic as above)
-
-If only 1 reviewer is available:
-- Use that single verdict directly (original pre-Gemini behavior)
 
 ---
 
@@ -192,44 +88,29 @@ The reviewer MUST follow these principles:
 3. **Don't overcomplicate what was already committed.** Even if the original approach was suboptimal, if it's correct and simple, keep it.
 4. **Correctness over elegance.** Always.
 5. **If unsure, leave it and flag it** rather than making a speculative change.
+6. **You are empowered to fix issues.** Apply minimal fixes directly — don't just report.
 
 ---
 
-## Verdict Formats
+## Verdict Format
 
-### Individual reviewer verdict (each of the 3 reviewers)
+The reviewer produces one verdict covering both correctness and structural quality:
 
 ```
-VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL | FIXED
 CRITICAL_ISSUES: [count]
 MAJOR_ISSUES: [count]
-SUMMARY: [1-2 sentences]
-```
-
-Individual reviewers report only — they do **not** apply fixes. This prevents
-conflicting edits from parallel reviewers.
-
-- **PASS** — no issues found.
-- **FAIL** — found issues. Listed in summary.
-
-### Aggregated final verdict (from the initial agent)
-
-```
-FINAL_VERDICT: PASS | FAIL | FIXED
-CRITICAL_ISSUES: [total confirmed count]
-MAJOR_ISSUES: [total confirmed count]
 FIXES_APPLIED: [count]
-REVIEWERS_AVAILABLE: [count out of 3]
-DISSENT: [which reviewer(s) disagreed, if any, and resolution]
+STRUCTURAL: PASS | IMPROVED | SKIP
 SUMMARY: [1-2 sentences]
 ```
+
+- **PASS** — no issues found. Code is correct and structurally healthy.
+- **FIXED** — found issues, applied minimal fixes. All fixes described in summary.
+- **FAIL** — found issues that couldn't be auto-fixed. Escalate to human.
 
 Do not omit this block, even on PASS. The caller should relay it in the final
 QA summary.
-
-- **PASS** — all reviewers agree (or dissent was a false positive). Nothing changed.
-- **FIXED** — a dissenting reviewer found a valid issue; the initial agent applied a minimal fix.
-- **FAIL** — 2+ reviewers failed, or a critical issue couldn't be resolved. Escalate to human.
 
 ---
 
