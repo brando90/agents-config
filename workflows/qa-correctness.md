@@ -77,6 +77,15 @@ If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive
 `claude` instead.
 
+### Single-model fallback
+
+If only one model is available (e.g., only Claude Code on Anthropic's default
+environment, or only Codex in an OpenAI sandbox), the agent should still run QA
+by dispatching **itself** with the QA prompt. Self-review with the best available
+model/reasoning mode (e.g., extended thinking, Opus) is always better than no
+review. The fallback chain handles this automatically — the last option in the
+`||` chain is always self-dispatch.
+
 ---
 
 ## Reviewer Rules
@@ -159,6 +168,18 @@ Default is **3 rounds** (one per available model). The user can request more:
 
 Each round uses the same QA prompt and the same verdict format. The **last
 reviewer's verdict** is the final verdict.
+
+### Single-model fallback
+
+If only one model is available, run mega QA as **N rounds of self-review** with
+the same model. Each round is a fresh dispatch (new context) so the model
+re-examines the code with fresh eyes. For example, with only CC available:
+
+- "mega QA" → CC self-review × 3 (each round sees previous round's fixes)
+- "mega QA 5 rounds" → CC self-review × 5
+
+This is less powerful than cross-model review but still catches issues that a
+single pass misses — each fresh context re-examines with different attention.
 
 ### When to use
 
