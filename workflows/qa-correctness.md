@@ -83,8 +83,10 @@ If only one model is available (e.g., only Claude Code on Anthropic's default
 environment, or only Codex in an OpenAI sandbox), the agent should still run QA
 by dispatching **itself** with the QA prompt. Self-review with the best available
 model/reasoning mode (e.g., extended thinking, Opus) is always better than no
-review. The fallback chain handles this automatically — the last option in the
-`||` chain is always self-dispatch.
+review. In unattended environments, the fallback chain handles this
+automatically — the last option in the `||` chain is always self-dispatch. If
+Claude Code must run interactively, use the same QA prompt in `claude` for the
+self-review round instead.
 
 ---
 
@@ -180,6 +182,8 @@ re-examines the code with fresh eyes. For example, with only CC available:
 
 This is less powerful than cross-model review but still catches issues that a
 single pass misses — each fresh context re-examines with different attention.
+If Claude Code must run interactively, do the same repeated rounds in fresh
+`claude` sessions instead of unattended `clauded -p`.
 
 ### When to use
 
