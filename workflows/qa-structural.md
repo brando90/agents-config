@@ -129,7 +129,7 @@ Report:
 
 ---
 
-## Verdict Format
+## Detailed Structural Report Format
 
 ```
 VERDICT: PASS | IMPROVED | SKIP
@@ -151,8 +151,9 @@ SUMMARY: [1-2 sentences]
 - **IMPROVED** — found degradation, applied refactoring, metrics improved.
 - **SKIP** — no substantial source code to measure (e.g., markdown-only repo).
 
-The caller should relay this block in the final QA summary alongside the
-correctness QA verdict.
+Use this detailed block when a task explicitly asks for structural metrics or
+when the reviewer wants to keep internal structural notes. The required
+outward-facing QA verdict is the combined block in `qa-correctness.md`.
 
 ---
 
