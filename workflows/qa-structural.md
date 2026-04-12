@@ -16,22 +16,20 @@ Motivated by two complementary findings:
 This gate combines both: check config first (RAMP), then measure and fix
 code quality (SlopCodeBench).
 
-**This is the second step of the QA chain.** Run it after
-[`qa-correctness.md`](qa-correctness.md) passes. Refactoring must preserve
-correctness — refactor the correct code while keeping correctness in mind.
-No additional correctness QA pass is needed after this step; the hard rules
-below (zero functional changes, revert if tests break) ensure correctness
-is maintained.
+**This file is the reference definition of structural QA checks.** The QA
+reviewer dispatched per [`qa-correctness.md`](qa-correctness.md) handles both
+correctness and structural quality in a single pass. This document defines
+what structural QA checks entail — the phases, metrics, and hard rules. The
+reviewer's QA prompt includes the core structural checks; this file provides
+the full detail and motivation.
 
 ## Default Behavior
 
-**After correctness QA passes, run the structural QA gate on any repo with
-substantial source code (not markdown-only repos like agents-config itself),
-unless a skip condition below applies.**
-
-This is step 2 of the default QA chain for source-heavy repos. The underlying
-experiment is still unvalidated, so keep the skip conditions below and report
-`SKIP` when the repo or task does not fit.
+**The QA reviewer (dispatched per qa-correctness.md) includes structural checks
+in its pass on any repo with substantial source code.** Structural checks are
+skipped for markdown-only or config-only repos. The underlying experiment is
+still unvalidated, so the reviewer should report `SKIP` when the repo or task
+does not fit.
 
 ---
 
@@ -52,18 +50,12 @@ experiment is still unvalidated, so keep the skip conditions below and report
 
 ---
 
-## How to Dispatch
+## Structural QA Phases
 
-### If you are Claude Code (CC), dispatch Codex:
+The QA reviewer should follow these phases for the structural portion of its
+review. See [`qa-correctness.md`](qa-correctness.md) for the dispatch mechanism.
 
-```bash
-codex exec --full-auto "$(cat <<'PROMPT'
-You are a refactoring and configuration specialist. Your job is to improve
-both the structural quality of the codebase AND the quality of the repo's AI
-configuration. You must NOT add features, change behavior, or modify any
-public API. Every test that passed before must pass after.
-
-## Phase -1: Configuration Audit (RAMP-motivated)
+### Phase -1: Configuration Audit (RAMP-motivated)
 
 Before touching code, check whether the repo has committed AI config artifacts
 that RAMP associates with ~3x less quality degradation. The L1→L2 gap is the
@@ -80,7 +72,7 @@ never modified after commit, emphasize getting it right first time.
 Then proceed to Phase 0 (config gaps don't block code assessment).
 If L2+: note level and proceed.
 
-## Phase 0: Measure Baseline (SlopCodeBench-motivated)
+### Phase 0: Measure Baseline (SlopCodeBench-motivated)
 
 1. Run radon cc -s -a -n B . — filter to CC > 10.
 2. Erosion = sum(mass(f) for CC>10) / sum(mass(f) for all f),
@@ -92,7 +84,7 @@ If L2+: note level and proceed.
 Exclude tests, docs, generated code, vendored deps.
 If tools unavailable, estimate and flag as "estimated."
 
-## Phase 1: Audit (do NOT fix yet)
+### Phase 1: Audit (do NOT fix yet)
 
 1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first.
    (Note: duplication is where committed config helps most — 33% at L1 vs
@@ -103,18 +95,18 @@ If tools unavailable, estimate and flag as "estimated."
    silent except blocks, obvious-restatement comments, unused imports, dead code.
 4. Architectural dead-ends — flag only, for human review.
 
-## Phase 2: Refactor Plan
+### Phase 2: Refactor Plan
 
 For each item (except dead-ends): extract but don't over-extract, deduplicate
 via abstraction, replace ladders with tables, delete don't comment out, preserve
 public interface, minimize diff, budget ~100 lines of diff per item max.
 
-## Phase 3: Execute
+### Phase 3: Execute
 
 Priority: highest-mass god functions > duplication > anti-patterns.
 Run tests after each change. Revert and skip if tests break.
 
-## Phase 4: Measure & Report
+### Phase 4: Measure & Report
 
 Report:
 - RAMP level + missing artifacts + config quality notes
@@ -125,7 +117,7 @@ Report:
 - Items skipped and why
 - Architectural dead-ends flagged
 
-## Hard Rules
+### Hard Rules
 
 - Zero functional changes. Skip if unsure.
 - No new deps. No new source files unless extracting a module.
@@ -134,133 +126,6 @@ Report:
 - Do not touch test files (except shared test utilities).
 - No abstractions for single-use cases. Respect diff budget.
 - Config recommendations are recommendations — team decides content.
-
-End with exactly:
-VERDICT: PASS | IMPROVED | SKIP
-RAMP_LEVEL: [L1 | L2 | L3 | L4]
-CONFIG_GAPS: [list or "none"]
-CONFIG_QUALITY_NOTES: [brief notes on existing config quality, or "n/a"]
-EROSION_BEFORE: [score]
-EROSION_AFTER: [score]
-VERBOSITY_BEFORE: [score]
-VERBOSITY_AFTER: [score]
-GOD_FUNCTIONS_FIXED: [count]
-DUPLICATIONS_REMOVED: [count]
-ANTIPATTERNS_FIXED: [count]
-ARCH_DEADENDS_FLAGGED: [count]
-SUMMARY: [1-2 sentences]
-If no substantial source code, use SKIP.
-PROMPT
-)"
-```
-
-### If you are Codex, dispatch Claude Code (CC):
-
-```bash
-clauded -p "$(cat <<'PROMPT'
-You are a refactoring and configuration specialist. Your job is to improve
-both the structural quality of the codebase AND the quality of the repo's AI
-configuration. You must NOT add features, change behavior, or modify any
-public API. Every test that passed before must pass after.
-
-## Phase -1: Configuration Audit (RAMP-motivated)
-
-Before touching code, check whether the repo has committed AI config artifacts
-that RAMP associates with ~3x less quality degradation. The L1→L2 gap is the
-largest observed difference in RAMP's data.
-
-Check for: (1) Rules file (CLAUDE.md, .cursorrules, copilot-instructions.md,
-agents.md) with actionable directives, (2) Coding standards with conventions,
-(3) Architecture docs with module boundaries/data flow, (4) Agent definitions
-with roles/tool restrictions (Level 3), (5) Workflow coordination (Level 4).
-
-Report RAMP level (L1/L2/L3/L4). If L1: flag as #1 recommendation —
-recommend creating rules file + coding standards. Since 80% of AI config is
-never modified after commit, emphasize getting it right first time.
-Then proceed to Phase 0 (config gaps don't block code assessment).
-If L2+: note level and proceed.
-
-## Phase 0: Measure Baseline (SlopCodeBench-motivated)
-
-1. Run radon cc -s -a -n B . — filter to CC > 10.
-2. Erosion = sum(mass(f) for CC>10) / sum(mass(f) for all f),
-   where mass(f) = CC(f) * sqrt(SLOC(f)).
-3. Verbosity = |flagged_lines UNION clone_lines| / total_LOC.
-   Use ast-grep/linter + clone detection (jscpd, duplo, pylint duplicate-code).
-   Union with deduplication, not sum.
-
-Exclude tests, docs, generated code, vendored deps.
-If tools unavailable, estimate and flag as "estimated."
-
-## Phase 1: Audit (do NOT fix yet)
-
-1. God functions (CC > 10 or >60 lines) — prioritize by mass, highest first.
-   (Note: duplication is where committed config helps most — 33% at L1 vs
-   near-zero at L2+ per RAMP.)
-2. Structural duplication across files.
-3. Verbose anti-patterns: single-use vars, identity wrappers, defensive checks
-   for impossible states, unnecessary casts, 3+ nesting, if/elif ladders,
-   silent except blocks, obvious-restatement comments, unused imports, dead code.
-4. Architectural dead-ends — flag only, for human review.
-
-## Phase 2: Refactor Plan
-
-For each item (except dead-ends): extract but don't over-extract, deduplicate
-via abstraction, replace ladders with tables, delete don't comment out, preserve
-public interface, minimize diff, budget ~100 lines of diff per item max.
-
-## Phase 3: Execute
-
-Priority: highest-mass god functions > duplication > anti-patterns.
-Run tests after each change. Revert and skip if tests break.
-
-## Phase 4: Measure & Report
-
-Report:
-- RAMP level + missing artifacts + config quality notes
-- Erosion (before -> after)
-- Verbosity (before -> after)
-- Highest-CC function (before -> after)
-- Diff size, functions extracted, duplications removed, anti-patterns fixed
-- Items skipped and why
-- Architectural dead-ends flagged
-
-## Hard Rules
-
-- Zero functional changes. Skip if unsure.
-- No new deps. No new source files unless extracting a module.
-- New AI config files (rules, standards) are the exception to no-new-files.
-- Run tests. Flag as "unverified" if you cannot.
-- Do not touch test files (except shared test utilities).
-- No abstractions for single-use cases. Respect diff budget.
-- Config recommendations are recommendations — team decides content.
-
-End with exactly:
-VERDICT: PASS | IMPROVED | SKIP
-RAMP_LEVEL: [L1 | L2 | L3 | L4]
-CONFIG_GAPS: [list or "none"]
-CONFIG_QUALITY_NOTES: [brief notes on existing config quality, or "n/a"]
-EROSION_BEFORE: [score]
-EROSION_AFTER: [score]
-VERBOSITY_BEFORE: [score]
-VERBOSITY_AFTER: [score]
-GOD_FUNCTIONS_FIXED: [count]
-DUPLICATIONS_REMOVED: [count]
-ANTIPATTERNS_FIXED: [count]
-ARCH_DEADENDS_FLAGGED: [count]
-SUMMARY: [1-2 sentences]
-If no substantial source code, use SKIP.
-PROMPT
-)"
-```
-
-If skip-permissions mode is not appropriate for your environment, run the same
-prompt in interactive `claude` instead of using the unattended `clauded -p` path.
-
-### Self-dispatch (same agent):
-
-Use the same prompt above with whichever agent you are, dispatching the
-highest-capability model available.
 
 ---
 
@@ -291,27 +156,26 @@ correctness QA verdict.
 
 ---
 
-## The Two-Step QA Chain
+## QA Integration
 
-The full QA chain after completing a task:
+The QA reviewer dispatched per [`qa-correctness.md`](qa-correctness.md) handles
+both correctness and structural quality in a single pass. This document defines
+the structural checks and metrics; the dispatch mechanism lives in
+qa-correctness.md.
 
-1. **Correctness QA** ([`qa-correctness.md`](qa-correctness.md)) — catch logic
-   errors, missing edge cases, broken behavior. Must pass first.
-2. **Structural QA** (this doc) — catch degradation: god functions, duplication,
-   verbose anti-patterns, architectural dead-ends. Runs after correctness passes.
-
-Both verdicts should be reported together:
+The reviewer's combined verdict includes a `STRUCTURAL:` line:
 
 ```
-## QA Summary
-CORRECTNESS_FINAL_VERDICT: PASS | FAIL | FIXED
-CORRECTNESS_REVIEWERS_AVAILABLE: [count out of 3]
-CORRECTNESS_DISSENT: [which reviewer(s) disagreed, if any, and resolution]
+VERDICT: PASS | FAIL | FIXED
+CRITICAL_ISSUES: [count]
+MAJOR_ISSUES: [count]
+FIXES_APPLIED: [count]
 STRUCTURAL: PASS | IMPROVED | SKIP
+SUMMARY: [1-2 sentences]
 ```
 
-See [`qa-correctness.md`](qa-correctness.md) for the full 3-model parallel
-review protocol and aggregation rules.
+See [`qa-correctness.md`](qa-correctness.md) for the full cross-agent review
+protocol.
 
 ---
 
