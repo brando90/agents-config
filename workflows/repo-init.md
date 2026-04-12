@@ -105,3 +105,4 @@ Track repos that have completed migration:
 - [x] `~/verina/` — migrated 2026-04-10
 - [x] `~/pass-tests-fail-proofs-/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
 - [x] `~/tvdmi-judge-asymptotics/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
+- [x] `~/diversity-for-predictive-success-of-meta-learning/` — migrated 2026-04-11
