@@ -60,7 +60,7 @@ error, sandbox failure), fall through to the next option.
 # If you ARE Claude Code (CC) — dispatch Codex, fall back to Gemini, then self-review:
 codex exec --full-auto "$QA_PROMPT" \
   || gemini -p "$QA_PROMPT" \
-  || claude -p "$QA_PROMPT"
+  || clauded -p "$QA_PROMPT"
 
 # If you ARE Codex — dispatch CC, fall back to Gemini, then self-review:
 clauded -p "$QA_PROMPT" \
@@ -138,6 +138,9 @@ code. No parallel writes, no aggregation — just a chain.
 ### Chain order
 
 The builder always goes **last** so it has the final pass over all improvements.
+If the user requests fewer or more rounds than the number of available models,
+reserve the final requested round for the builder and cycle through the
+non-builder reviewers for the earlier rounds.
 
 | Builder | Chain (default 3 rounds) |
 |---|---|
@@ -162,11 +165,13 @@ code as improved by the previous reviewer.
 
 ### Configuring rounds
 
-Default is **3 rounds** (one per available model). The user can request more:
+Default is **3 rounds** (one per available model). The user can request more or
+fewer rounds. The last requested round is always the builder.
 
-- "mega QA" → 3 rounds (Codex → Gemini → CC)
-- "mega QA 5 rounds" → cycles through: Codex → Gemini → CC → Codex → Gemini
-- "mega QA 2 rounds" → Codex → Gemini (builder skips final pass)
+- If CC built: "mega QA" → Codex → Gemini → CC
+- If CC built: "mega QA 5 rounds" → Codex → Gemini → Codex → Gemini → CC
+- If CC built: "mega QA 2 rounds" → Codex → CC
+- If Codex built, swap CC and Codex in the examples above.
 
 Each round uses the same QA prompt and the same verdict format. The **last
 reviewer's verdict** is the final verdict.
