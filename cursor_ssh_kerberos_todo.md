@@ -1,5 +1,7 @@
 # Cursor SSH + Kerberos Auto-Reconnect on SNAP
 
+**GitHub Issue:** [brando90/agents-config#29](https://github.com/brando90/agents-config/issues/29)
+
 Goal: minimize password prompts when Cursor reconnects SSH to SNAP servers.
 
 **Limitation:** Cursor creates a fresh SSH session on new window/folder change/reload, which can force re-auth. [Cursor forum thread](https://forum.cursor.com/t/remote-ssh-forces-full-reconnect-mfa-per-window-folder-change-and-window-reload/156891). The workaround is SSH ControlMaster multiplexing + Kerberos GSSAPI.
