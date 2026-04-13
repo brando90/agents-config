@@ -1,5 +1,7 @@
 # Codex Remote Control — Status & Setup
 
+**GitHub Issue:** [brando90/agents-config#30](https://github.com/brando90/agents-config/issues/30)
+
 Codex CLI has **no native `remote-control` command** like Claude Code. There is no phone handoff flow.
 Active feature requests: [QR pairing (#13543)](https://github.com/openai/codex/issues/13543), [RC from ChatGPT app (#9224)](https://github.com/openai/codex/issues/9224), [app-server network exposure (#11166)](https://github.com/openai/codex/issues/11166).
 

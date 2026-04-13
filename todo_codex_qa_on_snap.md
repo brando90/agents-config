@@ -1,5 +1,7 @@
 # TODO: Make Codex QA Work on SNAP Cluster (skampere nodes)
 
+**GitHub Issue:** [brando90/agents-config#31](https://github.com/brando90/agents-config/issues/31)
+
 ## Problem
 
 `codex exec --full-auto` fails on SNAP cluster nodes (skampere1, skampere2, etc.) because

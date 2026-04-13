@@ -1,5 +1,7 @@
 # TODO: Infinite Server-Side Kerberos Renewal (No More reauth/krbtmux)
 
+**GitHub Issue:** [brando90/agents-config#11](https://github.com/brando90/agents-config/issues/11)
+
 Goal: auto-renew Kerberos tickets + AFS tokens on SNAP servers using the keytab, so
 tmux/byobu/Cursor sessions never lose access. Eliminates the need for `krbtmux` and `reauth`.
 
