@@ -48,6 +48,7 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 14. **Keep `agents-config` self-consistent.** When modifying this repo, ensure INDEX_RULES.md, README.md, and listed doc paths remain accurate.
 15. **Use explicit anchored paths in prose doc references and commands.** Write `~/agents-config/INDEX_RULES.md` or `~/veribench/docs/agent-docs/INDEX.md`, never bare relative references like `docs/agent-docs/`. The user works across many repos and machines, so unanchored paths are ambiguous without context.
 16. **Always use `ls -la` (not `ls`) when listing directories for keys, tokens, configs, or credentials.** Hidden (dot-prefixed) files are common for sensitive data — plain `ls` omits them. This applies to any directory likely to hold secrets (e.g., `~/keys/`, `~/.ssh/`, `~/.config/`).
+17. **Always use SOTA models for experiments.** When running experiments, use the best available model from any model provider (e.g., Opus 4.6 not Sonnet 4 for Anthropic). When reporting results, always state the exact model ID (e.g., `claude-sonnet-4-20250514`). Weaker models undermine the paper's conclusions.
 
 ---
 
