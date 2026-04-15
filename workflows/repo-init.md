@@ -107,3 +107,4 @@ Track repos that have completed migration:
 - [x] `~/tvdmi-judge-asymptotics/` — migrated 2026-04-07, GitHub fallback added 2026-04-10
 - [x] `~/diversity-for-predictive-success-of-meta-learning/` — migrated 2026-04-11
 - [x] `~/ultimate-utils/` — migrated 2026-04-14
+- [x] `mercury2 ~/` (home dir) — migrated 2026-04-14, machine config added

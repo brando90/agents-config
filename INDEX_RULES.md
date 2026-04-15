@@ -59,6 +59,7 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 Load the one matching your current environment. Machine docs contain only behavioral constraints and gotchas — not discoverable specs. Run bash commands (`uname -m`, `nvidia-smi`, etc.) to inspect hardware at runtime.
 
 - [`machine/ampere1.md`](machine/ampere1.md) — SNAP ampere1 node (8x A100-80GB)
+- [`machine/mercury2.md`](machine/mercury2.md) — SNAP mercury2 node (10x RTX A4000-16GB)
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
