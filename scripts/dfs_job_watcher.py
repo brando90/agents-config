@@ -129,6 +129,7 @@ def run_job(job_path: Path, logs_dir: Path, hostname: str,
     (or -1 for timeout)."""
     log_file = logs_dir / f"{job_path.stem}_{hostname}.log"
 
+    proc: Optional[subprocess.Popen] = None
     with open(log_file, "w") as fh:
         try:
             proc = subprocess.Popen(
@@ -147,7 +148,7 @@ def run_job(job_path: Path, logs_dir: Path, hostname: str,
             return -1
         except Exception:
             log.exception("Unexpected error running %s", job_path.name)
-            if proc.poll() is None:
+            if proc is not None and proc.poll() is None:
                 _kill_tree(proc.pid)
                 proc.wait()
             return -1
@@ -181,19 +182,28 @@ def watch(poll_interval: int, timeout: int) -> None:
     )
 
     while True:
-        pending = sorted(dirs["pending"].iterdir())
+        try:
+            pending = sorted(dirs["pending"].iterdir())
+        except OSError:
+            log.exception("Failed to list pending/")
+            pending = []
+
         for job_file in pending:
-            if not job_file.is_file():
-                continue
+            try:
+                if not job_file.is_file():
+                    continue
 
-            claimed = try_claim(job_file, dirs["running"], hostname)
-            if claimed is None:
-                continue
+                claimed = try_claim(job_file, dirs["running"], hostname)
+                if claimed is None:
+                    continue
 
-            log.info("Claimed %s → %s", job_file.name, claimed.name)
-            rc = run_job(claimed, dirs["logs"], hostname, timeout)
-            log.info("Job %s finished with rc=%s", claimed.name, rc)
-            finalise(claimed, rc, dirs)
+                log.info("Claimed %s → %s", job_file.name, claimed.name)
+                rc = run_job(claimed, dirs["logs"], hostname, timeout)
+                log.info("Job %s finished with rc=%s", claimed.name, rc)
+                finalise(claimed, rc, dirs)
+            except Exception:
+                log.exception("Error processing job %s — skipping", job_file.name)
+                continue
 
         time.sleep(poll_interval)
 
