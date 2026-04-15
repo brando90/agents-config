@@ -2,7 +2,7 @@
 
 ## Default send address
 - **From:** brandojazz@gmail.com
-- **CC:** brando9@stanford.edu
+- **CC:** brando9@stanford.edu (visible CC, not BCC)
 
 ## Signature
 
