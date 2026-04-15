@@ -64,6 +64,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine
+- [`machine/mercury1.md`](machine/mercury1.md) — SNAP mercury1 node (10x A4000-16GB)
 
 ## Workflows
 
