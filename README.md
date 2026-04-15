@@ -80,6 +80,8 @@ agents-config/
 │
 ├── machine/
 │   ├── ampere1.md               ← SNAP ampere1 node
+│   ├── mercury1.md              ← SNAP mercury1 node (10x A4000-16GB)
+│   ├── mercury2.md              ← SNAP mercury2 node (10x A4000-16GB)
 │   ├── snap.md                  ← Stanford SNAP cluster
 │   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
 │   ├── mac.md                   ← local macOS dev
@@ -90,6 +92,7 @@ agents-config/
 │   ├── qa-correctness.md        ← cross-agent QA review (correctness + structural)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
+│   ├── dfs-job-watcher.md       ← DFS job queue for SNAP (submit from one node, run on any)
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern
 │   ├── tweprints.md             ← tweet thread format
@@ -308,6 +311,34 @@ unset CLAUDE_CODE_OAUTH_TOKEN && echo '{}' > ~/.claude/config.json && claude aut
 ### Verify node setup
 
 After setup, see [`machine/snap-init.md`](machine/snap-init.md) for a paste-into-Claude-Code prompt that checks paths, symlinks, RC auth, tools, keys, and GPUs.
+
+---
+
+## DFS Job Queue (Running Experiments Across SNAP Nodes)
+
+SNAP has no Slurm — you SSH into individual nodes. The DFS job queue lets you submit experiment scripts from **any one node** and have watchers on the other nodes automatically pick them up and run them. You don't need to SSH into each server, set up environments, or babysit processes.
+
+**How it works:**
+
+1. Each SNAP node runs a **watcher daemon** (in tmux or via `clauded`). The daemon polls `~/dfs/job_queue/pending/` every 15 seconds.
+2. You (or an agent) **drop a script** into `pending/` from any node. Because `~/dfs/` is on the shared DFS, every node sees it immediately.
+3. The first watcher to see the job **atomically claims it** (NFS-safe hardlink protocol — no double-execution even with multiple nodes racing) and moves it to `running/`.
+4. The watcher **executes the script**, inheriting the host's environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.), with a 4-hour timeout that kills the entire process tree to free GPUs.
+5. When it finishes, the job moves to `completed/` (exit 0) or `failed/` (non-zero or timeout). Logs go to `logs/`.
+
+**The key idea:** You log into one server, submit jobs, and walk away. The other servers are already listening. No coordinator, no scheduler, no manual SSH — just a shared directory and a simple protocol.
+
+```
+~/dfs/job_queue/
+    pending/      ← drop jobs here (from any node)
+    running/      ← claimed by a watcher (job.sh___<hostname>)
+    completed/    ← exit 0
+    failed/       ← exit != 0 or timeout
+    logs/         ← per-job stdout+stderr
+```
+
+**Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/main/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
+**Full usage guide:** [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) (start/stop commands, submit examples, atomic claim details).
 
 ---
 
