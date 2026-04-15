@@ -205,30 +205,32 @@ After any training, eval, or QA run completes, check that no GPU processes are l
 
 ---
 
-## GPU Allocation Rules
+## Graphics Processing Unit (GPU) Allocation Rules
 
-GPUs on SNAP are **shared** with other lab members. Blocking GPUs you aren't using prevents colleagues from running their work.
+Devices on the cluster are shared. The goal is not "never share" — cooperative sharing is fine — but rather "do not reserve more capacity than the job actually needs, especially for long-running, low-utilization work."
 
-### Before launching: estimate, suggest, and ask
+### Before launching: baseline, estimate, suggest, and ask
 
-1. **Estimate VRAM and utilization.** Before launching, figure out how much GPU memory the job needs and whether it will be GPU-bound or CPU-bound. Common patterns:
-   - **CPU-bound with GPU probe** (Task2Vec, Fisher Info, streaming data + small model): ~1–5 GB VRAM, <10% GPU utilization. The GPU sits idle 90%+ of the time while data streams/tokenizes on CPU.
-   - **GPU-bound training** (fine-tuning, full model training): 10–140 GB VRAM, 80–100% GPU utilization.
-   - **Inference serving** (vLLM, TGI): 20–140 GB VRAM depending on model size, high utilization under load.
+1. **The 1-Device Baseline:** Prefer a short 1-device baseline first (e.g., a ≤5 minute slice) whenever practical.
+   Record: throughput, VRAM used, compute utilization, and signs of CPU or IO bottlenecks.
+2. **Estimate and report:**
+   * Estimated VRAM usage.
+   * Expected utilization pattern.
+   * Estimated duration (or explicitly state if unknown).
+3. **Suggest the right-sized machine.**
+   If the workload is small, bursty, or strictly data-bound, suggest a CPU run or a smaller node. If the user approves the current machine, proceed.
+4. **Ask before scaling.**
+   Never silently claim 2+ devices. Show which devices, estimated memory per device, expected utilization per device, and wait for approval.
+5. **Hard Sandboxing:**
+   You MUST isolate the environment using `export CUDA_VISIBLE_DEVICES=<id>` before running the code. Do not rely on framework defaults.
 
-2. **Suggest the right machine for the job.** If the job needs <20 GB VRAM, suggest a smaller-GPU machine (e.g., Mercury nodes on SNAP) instead of occupying an H200 (140 GB) or A100 (80 GB). Present this to the user: *"This job needs ~5 GB VRAM. We could run it on Mercury instead of using an H200 — want me to do that?"* The user may have reasons to stay (e.g., next job is large, or they want everything on one machine) — that's fine, but make them aware of the tradeoff.
+### After launching: verify
 
-3. **Warn about multi-GPU plans.** If you plan to use 2+ GPUs, tell the user the allocation plan with estimated VRAM and utilization per GPU, and ask for approval. Never silently claim multiple GPUs. For CPU-bound jobs, recommend running sequentially on 1 GPU.
-
-4. **Check who else needs GPUs.** Run `nvidia-smi` and note current usage. If the machine is busy, mention it.
-
-### After launching: verify within 2 minutes
-
-Sample GPU utilization shortly after launch:
-```bash
-for i in 1 2 3 4 5; do nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader -i <GPU_ID>; sleep 2; done
-```
-If utilization is <10% on most samples, report this to the user and suggest consolidating or switching machines.
+Sample utilization shortly after launch to ensure the script is behaving as expected.
+If utilization is persistently low (<10%) but memory is held, do not automatically keep scaling. Instead, flag the issue to the user and suggest:
+* Consolidating onto fewer devices.
+* Fixing data loading / tokenization bottlenecks.
+* Moving to a CPU node.
 
 ---
 
