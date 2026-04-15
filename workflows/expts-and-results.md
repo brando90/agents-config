@@ -257,6 +257,71 @@ After every experiment run completes (success or failure):
 
 ---
 
+## Email Notification on Experiment Completion (MANDATORY)
+
+**This is non-negotiable. When an experiment finishes — PASS or FAIL — you MUST send an email to `brando.science@gmail.com` with the results.** Do not skip this. Do not ask whether to send it. Do not create a draft. **Send the email.** Use the project's `SMTPNotifier` or the Gmail MCP tool — whichever is available. If neither works, use `scripts/send_pending_emails.py` as fallback.
+
+**Why this matters:** Brando needs to know experiment outcomes immediately — he may be away from the terminal, on his phone, or asleep. The email is how he tracks progress across all running experiments. A completed experiment with no email is invisible work.
+
+### Email Template
+
+Use this structure for every experiment completion email. Adapt the sections to fit the experiment — not every experiment has a comparison — but always include Results Summary, per-item breakdown, Config, and links.
+
+```
+To: brando.science@gmail.com
+CC: brando9@stanford.edu
+Subject: [Experiment <NN>] <experiment name> — <X/Y PASS> (<key takeaway>)
+
+Hi Brando,
+
+Here are the results from Experiment <NN>: <experiment description>.
+
+== RESULTS SUMMARY ==
+
+<X/Y pass rate, one-line headline metric>
+
+  [PASS] <item 1> (<attempts> attempt(s)) — <category/domain>
+  [PASS] <item 2> (<attempts> attempt(s)) — <category/domain>
+  [FAIL] <item 3> (<failure reason>) — <category/domain>
+  ...
+
+== COMPARISON == (if applicable — e.g., vs baseline, vs other system)
+
+<Comparison metrics organized by dimension (verification, cost, discovery, etc.)>
+
+== KEY INSIGHTS == (optional — 2-3 bullets on what was learned)
+
+- <insight 1>
+- <insight 2>
+
+== CONFIG ==
+
+Model: <exact model ID, e.g., claude-opus-4-6, gpt-5-pro>
+Backend: <backend used>
+Max attempts: <N>
+Lean: <version>
+Mathlib: <branch> (<N> cached oleans)
+Runtime: ~<duration>
+
+Full results at: experiments/<NN>_<name>/results_summary/<file>.md
+Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
+
+<email signature from ~/agents-config/email-signature.md>
+```
+
+### Rules
+
+1. **Send immediately** when the experiment finishes. Do not batch emails across experiments — one email per experiment completion.
+2. **Always CC** `brando9@stanford.edu` (per `email-signature.md`).
+3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
+4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
+5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
+6. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
+7. **Append the signature** from `~/agents-config/email-signature.md`.
+8. **If the experiment failed entirely** (0 passes, infrastructure error, etc.), still send the email. Subject: `[Experiment <NN>] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong.
+
+---
+
 ## Prompt Templates
 
 Each experiment keeps its own prompts under its versioned sub-experiment folders — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment iteration they belong to.
