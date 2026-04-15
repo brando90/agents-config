@@ -17,7 +17,7 @@ This file only lists mercury2-specific hardware. Everything else (DFS/AFS/LFS la
 | **System RAM** | ~503 GiB |
 | **LFS** | `/lfs/mercury2/0/brando9` (fast local storage, used as `$HOME`) |
 | **CUDA** | 12.4 (verify: `nvcc --version`) |
-| **OS** | Ubuntu (verify: `lsb_release -a`) |
+| **OS** | Ubuntu 20.04 |
 
 ```bash
 # Quick verify
@@ -36,4 +36,4 @@ nproc && free -h
 
 ## See Also
 
-- `~/agents-config/machine/snap.md` -- full SNAP cluster docs (filesystem, env setup, new-node bootstrap, common issues)
+- `~/agents-config/machine/snap.md` — full SNAP cluster docs (filesystem, env setup, new-node bootstrap, common issues)
