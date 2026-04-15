@@ -1,50 +1,31 @@
-# Mercury1 — SNAP Node
+# Machine: mercury1 — SNAP Cluster Node
+
+**mercury1 is a node in the Stanford SNAP cluster.** For full environment, filesystem, and workflow documentation, see `~/agents-config/machine/snap.md`.
+
+This file only lists mercury1-specific hardware. Everything else (DFS/AFS/LFS layout, environment setup, new-node bootstrap, common issues) is in `~/agents-config/machine/snap.md`.
+
+---
 
 ## Hardware
-- GPU: 10× NVIDIA RTX A4000 (16 GB VRAM each)
-- CPU: 96 cores
-- RAM: 487 GB
-- LFS: `/lfs/mercury1/0/brando9` (fast local storage, used as `$HOME`)
 
-## Behavioral Notes
-- Home directory is on LFS (`/lfs/mercury1/0/brando9`), NOT DFS. DFS is at `/dfs/scratch0/brando9`.
-- Many projects are cloned on both LFS and DFS — DFS copies are the canonical ones shared across machines.
-- Keys are at `~/keys/` (symlink to DFS).
+| Spec | Value |
+|:-----|:------|
+| **Hostname** | `mercury1.stanford.edu` |
+| **GPUs** | 10x NVIDIA RTX A4000 |
+| **GPU RAM** | 16 GB per GPU (160 GB total) |
+| **System RAM** | ~487 GB |
+| **CPU** | 96 cores |
+| **CUDA** | 12.4 (verify: `nvcc --version`) |
+| **OS** | Ubuntu 22.04 |
 
-## Common Development Patterns
-
-### Python Projects (uv / pip editable installs)
-Most projects use `pyproject.toml`. Install in editable mode:
 ```bash
-pip install -e ~/veribench
-pip install -e ~/lean4ai
-pip install -e ~/ZIP-FIT
+# Quick verify
+ssh <user>@mercury1.stanford.edu
+nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader
 ```
 
-### Running Tests
-```bash
-pytest tests/ -v                          # Run all tests
-pytest tests/test_foo.py -v               # Single file
-pytest tests/test_foo.py::TestClass -v    # Single class
-```
+---
 
-### Lean 4 / Mathlib (Lake build system)
-```bash
-cd ~/veribench/veribench_dataset/lean_src
-lake exe cache get   # Fetch precompiled Mathlib caches (required before first build)
-lake build
-lake lean path/to/file.lean  # Compile a single Lean file
-```
+## See Also
 
-### lean4ai Setup
-```bash
-conda create -y -n lean4ai python=3.10
-conda activate lean4ai
-pip install -e ~/lean4ai
-pip install -e ~/ZIP-FIT
-```
-
-## Key Paths
-- `~/keys/.brando90_github_token.txt` — GitHub token (on DFS, shared across servers)
-- `~/veribench/snap_setup.sh` — Full SNAP cluster first-time setup script
-- `~/veribench/setup.sh` — Local (non-SNAP) setup for veribench
+- `~/agents-config/machine/snap.md` — full SNAP cluster docs (filesystem, env setup, new-node bootstrap, common issues)
