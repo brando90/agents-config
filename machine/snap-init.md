@@ -62,6 +62,14 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 7. **Check GPUs:**
    - `nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader`
 
+8. **Verify remote-job-dispatch infrastructure:**
+   - **Kerberos ticket (enables SSH fire-and-forget):** `klist` should print a TGT with `Expires` in the future. If expired, `kinit` and retry.
+   - **SSH to peers without password:** `ssh skampere2 hostname` should print the peer hostname with no prompt. If it prompts, your Kerberos ticket is expired or missing from the peer's krb5.keytab scope.
+   - **ssh-submit.sh present:** `ls -la ~/agents-config/scripts/ssh-submit.sh` should show an executable file. If missing, `git -C ~/agents-config pull`.
+   - **DFS watcher daemon alive on at least one node:** `ls -lt ~/dfs/job_queue/watchers/` and `cat ~/dfs/job_queue/watchers/*.heartbeat | jq '.hostname, .state, .last_heartbeat'`. `last_heartbeat` must be younger than ~3× `poll_interval_s`. If stale, start one: `bash ~/ultimate-utils/py_src/uutils/job_scheduler_uu/start_watcher.sh`.
+   - **Git-inbox poller alive (phone dispatch bridge):** `cat ~/dfs/job_queue/git_inbox_heartbeat.json | jq '.hostname, .state, .last_heartbeat'`. If missing or stale, start one on the long-lived node (typically skampere1) — ONE poller total, not per-node: `tmux new -d -s git_inbox_poller "bash ~/agents-config/scripts/git-inbox-poller.sh"`.
+   - **Full reference:** `~/agents-config/workflows/remote-job-dispatch.md`.
+
 Report what passed, what failed, and what you fixed. End with a summary table.
 ````
 
@@ -78,6 +86,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 5 | Tools | `claude` and `codex` on PATH with recent versions |
 | 6 | Keys | `~/keys/` has anthropic, openai, hf, wandb, github keys |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |
+| 8 | Remote-job-dispatch | `klist` valid; `ssh <peer> hostname` passwordless; `ssh-submit.sh` present; ≥1 watcher heartbeat fresh; git-inbox poller heartbeat fresh (on one long-lived node) |
 
 ## Known Limitations
 
