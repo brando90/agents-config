@@ -16,7 +16,7 @@ By default, jobs run in **smart mode**: the watcher wraps execution in a coding 
 
 ## Prerequisite: `~/dfs` symlink
 
-Every path in this doc uses `~/dfs/job_queue/...`. That requires `~/dfs → /dfs/scratch0/<user>` to exist on every SNAP node running (or submitting to) the watcher. Without it, the watcher cannot find the queue and `cp my_train.sh ~/dfs/job_queue/pending/` silently fails.
+Every path in this doc uses `~/dfs/job_queue/...`. That requires `~/dfs → /dfs/scratch0/<user>` to exist on every SNAP node running (or submitting to) the watcher. Without it, the most dangerous case is that `~/dfs` is a plain local directory: `cp my_train.sh ~/dfs/job_queue/pending/` then succeeds locally on LFS but is invisible to the shared queue, so the job is never claimed and never appears anywhere a peer node looks. (See § "Is any job of mine running?" below for the diagnostic.)
 
 ```bash
 # Create once per node (snap_setup.sh does this automatically on new nodes):
