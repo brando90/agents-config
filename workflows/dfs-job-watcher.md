@@ -70,6 +70,23 @@ ls ~/dfs/job_queue/failed/      # exit != 0 or timeout
 cat ~/dfs/job_queue/logs/<job>___<hostname>.log  # stdout+stderr
 ```
 
+### Check which watchers are alive (across nodes)
+
+Each running watcher rewrites `~/dfs/job_queue/watchers/<hostname>.heartbeat`
+(JSON) every poll cycle. From any node that shares the DFS:
+
+```bash
+ls -lt ~/dfs/job_queue/watchers/
+cat  ~/dfs/job_queue/watchers/*.heartbeat | jq .
+```
+
+If a heartbeat's `last_heartbeat` is older than ~3× `poll_interval_s`, the
+watcher is almost certainly dead — SSH to that host and restart it. On a
+clean Ctrl-C the file is rewritten with `"state": "STOPPED"`; on an
+uncaught exception, `"state": "CRASHED"` (plus the crash email).
+SIGKILL / power loss leaves the file frozen as `RUNNING` — rely on mtime
+in that case.
+
 ---
 
 ## Smart Mode vs Direct Mode
@@ -115,6 +132,7 @@ The `submit` tool can inject this header at submission time via `--mode smart|di
     completed/    exit-code 0
     failed/       timed-out or non-zero exit
     logs/         per-job stdout+stderr logs
+    watchers/     per-host <hostname>.heartbeat JSON (liveness signal)
 ```
 
 ---
