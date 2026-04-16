@@ -303,6 +303,9 @@ Lean: <version>
 Mathlib: <branch> (<N> cached oleans)
 Runtime: ~<duration>
 
+== LINKS ==
+
+W&B Report: <permanent W&B Report URL, e.g., https://wandb.ai/brando-su/<project>/reports/<slug>>
 Full results at: experiments/<NN>_<name>/results_summary/<file>.md
 Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 
@@ -316,9 +319,10 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
 4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
 5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
-6. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
-7. **Append the signature** from `~/agents-config/email-signature.md`.
-8. **If the experiment failed entirely** (0 passes, infrastructure error, etc.), still send the email. Subject: `[Experiment <NN>] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong.
+6. **Include the W&B Report URL.** Every completed experiment version already requires a W&B Report with a permanent URL (see Requirements Checklist). That URL **must** appear in the email under `== LINKS ==`. If the report has not been generated yet, generate it before sending the email — do not send the email first and promise the report later. Example format: `https://wandb.ai/brando-su/<project>/reports/<slug>`.
+7. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
+8. **Append the signature** from `~/agents-config/email-signature.md`.
+9. **If the experiment failed entirely** (0 passes, infrastructure error, etc.), still send the email. Subject: `[Experiment <NN>] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong. If a partial W&B Report exists, include its URL anyway.
 
 ---
 
