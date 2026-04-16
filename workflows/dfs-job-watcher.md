@@ -25,7 +25,7 @@ bash ~/ultimate-utils/py_src/uutils/job_scheduler_uu/start_watcher.sh --max-conc
 
 # Option B: direct
 export PYTHONPATH=~/ultimate-utils/py_src
-python -m uutils.job_scheduler_uu.scheduler --poll 15 --gpu-idle-timeout 1800 --max-concurrent 4
+python -m uutils.job_scheduler_uu.scheduler --poll 15 --gpu-idle-timeout 14400 --max-concurrent 4
 ```
 
 Attach/kill: `tmux attach -t job_watcher` / `tmux kill-session -t job_watcher`
@@ -84,7 +84,7 @@ If another node wins, either the link fails or the nlink count is > 2.
 
 ## Key Details
 
-- **GPU-idle kill:** Default 30 minutes of continuous GPU idleness (<=1% utilization) triggers a kill. Long-running GPU-active jobs are left alone indefinitely. Configurable via `--gpu-idle-timeout` (seconds, 0 to disable) and `--gpu-idle-threshold` (default 1.0%).
+- **GPU-idle kill:** Default 4 hours of continuous GPU idleness (<=1% utilization) triggers a kill. Long-running GPU-active jobs are left alone indefinitely. Configurable via `--gpu-idle-timeout` (seconds, 0 to disable) and `--gpu-idle-threshold` (default 1.0%).
 - **Wall-clock safety net:** Default 48 hours hard timeout kills unconditionally (for truly runaway jobs). Configurable via `--timeout`.
 - **Environment:** The subprocess inherits the full host environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.).
 - **Job types:** `.sh` and `.bash` run with bash; `.py` runs with the current Python; `.json` not yet supported.
