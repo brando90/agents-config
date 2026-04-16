@@ -20,9 +20,12 @@ A decentralized, file-based job scheduler using a spool-directory pattern. Multi
 # Option A: tmux launcher (recommended)
 bash ~/ultimate-utils/py_src/uutils/job_scheduler_uu/start_watcher.sh
 
+# Run up to 4 jobs in parallel on this node:
+bash ~/ultimate-utils/py_src/uutils/job_scheduler_uu/start_watcher.sh --max-concurrent 4
+
 # Option B: direct
 export PYTHONPATH=~/ultimate-utils/py_src
-python -m uutils.job_scheduler_uu.scheduler --poll 15 --timeout 14400
+python -m uutils.job_scheduler_uu.scheduler --poll 15 --gpu-idle-timeout 1800 --max-concurrent 4
 ```
 
 Attach/kill: `tmux attach -t job_watcher` / `tmux kill-session -t job_watcher`
@@ -81,9 +84,20 @@ If another node wins, either the link fails or the nlink count is > 2.
 
 ## Key Details
 
-- **Timeout:** Default 4 hours. On timeout, the entire process tree is killed (SIGKILL via `/proc` walk + `killpg`) to free GPUs.
+- **GPU-idle kill:** Default 30 minutes of continuous GPU idleness (<=1% utilization) triggers a kill. Long-running GPU-active jobs are left alone indefinitely. Configurable via `--gpu-idle-timeout` (seconds, 0 to disable) and `--gpu-idle-threshold` (default 1.0%).
+- **Wall-clock safety net:** Default 48 hours hard timeout kills unconditionally (for truly runaway jobs). Configurable via `--timeout`.
 - **Environment:** The subprocess inherits the full host environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.).
 - **Job types:** `.sh` and `.bash` run with bash; `.py` runs with the current Python; `.json` not yet supported.
 - **FIFO ordering:** Pending jobs are sorted by modification time (oldest first).
 - **Deduplication:** The submit tool uses `O_CREAT | O_EXCL` to prevent two concurrent submitters from overwriting each other.
 - **Triple-underscore separator:** Claimed filenames use `___` (not `_`) between the job name and hostname, avoiding ambiguity with underscores in filenames.
+- **Parallel jobs on one node:** `--max-concurrent N` (default 1) lets one watcher run N jobs simultaneously. Each job is a real OS process (`subprocess.Popen`), so they get true parallelism — no GIL. The main loop polls child PIDs non-blockingly each cycle and launches new claims when under capacity.
+
+---
+
+## Where Things Live
+
+- **Code (scheduler, submitter, tmux launcher):** `~/ultimate-utils/py_src/uutils/job_scheduler_uu/` — this is the Python implementation. Edit here for algorithm or CLI changes.
+- **Docs (usage guide, protocol, operator commands):** `~/agents-config/workflows/dfs-job-watcher.md` (this file) — this is the human-readable reference. Update here when the interface changes.
+
+Keep both in sync after changes.
