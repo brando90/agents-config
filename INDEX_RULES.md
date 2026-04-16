@@ -68,7 +68,7 @@ Every SNAP node must have these symlinks in `$HOME` (LFS). Missing symlinks caus
 - `~/agents.md` → `~/agents-config/agents.md`
 - `~/.claude` → `/dfs/scratch0/<user>/.claude` (shared auth across nodes)
 - `~/keys` → `/dfs/scratch0/<user>/keys`
-- **`~/dfs` → `/dfs/scratch0/<user>`** (required by the DFS job queue watcher and any tooling that uses `~/dfs/...` paths; if `~/dfs` is a plain local directory instead of the symlink, `cp file ~/dfs/job_queue/pending/` succeeds locally on LFS and is invisible to the shared queue — see `workflows/dfs-job-watcher.md` § "Is any job of mine running?")
+- **`~/dfs` → `/dfs/scratch0/<user>`** (required by the DFS job queue watcher and any tooling that uses `~/dfs/...` paths; if `~/dfs` is a plain local directory instead of the symlink, `cp file ~/dfs/job_queue/pending/` succeeds locally on LFS and is invisible to the shared queue — see `workflows/remote-job-dispatch.md` § "Is any job of mine running?")
 - Plus each project dir under `~/` (e.g. `~/veribench`) as a symlink to `/dfs/scratch0/<user>/<project>`
 
 ---

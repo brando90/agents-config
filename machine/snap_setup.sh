@@ -57,7 +57,7 @@ ln -sfn "$DFS/.claude" "$HOME/.claude"
 ln -sfn "$DFS/keys" "$HOME/keys"
 
 # ---- Symlink ~/dfs → $DFS (LFS home → DFS root) ----
-# Required by the DFS job queue watcher (workflows/dfs-job-watcher.md), which
+# Required by the DFS job queue watcher (workflows/remote-job-dispatch.md), which
 # reads/writes ~/dfs/job_queue/. Other tooling that references ~/dfs/... also
 # relies on this. Must exist on every SNAP node.
 ln -sfn "$DFS" "$HOME/dfs"

@@ -64,7 +64,7 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 
 8. **Verify remote-job-dispatch infrastructure:**
    - **Kerberos ticket (enables SSH fire-and-forget):** `klist` should print a TGT with `Expires` in the future. If expired, `kinit` and retry.
-   - **SSH to peers without password:** `ssh skampere2 hostname` should print the peer hostname with no prompt. If it prompts, your Kerberos ticket is expired or missing from the peer's krb5.keytab scope.
+   - **SSH to peers without password:** `ssh skampere2 hostname` should print the peer hostname with no prompt. If it prompts for a password, your local Kerberos TGT is almost certainly expired or missing — `kinit` and retry. (Peer-side keytab scope is rarely the real cause on SNAP.)
    - **ssh-submit.sh present:** `ls -la ~/agents-config/scripts/ssh-submit.sh` should show an executable file. If missing, `git -C ~/agents-config pull`.
    - **DFS watcher daemon alive on at least one node:** `ls -lt ~/dfs/job_queue/watchers/` and `cat ~/dfs/job_queue/watchers/*.heartbeat | jq '.hostname, .state, .last_heartbeat'`. `last_heartbeat` must be younger than ~3× `poll_interval_s`. If stale, start one: `bash ~/ultimate-utils/py_src/uutils/job_scheduler_uu/start_watcher.sh`.
    - **Git-inbox poller alive (phone dispatch bridge):** `cat ~/dfs/job_queue/git_inbox_heartbeat.json | jq '.hostname, .state, .last_heartbeat'`. If missing or stale, start one on the long-lived node (typically skampere1) — ONE poller total, not per-node: `tmux new -d -s git_inbox_poller "bash ~/agents-config/scripts/git-inbox-poller.sh"`.

@@ -39,7 +39,7 @@ ssh <user>@<hostname>.stanford.edu
 - `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/experiments/.bashrc` by `snap_setup.sh`.
 - **Clone repos to DFS** (`/dfs/scratch0/<user>/`), then symlink from LFS home. Never clone directly to LFS — it's node-local and not backed up.
 - **LFS project paths are always symlinks to DFS.** Every project directory under `~/` (LFS) must be a symlink to its canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/<user>/veribench`. This ensures all servers see the same repo state and avoids stale or divergent copies. The `snap_setup.sh` and new-node setup scripts create these symlinks automatically.
-- **`~/dfs` must be a symlink to `/dfs/scratch0/<user>`.** Required by the DFS job queue watcher (`workflows/dfs-job-watcher.md`) and any tooling that references `~/dfs/...`. Create with `ln -sfn /dfs/scratch0/<user> ~/dfs`. `snap_setup.sh` creates this automatically.
+- **`~/dfs` must be a symlink to `/dfs/scratch0/<user>`.** Required by the DFS job queue watcher (`workflows/remote-job-dispatch.md`) and any tooling that references `~/dfs/...`. Create with `ln -sfn /dfs/scratch0/<user> ~/dfs`. `snap_setup.sh` creates this automatically.
 - **Run Docker/Harbor from LFS**, not AFS/DFS. NFS/AFS has root-squash that blocks Docker writes.
 - If a `/dfs/` mount is missing, `cd /dfs/scratch0` triggers AutoFS. If still missing, check https://ilwiki.stanford.edu/doku.php?id=hints:storefiles.
 

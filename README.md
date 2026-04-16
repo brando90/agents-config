@@ -92,7 +92,8 @@ agents-config/
 │   ├── qa-correctness.md        ← cross-agent QA review (correctness + structural)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
-│   ├── dfs-job-watcher.md       ← DFS job queue for SNAP (submit from one node, run on any)
+│   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox
+│   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern
 │   ├── tweprints.md             ← tweet thread format
@@ -443,7 +444,7 @@ SNAP has no Slurm — you SSH into individual nodes. The DFS job queue lets you 
 ```
 
 **Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/master/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
-**Full usage guide:** [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) (start/stop commands, submit examples, atomic claim details).
+**Full usage guide:** [`workflows/remote-job-dispatch.md`](workflows/remote-job-dispatch.md) (covers the DFS watcher alongside SSH fire-and-forget and phone git-inbox dispatch — start/stop commands, submit examples, atomic claim details).
 
 ---
 
