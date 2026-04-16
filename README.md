@@ -243,6 +243,67 @@ codex  # sign in with ChatGPT when prompted, or set OPENAI_API_KEY
 ssh <server> -t 'tmux attach -t codex'
 ```
 
+### Gemini CLI — server setup (headless)
+
+Google's `gemini` CLI needs Node.js >= 18 and either an OAuth browser login or a `GEMINI_API_KEY`. On a headless server, use the API key path — no browser required.
+
+**One-shot setup script** — [`setup_gemini_cli.sh`](setup_gemini_cli.sh) installs `@google/gemini-cli`, writes the key to `~/.gemini/.env` (mode 600), and verifies it:
+
+```bash
+# Headless (recommended for servers): prompts for API key, saves to ~/.gemini/.env
+bash ~/agents-config/setup_gemini_cli.sh --api-key
+
+# Interactive OAuth (only works where a browser is reachable):
+bash ~/agents-config/setup_gemini_cli.sh
+```
+
+Get an API key from https://aistudio.google.com/apikey.
+
+**Manual steps** (equivalent to the script, if you prefer):
+
+```bash
+# 1. Install (Node >= 18 required)
+npm install -g @google/gemini-cli
+
+# 2. Persist key for future shells
+mkdir -p ~/.gemini
+printf 'GEMINI_API_KEY=%s\n' '<your-key>' > ~/.gemini/.env
+chmod 600 ~/.gemini/.env
+
+# 3. Export for current shell
+export GEMINI_API_KEY=$(grep -E '^GEMINI_API_KEY=' ~/.gemini/.env | cut -d= -f2-)
+
+# 4. Verify
+gemini -p "Say exactly: hello world"
+```
+
+**Persistent sessions over SSH** — run `gemini` inside `tmux` / `krbtmux` so drops don't kill it (same pattern as Codex):
+
+```bash
+tmux new -As gemini
+gemini                                              # interactive REPL
+# Reconnect later: ssh <server> -t 'tmux attach -t gemini'
+```
+
+**SNAP multi-node — share auth via DFS** (so every node reads the same key):
+
+```bash
+# Once, from any node (after the key is set up):
+mv ~/.gemini /dfs/scratch0/<user>/.gemini
+ln -sfn /dfs/scratch0/<user>/.gemini ~/.gemini
+
+# On every other node:
+rm -rf ~/.gemini
+ln -sfn /dfs/scratch0/<user>/.gemini ~/.gemini
+```
+
+Then add to `/dfs/scratch0/<user>/.bashrc` so the key is in every new shell:
+
+```bash
+# Gemini CLI API key (headless)
+[ -f ~/.gemini/.env ] && export GEMINI_API_KEY=$(grep -E '^GEMINI_API_KEY=' ~/.gemini/.env | cut -d= -f2-)
+```
+
 ### Server rollout checklist
 
 ```

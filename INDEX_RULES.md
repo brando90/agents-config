@@ -80,7 +80,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style blog post format for research projects
 - [`workflows/repo-init.md`](workflows/repo-init.md) — migrating a project to the agents-config pattern
-- [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) — DFS job queue daemon for SNAP nodes without Slurm (code in `ultimate-utils/py_src/uutils/job_scheduler_uu/`)
+- [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) — DFS job queue daemon for SNAP nodes without Slurm. Smart mode (default) wraps jobs in a coding agent that diagnoses failures, retries, and emails results. Code: `~/ultimate-utils/py_src/uutils/job_scheduler_uu/`
 
 ## Writing
 
