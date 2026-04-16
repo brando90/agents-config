@@ -322,6 +322,74 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 
 ---
 
+## Big-Task Notification (MANDATORY for non-experiment "big" tasks)
+
+Per INDEX_RULES Trigger Rule 12, email `brando.science@gmail.com` (CC `brando9@stanford.edu`) when a "big" user-assigned task finishes — not just experiments. Use the same send mechanics as experiment emails: send immediately via the project's `SMTPNotifier` or the Gmail MCP tool; if neither works, use `scripts/send_pending_emails.py` as fallback. Do not draft it. Send it.
+
+### What counts as a "big" task
+
+Send the email if any of these apply:
+- Multi-file edits to shared config (`~/agents-config/`, cluster-level `CLAUDE.md`, etc.)
+- Adding or meaningfully modifying a workflow doc or Hard/Trigger Rule
+- Drafting a blog post, paper section, or other writing artifact
+- Repo migration, CI change, auth/infra change
+- Any task that went through the QA chain
+- Any task that took more than ~5 tool calls AND produced durable artifacts (commits, pushed files, new docs)
+
+Do NOT send for: single-line edits, read-only questions, exploratory searches, trivial refactors the user didn't ask to be notified about.
+
+**When in doubt, send.** A false-positive email is cheap; a missed completion is expensive.
+
+### Big-Task Email Template
+
+```
+To: brando.science@gmail.com
+CC: brando9@stanford.edu
+Subject: [Task] <one-line task description> — DONE (<key outcome>)
+
+Hi Brando,
+
+Finished the task you asked for: <one-sentence description>.
+
+== WHAT CHANGED ==
+
+- <file 1 path> — <one-line what/why>
+- <file 2 path> — <one-line what/why>
+- ...
+
+== COMMITS / PUSHES ==
+
+- <repo>: <short SHA> — <commit subject>  (pushed: yes/no)
+- ...
+
+== QA ==
+
+<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / Gemini). Link or path to QA output if substantive.>
+
+== NOTES == (optional — 1-3 bullets on anything surprising, partial, or needing follow-up)
+
+- <note 1>
+- <note 2>
+
+Links:
+- <repo URL(s) or PR link(s) if applicable>
+- <doc path(s)>
+
+<email signature from ~/agents-config/email-signature.md>
+```
+
+### Rules (big-task emails)
+
+1. **Send immediately** when the task is done — after the final commit/push/QA, not before.
+2. **Always CC** `brando9@stanford.edu`.
+3. **Subject line** must be scannable from a phone lock screen — task in 5-8 words, outcome tag (DONE / PARTIAL / BLOCKED).
+4. **List every touched file** under WHAT CHANGED with a one-liner. No walls of prose.
+5. **Include commit SHAs and push status** so Brando can pull/verify from any machine.
+6. **Append the signature** from `~/agents-config/email-signature.md`.
+7. **If the task is BLOCKED or PARTIAL**, still send the email. Subject: `[Task] <desc> — BLOCKED (<reason>)` or `— PARTIAL`. Explain what's done, what's not, what's needed to unblock.
+
+---
+
 ## Prompt Templates
 
 Each experiment keeps its own prompts under its versioned sub-experiment folders — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment iteration they belong to.

@@ -10,7 +10,7 @@
 
 These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the highest-priority rules at session start without needing to dereference. Hard Rules apply to EVERY response in EVERY session; triggered rules apply when their stated condition is met.
 
-1. **TLDR** — End every response with `**TLDR:**` (1-2 sentences). No exceptions.
+1. **Dual TLDR (top + end)** — Open every response with `**TLDR-start:**` and close with `**TLDR-end:**` (1–2 sentences each). The top one is a fast preview so the user sees a summary in prefix-s / collapsed view. The bottom one is authoritative: write it last, from the actual response content, **ignoring what `TLDR-start` said**. Do not copy-paste between them; if the reasoning in the response changed your conclusion, `TLDR-end` should reflect that. If only one is present, it must be `TLDR-end`. No exceptions.
 2. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
 3. **No secrets** — Never commit secrets. Review diffs before pushing.
 4. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
