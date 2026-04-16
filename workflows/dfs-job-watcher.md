@@ -8,7 +8,7 @@ How to submit and run jobs on SNAP nodes that share a DFS but lack Slurm.
 
 A decentralized, file-based job scheduler using a spool-directory pattern. Multiple watcher daemons on different nodes poll a shared `pending/` directory, atomically claim jobs via NFS-safe hardlinks, execute them, and route results to `completed/` or `failed/`. No central coordinator needed.
 
-By default, jobs run in **smart mode**: the watcher wraps execution in a coding agent (clauded/codex/claude) that diagnoses failures, retries up to 3 times, and emails results to `brando.science@gmail.com`. Use **direct mode** for plain subprocess execution (legacy behavior).
+By default, jobs run in **smart mode**: the watcher wraps execution in a coding agent (clauded/codex/claude) that diagnoses failures, makes up to 3 attempts total, and emails results to `brando.science@gmail.com`. Use **direct mode** for plain subprocess execution (legacy behavior).
 
 **Code lives in:** `~/ultimate-utils/py_src/uutils/job_scheduler_uu/`
 
@@ -134,7 +134,7 @@ If another node wins, either the link fails or the nlink count is > 2.
 ## Key Details
 
 - **Smart mode by default:** Jobs are wrapped in a coding agent that diagnoses failures, retries, and emails results. Override with `--default-mode direct` or per-job `# JOB_MODE: direct`.
-- **Agent priority:** clauded (= claude --dangerously-skip-permissions) > codex --full-auto > claude --dangerously-skip-permissions. All bypass permission prompts since this is a daemon.
+- **Agent priority:** `clauded -p` > `codex exec --full-auto` > `claude -p --dangerously-skip-permissions`. All bypass permission prompts since this is a daemon.
 - **Daemon lifecycle emails:** The watcher emails `brando.science@gmail.com` on start, stop (Ctrl-C), and crash (unhandled exception).
 - **GPU-idle kill:** Default 4 hours of continuous GPU idleness (<=1% utilization) triggers a kill. Long-running GPU-active jobs are left alone indefinitely. Configurable via `--gpu-idle-timeout` (seconds, 0 to disable) and `--gpu-idle-threshold` (default 1.0%).
 - **Wall-clock safety net:** Default 48 hours hard timeout kills unconditionally (for truly runaway jobs). Configurable via `--timeout`.
