@@ -37,6 +37,7 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
    - `~/agents.md` -> `~/agents-config/agents.md`
    - `~/.claude` -> `/dfs/scratch0/brando9/.claude` (shared auth across nodes)
    - `~/keys` -> `/dfs/scratch0/brando9/keys`
+   - `~/dfs` -> `/dfs/scratch0/brando9` (required by DFS job queue watcher and any `~/dfs/...` path). Create with `ln -sfn /dfs/scratch0/brando9 ~/dfs` if missing.
    - All project dirs under `~/` (e.g., `~/veribench`, `~/harbor-fork`) should be symlinks to `/dfs/scratch0/brando9/<project>`, NOT real directories. Run: `for d in /dfs/scratch0/brando9/*/; do name=$(basename "$d"); [ -L ~/"$name" ] || echo "WARNING: ~/$name is not a symlink to DFS"; done`
 
 3. **Verify RC auth:**
@@ -71,7 +72,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | # | Check | Expected |
 |---|-------|----------|
 | 1 | Paths | `HOME=/lfs/<hostname>/0/brando9`, `DFS=/dfs/scratch0/brando9`, `AFS=/afs/cs.stanford.edu/u/brando9` |
-| 2 | Symlinks (6 + project dirs) | All point to correct DFS/agents-config targets; all `~/` project dirs are symlinks to DFS |
+| 2 | Symlinks (7 + project dirs) | All point to correct DFS/agents-config targets (including `~/dfs → /dfs/scratch0/brando9`); all `~/` project dirs are symlinks to DFS |
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
 | 4 | agents-config | Up to date, CLAUDE.md has Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
 | 5 | Tools | `claude` and `codex` on PATH with recent versions |

@@ -58,6 +58,21 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 
 ---
 
+## SNAP Required Symlinks (every node)
+
+Every SNAP node must have these symlinks in `$HOME` (LFS). Missing symlinks cause silent failures in tooling that assumes `~/...` paths resolve to DFS. `snap_setup.sh` and `machine/snap-init.md` create/verify them.
+
+- `~/.bashrc` → `/dfs/scratch0/<user>/.bashrc`
+- `~/agents-config` → `/dfs/scratch0/<user>/agents-config`
+- `~/CLAUDE.md` → `~/agents-config/CLAUDE.md`
+- `~/agents.md` → `~/agents-config/agents.md`
+- `~/.claude` → `/dfs/scratch0/<user>/.claude` (shared auth across nodes)
+- `~/keys` → `/dfs/scratch0/<user>/keys`
+- **`~/dfs` → `/dfs/scratch0/<user>`** (required by the DFS job queue watcher and any tooling that uses `~/dfs/...` paths; without it, `cp file ~/dfs/job_queue/pending/` silently fails)
+- Plus each project dir under `~/` (e.g. `~/veribench`) as a symlink to `/dfs/scratch0/<user>/<project>`
+
+---
+
 ## Machine Configs
 
 Load the one matching your current environment. Machine docs contain only behavioral constraints and gotchas — not discoverable specs. Run bash commands (`uname -m`, `nvidia-smi`, etc.) to inspect hardware at runtime.
@@ -80,7 +95,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style blog post format for research projects
 - [`workflows/repo-init.md`](workflows/repo-init.md) — migrating a project to the agents-config pattern
-- [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) — DFS job queue daemon for SNAP nodes without Slurm. Smart mode (default) wraps jobs in a coding agent that diagnoses failures, retries, and emails results. Code: `~/ultimate-utils/py_src/uutils/job_scheduler_uu/`
+- [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) — DFS job queue daemon for SNAP nodes without Slurm. Smart mode (default) wraps jobs in a coding agent that diagnoses failures, retries, and emails results. Code: `~/ultimate-utils/py_src/uutils/job_scheduler_uu/`. **Prerequisite:** `~/dfs` must be a symlink to `/dfs/scratch0/<user>` on every node that runs or submits to the watcher — see SNAP symlink list below.
 
 ## Writing
 

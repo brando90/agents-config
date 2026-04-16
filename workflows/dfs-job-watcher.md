@@ -14,6 +14,21 @@ By default, jobs run in **smart mode**: the watcher wraps execution in a coding 
 
 ---
 
+## Prerequisite: `~/dfs` symlink
+
+Every path in this doc uses `~/dfs/job_queue/...`. That requires `~/dfs → /dfs/scratch0/<user>` to exist on every SNAP node running (or submitting to) the watcher. Without it, the watcher cannot find the queue and `cp my_train.sh ~/dfs/job_queue/pending/` silently fails.
+
+```bash
+# Create once per node (snap_setup.sh does this automatically on new nodes):
+ln -sfn /dfs/scratch0/$(whoami) ~/dfs
+ls -la ~/dfs           # should show -> /dfs/scratch0/<user>
+ls    ~/dfs/job_queue/ # should show pending/ running/ completed/ failed/ logs/
+```
+
+If `~/dfs/job_queue/watchers/` does not exist, no watcher has ever run on this queue. The watcher creates that dir and writes a heartbeat into it on startup — its absence is the single-source check for "is anything running cluster-wide?"
+
+---
+
 ## Quick Reference
 
 ### Start the watcher daemon
