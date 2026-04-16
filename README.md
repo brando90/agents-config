@@ -243,23 +243,35 @@ codex  # sign in with ChatGPT when prompted, or set OPENAI_API_KEY
 ssh <server> -t 'tmux attach -t codex'
 ```
 
-### Gemini CLI — server setup (headless)
+### Gemini CLI — setup
 
-Google's `gemini` CLI needs Node.js >= 18 and either an OAuth browser login or a `GEMINI_API_KEY`. On a headless server, use the API key path — no browser required.
+Google's `gemini` CLI needs Node.js >= 18 and either an OAuth browser login or a `GEMINI_API_KEY`. **Which path you use depends on whether a browser is reachable from the machine running `gemini`:**
 
-**One-shot setup script** — [`setup_gemini_cli.sh`](setup_gemini_cli.sh) installs `@google/gemini-cli`, writes the key to `~/.gemini/.env` (mode 600), and verifies it:
+| Machine                     | Browser reachable? | Use this path                       |
+|-----------------------------|--------------------|-------------------------------------|
+| Your Mac (local)            | Yes                | OAuth (interactive)                 |
+| SNAP server / headless SSH  | No                 | API key (headless)                  |
+
+> The `gemini` CLI runs where you type `gemini`. If you're SSH'd into a SNAP node and running `gemini` there, that's the **server** case — use the API-key path even if your laptop has a browser.
+
+#### On your Mac (local, OAuth)
 
 ```bash
-# Headless (recommended for servers): prompts for API key, saves to ~/.gemini/.env
-bash ~/agents-config/setup_gemini_cli.sh --api-key
-
-# Interactive OAuth (only works where a browser is reachable):
-bash ~/agents-config/setup_gemini_cli.sh
+bash ~/agents-config/setup_gemini_cli.sh          # opens a browser tab for OAuth
 ```
 
-Get an API key from https://aistudio.google.com/apikey.
+#### On a SNAP server (headless, API key)
 
-**Manual steps** (equivalent to the script, if you prefer):
+Get a key from https://aistudio.google.com/apikey first (copy it to your clipboard from your Mac), then on the server:
+
+```bash
+bash ~/agents-config/setup_gemini_cli.sh --api-key   # prompts for the key, saves to ~/.gemini/.env (mode 600)
+```
+
+The script installs `@google/gemini-cli`, persists the key, and runs a verification prompt. That's the whole setup on a server.
+
+<details>
+<summary>Manual steps — server only (equivalent to <code>--api-key</code>, if you prefer to see what the script does)</summary>
 
 ```bash
 # 1. Install (Node >= 18 required)
@@ -288,8 +300,11 @@ done < ~/.gemini/.env
 # 4. Verify
 gemini -p "Say exactly: hello world"
 ```
+</details>
 
-**Persistent sessions over SSH** — run `gemini` inside `tmux` / `krbtmux` so drops don't kill it (same pattern as Codex):
+#### Server only — persistent sessions over SSH
+
+Run `gemini` inside `tmux` / `krbtmux` so SSH drops don't kill it (same pattern as Codex — Mac users don't need this):
 
 ```bash
 tmux new -As gemini
@@ -297,7 +312,9 @@ gemini                                              # interactive REPL
 # Reconnect later: ssh <server> -t 'tmux attach -t gemini'
 ```
 
-**SNAP multi-node — share auth via DFS** (so every node reads the same key):
+#### Server only — SNAP multi-node: share auth via DFS
+
+So every node reads the same key (run once from any one server after `--api-key` setup; skip on Mac):
 
 ```bash
 # Once, from any node (after the key is set up):
