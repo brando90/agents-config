@@ -51,7 +51,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, GPU jobs, experiment completions / big-task completions, Mega QA, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, experiment completions / big-task completions, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
@@ -271,7 +271,19 @@ printf 'GEMINI_API_KEY=%s\n' '<your-key>' > ~/.gemini/.env
 chmod 600 ~/.gemini/.env
 
 # 3. Export for current shell
-export GEMINI_API_KEY=$(grep -E '^GEMINI_API_KEY=' ~/.gemini/.env | cut -d= -f2-)
+while IFS= read -r line; do
+  [[ $line =~ ^[[:space:]]*# ]] && continue
+  if [[ $line =~ ^[[:space:]]*GEMINI_API_KEY[[:space:]]*=(.*)$ ]]; then
+    value=${BASH_REMATCH[1]}
+    value=${value%%#*}
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    value=${value#\"}; value=${value%\"}
+    value=${value#\'}; value=${value%\'}
+    export GEMINI_API_KEY="$value"
+    break
+  fi
+done < ~/.gemini/.env
 
 # 4. Verify
 gemini -p "Say exactly: hello world"
@@ -289,19 +301,34 @@ gemini                                              # interactive REPL
 
 ```bash
 # Once, from any node (after the key is set up):
-mv ~/.gemini /dfs/scratch0/<user>/.gemini
-ln -sfn /dfs/scratch0/<user>/.gemini ~/.gemini
+DFS="/dfs/scratch0/<user>"
+mv ~/.gemini "${DFS}/.gemini"
+ln -sfn "${DFS}/.gemini" ~/.gemini
 
 # On every other node:
 rm -rf ~/.gemini
-ln -sfn /dfs/scratch0/<user>/.gemini ~/.gemini
+ln -sfn "${DFS}/.gemini" ~/.gemini
 ```
 
 Then add to `/dfs/scratch0/<user>/.bashrc` so the key is in every new shell:
 
 ```bash
 # Gemini CLI API key (headless)
-[ -f ~/.gemini/.env ] && export GEMINI_API_KEY=$(grep -E '^GEMINI_API_KEY=' ~/.gemini/.env | cut -d= -f2-)
+if [ -f ~/.gemini/.env ]; then
+  while IFS= read -r line; do
+    [[ $line =~ ^[[:space:]]*# ]] && continue
+    if [[ $line =~ ^[[:space:]]*GEMINI_API_KEY[[:space:]]*=(.*)$ ]]; then
+      value=${BASH_REMATCH[1]}
+      value=${value%%#*}
+      value="${value#"${value%%[![:space:]]*}"}"
+      value="${value%"${value##*[![:space:]]}"}"
+      value=${value#\"}; value=${value%\"}
+      value=${value#\'}; value=${value%\'}
+      export GEMINI_API_KEY="$value"
+      break
+    fi
+  done < ~/.gemini/.env
+fi
 ```
 
 ### Server rollout checklist
@@ -381,10 +408,10 @@ SNAP has no Slurm — you SSH into individual nodes. The DFS job queue lets you 
 
 **How it works:**
 
-1. Each SNAP node runs a **watcher daemon** (in tmux or via `clauded`). The daemon polls `~/dfs/job_queue/pending/` every 15 seconds.
+1. Each SNAP node runs a **watcher daemon** (usually in tmux). The daemon polls `~/dfs/job_queue/pending/` every 15 seconds.
 2. You (or an agent) **drop a script** into `pending/` from any node. Because `~/dfs/` is on the shared DFS, every node sees it immediately.
 3. The first watcher to see the job **atomically claims it** (NFS-safe hardlink protocol — no double-execution even with multiple nodes racing) and moves it to `running/`.
-4. The watcher **executes the script**, inheriting the host's environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.), with a 4-hour timeout that kills the entire process tree to free GPUs.
+4. The watcher **executes the script**, inheriting the host's environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.). By default it runs in smart mode, wrapping the job in a coding agent that can diagnose failures, retry, and email results; if no agent binary is available, it falls back to direct subprocess execution. Separately, there is a 48-hour wall-clock safety timeout and a 4-hour continuous GPU-idle kill.
 5. When it finishes, the job moves to `completed/` (exit 0) or `failed/` (non-zero or timeout). Logs go to `logs/`.
 
 **The key idea:** You log into one server, submit jobs, and walk away. The other servers are already listening. No coordinator, no scheduler, no manual SSH — just a shared directory and a simple protocol.
@@ -398,7 +425,7 @@ SNAP has no Slurm — you SSH into individual nodes. The DFS job queue lets you 
     logs/         ← per-job stdout+stderr
 ```
 
-**Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/main/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
+**Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/master/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
 **Full usage guide:** [`workflows/dfs-job-watcher.md`](workflows/dfs-job-watcher.md) (start/stop commands, submit examples, atomic claim details).
 
 ---
