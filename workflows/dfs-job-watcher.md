@@ -85,6 +85,22 @@ ls ~/dfs/job_queue/failed/      # exit != 0 or timeout
 cat ~/dfs/job_queue/logs/<job>___<hostname>.log  # stdout+stderr
 ```
 
+### "Is any job of mine running?" — always check BOTH layers
+
+The watcher queue is only one way jobs get launched. A fire-and-forget `tmux new-session -d`, `nohup`, `disown`, or an inline script started from a terminal will never touch `~/dfs/job_queue/`. So when the user asks "is my job running" / "check watcher jobs" / "any job", inspect both:
+
+1. **Queue layer** — the commands above (`pending/`, `running/`, etc.) plus the watcher heartbeats (next section).
+2. **Detached-process layer** — on every node the job could be on:
+   ```bash
+   tmux ls                                              # every session, not just job_watcher
+   ps -u "$USER" -o pid,etime,%cpu,cmd --sort=-etime    # long-running procs
+   nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+   for s in $(tmux ls -F '#S' 2>/dev/null); do tmux capture-pane -t "$s" -p | tail -5; done
+   ```
+   If the job could be on a peer node (user said "I submitted from skampere1"), SSH to that peer and repeat. A submission on a node missing the `~/dfs` symlink silently lands in that node's LOCAL `~/dfs/job_queue/` and is invisible from the shared DFS — always check the local path on the source node as part of layer 2.
+
+Reporting only one layer is a known failure mode — silence on the other layer looks identical to "no job running."
+
 ### Check which watchers are alive (across nodes)
 
 Each running watcher rewrites `~/dfs/job_queue/watchers/<hostname>.heartbeat`
