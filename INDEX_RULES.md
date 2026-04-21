@@ -44,6 +44,16 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 
 ---
 
+## Collaborators / Contact roster
+
+Canonical bidirectional mapping **name ↔ email ↔ github** for Brando's research collaborators lives in ultimate-utils (kept there because the emailing utilities in `py_src/uutils/emailing.py` and `py_src/uutils/whatsapp_uu.py` consume it):
+
+- File: `~/ultimate-utils/py_src/uutils/collaborators.py`
+- Import: `from uutils.collaborators import by_email, by_name, by_github, resolve`
+- Use this to resolve any name / email / github handle to the person before emailing, CC'ing, @-mentioning, or assigning PRs. Includes Brando's own aliases so hostnames like `brando9@<host>.stanford.edu` don't get mistaken for a different person.
+
+---
+
 ## Guidelines (best practices)
 
 Follow these as conventions. They improve quality but are lower priority than Hard Rules and Trigger Rules.
