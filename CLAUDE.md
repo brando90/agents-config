@@ -11,7 +11,8 @@
 These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the highest-priority rules at session start without needing to dereference. Hard Rules apply to EVERY response in EVERY session; triggered rules apply when their stated condition is met.
 
 1. **Dual TLDR (top + end)** — Open every response with `**TLDR-start:**` and close with `**TLDR-end:**` (1–2 sentences each). The top one is a fast preview so the user sees a summary in prefix-s / collapsed view. The bottom one is authoritative: write it last, from the actual response content, **ignoring what `TLDR-start` said**. Do not copy-paste between them; if the reasoning in the response changed your conclusion, `TLDR-end` should reflect that. If only one is present, it must be `TLDR-end`. No exceptions.
-2. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
-3. **No secrets** — Never commit secrets. Review diffs before pushing.
-4. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
-5. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
+2. **Verification snapshot** — Immediately after `TLDR-end`, append a `**Snapshot:**` block: ~5–15 lines (cap 25) of the *smallest representative sample of actual artifacts* (rows from a generated dict, file path + size + head/tail, commit URLs, diff --stat, etc.) so the user can visually confirm the work was done. Not a TLDR rewrite. For intangible tasks, show a one-line before/after or a cited file:line. If truly nothing: `**Snapshot:** _(nothing to show — reason)_`.
+3. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
+4. **No secrets** — Never commit secrets. Review diffs before pushing.
+5. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
+6. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
