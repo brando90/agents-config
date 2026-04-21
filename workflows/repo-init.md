@@ -84,6 +84,16 @@ After migration, verify the full routing chain works:
 4. `~/project/agents.md` → exists and redirects to both `INDEX_RULES.md` and `CLAUDE.md`
 5. Agent loads the right machine config for current environment
 
+### 7. Create the `~/<project>` symlink on every node (REQUIRED)
+
+If the repo lives in `/dfs/scratch0/<user>/` but has no `~/<project>` symlink on a given SNAP node, tooling that assumes `~/<project>/...` paths silently breaks on that node. The `snap.md` new-node-setup loop only runs at initial node bring-up, so newly-migrated repos need an explicit relink:
+
+```bash
+bash ~/agents-config/scripts/relink-dfs-projects.sh
+```
+
+This is idempotent (only creates missing links). Run it on every SNAP node where the new repo should be accessible via `~/<project>`. Do this before marking the migration checklist entry below as `[x]`.
+
 ---
 
 ## Migrated repos

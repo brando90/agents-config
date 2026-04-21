@@ -138,17 +138,22 @@ ln -sfn /dfs/scratch0/<user>/.claude ~/.claude
 # 5c. Symlink ~/dfs → DFS root (required by dfs-job-watcher and any ~/dfs/... path)
 ln -sfn /dfs/scratch0/<user> ~/dfs
 
-# 6. Create DFS project symlinks in LFS home
-# (symlink each DFS project into LFS home so paths are short)
-for proj in /dfs/scratch0/<user>/*/; do
-  [ -d "$proj" ] || continue
-  name=$(basename "$proj")
-  [ ! -e ~/"$name" ] && ln -s "/dfs/scratch0/<user>/$name" ~/"$name"
-done
+# 6. Create DFS project symlinks in LFS home (idempotent — re-run whenever a new DFS repo is added)
+bash ~/agents-config/scripts/relink-dfs-projects.sh
 
 # 7. Verify
 which claude && which clauded
 ```
+
+### Adding a new DFS repo later
+
+The step-6 script is idempotent. After cloning or migrating a new repo into `/dfs/scratch0/<user>/`, re-run it on every node where you want the `~/<newrepo>` shortcut:
+
+```bash
+bash ~/agents-config/scripts/relink-dfs-projects.sh
+```
+
+Without this step, `~/<newrepo>` silently doesn't exist on that node, which breaks any tooling that assumes `~/<newrepo>/...` paths (this is what happened to `~/veribench-dt` between 2026-04-10 and 2026-04-20). The migration checklist in [`workflows/repo-init.md`](../workflows/repo-init.md) includes this as a required step.
 
 For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench/snap_setup.sh`. It:
 1. Creates DFS/LFS directories and symlinks `.bashrc` (AFS → DFS, LFS → DFS)
