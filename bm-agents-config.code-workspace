@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../ai-for-lean-site"
+		},
+		{
+			"path": "../pass-tests-fail-proofs-"
+		},
+		{
+			"path": "../sbsbz"
+		},
+		{
+			"path": "../ultimate-utils"
+		},
+		{
+			"path": "../veribench"
+		},
+		{
+			"path": "../veribench-dt"
+		},
+		{
+			"path": "../alignment-scaling-laws"
+		},
+		{
+			"path": "../AlphaDiana"
+		},
+		{
+			"path": "../cert-judge"
+		}
+	]
+}
