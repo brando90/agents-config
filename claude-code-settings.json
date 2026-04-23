@@ -8,8 +8,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "rm -f ~/.claude/.update.lock && npm install --prefix /dfs/scratch0/brando9 -g @anthropic-ai/claude-code@latest >/dev/null 2>&1 || true",
-            "timeout": 30,
+            "command": "bash ~/agents-config/scripts/auto-update-tools.sh",
+            "timeout": 60,
             "async": true
           }
         ]

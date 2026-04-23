@@ -16,4 +16,4 @@ These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the h
 4. **No secrets** — Never commit secrets. Review diffs before pushing.
 5. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
 6. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
-7. **Shared settings bootstrap** — On first run on any server, ensure Claude Code settings symlink to DFS: `mkdir -p ~/.claude && ln -sf /dfs/scratch0/brando9/.claude/settings.json ~/.claude/settings.json`
+7. **Auto-update tools** — Claude Code and Codex auto-update on every session start via `SessionStart` hook in `~/.claude/settings.json` (which calls `~/agents-config/scripts/auto-update-tools.sh`). If a tool seems outdated or a feature is missing, run `bash ~/agents-config/scripts/auto-update-tools.sh` manually and restart.

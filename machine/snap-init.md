@@ -83,7 +83,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 2 | Symlinks (7 + project dirs) | All point to correct DFS/agents-config targets (including `~/dfs → /dfs/scratch0/brando9`); all `~/` project dirs are symlinks to DFS |
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
 | 4 | agents-config | Up to date, CLAUDE.md has Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
-| 5 | Tools | `claude` and `codex` on PATH with recent versions |
+| 5 | Tools | `claude` and `codex` on PATH with latest versions; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
 | 6 | Keys | `~/keys/` has anthropic, openai, hf, wandb, github keys |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |
 | 8 | Remote-job-dispatch | `klist` valid; `ssh <peer> hostname` passwordless; `ssh-submit.sh` present; ≥1 watcher heartbeat fresh; git-inbox poller heartbeat fresh (on one long-lived node) |
