@@ -93,6 +93,22 @@ Key paths and vars set in `.bashrc`:
 - `clauded` script: `/afs/cs.stanford.edu/u/<user>/bin/clauded` (AFS `bin/` is on PATH; runs `claude --dangerously-skip-permissions "$@"`). A duplicate exists at `/dfs/scratch0/<user>/bin/clauded`.
 - Auth: `~/.claude/` is symlinked to `/dfs/scratch0/<user>/.claude` — shared auth across all SNAP nodes. Run `claude auth login` once on any server, all nodes pick it up.
 
+### npm globals — "update loop" gotcha
+
+If a globally-installed npm tool (`codex`, `claude`, `gemini`, etc.) keeps nagging "please restart / update again" *after* you run `npm install -g <pkg>`, it's almost always **two installs in different PATH positions** — npm writes to one prefix but the shell resolves a stale copy earlier in PATH.
+
+Diagnose:
+```bash
+which -a <tool>                      # multiple hits = shadowed install
+npm config get prefix                # where `npm install -g` writes
+dirname "$(command -v <tool>)"       # what the shell actually runs
+# the two above MUST match; if not, the earlier-in-PATH copy is stale.
+```
+
+Fix: delete the stale bin + lib (common culprits: `~/.local/bin/<tool>` + `~/.local/lib/node_modules/<@scope>/<pkg>`, or a root-owned `/usr/local/bin/<tool>` from a past system install).
+
+Prevent: **never prepend a hardcoded Node version to PATH in `.bashrc`** — e.g. `export PATH=".../.nvm/versions/node/v24.14.0/bin:$PATH"`. `nvm.sh` (sourced in `.bashrc`) already prepends the active-node bin, and hardcoding will silently shadow a newer node after `nvm install`, resurrecting this bug on every node upgrade.
+
 ### Vibe (Mistral)
 
 - Binary: `/dfs/scratch0/<user>/bin/vibe` (DFS, shared across nodes)

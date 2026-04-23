@@ -66,6 +66,7 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 19. **Always use SOTA models for experiments.** When running experiments, use the best available model from any model provider (e.g., Opus 4.6 not Sonnet 4 for Anthropic). When reporting results, always state the exact model ID (e.g., `claude-sonnet-4-20250514`). Weaker models undermine the paper's conclusions.
 20. **Use Brando's email signature.** When sending emails on Brando's behalf, CC brando9@stanford.edu and append the signature from [`email-signature.md`](email-signature.md).
 21. **Check `~/keys/` for API keys and secrets.** Before asking the user for credentials, always check `~/keys/` first (`ls -la ~/keys/`). Common files: `anthropic_bm_key_koyejolab.txt` (Anthropic API), `openai_bm_key_koyejolab.txt` (OpenAI), `master_hf_token.txt` (HuggingFace), `brandos_wandb_key.txt` (W&B). Load them with `cat ~/keys/<file>.txt` and set as env vars.
+22. **No hardcoded Node/nvm versions in `.bashrc` PATH prepends.** `nvm.sh` (sourced in `.bashrc`) already puts the active node's bin first in PATH. A hardcoded line like `export PATH=".../.nvm/versions/node/v24.14.0/bin:$PATH"` will silently shadow a newer node after `nvm install`, causing `npm install -g <tool>` to update one install while the shell runs another — the "please update" loop bug. See [`machine/snap.md`](machine/snap.md) § "npm globals — update loop gotcha" for the diagnose/fix recipe.
 
 ---
 
