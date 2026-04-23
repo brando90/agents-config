@@ -1,5 +1,19 @@
 {
   "model": "opus",
   "effortLevel": "xhigh",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f ~/.claude/.update.lock && npm install --prefix /dfs/scratch0/brando9 -g @anthropic-ai/claude-code@latest >/dev/null 2>&1 || true",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
 }
