@@ -1,0 +1,214 @@
+% TLDR: Template for experiment README.tex files. Copy this to your experiment dir and fill in.
+% Reference: pass-tests-fail-proofs/experiments/01_bayes_risk_oracle_comparison/readme.tex
+% Reference: veribench/experiments/38_full_metric/README.tex
+%
+% Every experiment README.tex should have these sections:
+%   1. Objective — what question does this experiment answer?
+%   2. Hypothesis — testable predictions (H1, H2, ...)
+%   3. Experimental Setting — dataset, agents/models, infrastructure
+%   4. Metric Definition — formal math definitions of all metrics
+%   5. Results — tables with actual numbers
+%   6. Why These Numbers Are Correct — sanity checks, diagnosis, interpretation
+%   7. Known Limitations — honest about confounds
+%   8. Verification Checklist — must-pass checks before reporting
+%   9. Reproduction — exact commands to re-run
+%  10. Experimental Details — model IDs, dates, file paths, W&B links
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\title{Experiment NN: [Short Descriptive Title]}
+\author{Brando Miranda \\ Stanford University \\ \texttt{brando9@stanford.edu}}
+\date{Started: YYYY-MM-DD \quad|\quad Status: [In Progress / Complete]}
+
+\begin{document}
+\maketitle
+
+%% ============================================================
+\section{Objective}
+\label{sec:objective}
+%% ============================================================
+
+% 1-2 paragraphs. What question does this experiment answer?
+% What is the independent variable? What is the dependent variable?
+
+TODO
+
+%% ============================================================
+\section{Hypothesis}
+\label{sec:hypothesis}
+%% ============================================================
+
+% Testable predictions. Number them H1, H2, etc.
+% Each should be falsifiable by the experiment's results.
+
+\begin{quote}
+\textbf{H1:} TODO --- [prediction about the outcome]
+
+\textbf{H2:} TODO --- [second prediction]
+\end{quote}
+
+%% ============================================================
+\section{Experimental Setting}
+\label{sec:setting}
+%% ============================================================
+
+\subsection{Dataset}
+
+% Table of dataset splits with counts and descriptions.
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+Split & $n$ & Description \\
+\midrule
+TODO & 0 & TODO \\
+\midrule
+\textbf{Total} & \textbf{0} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Models / Agents Under Evaluation}
+
+% Table listing all agents/models, their type, and status.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Agent / Model & Type & Status \\
+\midrule
+TODO & TODO & TODO \\
+\bottomrule
+\end{tabular}
+\caption{Agents under evaluation.}
+\end{table}
+
+\subsection{Infrastructure}
+
+% Docker, Harbor, cluster, sandboxing, anti-cheat — whatever applies.
+
+TODO
+
+%% ============================================================
+\section{Metric Definition}
+\label{sec:metric}
+%% ============================================================
+
+\subsection{Definitions}
+
+% Formal mathematical definitions of every metric used.
+% Include: symbol, full name, formula, range, edge cases.
+
+TODO
+
+\subsection{Composite Score (if applicable)}
+
+% How individual factors combine. Justify the aggregation method.
+
+TODO
+
+%% ============================================================
+\section{Results}
+\label{sec:results}
+%% ============================================================
+
+% Tables with actual numbers. Include raw data + any adjustments.
+% Follow the pass-tests-fail-proofs pattern:
+%   1. Raw results table
+%   2. "Why these numbers are correct" subsection with diagnosis
+%   3. Adjusted results if applicable
+%   4. Per-split breakdown
+
+\subsection{Overall Results}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Agent & Metric 1 & Metric 2 \\
+\midrule
+TODO & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\caption{Overall results. Date: YYYY-MM-DD. Model: \texttt{model-id}.}
+\end{table}
+
+\subsection{Why These Numbers Are Correct}
+
+% For EACH major result, explain WHY you believe it:
+%   - Sanity checks that passed (oracle, ceiling, floor)
+%   - Cross-validation with prior experiments
+%   - Diagnosis of surprising results (e.g., FP analysis)
+%   - Consistency checks (factors that should be identical are identical)
+
+TODO
+
+\subsection{Per-Split Analysis (if applicable)}
+
+TODO
+
+%% ============================================================
+\section{Known Limitations}
+\label{sec:limitations}
+%% ============================================================
+
+% Honest about confounds, approximations, and threats to validity.
+
+\begin{itemize}
+  \item TODO
+\end{itemize}
+
+%% ============================================================
+\section{Verification Checklist}
+\label{sec:verification}
+%% ============================================================
+
+% Must-pass checks before reporting results as final.
+% Use checkboxes. Agent must confirm each before committing.
+
+Before reporting results as final:
+
+\begin{enumerate}
+  \item[$\square$] TODO --- sanity check 1
+  \item[$\square$] TODO --- sanity check 2
+  \item[$\square$] Result files match (no transcription errors)
+\end{enumerate}
+
+%% ============================================================
+\section{Reproduction}
+\label{sec:reproduction}
+%% ============================================================
+
+% Exact bash commands to reproduce from scratch.
+
+\begin{verbatim}
+# Step 1: ...
+TODO
+
+# Step 2: ...
+TODO
+\end{verbatim}
+
+%% ============================================================
+\section{Experimental Details}
+\label{sec:details}
+%% ============================================================
+
+\begin{itemize}
+  \item \textbf{Model:} TODO (\texttt{model-id})
+  \item \textbf{Date:} YYYY-MM-DD
+  \item \textbf{Result files:}
+    \begin{itemize}
+      \item \texttt{results/TODO.json}
+    \end{itemize}
+  \item \textbf{W\&B:} \url{https://wandb.ai/brando-su/TODO}
+\end{itemize}
+
+\end{document}
