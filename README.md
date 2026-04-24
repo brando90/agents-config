@@ -448,6 +448,30 @@ SNAP (the non-gated portion) has no Slurm — you SSH into individual nodes. The
 **Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/master/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
 **Full usage guide:** [`workflows/remote-job-dispatch.md`](workflows/remote-job-dispatch.md) (covers the DFS watcher alongside SSH fire-and-forget and phone git-inbox dispatch — start/stop commands, submit examples, atomic claim details).
 
+### Keeping watchers alive: keytab + cron (no password prompt, ever)
+
+Two failure modes can silently kill a watcher: (a) Kerberos/AFS ticket expiry (~10h) — outbound smtp/agent calls from inside the watcher start failing; (b) node reboot — the tmux session is gone. Both are neutralised by two cron entries on each watcher node, both pointing at scripts on shared DFS:
+
+```
+0 */4 * * * /dfs/scratch0/brando9/bin/krenew.sh                       # 4-hourly Kerberos+AFS renewal
+@reboot     /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh      # waits for DFS, krenew, relaunch
+```
+
+**No password is ever entered** — `krenew.sh` does `kinit -kt /dfs/scratch0/brando9/.keytab brando9@CS.STANFORD.EDU`, which uses the **keytab** as proof of identity. The keytab is a one-time artifact derived from your Stanford password (created interactively via `ktutil` on a Mac terminal — see [`init_no_passwords_snap_kinit.md`](init_no_passwords_snap_kinit.md) Part A). After it exists on DFS at `chmod 600`, every node and every cron invocation can refresh tickets without prompting. **An automation session (Claude Code, cron, Codex, etc.) never needs the password — it just needs read access to the keytab file.** If you change your Stanford password, the keytab becomes invalid until regenerated.
+
+**Helper scripts** (all in `/dfs/scratch0/brando9/bin/`, shared across nodes):
+- `krenew.sh` — `kinit -kt …; aklog`. Used by the 4-hourly cron and by `start_watcher_at_reboot.sh`.
+- `launch_watcher_remote.sh` — auto-detects python, bootstraps deps, pins `--job-dir /dfs/scratch0/brando9/job_queue`, wraps in `tmux new-session -d -s job_watcher 'bash -c …'` so import errors show up in `logs/watcher_daemon_<host>.log` instead of vanishing.
+- `start_watcher_at_reboot.sh` — boot wrapper: waits up to 5 min for DFS, runs `krenew.sh`, then `launch_watcher_remote.sh`. Logs to `/tmp/start_watcher_at_reboot_<host>.log`.
+
+**Verify on a node:**
+```bash
+crontab -l | grep -E 'krenew|start_watcher'    # both lines present
+klist                                          # ticket valid
+tmux ls | grep job_watcher                     # watcher session up
+ls /dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat
+```
+
 ---
 
 ## How to Integrate with Your Project Repos

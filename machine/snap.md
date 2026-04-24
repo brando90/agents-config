@@ -72,6 +72,17 @@ SNAP is in the middle of migrating GPU nodes behind `pam_slurm_adopt`. Status as
 1. ssh probes: `ssh <host>.stanford.edu "hostname && ls /dfs/scratch0/brando9 >/dev/null && echo DFS-OK"`. Abort if either fails.
 2. Use `/dfs/scratch0/brando9/bin/launch_watcher_remote.sh` — it auto-detects python, bootstraps missing deps, pins `--job-dir /dfs/scratch0/brando9/job_queue`, and wraps in `tmux new-session -d … bash -c '…'` so import errors land in `logs/watcher_daemon_<host>.log` instead of vanishing.
 3. Verify the heartbeat appears in `/dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat` within ~20s.
+4. Install both cron entries so the watcher survives ticket expiry **and** node reboot:
+   ```
+   ssh <host> "(crontab -l 2>/dev/null | grep -vE 'krenew|start_watcher_at_reboot'; \
+                printf '0 */4 * * * /dfs/scratch0/brando9/bin/krenew.sh\n@reboot /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh\n') | crontab -"
+   ```
+   The first refreshes Kerberos+AFS via the DFS keytab (no password prompt — see "How keytab reauth works" below). The second waits for DFS to come up after boot, runs `krenew.sh`, then re-launches the watcher in tmux. Boot wrapper logs to `/tmp/start_watcher_at_reboot_<host>.log`.
+
+**How keytab reauth works (and why no password is ever entered after one-time setup):**
+- The "secret" is `/dfs/scratch0/brando9/.keytab` — a 83-byte file derived once from your Stanford password via `ktutil` (see [`../init_no_passwords_snap_kinit.md`](../init_no_passwords_snap_kinit.md) Part A). It is chmod 600, on shared DFS, so every node and every cron job can read it.
+- `krenew.sh` runs `kinit -kt $KEYTAB brando9@CS.STANFORD.EDU && aklog`. The keytab acts as proof-of-password to the KDC. **No interactive prompt, no env var, no agent ever has to type or store the password itself.**
+- If you change your Stanford password, regenerate the keytab — until you do, all 7 watchers' auth will start failing within ~10h.
 
 **If you need a Slurm-gated node:** you must submit the watcher as a Slurm job (`sbatch --time=48:00:00 --wrap='…launch_watcher_remote.sh…'`). The existing workflow does not do this automatically — plan a `scripts/sbatch-watcher.sh` wrapper if this becomes the common case.
 

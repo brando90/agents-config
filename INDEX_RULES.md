@@ -73,6 +73,17 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 
 ---
 
+## SNAP watcher reauth & reboot persistence (2026-04)
+
+DFS job-queue watchers stay alive across the two failure modes (Kerberos/AFS ticket expiry every ~10 h, and node reboot) via two cron lines on each watcher node:
+```
+0 */4 * * * /dfs/scratch0/brando9/bin/krenew.sh                  # keytab kinit + aklog
+@reboot     /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh # wait for DFS, krenew, relaunch
+```
+**No password ever leaves your Mac.** The reauth credential is `/dfs/scratch0/brando9/.keytab` (chmod 600), generated once interactively via `ktutil`; `kinit -kt` proves identity from the keytab without prompting. Automation (Claude Code, cron, Codex) only needs read access to the keytab file. If you change your Stanford password, regenerate the keytab — see [`init_no_passwords_snap_kinit.md`](init_no_passwords_snap_kinit.md) and [`README.md`](README.md) § "Keeping watchers alive".
+
+---
+
 ## ⚠ SNAP Slurm migration (in progress, 2026-04)
 
 SNAP is in the middle of migrating nodes to Slurm-gated ssh (pam_slurm_adopt). Nodes already gated: `turing3`, `hyperturing2`, `ampere1–9` (except `ampere8` for some users), `blackwell1`. Symptom: `ssh <host>` rejects with `Access denied by pam_slurm_adopt: you have no active jobs on this node`. Existing tmux watchers on non-gated nodes can break without warning if their node is migrated. If `/dfs/scratch0/...` returns `Stale file handle` (e.g. `turing1`, `turing2` as of 2026-04-24), the DFS mount is broken on that node — skip it and file a ticket. See [`machine/snap.md`](machine/snap.md) § "Slurm migration & DFS stale handles" for the current blocklist and workarounds.
