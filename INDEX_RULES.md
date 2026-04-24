@@ -42,7 +42,7 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 - **ac** = agents-config (this repo, `~/agents-config/`). When the user says "ac", they almost certainly mean agents-config.
 - **CC** = Claude Code
 - **QA** = quality assurance review (see Hard Rule 3)
-- **mega qa** / **mega QA** = run the Mega QA chain (Trigger Rule 10). This is NEVER a git remote. `git push mega qa` means `git push` (to origin) **then** run mega QA — two separate actions. Never interpret "mega" as a remote name.
+- **mega qa** / **mega QA** = run the Mega QA chain (Trigger Rule 10). "mega" is very rarely a git remote (typical remotes are `origin`/`upstream`). Default reading: `git push mega qa` → `git push` then run mega QA — two separate actions.
 
 ---
 
