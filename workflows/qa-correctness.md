@@ -2,6 +2,21 @@
 
 > **Design: A1 builds → A2 does full QA.** The builder dispatches one independent reviewer for full QA (correctness + structural). The reviewer finds AND fixes issues. Fallback: Codex → Gemini CLI → self-review with best model (or CC → Gemini CLI → self-review with best model, if Codex built).
 
+## Hard Rule: CLI-only, no API keys
+
+**QA ALWAYS runs through the locally-logged-in CLIs: `codex`, `claude` / `clauded`, `gemini`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth / `~/.gemini/settings.json`). They are what Brando has logged into and pays for.
+
+**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an auth error ("set GEMINI_API_KEY", "no credentials"), treat it as a **local setup issue**: skip that stage, note the skip in the QA report, and suggest the user re-run the CLI's interactive login (`gemini`, `codex login`, `claude login`). Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
+
+Fallback order when a CLI stage fails:
+1. Next CLI in the chain.
+2. Self-dispatch with the current CLI (repeat the stage).
+3. Never use API keys.
+
+This applies to default QA, Mega QA, and any downstream workflow that dispatches a reviewer.
+
+---
+
 ## Default Behavior
 
 **After completing your task, dispatch one independent reviewer before reporting done.**
