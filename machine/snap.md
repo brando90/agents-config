@@ -45,6 +45,38 @@ ssh <user>@<hostname>.stanford.edu
 
 ---
 
+## Slurm migration & DFS stale handles (2026-04, in progress)
+
+SNAP is in the middle of migrating GPU nodes behind `pam_slurm_adopt`. Status as of **2026-04-24**:
+
+| Node | ssh access | DFS mount | Watcher viable? |
+|------|------------|-----------|-----------------|
+| `mercury1`, `mercury2` | open (CS) | OK | ✅ |
+| `skampere1`, `skampere2`, `skampere3` | open (CS) | OK | ✅ |
+| `hyperturing1` | open (CS) | OK (after symlink fix) | ✅ |
+| `rambo` (ICL compute) | open (CS) | OK | ✅ (CPU-only, needs `lark`) |
+| `hyperturing2` | **Slurm-gated** | n/a | ❌ without `sbatch` |
+| `turing3` | **Slurm-gated** | n/a | ❌ without `sbatch` |
+| `ampere1`–`ampere9` | Slurm-gated (varies, `ampere8` sometimes open) | n/a | ❌ without `sbatch` |
+| `blackwell1` | **Slurm-gated** + unreachable | n/a | ❌ |
+| `turing1`, `turing2` | open | **`/dfs/scratch0/...` Stale file handle** | ❌ node-level fix needed |
+| `trinity`, `furiosa`, `madmax2–6`, `hyperion3` | open | OK | ❌ Ubuntu 16 / Python 3.5 — too old for uutils (f-strings) |
+| `madmax1`, `madmax5`, `rambino` | unreachable | — | ❌ |
+
+**Symptoms to recognize:**
+- `Access denied by pam_slurm_adopt: you have no active jobs on this node` → the node has been migrated; you need `sbatch`/`srun` to get in.
+- `Stale file handle` on `/dfs/scratch0/...` → the DFS mount is broken on that node; reboot or file a ticket (user cannot fix).
+- Watcher tmux session silently exits right after launch → usually the module import raises (e.g. missing `dill`, `pandas`, `lark`, or Python too old for f-strings). Use `bash -c '... 2>&1 | tee log'` inside the tmux session so the traceback survives.
+
+**Playbook when adding a new watcher:**
+1. ssh probes: `ssh <host>.stanford.edu "hostname && ls /dfs/scratch0/brando9 >/dev/null && echo DFS-OK"`. Abort if either fails.
+2. Use `/dfs/scratch0/brando9/bin/launch_watcher_remote.sh` — it auto-detects python, bootstraps missing deps, pins `--job-dir /dfs/scratch0/brando9/job_queue`, and wraps in `tmux new-session -d … bash -c '…'` so import errors land in `logs/watcher_daemon_<host>.log` instead of vanishing.
+3. Verify the heartbeat appears in `/dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat` within ~20s.
+
+**If you need a Slurm-gated node:** you must submit the watcher as a Slurm job (`sbatch --time=48:00:00 --wrap='…launch_watcher_remote.sh…'`). The existing workflow does not do this automatically — plan a `scripts/sbatch-watcher.sh` wrapper if this becomes the common case.
+
+---
+
 ## Compute — Known Server Profiles
 
 Hardware varies per node. **Always verify at runtime:**

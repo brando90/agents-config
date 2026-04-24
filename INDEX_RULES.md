@@ -73,6 +73,12 @@ Follow these as conventions. They improve quality but are lower priority than Ha
 
 ---
 
+## ⚠ SNAP Slurm migration (in progress, 2026-04)
+
+SNAP is in the middle of migrating nodes to Slurm-gated ssh (pam_slurm_adopt). Nodes already gated: `turing3`, `hyperturing2`, `ampere1–9` (except `ampere8` for some users), `blackwell1`. Symptom: `ssh <host>` rejects with `Access denied by pam_slurm_adopt: you have no active jobs on this node`. Existing tmux watchers on non-gated nodes can break without warning if their node is migrated. If `/dfs/scratch0/...` returns `Stale file handle` (e.g. `turing1`, `turing2` as of 2026-04-24), the DFS mount is broken on that node — skip it and file a ticket. See [`machine/snap.md`](machine/snap.md) § "Slurm migration & DFS stale handles" for the current blocklist and workarounds.
+
+---
+
 ## SNAP Required Symlinks (every node)
 
 Every SNAP node must have these symlinks in `$HOME` (LFS). Missing symlinks cause silent failures in tooling that assumes `~/...` paths resolve to DFS. `snap_setup.sh` and `machine/snap-init.md` create/verify them.
