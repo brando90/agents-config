@@ -10,7 +10,7 @@ Updated: 2026-04-26
 - [x] Codex Pro CLI auth verified (`~/.codex/auth.json`, plan=pro, valid 2026-12-11)
 - [x] Smoke test: `openclaw infer model run --gateway --prompt PONG` returns PONG via `openai/gpt-5.5` on codex harness
 - [x] Telegram bot created via @BotFather (`@ultimate_brando9_bot`), wired via `openclaw channels add --channel telegram`, paired with Brando's user id, two-way chat works
-- [ ] **Fix gateway sendMessage HttpError** — direct curl to api.telegram.org succeeds, but openclaw-gateway's send still logs `HttpError: Network request for 'sendMessage' failed!`. Receive works (polling), reply works (occasionally?). Diagnose: undici vs node-fetch, IPv6, proxy env in launchd plist
+- [ ] **Fix gateway operator-CLI sendMessage HttpError** *(PARKED — agent runtime reply path works fine via gateway's grammy session; this only blocks `openclaw message send` from the CLI for operators; come back to it after the triage loop is otherwise complete)*. Diagnosis so far: cert chain to api.telegram.org is legit (GoDaddy → telegram.org), `node -e "fetch(...)"` with `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem` returns OK, but the plist-set env doesn't reach the gateway's send subprocess despite bootout/bootstrap. Adding `NODE_OPTIONS=--dns-result-order=ipv4first --use-system-ca` and even `NODE_TLS_REJECT_UNAUTHORIZED=0` to the plist didn't help. Suggests OpenClaw's CLI `message send` spawns a fresh node subprocess outside the gateway session.
 - [ ] **Wire Gmail** — `openclaw channels add --channel google` (browser OAuth, scopes: readonly + send + modify)
 - [ ] **Enable agent shell/tool execution** — current agent reports "shell commands blocked by the local hook relay"; need to flip the right approval/exec-policy setting so the triage agent can read Gmail and apply labels
 - [ ] **Decide admin-email filter** — 3–5 sender domains/keywords (`*.stanford.edu`, conference orgs, financial-aid, etc.); write to `config/admin-filter.txt`
@@ -44,7 +44,12 @@ Updated: 2026-04-26
 - [ ] **Update `cc_prompt.md` 2-instance → 3-instance** — Telegram mandatory (WhatsApp 4-device cap), Telegram-as-heartbeat, 5-min TTL, per-machine `codex login`
 - [ ] **Document upstream OpenClaw quirks** — file (or link to) issues for: `openclaw onboard --help` returns nothing; codex harness "not registered" without onboarding; gateway telegram sendMessage HttpError despite NODE_EXTRA_CA_CERTS being set; `paste-token` UI consumes piped stdin char-by-char without submitting
 
+## Beyond admin-email triage (general personal-assistant)
+
+- [ ] **SuperCare Health login + tasks** — agent should be able to log in to supercare.com (and similar personal portals) via OpenClaw's bundled `browser` plugin and complete tasks Brando assigns ("check my prescription status", "request a refill", "schedule X"). Requires: (a) browser plugin enabled (already loaded in stock 63); (b) credentials in `~/keys/supercare_credentials.json` (mode 600, not committed); (c) per-task prompt from Brando in Telegram; (d) 2FA strategy — for sites that require it, agent DMs Brando the code request, Brando pastes back. Start with non-2FA flows.
+- [ ] **General "do X for me" capability** — extend the triage prompt to handle ad-hoc requests Brando DMs the bot (not just inbox triage): "book me a haircut", "summarize my W&B runs from this week", etc. Requires the same exec-policy / tool-execution unlock as task #3 plus per-capability prompts and credential storage.
+
 ## Hygiene & follow-ups
 
-- [ ] **Rotate Telegram bot token** — current token (`8688913962:AAEOmnTb...`) was pasted in a Claude Code chat log + lives plaintext in `~/.openclaw/openclaw.json`; revoke via @BotFather `/revoke`, store rotated token only in `~/keys/openclaw_telegram_bot_token.txt`, then re-bind via `openclaw channels add`
+- [ ] **Rotate Telegram bot token** — current token was pasted in a Claude Code chat log + lives plaintext in `~/.openclaw/openclaw.json`; revoke via @BotFather `/revoke`, store rotated token only in `~/keys/openclaw_telegram_bot_token.txt`, then re-bind via `openclaw channels add`
 - [ ] **Move secrets out of `~/.openclaw/openclaw.json`** — use SecretRef (`--ref-source file --ref-id ~/keys/...`) for the bot token + any other secret the channels write inline

@@ -1,0 +1,29 @@
+{
+  "agents": {
+    "defaults": {
+      "model": { "primary": "openai/gpt-5.5" },
+      "embeddedHarness": { "runtime": "codex" }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "codex":     { "enabled": true },
+      "openai":    { "enabled": true },
+      "anthropic": { "enabled": true },
+      "google":    { "enabled": true },
+      "telegram":  { "enabled": true },
+      "browser":   { "enabled": true }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": { "mode": "token" }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "_comment": "botToken is injected by install_openclaw_instance.sh from ~/keys/openclaw_telegram_bot_token.txt — never commit the literal token here"
+    }
+  }
+}

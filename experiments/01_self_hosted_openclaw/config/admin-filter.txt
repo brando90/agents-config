@@ -1,0 +1,24 @@
+# Admin-email sender filter — one rule per line.
+# Lines starting with # are comments. Match against From: header (case-insensitive).
+# Glob patterns (* and ?) supported. Anything matching = "must triage".
+#
+# PLACEHOLDER — Brando, fill this in. Suggested starter set; adjust:
+
+# Stanford / academic
+*@stanford.edu
+*@cs.stanford.edu
+
+# Conferences (examples — edit)
+*@aaai.org
+*@iclr.cc
+*@neurips.cc
+*@icml.cc
+
+# Financial / ops (examples — edit)
+financial-aid@*
+billing@*
+no-reply-billing@*
+
+# Editorial (examples — edit)
+editor@*
+submissions@*
