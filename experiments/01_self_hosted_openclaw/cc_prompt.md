@@ -42,7 +42,7 @@ Run all phases on **both** instances unless explicitly noted otherwise. Where th
 - [ ] `[A:mercury2]` Confirm SNAP required symlinks exist (per `~/agents-config/INDEX_RULES.md` §"SNAP Required Symlinks") — especially `~/agents-config`, `~/keys`, `~/.claude`, `~/dfs`. If missing, run `~/agents-config/scripts/snap_setup.sh` (or follow `machine/snap-init.md`) before proceeding.
 
 ### Phase 1 — Install & boot OpenClaw (per instance)
-- [ ] Clone `https://github.com/steipete/claw-bot` to a stable location:
+- [ ] Clone `https://github.com/openclaw/openclaw` to a stable location (recommended path is the npm install — `npm install -g openclaw@latest && openclaw onboard --install-daemon` — which also installs the launchd/systemd user daemon, making Phase 5's manual plist mostly redundant. Use the git-clone path only for development from source: `pnpm install && pnpm openclaw setup && pnpm gateway:watch`):
   - `[A:mercury2]` `/dfs/scratch0/<user>/openclaw` with symlink `~/openclaw → /dfs/scratch0/<user>/openclaw` (DFS-backed, survives node reboots).
   - `[B:local]` `~/openclaw`.
 - [ ] Read OpenClaw's README. Follow official setup — do **not** improvise; the project moves fast.
@@ -133,7 +133,7 @@ These come from `~/agents-config/INDEX_RULES.md`. Re-read that file at the start
 - Issue: [brando90/ultimate-utils#41](https://github.com/brando90/ultimate-utils/issues/41) — full plan + options analysis
 - README §"Notifications vs. Interactive Agents": `~/ultimate-utils/README.md`
 - Existing notification modules: `~/ultimate-utils/py_src/uutils/{emailing,discord_uu,whatsapp_uu}.py`
-- OpenClaw: https://github.com/steipete/claw-bot
+- OpenClaw: https://github.com/openclaw/openclaw (homepage https://openclaw.ai). NOTE: prior version of this spec referenced `steipete/claw-bot`, which is 404 — the canonical repo lives under the `openclaw` org. Steipete's contribution is upstream; he is not the repo owner.
 - MyClaw (rejected hosted option): https://myclaw.ai
 - Branch (uutils-side stub): `claude/add-whatsapp-discord-integration-twCHN`
 - Mercury2 machine doc: `~/agents-config/machine/mercury2.md`
@@ -155,4 +155,5 @@ Append-only. Most recent entry on top. Each entry: date, who, what changed, what
 
 | Date | Author | Phase | Status | Notes |
 |------|--------|-------|--------|-------|
+| 2026-04-26 | claude-code (mac-air, pre-flight) | 0 | blocked | Verified the spec's repo URL `steipete/claw-bot` returns 404; canonical repo is `https://github.com/openclaw/openclaw` (latest release `v2026.4.24`, MIT, Node 24 recommended). Per OpenClaw README excerpt, model config is `provider/model-id` with standard API-key auth — **no documented support for Codex Pro CLI or Claude Code Pro CLI subscription reuse**, so the spec's "Codex Pro makes calls effectively free" assumption is currently unverified and may not hold. Also: this shell is on `DN0a22c554.SUNet` (MacBook Air, not the Mac mini), `mercury2` ssh fails with "Host key verification failed" (no `~/.ssh/config` entry), and the six open questions remain unanswered. Action required from Brando before Phase 0–1 can proceed. Spec edited in this same change to fix the dead URL and reference the built-in `openclaw onboard --install-daemon` (which obsoletes most of Phase 5's manual launchd work). |
 | 2026-04-26 | claude-code (planning) | — | spec drafted | This file created in `~/agents-config/experiments/01_self_hosted_openclaw/cc_prompt.md`. Two-instance plan (mercury2 tmux + local Mac launchd), Codex Pro as model, auto-restart required. No setup actions taken yet. Awaiting Brando's answers to the six open questions. |
