@@ -115,17 +115,87 @@ First contact (the bot can't DM you until you DM it):
    ```
 4. DM the bot again — this time it replies as the agent (Codex Pro / GPT-5.5)
 
-## 5. Gmail channel (in progress)
+## 5. Google Workspace via the bundled `gog` skill
+
+> **Important correction:** The OpenClaw stock plugin called `google` is for **Gemini models** (text/image/voice generation), NOT for Gmail/Calendar/Drive. The actual Workspace integration ships as a *skill* called `gog` that wraps the `gogcli` Homebrew binary.
+>
+> So the path to "agent can read/send my Gmail and check my calendar" is: install `gogcli` via brew → auth it once → the bundled OpenClaw `gog` skill auto-flips to Ready ✓.
+
+### Install + auth gog (~3 min, browser required once)
 
 ```bash
-openclaw channels add --channel google
+# 1. Install the binary the skill wraps
+brew install gogcli
+gog --version    # 0.13.0 or later
+
+# 2. Register your existing Google OAuth client with gog
+#    (any "client_secret_*.googleusercontent.com.json" you already have works;
+#     create one in console.cloud.google.com/apis/credentials if you don't have one yet)
+gog auth credentials set ~/keys/client_secret_*.apps.googleusercontent.com.json
+
+# 3. Authorize an account (opens browser; consents to all scopes gog supports)
+gog auth add YOUR_GOOGLE_EMAIL@gmail.com
+# Prefer a manual / browserless flow? `gog auth add EMAIL --remote --step=1`
+# (prints URL) → paste full redirect URL back into `--step=2 --auth-url <url>`.
 ```
 
-This opens a browser → Google OAuth → consent screen (scopes: `gmail.readonly` + `gmail.send` + `gmail.modify` for labels). Token lands in `~/.openclaw/...` (per-host).
+### Enable the Google APIs in your GCP project (~2 min)
 
-> **Multi-instance:** the Gmail token is per-Google-account, so generate it once on instance #1, then `scp` the token file to instance #2 and #3 to avoid re-OAuth'ing three times. Keep the audit trail clean.
+OAuth consent on its own does not enable the APIs in your project. You'll get
+`403 accessNotConfigured: <Service> API has not been used in project <PROJECT_ID> before` until you do this.
 
-(More wiring — admin-sender filter, triage system prompt, idempotency labels — comes after Gmail is connected. See [`cc_prompt.md`](./cc_prompt.md) §Phases 2–4.)
+Easiest path — open the API Library and batch-enable:
+
+> `https://console.cloud.google.com/apis/library?project=<YOUR_PROJECT_ID>`
+
+Enable each (1 click each, ~30s propagation):
+
+- Gmail API
+- Google Calendar API
+- Google Drive API
+- Google Docs API
+- Google Sheets API
+- Google Tasks API
+- People API
+- Google Slides API
+
+(Direct enable URLs follow the pattern `https://console.developers.google.com/apis/api/<service>.googleapis.com/overview?project=<YOUR_PROJECT_ID>`.)
+
+### Smoke test gog itself (before plumbing into OpenClaw)
+
+```bash
+A=YOUR_GOOGLE_EMAIL@gmail.com
+
+# Gmail
+gog -a $A gmail send --to $A --subject "🦞 gog test" --body "via gog"
+gog -a $A gmail list "is:unread" --max 5 -p
+
+# Calendar
+gog -a $A calendar list --max 5 -p
+
+# Drive (and indirectly Docs/Sheets via mimeType filter)
+gog -a $A drive ls --max 5 -p
+gog -a $A drive ls --query "mimeType='application/vnd.google-apps.spreadsheet'" --max 3 -p
+
+# Tasks
+gog -a $A tasks lists -p
+
+# People
+gog -a $A people me -p
+```
+
+Each line should return real data (not `403 accessNotConfigured`). If you see that error, re-check the API Library page above.
+
+### Confirm OpenClaw picked up the skill
+
+```bash
+openclaw skills info gog
+# Expected: "🎮 gog ✓ Ready" with "Binaries: ✓ gog"
+```
+
+When that shows ✓ Ready, the agent in your Telegram chat can call `gog gmail send`, `gog calendar list`, etc. as tools — without any further wiring on the OpenClaw side. Verify by DMing the bot something like *"send me an email saying hi"* and watching it execute.
+
+> **Multi-instance:** `gog` stores its tokens at `~/Library/Application Support/gogcli/` on macOS (`~/.config/gogcli/` on Linux). To avoid re-OAuthing on instance #2 and #3, `scp` that whole directory between hosts. Tokens refresh automatically.
 
 ## 6. Multi-instance deployment
 
