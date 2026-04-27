@@ -4,6 +4,32 @@
 
 Updated: 2026-04-26
 
+## Pickup state (resume here next session)
+
+Air instance is the active one; Pro and mercury2 untouched. Last working state on the Air:
+
+| Channel / capability | State | Notes |
+|---|---|---|
+| Telegram (chat surface) | ✅ working | Bot `@ultimate_brando9_bot` paired with Brando, agent replies via Codex Pro / GPT-5.5. Token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600), already rotated once. |
+| Gmail (read + send) | ✅ working via `gog` skill | `gogcli` 0.13.0 installed, OAuth done, all 7 Workspace APIs enabled in GCP project 721441778080. `openclaw skills info gog` shows ✓ Ready. |
+| Calendar / Drive / Docs / Sheets / Tasks / People | ✅ working via `gog` skill | All verified end-to-end (`gog -a brandojazz@gmail.com calendar list`, etc.) |
+| Discord | 🟡 blocked on user actions | Bot created (ID `1498169663278813254`, token in `~/keys/openclaw_discord_bot_token.txt`), wired into OpenClaw config, but Discord refuses with **code 4014** because Message Content Intent is OFF on the dev portal AND bot is in 0 servers. **To resume:** flip the toggle in Bot tab → Save Changes; then run the OAuth2 URL Generator and invite the bot to a server Brando owns. |
+| WhatsApp | 🟡 parked on upstream issue | Baileys 7.0.0-rc.9 returns `status=500` from web.whatsapp.com on every pair attempt. Not local. **To resume:** wait 24h+ then retry once; if still broken, defer until stable Baileys v7. Also revisit 4-device cap (current usage: phone + Mac WA = 2; +3 OpenClaws would be 5). |
+| Gmail label idempotency / heartbeat / rate limit | ◯ not started | Blocked on "real Gmail flow alive on Air first" — i.e. one approval round-trip via Telegram before we add the multi-instance coordination layer. |
+| Triage admin-email loop end-to-end | ◯ not started | Needs admin-filter list (Brando) + one real test email. Agent prompt is drafted in `config/agent-prompt.md`. |
+| MacBook Pro install | ◯ not started | Needs SSH config OR Brando runs `scripts/install_openclaw_instance.sh` himself in Pro's terminal after `scp`'ing the per-host secrets. |
+| mercury2 install | ◯ not started | Needs SSH access; Linux path (no launchd) — tmux + watchdog + cron + krenew. |
+
+**Suggested resume sequence (smallest unblocked next step first):**
+1. Brando enables Discord Message Content Intent + invites bot to a server (~90s of his time) → I restart gateway, confirm Discord ✓, push a test DM
+2. Brando edits `config/admin-filter.txt` with his real admin-sender list (~1 min) and DMs the Telegram bot one real triage to validate the loop
+3. Replicate to Pro via the install script
+4. Replicate to mercury2 (Linux path — different recipe, see `cc_prompt.md` v2 section)
+5. Wire idempotency labels + heartbeat + rate limit (autonomous)
+6. 7-day soak
+
+Last commit on this experiment as of pickup: see `git -C ~/agents-config log --oneline -10 -- experiments/01_self_hosted_openclaw/`.
+
 ## Air instance — finish the loop
 
 - [x] OpenClaw 2026.4.24 installed via npm (with `~/.npmrc cafile` fix)
