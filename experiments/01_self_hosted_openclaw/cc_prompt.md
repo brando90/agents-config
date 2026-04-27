@@ -130,6 +130,8 @@ These come from `~/agents-config/INDEX_RULES.md`. Re-read that file at the start
 
 ## References
 
+- **Wishlist (broader scope beyond email-MVP):** `wishlist.md` — running backlog of every channel/domain Brando wants the assistant to handle (Discord, WhatsApp, Stanford admin, grants, forms, travel, event ads, Lean AI Club).
+- **Standing orders (per-feature specs):** `standing_orders/` — promoted from wishlist when ready to build. First entry: `standing_orders/whatsapp_voice_draft.md`.
 - Issue: [brando90/ultimate-utils#41](https://github.com/brando90/ultimate-utils/issues/41) — full plan + options analysis
 - README §"Notifications vs. Interactive Agents": `~/ultimate-utils/README.md`
 - Existing notification modules: `~/ultimate-utils/py_src/uutils/{emailing,discord_uu,whatsapp_uu}.py`
@@ -155,5 +157,6 @@ Append-only. Most recent entry on top. Each entry: date, who, what changed, what
 
 | Date | Author | Phase | Status | Notes |
 |------|--------|-------|--------|-------|
+| 2026-04-26 | claude-code (worktree, scope expansion) | — | scope expanded | Added `wishlist.md` (full backlog: Discord, WhatsApp, Stanford admin, grants, forms, travel, event ads, Lean AI Club) and `standing_orders/whatsapp_voice_draft.md` (voice-dictation → cleanup → approve → send flow, `never_autonomous` for auto-reply). Email-MVP plan in this file is unchanged; wishlist is the long-tail tracker. Merged with pre-flight blocker entry from concurrent mac-air session. |
 | 2026-04-26 | claude-code (mac-air, pre-flight) | 0 | blocked | Verified the spec's repo URL `steipete/claw-bot` returns 404; canonical repo is `https://github.com/openclaw/openclaw` (latest release `v2026.4.24`, MIT, Node 24 recommended). Per OpenClaw README excerpt, model config is `provider/model-id` with standard API-key auth — **no documented support for Codex Pro CLI or Claude Code Pro CLI subscription reuse**, so the spec's "Codex Pro makes calls effectively free" assumption is currently unverified and may not hold. Also: this shell is on `DN0a22c554.SUNet` (MacBook Air, not the Mac mini), `mercury2` ssh fails with "Host key verification failed" (no `~/.ssh/config` entry), and the six open questions remain unanswered. Action required from Brando before Phase 0–1 can proceed. Spec edited in this same change to fix the dead URL and reference the built-in `openclaw onboard --install-daemon` (which obsoletes most of Phase 5's manual launchd work). |
 | 2026-04-26 | claude-code (planning) | — | spec drafted | This file created in `~/agents-config/experiments/01_self_hosted_openclaw/cc_prompt.md`. Two-instance plan (mercury2 tmux + local Mac launchd), Codex Pro as model, auto-restart required. No setup actions taken yet. Awaiting Brando's answers to the six open questions. |
