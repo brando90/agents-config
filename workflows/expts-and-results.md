@@ -328,7 +328,7 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 
 ## Big-Task Notification (MANDATORY for non-experiment "big" tasks)
 
-Per INDEX_RULES Trigger Rule 12, email `brando.science@gmail.com` (CC `brando9@stanford.edu`) when a "big" user-assigned task finishes — not just experiments. Use the same send mechanics as experiment emails: send immediately via the project's `SMTPNotifier` or the Gmail MCP tool; if neither works, use `scripts/send_pending_emails.py` as fallback. Do not draft it. Send it.
+Per INDEX_RULES Trigger Rule 14, email `brando.science@gmail.com` (CC `brando9@stanford.edu`) when a "big" user-assigned task finishes — not just experiments. Use the same send mechanics as experiment emails: send immediately via the project's `SMTPNotifier` or the Gmail MCP tool; if neither works, use `scripts/send_pending_emails.py` as fallback. Do not draft it. Send it.
 
 ### What counts as a "big" task
 

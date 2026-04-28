@@ -12,8 +12,14 @@ Thumbs.db
 *~
 .*.swp
 
+# NFS orphan/lock files left behind when an open file is unlinked
+.nfs*
+
 # Editor
 .vscode/
 .idea/
 *.code-workspace
 !bm-agents-config.code-workspace
+
+# Private business sub-projects (kept locally, not part of public agents-config)
+ai-for-lean-site/
