@@ -45,6 +45,38 @@ ssh <user>@<hostname>.stanford.edu
 
 ---
 
+## Local ↔ DFS sync (Mac → SNAP)
+
+**Default after agent edits: backgrounded `rsync` to DFS + best-effort `git push`.** DFS is shared across every SNAP node, so one rsync into any node propagates everywhere. Both jobs are detached (`&`) so they never block the next agent turn, and both swallow failures — `rsync` is the operational sync (must succeed eventually but doesn't block now); `git push` is a cheap durability backstop (skip silently if it fails).
+
+```bash
+SNAP_HOST=skampere1.stanford.edu       # any open SNAP node — DFS handles fan-out
+REPO="${CLAUDE_PROJECT_DIR:-$PWD}"     # repo root; CLAUDE_PROJECT_DIR is set in hooks
+NAME=$(basename "$REPO")
+
+# 1) Backgrounded rsync to DFS (cluster-wide visibility, fire-and-forget)
+( rsync -av --update \
+    --exclude='.git/' --exclude='__pycache__/' --exclude='*.pyc' \
+    --exclude='.venv/' --exclude='node_modules/' --exclude='.pytest_cache/' \
+    --exclude='wandb/' --exclude='outputs/' --exclude='checkpoints/' \
+    --exclude='.DS_Store' \
+    "$REPO/" "brando9@${SNAP_HOST}:/dfs/scratch0/brando9/${NAME}/" \
+    > "/tmp/snap-sync-${NAME}.log" 2>&1 ) &
+
+# 2) Best-effort git push (durability backstop; silent on failure)
+( cd "$REPO" && git push 2>/dev/null ) &
+
+# Both processes detach. Do NOT `wait` — they self-terminate when done.
+```
+
+- `--update` skips files where the destination is newer → protects work edited directly on the cluster.
+- **Never use `--delete` or `git push --force`** in automated sync — either can nuke concurrent edits.
+- `git push` here pushes the current branch to its tracking remote. If push fails (no upstream, conflicts, branch protection, hooks), the rsync already landed the bytes — don't retry, don't error, don't escalate.
+- **Multiple repos in one turn run in parallel** — emit one backgrounded `rsync`+`git push` pair per edited repo and let them race to completion independently.
+- **Wire as a `Stop` hook in `~/.claude/settings.json`** so this fires automatically after every agent turn that touched a DFS-mirrored repo. The hook returns instantly because both jobs are backgrounded; `tail /tmp/snap-sync-*.log` if you ever want to audit. (Trigger Rule 6 still governs deliberate `agents-config` commits — that path is unaffected.)
+
+---
+
 ## Slurm migration & DFS stale handles (2026-04, in progress)
 
 SNAP is in the middle of migrating GPU nodes behind `pam_slurm_adopt`. Status as of **2026-04-24**:
