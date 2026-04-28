@@ -3,8 +3,16 @@ machine/private/
 
 # Secrets
 .env
+.env.*
+!.env.example
+!.env.template
 *.secret
 *.key
+*.pem
+*.p12
+*.pfx
+*.token
+keys/
 
 # OS junk
 .DS_Store
