@@ -74,6 +74,7 @@ NAME=$(basename "$REPO")
 - `git push` here pushes the current branch to its tracking remote. If push fails (no upstream, conflicts, branch protection, hooks), the rsync already landed the bytes — don't retry, don't error, don't escalate.
 - **Multiple repos in one turn run in parallel** — emit one backgrounded `rsync`+`git push` pair per edited repo and let them race to completion independently.
 - **Wire as a `Stop` hook in `~/.claude/settings.json`** so this fires automatically after every agent turn that touched a DFS-mirrored repo. The hook returns instantly because both jobs are backgrounded; `tail /tmp/snap-sync-*.log` if you ever want to audit. (Trigger Rule 6 still governs deliberate `agents-config` commits — that path is unaffected.)
+- ⚠ **Secrets ⨉ auto-push.** The auto-`git push` only ships *already-committed* work, so Hard Rule 1's commit-time scan is the real safety net here. If a secret ever slips into a commit, the Stop hook will leak it within seconds — there is no buffer to amend. Treat anything that auto-pushed as already public; rotate the credential rather than trying to scrub history. Run a project-level `gitleaks`/`pre-commit` hook for defense-in-depth.
 
 ---
 
