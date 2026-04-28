@@ -112,13 +112,15 @@ Every SNAP node must have these symlinks in `$HOME` (LFS). Missing symlinks caus
 Load the one matching your current environment. Machine docs contain only behavioral constraints and gotchas — not discoverable specs. Run bash commands (`uname -m`, `nvidia-smi`, etc.) to inspect hardware at runtime.
 
 - [`machine/ampere1.md`](machine/ampere1.md) — SNAP ampere1 node (8x A100-80GB)
+- [`machine/mercury1.md`](machine/mercury1.md) — SNAP mercury1 node (10x A4000-16GB)
 - [`machine/mercury2.md`](machine/mercury2.md) — SNAP mercury2 node (10x RTX A4000-16GB)
+- [`machine/skampere1.md`](machine/skampere1.md) — SNAP skampere1 node
+- [`machine/skampere2.md`](machine/skampere2.md) — SNAP skampere2 node
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine
-- [`machine/mercury1.md`](machine/mercury1.md) — SNAP mercury1 node (10x A4000-16GB)
 
 ## Workflows
 
@@ -134,4 +136,4 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 ## Writing
 
-- [`writing/ml_research_writing.md`](writing/ml_research_writing.md) — ML research paper writing guide (persona, abstract structure, LaTeX rules). **Loaded by Trigger Rule 12** when editing `.tex` files.
+- [`writing/ml_research_writing.md`](writing/ml_research_writing.md) — ML research paper writing guide (persona, abstract structure, LaTeX rules). **Loaded by Trigger Rule 13** when editing `.tex` files.

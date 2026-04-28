@@ -74,21 +74,33 @@ agents-config/
 ├── agents.md                    ← Layer 1: Codex / other agents entry point
 ├── LICENSE                      ← Apache 2.0
 │
+├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
+├── setup_gemini_cli.sh          ← one-shot installer for the `gemini` CLI (OAuth on Mac, --api-key on servers)
+├── email-signature.md           ← canonical email signature + default From/CC for outbound mail
+├── bm-agents-config.code-workspace  ← VS Code multi-root workspace for editing this repo
+│
 ├── init_no_passwords_snap_kinit.md              ← one-time keytab setup for passwordless SSH to SNAP
 ├── cursor_ssh_kerberos_todo.md                  ← Cursor SSH + Kerberos design notes & TODO tracking
+├── codex_remote_control_todo.md                 ← Codex remote-control TODO / open questions
+├── todo_codex_qa_on_snap.md                     ← TODO: cross-agent QA on SNAP via Codex
 ├── todo_infinite_reauth_kinit_server_side.md    ← TODO: server-side auto-renewal (eliminate krbtmux/reauth)
+├── todo_self_improving_agents_config.md         ← TODO: self-improving feedback loop for this repo
+├── koyejo_stair_cluster_guide.md                ← Koyejo lab / STAIR cluster onboarding & gotchas
 │
-├── machine/
-│   ├── ampere1.md               ← SNAP ampere1 node
+├── machine/                     ← Layer 3: per-machine configs (loaded on demand)
+│   ├── ampere1.md               ← SNAP ampere1 node (8x A100-80GB)
 │   ├── mercury1.md              ← SNAP mercury1 node (10x A4000-16GB)
 │   ├── mercury2.md              ← SNAP mercury2 node (10x A4000-16GB)
+│   ├── skampere1.md             ← SNAP skampere1 node
+│   ├── skampere2.md             ← SNAP skampere2 node
 │   ├── snap.md                  ← Stanford SNAP cluster
 │   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
+│   ├── snap_setup.sh            ← scripted SNAP-node bootstrap (symlinks, auth, tools)
 │   ├── mac.md                   ← local macOS dev
 │   ├── sherlock.md              ← Stanford Sherlock HPC
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
-├── workflows/
+├── workflows/                   ← Layer 3: reusable workflows (loaded on demand)
 │   ├── qa-correctness.md        ← cross-agent QA review (correctness + structural)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
@@ -99,8 +111,22 @@ agents-config/
 │   ├── tweprints.md             ← tweet thread format
 │   └── blog-posts.md            ← SAIL-style blog posts
 │
-├── writing/
+├── writing/                     ← Layer 3: reusable writing guides (loaded on demand)
 │   └── ml_research_writing.md   ← ML research paper writing guide for `.tex` edits
+│
+├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
+│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` / `gemini` fresh
+│   ├── ssh-submit.sh            ← SSH fire-and-forget remote-job submitter
+│   ├── git-inbox-poller.sh      ← phone-dispatch poller for `jobs-inbox/`
+│   └── relink-dfs-projects.sh   ← rebuild DFS-backed project symlinks on a fresh node
+│
+├── experiments/                 ← versioned experiment prompts and analysis
+│   ├── experiment_template_readme.tex
+│   ├── 00_refactor_qa_gate/     ← Experiment 00: QA-gate refactor study
+│   └── 01_self_hosted_openclaw/ ← Experiment 01: self-hosted OpenClaw admin-email triage
+│
+├── jobs-inbox/                  ← phone → git-inbox dispatch directory (pending/, dispatched/)
+│   └── README.md
 │
 └── tests/
     └── dummy_experiment/        ← workflow validation (tiny MLP + W&B)
