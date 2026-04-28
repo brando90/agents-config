@@ -1,5 +1,11 @@
 # Workflow: QA — Cross-Agent Review
 
+**TLDR:** Whenever an agent (`A1`) finishes building/changing code,
+dispatch a different agent (`A2`) to do full correctness + structural QA
+**and fix what it finds**. Fallback chain: Codex → Gemini CLI → self-review
+with best model (or CC → Gemini CLI → self-review with best model, if
+Codex built). Run before opening any non-trivial PR.
+
 > **Design: A1 builds → A2 does full QA.** The builder dispatches one independent reviewer for full QA (correctness + structural). The reviewer finds AND fixes issues. Fallback: Codex → Gemini CLI → self-review with best model (or CC → Gemini CLI → self-review with best model, if Codex built).
 
 ## Hard Rule: CLI-only, no API keys

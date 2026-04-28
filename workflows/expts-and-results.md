@@ -1,6 +1,12 @@
 # Workflow: Experiments & Results
 
-How to structure experiments, store results, and report findings.
+**TLDR:** The canonical experiment-folder convention for this account:
+`experiments/<NN>_<name>/` with mandatory `README.md`, versioned
+sub-experiments, results storage, W&B reporting, GPU rules, and the
+**MANDATORY** end-of-experiment email. Includes the canonical templates
+for the agent prompt (`cc.md` — must open with `**TLDR:**`) and
+`PROTOCOL.md` (must open with `## Scientific question (locked)`).
+Read end-to-end before starting, opening, or reviewing any experiment dir.
 
 ---
 
@@ -92,6 +98,87 @@ Example status table:
 | v2 real eval | In Progress | new metric, 3 agents so far |
 | Writing draft | TODO | writing.tex started |
 ```
+
+### Agent Prompt (`cc.md`) format — MANDATORY
+
+The agent prompt (`cc.md` or `<NN>_cc.md`) is the file the human pastes into
+Claude Code / Codex / Cursor to run an experiment. It must be skimmable in
+under 30 seconds, otherwise the human cannot quickly verify "what does this
+prompt actually do" before pasting.
+
+**Required at the top of every `cc.md` (and every prompt file in this repo,
+including workflows under `~/agents-config/workflows/`):**
+
+1. `# <Title>` — one-line title.
+2. `**TLDR:**` — 2–6 sentences. State (a) what the prompt makes the agent
+   do, (b) the headline pass/fail or success criterion, (c) the deliverable
+   (PR title, figure path, email recipient — whichever applies), (d) any
+   load-bearing constraint the agent must not violate.
+3. (Optional) one sentence pointing the agent at `~/agents-config/INDEX_RULES.md`.
+
+Anything below the TLDR is the full prompt (scientific question, locked
+protocol references, steps, manuscript update, closing/PR plan, guardrails,
+identity crib). The TLDR exists so the human reading the prompt can
+verify it without reading the whole document.
+
+**Why:** A `cc.md` without a TLDR forces the human to read the whole prompt
+just to confirm "is this the right one to paste". With the TLDR, the
+verification is one screen.
+
+### PROTOCOL.md format — MANDATORY for any LLM-budget-spending experiment
+
+`PROTOCOL.md` freezes the experiment's contract **before** any expensive run
+begins. It is written *prior to* seeing any results. Any deviation observed
+during execution is documented in `REPORT.md` → "Open questions for
+\<reviewer\>", **not** by editing `PROTOCOL.md`.
+
+**Required sections, in order:**
+
+1. `# Folder <NN> — PROTOCOL (LOCKED before any expensive run)` — title.
+2. One short paragraph stating the freeze rule (template):
+
+   ```
+   This file freezes the protocol before any LLM-budget-spending run begins.
+   It is written PRIOR to seeing any results. Any deviation observed during
+   execution is documented in REPORT.md → "Open questions for <reviewer>",
+   not by editing this file.
+   ```
+
+3. `## Scientific question (locked)` — **MANDATORY**. State the research
+   question this experiment answers, then the operational pass/fail
+   criterion. Without this section, future-you and reviewers cannot tell
+   what the experiment is supposed to *prove*; everything else
+   (parameters, data layout, wall-clock) is implementation detail.
+4. `## Locked parameters` (or `## Locked metrics & thresholds` +
+   `## Locked analysis params`) — every numeric knob that, if changed
+   silently after the run, would invalidate the result. Include
+   `JUDGE_REPEATS` / `n_samples`, bootstrap iters, permutation iters,
+   pass/fail thresholds, primary-vs-ablation split.
+5. `## Scale verification (no further normalization)` — if any inputs
+   are already normalized to `[0, 1]` (judge scores, human labels
+   divided by max), state it explicitly so a downstream script doesn't
+   re-divide and silently break the run.
+6. `## Verified data layout` (or `## Verified data schema`) — for
+   Mode-A reuse experiments, name the upstream CSV / JSON columns and
+   their interpretations so a future reshape doesn't rediscover them
+   the hard way.
+7. `## Pre-conditions for run` — env files, API keys, venv, upstream
+   folders that must exist.
+8. `## Estimated wall-clock` — rough order-of-magnitude per step;
+   helps the agent decide whether to background a job.
+9. `## Pass/fail / abort rules` — what makes the smoke test pass before
+   the full run is launched; what causes a STOP-and-document during the
+   full run.
+10. `## Identity / contact crib (verified)` — GitHub login, email,
+    key paths. The "(verified)" tag matters: drop this only after you
+    have actually checked the GitHub user exists and their email is
+    correct (every PR misassignment in this repo so far has been due
+    to a guessed login).
+
+Folders 06, 07, 08 in `~/cert-judge/experiments/` are reference
+implementations of this template. If a section is genuinely
+inapplicable, write the heading and `_(N/A; reason)_`; do not silently
+omit headings.
 
 ### Experiment Writing Draft (mandatory for paper-bound experiments)
 

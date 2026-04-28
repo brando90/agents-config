@@ -1,5 +1,12 @@
 # Workflow: QA Structural — Anti-Degradation Refactoring Gate
 
+**TLDR:** A pre-merge structural review focused on preventing the
+"agent refactor that quietly degrades the codebase" failure mode
+(over-abstraction, dead helpers, half-finished migrations,
+silently-broken contracts). Pair with `qa-correctness.md` — correctness
+QA proves the diff *works*; structural QA proves the diff doesn't
+*rot the repo*.
+
 Motivated by two complementary findings:
 
 1. **SlopCodeBench** (Orlanski et al., 2026, arXiv:2603.24755): agent code

@@ -1,5 +1,13 @@
 # Remote Job Dispatch — SSH, DFS watcher, and phone dispatch
 
+**TLDR:** Three interchangeable paths for kicking off a job on a SNAP
+cluster node you are not currently sitting on: (1) direct SSH,
+(2) DFS-watcher dispatch (drop a file, the watcher runs it),
+(3) phone-side dispatch via the OpenClaw gateway. All three share
+the same **smart-mode agent wrapper** (`smart-job-agent-prompt.md`):
+diagnose failures → retry up to 3× → email `STARTING` + `PASS`/`FAIL`.
+Pick the path that matches your starting context.
+
 Three ways to run a job on a SNAP cluster node that isn't the one you're sitting on. All three share the same **smart-mode agent wrapper** from [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md): diagnose failures → retry up to 3× → email STARTING + PASS/FAIL. Pick the path that matches your starting context.
 
 ---

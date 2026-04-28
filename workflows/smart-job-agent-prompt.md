@@ -1,5 +1,12 @@
 # Smart-Job Agent Prompt Template
 
+**TLDR:** Single source of truth for the agent-wrapper prompt used in
+smart-mode job execution across every remote-dispatch path (SSH, DFS
+watcher, phone). Wraps the underlying job in: diagnose failures →
+retry up to 3× → email `STARTING` + `PASS`/`FAIL` to the configured
+recipient. Other workflow docs reference this file rather than
+duplicating the wrapper.
+
 This file is the **single source of truth** for the agent-wrapper prompt used in smart-mode job execution across all remote-dispatch paths:
 
 - [`workflows/remote-job-dispatch.md`](remote-job-dispatch.md) § **SSH fire-and-forget** — used by [`scripts/ssh-submit.sh`](../scripts/ssh-submit.sh)

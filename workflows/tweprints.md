@@ -1,5 +1,11 @@
 # Workflow: Tweprints (Tweet Threads for Research Announcements)
 
+**TLDR:** A "tweprint" is a 4–8 tweet thread that announces a research
+project, dataset, or paper to the ML/AI community on X/Twitter — our
+primary publicity channel. Use this workflow when a paper / experiment /
+release is ready to surface; covers structure, voice, hook tweet,
+figure choice, and the post flow.
+
 A "tweprint" is a tweet thread (typically 4–8 tweets) that announces a research project, dataset, or paper to the ML/AI community on X/Twitter. It is the primary way we publicize work.
 
 ---

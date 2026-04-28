@@ -1,6 +1,9 @@
 # Workflow: Blog Posts (SAIL Blog Style)
 
-How to write and publish blog posts for research projects, following the Stanford AI Lab (SAIL) Blog format.
+**TLDR:** Reference for writing and publishing research blog posts in the
+Stanford AI Lab (SAIL) Blog format. Use when starting a project blog post
+or porting an existing draft into the SAIL template — covers structure,
+voice, figures, citations, and the publish flow.
 
 ---
 

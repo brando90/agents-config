@@ -1,6 +1,9 @@
 # Workflow: Repo Init — Migrating to agents-config
 
-How to onboard an existing or new repo to the `~/agents-config/` three-layer system.
+**TLDR:** Onboard an existing or new repo to the
+`~/agents-config/` three-layer system (global rules → workflow refs →
+per-repo `CLAUDE.md` + `agents.md`). Run this once per new repo and
+again whenever the global rules drift from what the repo expects.
 
 ---
 

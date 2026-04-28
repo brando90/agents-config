@@ -1,6 +1,9 @@
 # Workflow: Git Worktrees for Parallel Agent Isolation
 
-Use git worktrees to give each parallel agent its own isolated working copy of the repo.
+**TLDR:** Give each parallel agent its own isolated working copy of the
+repo via `git worktree add`, so concurrent jobs don't fight over the
+working tree, branches, or build artifacts. Read this before launching
+≥ 2 agents in parallel on the same repo.
 
 ---
 
