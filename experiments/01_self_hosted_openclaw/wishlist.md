@@ -72,6 +72,12 @@ Default approval level per channel:
 - [ ] Templates: class announcement, social event, reminder, cancellation, venue change
 - [ ] Approval before any post / send
 
+### Stack Exchange (Proof Assistants, math, cstheory)
+- [ ] **`/ask` — auto-draft and post questions to Proof Assistants SE** — see [`standing_orders/stackexchange_proofassistants_post.md`](./standing_orders/stackexchange_proofassistants_post.md). Speak/paste a half-formed question; OpenClaw classifies site, searches duplicates, drafts title + tags + MathJax body + MWE, runs quality gate, requires explicit `post` approval. Implementation = Playwright (no public POST API on SE).
+- [ ] Cross-site classifier: PA SE vs `math.stackexchange.com` vs `cstheory.stackexchange.com` vs `cs.stackexchange.com`
+- [ ] Daily follow-up: poll posted questions for new answers/comments, summarize in Telegram
+- [ ] Reuse drafted questions as starting points for arXiv preprints / lab notes when no answer arrives in 2 weeks
+
 ### Lean AI Club
 - [ ] Weekly meeting announcements
 - [ ] Speaker / reading group / project recruiting messages
@@ -105,3 +111,4 @@ When an item here matures into a real workflow:
 |------|------|--------|
 | 2026-04-26 | Wishlist file created | seeded with current backlog from ChatGPT planning convo |
 | 2026-04-26 | WhatsApp voice-dictation flow spec'd | see `standing_orders/whatsapp_voice_draft.md` |
+| 2026-05-02 | Stack Exchange `/ask` flow spec'd | see `standing_orders/stackexchange_proofassistants_post.md` (PA SE default; Playwright-driven; approval-gated) |
