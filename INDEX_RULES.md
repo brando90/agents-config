@@ -122,7 +122,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
-- [`machine/mac.md`](machine/mac.md) — local macOS dev machine
+- [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install)
 
 ## Workflows
 
