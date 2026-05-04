@@ -52,9 +52,11 @@ class StageResult:
     # V2-only fields. V1 reviewers won't emit these — left at default. Per
     # qa_v2_verifier_first.md "Logging requirements", verifier_ran is the key
     # slicing variable: rows where it's "none" / [] are where the paper's
-    # argument applies most cleanly (no external grounding).
+    # argument applies most cleanly (no external grounding). citations is the
+    # cite-or-defer evidence list.
     verifier_ran: list | str = field(default_factory=list)
     consensus_warning: bool = False
+    citations: list = field(default_factory=list)
 
 
 def run(cmd: list[str], cwd: Path | None = None, timeout_s: int = 1800) -> tuple[int, str, str]:
@@ -127,34 +129,44 @@ def diff_summary(repo: Path, sha: str) -> dict:
                 pass
             ext = Path(fn).suffix.lstrip(".") or "_none"
             langs.add(ext)
+    detected = detect_verifier_names(repo)
     return {
         "files_changed": files,
         "additions": adds,
         "deletions": dels,
         "languages": sorted(langs),
-        "has_runnable_verifier": detect_verifier(repo),
+        "has_runnable_verifier": bool(detected),
+        "detected_verifiers": detected,
     }
 
 
 def detect_verifier(repo: Path) -> bool:
     """Cheap detection: is there pytest / npm test / cargo / make test runnable?"""
+    return bool(detect_verifier_names(repo))
+
+
+def detect_verifier_names(repo: Path) -> list[str]:
+    """Same checks as detect_verifier, but returns the list of detected
+    verifier names (e.g. ["pytest", "npm-test"]) so V3 logging can record
+    which ones were available. Empty list = none detected."""
+    found: list[str] = []
     if (repo / "pytest.ini").exists() or (repo / "pyproject.toml").exists():
         rc, _, _ = run(["python", "-c", "import pytest"], timeout_s=10)
         if rc == 0:
-            return True
+            found.append("pytest")
     if (repo / "package.json").exists():
         try:
             pkg = json.loads((repo / "package.json").read_text())
             if (pkg.get("scripts") or {}).get("test"):
-                return True
+                found.append("npm-test")
         except Exception:
             pass
     if (repo / "Cargo.toml").exists():
-        return True
+        found.append("cargo-test")
     mk = repo / "Makefile"
     if mk.exists() and "test:" in mk.read_text():
-        return True
-    return False
+        found.append("make-test")
+    return found
 
 
 def build_worktree(repo: Path, sha: str) -> Path:
@@ -173,6 +185,13 @@ def build_worktree(repo: Path, sha: str) -> Path:
 def cleanup_worktree(repo: Path, wt: Path) -> None:
     run(["git", "-C", str(repo), "worktree", "remove", "--force", str(wt)])
     shutil.rmtree(wt, ignore_errors=True)
+
+
+def prune_stale_worktrees(repo: Path) -> None:
+    """Remove worktree metadata for /tmp/qapoll_* that disappeared (script
+    killed mid-run). Safe to call on every startup; no-ops when nothing
+    stale. Without this, repeated crashes leak `git worktree list` entries."""
+    run(["git", "-C", str(repo), "worktree", "prune"], timeout_s=30)
 
 
 def cli_available(name: str) -> bool:
@@ -230,20 +249,24 @@ def dispatch_v3(wt: Path, summary: dict, prompts_dir: Path) -> dict:
     """V3: routed — markdown-only OR no-verifier source -> V2; else -> V1.
     Edge cases: empty diff (languages=[]) → all([])==True → text_only → V2
     (the cheaper failure mode, per the V3 prompt). Missing
-    has_runnable_verifier defaults to False → also routes to V2."""
+    has_runnable_verifier defaults to False → also routes to V2.
+    Output shape matches qa_v3_verifier_routed.md "Logging requirements":
+    route_decision / route_reason / detected_verifiers + V1- or V2-shaped
+    sub-payload."""
     languages = summary.get("languages") or []
     text_only = all(
         ext in {"md", "txt", "rst", "json", "yml", "yaml", "toml", "tex", "_none"}
         for ext in languages
     )
-    has_verifier = bool(summary.get("has_runnable_verifier"))
-    if text_only or not has_verifier:
+    detected = list(summary.get("detected_verifiers") or [])
+    if text_only or not detected:
         reason = "markdown_only" if text_only else "source_no_verifier"
         result = dispatch_v2(wt, prompts_dir / "qa_v2_verifier_first.md")
         return {"route_decision": "V2", "route_reason": reason,
-                "stage": asdict(result)}
+                "detected_verifiers": detected, "stage": asdict(result)}
     stages = dispatch_v1(wt, prompts_dir / "qa_v1_polling_baseline.md")
     return {"route_decision": "V1", "route_reason": "verifier_present",
+            "detected_verifiers": detected,
             "stages": [asdict(s) for s in stages]}
 
 
@@ -278,58 +301,72 @@ def _extract_code_block(path: Path, header_substr: str) -> str:
     return block.strip()
 
 
+_TEXT_FIELDS = {
+    "VERDICT": "verdict",
+    "CRITICAL_ISSUES": "critical_issues",
+    "MAJOR_ISSUES": "major_issues",
+    "FIXES_APPLIED": "fixes_applied",
+    "STRUCTURAL": "structural",
+    "SUMMARY": "summary",
+}
+_INT_FIELDS = {"critical_issues", "major_issues", "fixes_applied"}
+
+
+def _apply_text_line(res: StageResult, line: str) -> None:
+    """Match one VERDICT-block line against the known fields and set on res."""
+    for key, attr in _TEXT_FIELDS.items():
+        if not line.startswith(f"{key}:"):
+            continue
+        value = line.split(":", 1)[1].strip()
+        if attr not in _INT_FIELDS:
+            setattr(res, attr, value)
+            return
+        try:
+            setattr(res, attr, int(value.split()[0]))
+        except (ValueError, IndexError):
+            pass
+        return
+    if line.startswith("VERIFIER_RAN:"):
+        res.verifier_ran = line.split(":", 1)[1].strip()
+    elif line.startswith("CONSENSUS_WARNING:"):
+        v = line.split(":", 1)[1].strip().lower()
+        res.consensus_warning = v in {"yes", "true", "y"}
+
+
+def _apply_sidecar(res: StageResult, sidecar: dict) -> None:
+    """Overlay structured fields from a JSON sidecar onto res. The sidecar
+    overrides the text VERDICT lines for the V2 fields (verifier_ran,
+    consensus_warning, citations) so structured forms win when present."""
+    flags = sidecar.get("flagged_issues")
+    if isinstance(flags, list):
+        res.flagged_issues = flags
+    for k in ("tokens_in", "tokens_out"):
+        v = sidecar.get(k)
+        if isinstance(v, int):
+            setattr(res, k, v)
+    vr = sidecar.get("verifier_ran")
+    if isinstance(vr, (list, str)):
+        res.verifier_ran = vr
+    cw = sidecar.get("consensus_warning")
+    if isinstance(cw, bool):
+        res.consensus_warning = cw
+    cites = sidecar.get("citations")
+    if isinstance(cites, list):
+        res.citations = cites
+
+
 def _parse_verdict(reviewer: str, rc: int, out: str, err: str, dt: float) -> StageResult:
     """Parse the VERDICT block + JSON sidecar (if present) out of stdout.
     Tolerant — missing fields default to ERROR/0. The text VERDICT lines
     populate scalar fields; a fenced ```json sidecar populates richer fields
-    (flagged_issues, tokens_in, tokens_out)."""
+    (flagged_issues, tokens_in, tokens_out, V2's verifier_ran / citations)."""
     res = StageResult(reviewer=reviewer, wall_time_s=dt,
                       raw_stdout_tail=out[-2000:])
-    fields = {
-        "VERDICT": "verdict",
-        "CRITICAL_ISSUES": "critical_issues",
-        "MAJOR_ISSUES": "major_issues",
-        "FIXES_APPLIED": "fixes_applied",
-        "STRUCTURAL": "structural",
-        "SUMMARY": "summary",
-    }
     for line in out.splitlines():
-        for key, attr in fields.items():
-            if line.startswith(f"{key}:"):
-                value = line.split(":", 1)[1].strip()
-                if attr in {"critical_issues", "major_issues", "fixes_applied"}:
-                    try:
-                        setattr(res, attr, int(value.split()[0]))
-                    except (ValueError, IndexError):
-                        pass
-                else:
-                    setattr(res, attr, value)
-        # V2-only verdict-block lines. The V2 prompt requires these in the
-        # final block (qa_v2_verifier_first.md lines 94-95). Stored verbatim
-        # as strings here; the JSON sidecar (if present) overrides with
-        # structured forms (list / bool).
-        if line.startswith("VERIFIER_RAN:"):
-            raw = line.split(":", 1)[1].strip()
-            res.verifier_ran = raw  # string form; sidecar may overwrite
-        elif line.startswith("CONSENSUS_WARNING:"):
-            v = line.split(":", 1)[1].strip().lower()
-            res.consensus_warning = v in {"yes", "true", "y"}
+        _apply_text_line(res, line)
     sidecar = _extract_json_sidecar(out, err)
     if sidecar:
-        flags = sidecar.get("flagged_issues")
-        if isinstance(flags, list):
-            res.flagged_issues = flags
-        for k in ("tokens_in", "tokens_out"):
-            v = sidecar.get(k)
-            if isinstance(v, int):
-                setattr(res, k, v)
-        # V2 sidecar may carry structured verifier_ran / consensus_warning.
-        vr = sidecar.get("verifier_ran")
-        if isinstance(vr, (list, str)):
-            res.verifier_ran = vr
-        cw = sidecar.get("consensus_warning")
-        if isinstance(cw, bool):
-            res.consensus_warning = cw
+        _apply_sidecar(res, sidecar)
     if rc != 0 and res.verdict == "ERROR":
         res.summary = (res.summary + f" | exit={rc}").strip(" |")
     return res
@@ -434,6 +471,7 @@ def main() -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     repo = args.repo.expanduser().resolve()
+    prune_stale_worktrees(repo)
 
     prs = list_recent_prs(repo, args.n)
     if not prs:

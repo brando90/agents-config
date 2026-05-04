@@ -46,7 +46,8 @@ Every per-PR / per-instance result is a JSON file with:
     "additions": <int>,
     "deletions": <int>,
     "languages": ["md", "py", ...],
-    "has_runnable_verifier": true | false
+    "has_runnable_verifier": true | false,
+    "detected_verifiers": ["pytest", "npm-test", ...]
   },
   "v1": { ... per qa_v1_polling_baseline.md logging schema ... },
   "v2": { ... per qa_v2_verifier_first.md logging schema ... },

@@ -142,41 +142,50 @@ def _render_flags(flags: list) -> str:
     return "\n".join(rows)
 
 
+def _arm_flags(rec: dict, arm: str) -> list:
+    return all_v1_flags(rec) if arm == "v1" else v2_flags(rec)
+
+
+def _arm_summary(rec: dict, arm: str) -> str:
+    return v1_summary(rec) if arm == "v1" else v2_summary(rec)
+
+
+def _git_diff_for(rec: dict, repo: Path | None) -> str:
+    if not repo:
+        return ""
+    try:
+        return subprocess.run(
+            ["git", "-C", str(repo), "diff", f"{rec['id']}^1..{rec['id']}"],
+            capture_output=True, text=True, timeout=30,
+        ).stdout[:8000]
+    except Exception:
+        return ""
+
+
+_JUDGE_CLIS = (["clauded", "-p"], ["codex", "exec", "--full-auto"], ["gemini", "-p"])
+
+
 def auto_judge(rec: dict, ab_swap: bool, repo: Path | None = None) -> dict:
     """Dispatch a single best-model to auto-rate which arm is more useful.
     Falls back to "no_judge_available" if no CLI is on PATH."""
-    arm_a, arm_b = ("v1", "v2") if not ab_swap else ("v2", "v1")
-    diff_text = ""
-    if repo:
-        try:
-            diff_text = subprocess.run(
-                ["git", "-C", str(repo), "diff",
-                 f"{rec['id']}^1..{rec['id']}"],
-                capture_output=True, text=True, timeout=30,
-            ).stdout[:8000]
-        except Exception:
-            pass
-
+    arm_a, arm_b = ("v2", "v1") if ab_swap else ("v1", "v2")
     prompt = JUDGE_PROMPT_TEMPLATE.format(
-        diff=diff_text or "(diff unavailable)",
-        a_flags=json.dumps(all_v1_flags(rec) if arm_a == "v1" else v2_flags(rec),
-                           indent=2)[:4000],
-        a_summary=v1_summary(rec) if arm_a == "v1" else v2_summary(rec),
-        b_flags=json.dumps(all_v1_flags(rec) if arm_b == "v1" else v2_flags(rec),
-                           indent=2)[:4000],
-        b_summary=v1_summary(rec) if arm_b == "v1" else v2_summary(rec),
+        diff=_git_diff_for(rec, repo) or "(diff unavailable)",
+        a_flags=json.dumps(_arm_flags(rec, arm_a), indent=2)[:4000],
+        a_summary=_arm_summary(rec, arm_a),
+        b_flags=json.dumps(_arm_flags(rec, arm_b), indent=2)[:4000],
+        b_summary=_arm_summary(rec, arm_b),
     )
-
-    for cli in (["clauded", "-p"], ["codex", "exec", "--full-auto"], ["gemini", "-p"]):
-        if shutil.which(cli[0]):
-            try:
-                proc = subprocess.run(cli + [prompt], capture_output=True,
-                                      text=True, timeout=600)
-                pick = _parse_judge(proc.stdout)
-                return {"judge_cli": cli[0], "pick": pick,
-                        "raw": proc.stdout[-500:]}
-            except subprocess.TimeoutExpired:
-                continue
+    for cli in _JUDGE_CLIS:
+        if not shutil.which(cli[0]):
+            continue
+        try:
+            proc = subprocess.run(cli + [prompt], capture_output=True,
+                                  text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            continue
+        return {"judge_cli": cli[0], "pick": _parse_judge(proc.stdout),
+                "raw": proc.stdout[-500:]}
     return {"judge_cli": "none", "pick": "no_judge_available", "raw": ""}
 
 
@@ -188,35 +197,39 @@ def _parse_judge(text: str) -> str:
     return "unparseable"
 
 
+_TEMPLATE_RE = re.compile(r"`A`\s*/\s*`B`\s*/\s*`T`")
+_INLINE_RE = re.compile(r":\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
+_STANDALONE_RE = re.compile(r"^\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
+
+
+def _normalize_rating(token: str) -> str:
+    token = token.upper()
+    return "TIE" if token == "T" else token
+
+
 def _extract_human_rating(text: str) -> str:
     """Pull Brando's rating out of a filled-in example_NN.md. Tolerates both
     "answer on its own line" and "answer inline after the prompt colon"
     formats. Skips the unfilled-template line itself (which contains all of
-    A / B / T as backticked option markers)."""
+    A / B / T as backticked option markers) unless that line itself has an
+    inline answer appended."""
     marker = "Brando's rating (fill in)"
     if marker not in text:
         return "unrated"
     after = text.split(marker, 1)[1]
-    template_re = re.compile(r"`A`\s*/\s*`B`\s*/\s*`T`")
-    inline_re = re.compile(r":\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
-    standalone_re = re.compile(r"^\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
     for raw in after.splitlines():
         line = raw.rstrip()
-        is_template = bool(template_re.search(line))
-        m_inline = inline_re.search(line)
+        is_template = bool(_TEMPLATE_RE.search(line))
+        m_inline = _INLINE_RE.search(line)
         if is_template and m_inline:
-            token = m_inline.group(1).upper()
-            return "TIE" if token == "T" else token
+            return _normalize_rating(m_inline.group(1))
         if is_template:
             continue
-        m_inline = inline_re.search(line)
         if m_inline:
-            token = m_inline.group(1).upper()
-            return "TIE" if token == "T" else token
-        m_alone = standalone_re.match(line)
+            return _normalize_rating(m_inline.group(1))
+        m_alone = _STANDALONE_RE.match(line)
         if m_alone:
-            token = m_alone.group(1).upper()
-            return "TIE" if token == "T" else token
+            return _normalize_rating(m_alone.group(1))
     return "unrated"
 
 

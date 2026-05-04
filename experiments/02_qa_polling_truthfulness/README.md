@@ -89,7 +89,7 @@ See `analysis.md` for full breakdown.
 ## Quick-start
 
 ```bash
-# Cheap, repo-specific (~30 min, ~1k tokens/PR):
+# Cheap, repo-specific (~30 min, ~1.5M tokens total = ~150k/PR across V1+V2+V3):
 python ~/agents-config/experiments/02_qa_polling_truthfulness/bench/run_ac_self_audit.py \
     --n 10 --out ~/dfs/qa-polling-results/ac-self/
 

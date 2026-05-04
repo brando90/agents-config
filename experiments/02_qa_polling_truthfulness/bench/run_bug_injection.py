@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_ac_self_audit import (  # noqa: E402
     build_worktree, cleanup_worktree,
     dispatch_v1, dispatch_v2,
-    list_recent_prs,
+    list_recent_prs, prune_stale_worktrees,
 )
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
@@ -197,6 +197,7 @@ def main() -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     repo = args.repo.expanduser().resolve()
+    prune_stale_worktrees(repo)
     rng = random.Random(args.seed)
 
     prs = list_recent_prs(repo, args.n * 2)  # over-sample; some lack plantable text
