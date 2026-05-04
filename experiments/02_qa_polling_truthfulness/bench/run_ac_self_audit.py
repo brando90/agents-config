@@ -49,6 +49,12 @@ class StageResult:
     wall_time_s: float = 0.0
     reviewer_unavailable: bool = False
     raw_stdout_tail: str = ""
+    # V2-only fields. V1 reviewers won't emit these — left at default. Per
+    # qa_v2_verifier_first.md "Logging requirements", verifier_ran is the key
+    # slicing variable: rows where it's "none" / [] are where the paper's
+    # argument applies most cleanly (no external grounding).
+    verifier_ran: list | str = field(default_factory=list)
+    consensus_warning: bool = False
 
 
 def run(cmd: list[str], cwd: Path | None = None, timeout_s: int = 1800) -> tuple[int, str, str]:
@@ -298,6 +304,16 @@ def _parse_verdict(reviewer: str, rc: int, out: str, err: str, dt: float) -> Sta
                         pass
                 else:
                     setattr(res, attr, value)
+        # V2-only verdict-block lines. The V2 prompt requires these in the
+        # final block (qa_v2_verifier_first.md lines 94-95). Stored verbatim
+        # as strings here; the JSON sidecar (if present) overrides with
+        # structured forms (list / bool).
+        if line.startswith("VERIFIER_RAN:"):
+            raw = line.split(":", 1)[1].strip()
+            res.verifier_ran = raw  # string form; sidecar may overwrite
+        elif line.startswith("CONSENSUS_WARNING:"):
+            v = line.split(":", 1)[1].strip().lower()
+            res.consensus_warning = v in {"yes", "true", "y"}
     sidecar = _extract_json_sidecar(out, err)
     if sidecar:
         flags = sidecar.get("flagged_issues")
@@ -307,6 +323,13 @@ def _parse_verdict(reviewer: str, rc: int, out: str, err: str, dt: float) -> Sta
             v = sidecar.get(k)
             if isinstance(v, int):
                 setattr(res, k, v)
+        # V2 sidecar may carry structured verifier_ran / consensus_warning.
+        vr = sidecar.get("verifier_ran")
+        if isinstance(vr, (list, str)):
+            res.verifier_ran = vr
+        cw = sidecar.get("consensus_warning")
+        if isinstance(cw, bool):
+            res.consensus_warning = cw
     if rc != 0 and res.verdict == "ERROR":
         res.summary = (res.summary + f" | exit={rc}").strip(" |")
     return res
