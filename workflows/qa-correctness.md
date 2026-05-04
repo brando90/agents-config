@@ -202,19 +202,32 @@ always occupies the last stage of each cycle.
 Each stage uses the same QA prompt and the same verdict format. The **last
 reviewer's verdict** (Gemini in the default chain) is the final verdict.
 
-### Single-model fallback
+### Per-stage fallback (coin-flip)
 
-If only one model is available, run mega QA as **N rounds of self-review** with
-the same model. Each round is a fresh dispatch (new context) so the model
-re-examines the code with fresh eyes. For example, with only CC available:
+A stage can fail for many reasons: auth/credits exhausted, context-window
+overflow, backend 5xx, sandbox-blocked tools, etc. **Never bail.** When a
+stage fails, replace that stage with a working CLI:
 
-- "mega QA" → CC self-review × 3 (each round sees previous round's fixes)
-- "mega QA 5 rounds" → CC self-review × 5
+1. **Coin-flip** among the other CLIs that haven't failed yet (`codex`,
+   `clauded`, `gemini`).
+2. **Self-dispatch** the agent currently driving the chain if no other CLI
+   works (it's already authed and running, so it's guaranteed available).
+3. Always complete the planned number of stages — count substitutions toward
+   the count, do not skip.
 
-This is less powerful than cross-model review but still catches issues that a
-single pass misses — each fresh context re-examines with different attention.
-If Claude Code must run interactively, do the same repeated rounds in fresh
-`claude` sessions instead of unattended `clauded -p`.
+The driving agent is always available, so the worst case is **N×
+self-review of the same model** (e.g., CC → CC → CC). That is still useful:
+each stage is a fresh context that re-examines previous fixes with
+different attention. Cross-model is preferred but not required.
+
+Example (CC built; Gemini out of credits at stage 3):
+
+- Stage 1: Codex (worked) → Stage 2: CC self (worked) → Stage 3: coin-flip
+  picks Codex (worked) ⇒ chain done in 3 stages: Codex → CC → Codex.
+- If Codex also failed at stage 3: fall through to self → CC → CC → CC.
+
+Single-model from the start (only CC available): chain is CC self-review × N
+out of the box; same logic, fewer choices.
 
 ### When to use
 
