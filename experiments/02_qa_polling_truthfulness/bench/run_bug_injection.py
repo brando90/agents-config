@@ -18,19 +18,15 @@ import argparse
 import json
 import random
 import re
-import shutil
-import subprocess
 import sys
-import tempfile
-import time
 from dataclasses import asdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_ac_self_audit import (  # noqa: E402
-    StageResult, build_worktree, cleanup_worktree,
-    detect_verifier, dispatch_v1, dispatch_v2,
-    list_recent_prs, run,
+    build_worktree, cleanup_worktree,
+    dispatch_v1, dispatch_v2,
+    list_recent_prs,
 )
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
@@ -115,12 +111,79 @@ def plant_in_worktree(wt: Path, rng: random.Random) -> dict | None:
 
 
 def detect_plant_in_flags(plant: dict, flags: list) -> bool:
-    """A flag 'detects' the plant if it cites the same file (line-agnostic)."""
-    plant_file = plant["file"]
+    """A flag 'detects' the plant if it cites the same file (line-agnostic).
+    Match is on path equality after normalization OR on whole-segment suffix
+    (e.g., flag 'a/b/foo.py' matches plant 'b/foo.py' but NOT 'oo.py' and
+    NOT plant 'foo.py' alone — the boundary char must be '/' or start)."""
+    plant_path = plant["file"].lstrip("./")
     for flag in flags:
-        if flag.get("file", "").endswith(plant_file):
+        flag_path = (flag.get("file") or "").lstrip("./")
+        if not flag_path:
+            continue
+        if flag_path == plant_path:
+            return True
+        # Whole-segment suffix: flag must end with "/<plant_path>" so we don't
+        # match e.g. "foo.py" inside "barfoo.py".
+        if flag_path.endswith("/" + plant_path):
+            return True
+        # And the reverse: plant might be the longer normalized path while the
+        # reviewer cited just the basename or sub-path.
+        if plant_path.endswith("/" + flag_path):
             return True
     return False
+
+
+def _process_pr(repo: Path, pr: dict, rng: random.Random,
+                out_dir: Path) -> dict | None:
+    """Run one PR through plant + V1 + V2; return record dict or None if no
+    injector fit. Side-effect: writes plant_<sha>.json to out_dir."""
+    sha = pr["sha"]
+    wt = build_worktree(repo, sha)
+    try:
+        plant = plant_in_worktree(wt, rng)
+        if plant is None:
+            return None
+        v1_stages = dispatch_v1(wt, PROMPTS_DIR / "qa_v1_polling_baseline.md")
+        v2_result = dispatch_v2(wt, PROMPTS_DIR / "qa_v2_verifier_first.md")
+    finally:
+        cleanup_worktree(repo, wt)
+
+    v1_flags_per_stage = [list(s.flagged_issues) for s in v1_stages]
+    v1_per_stage_detected = [detect_plant_in_flags(plant, ff)
+                             for ff in v1_flags_per_stage]
+    record = {
+        "id": sha,
+        "subject": pr["subject"],
+        "plant": plant,
+        "v1_chain_detected": any(v1_per_stage_detected),
+        "v1_per_stage_detected": v1_per_stage_detected,
+        "v2_detected": detect_plant_in_flags(plant, v2_result.flagged_issues),
+        "v1": {"stages": [asdict(s) for s in v1_stages]},
+        "v2": asdict(v2_result),
+    }
+    (out_dir / f"plant_{sha[:10]}.json").write_text(json.dumps(record, indent=2))
+    return record
+
+
+def _write_summary(rows: list[dict], out_dir: Path) -> None:
+    """Compute aggregate detection rates + write summary.md + print TLDR."""
+    n = len(rows)
+    v1_chain_rate = sum(r["v1_chain_detected"] for r in rows) / n
+    v2_rate = sum(r["v2_detected"] for r in rows) / n
+    all_miss = sum(1 for r in rows
+                   if not any(r["v1_per_stage_detected"])
+                   and not r["v2_detected"]) / n
+    h3_status = "**FALSIFIED**" if all_miss < 0.30 else "**SUPPORTED**"
+    summary_md = (
+        f"# Bug-injection results\n\n"
+        f"**TLDR:** N={n} PRs each given one planted issue. V1 chain "
+        f"detection rate: {v1_chain_rate:.0%}. V2 detection rate: "
+        f"{v2_rate:.0%}. Both arms missed: {all_miss:.0%}.\n\n"
+        f'H3 ("correlated blind spots: ≥30% of plants missed by all 3 '
+        f'reviewers") is {h3_status} by these data.\n'
+    )
+    (out_dir / "summary.md").write_text(summary_md)
+    print(summary_md)
 
 
 def main() -> int:
@@ -136,69 +199,24 @@ def main() -> int:
     repo = args.repo.expanduser().resolve()
     rng = random.Random(args.seed)
 
-    prs = list_recent_prs(repo, args.n * 2)  # over-sample; some may not have plantable text
-    plants_done = 0
+    prs = list_recent_prs(repo, args.n * 2)  # over-sample; some lack plantable text
     summary_rows = []
-
     for pr in prs:
-        if plants_done >= args.n:
+        if len(summary_rows) >= args.n:
             break
-        sha = pr["sha"]
-        wt = build_worktree(repo, sha)
-        try:
-            plant = plant_in_worktree(wt, rng)
-            if plant is None:
-                continue
-            v1_stages = dispatch_v1(wt, PROMPTS_DIR / "qa_v1_polling_baseline.md")
-            v2_result = dispatch_v2(wt, PROMPTS_DIR / "qa_v2_verifier_first.md")
-        finally:
-            cleanup_worktree(repo, wt)
-
-        v1_flags_per_stage = [list(s.flagged_issues) for s in v1_stages]
-        v1_chain_detected = any(detect_plant_in_flags(plant, ff)
-                                for ff in v1_flags_per_stage)
-        v1_per_stage_detected = [detect_plant_in_flags(plant, ff)
-                                 for ff in v1_flags_per_stage]
-        v2_detected = detect_plant_in_flags(plant, v2_result.flagged_issues)
-
-        record = {
-            "id": sha,
-            "subject": pr["subject"],
-            "plant": plant,
-            "v1_chain_detected": v1_chain_detected,
-            "v1_per_stage_detected": v1_per_stage_detected,
-            "v2_detected": v2_detected,
-            "v1": {"stages": [asdict(s) for s in v1_stages]},
-            "v2": asdict(v2_result),
-        }
-        out_path = args.out / f"plant_{sha[:10]}.json"
-        out_path.write_text(json.dumps(record, indent=2))
+        record = _process_pr(repo, pr, rng, args.out)
+        if record is None:
+            continue
         summary_rows.append(record)
-        plants_done += 1
-        print(f"[{plants_done}/{args.n}] {sha[:10]}  v1_chain={v1_chain_detected}  v2={v2_detected}",
-              file=sys.stderr)
+        sha = pr["sha"]
+        print(f"[{len(summary_rows)}/{args.n}] {sha[:10]}  "
+              f"v1_chain={record['v1_chain_detected']}  "
+              f"v2={record['v2_detected']}", file=sys.stderr)
 
     if not summary_rows:
         print("no PRs accepted a plant; try --n larger", file=sys.stderr)
         return 1
-
-    n = len(summary_rows)
-    v1_chain_rate = sum(r["v1_chain_detected"] for r in summary_rows) / n
-    v2_rate = sum(r["v2_detected"] for r in summary_rows) / n
-    all_miss = sum(1 for r in summary_rows
-                   if not any(r["v1_per_stage_detected"]) and not r["v2_detected"]) / n
-
-    summary_md = f"""# Bug-injection results
-
-**TLDR:** N={n} PRs each given one planted issue. V1 chain detection rate:
-{v1_chain_rate:.0%}. V2 detection rate: {v2_rate:.0%}. Both arms missed:
-{all_miss:.0%}.
-
-H3 ("correlated blind spots: ≥30% of plants missed by all 3 reviewers")
-is {'**FALSIFIED**' if all_miss < 0.30 else '**SUPPORTED**'} by these data.
-"""
-    (args.out / "summary.md").write_text(summary_md)
-    print(summary_md)
+    _write_summary(summary_rows, args.out)
     return 0
 
 

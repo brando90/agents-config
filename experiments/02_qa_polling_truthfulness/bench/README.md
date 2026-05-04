@@ -83,9 +83,10 @@ Jaccard is over `flagged_issues` lists, comparing `(file, line bucket)` pairs.
 
 ## Dependencies
 
-Python 3.10+, `pip install pyyaml` (for SWE-bench manifest parsing).
-The reviewer CLIs (`codex`, `clauded`, `gemini`) must be installed and
-authed locally — bench scripts do not bootstrap auth.
+Python 3.10+. `run_swe_slice.sh` additionally needs `pip install swebench
+datasets` (the harness + the SWE-bench-Verified dataset loader). The
+reviewer CLIs (`codex`, `clauded`, `gemini`) must be installed and authed
+locally — bench scripts do not bootstrap auth.
 
 If a CLI is unavailable, the run logs `"reviewer_unavailable": true` for
 that arm and continues with the others; downstream aggregation excludes

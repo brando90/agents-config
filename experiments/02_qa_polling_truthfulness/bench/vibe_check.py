@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import shlex
+import re
 import shutil
 import subprocess
 import sys
@@ -188,6 +188,38 @@ def _parse_judge(text: str) -> str:
     return "unparseable"
 
 
+def _extract_human_rating(text: str) -> str:
+    """Pull Brando's rating out of a filled-in example_NN.md. Tolerates both
+    "answer on its own line" and "answer inline after the prompt colon"
+    formats. Skips the unfilled-template line itself (which contains all of
+    A / B / T as backticked option markers)."""
+    marker = "Brando's rating (fill in)"
+    if marker not in text:
+        return "unrated"
+    after = text.split(marker, 1)[1]
+    template_re = re.compile(r"`A`\s*/\s*`B`\s*/\s*`T`")
+    inline_re = re.compile(r":\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
+    standalone_re = re.compile(r"^\s*`?([ABT]|TIE)`?\s*$", re.IGNORECASE)
+    for raw in after.splitlines():
+        line = raw.rstrip()
+        is_template = bool(template_re.search(line))
+        m_inline = inline_re.search(line)
+        if is_template and m_inline:
+            token = m_inline.group(1).upper()
+            return "TIE" if token == "T" else token
+        if is_template:
+            continue
+        m_inline = inline_re.search(line)
+        if m_inline:
+            token = m_inline.group(1).upper()
+            return "TIE" if token == "T" else token
+        m_alone = standalone_re.match(line)
+        if m_alone:
+            token = m_alone.group(1).upper()
+            return "TIE" if token == "T" else token
+    return "unrated"
+
+
 def write_summary(records: list[dict], out_dir: Path) -> None:
     n = len(records)
     if n == 0:
@@ -296,14 +328,7 @@ def _score_human(out: Path) -> int:
         if not path.exists():
             continue
         text = path.read_text()
-        human = "unrated"
-        if "Brando's rating (fill in)" in text:
-            after = text.split("Brando's rating (fill in)", 1)[1]
-            for line in after.splitlines():
-                t = line.strip().strip("`").upper()
-                if t in {"A", "B", "T", "TIE"}:
-                    human = "TIE" if t == "T" else t
-                    break
+        human = _extract_human_rating(text)
         rows.append({"example": name, "human": human, "auto": judge["pick"],
                      "agree": human == judge["pick"]})
     rated = [r for r in rows if r["human"] != "unrated"

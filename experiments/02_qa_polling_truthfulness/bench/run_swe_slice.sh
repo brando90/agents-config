@@ -66,6 +66,24 @@ if ! command -v clauded >/dev/null 2>&1; then
   exit 3
 fi
 
+# Sanity: SWE-bench thin wrappers present? These are NOT installed by the
+# upstream swebench package — they are local helpers expected to live on PATH
+# and to: (a) build a candidate patch for an instance, (b) optionally invoke a
+# QA arm against the patch. If missing, every per-instance step would silently
+# record builder_failed; surface the missing-tool error up front instead.
+for tool in swebench-build-instance swebench-qa-instance; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    cat <<EOF >&2
+ERROR: '$tool' not on PATH. This script wraps a thin local helper that is
+expected to call the SWE-bench harness for one instance. Provide a script of
+that name (in PATH) that accepts the documented args (see lines marked
+'1. Builder' and '2. QA arm' inside this file). Without it, every instance
+will be marked builder_failed.
+EOF
+    exit 3
+  fi
+done
+
 # Default slice: 20 instance IDs sampled across difficulty deciles.
 # We do NOT hard-code instance IDs here (they evolve with SWE-bench releases).
 # Instead, generate the slice on first run and cache it for reproducibility.

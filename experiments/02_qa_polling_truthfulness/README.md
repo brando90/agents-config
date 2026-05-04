@@ -79,9 +79,10 @@ See `analysis.md` for full breakdown.
 - `prompts/qa_v2_verifier_first.md` — single best-model + mandatory verifier; treatment arm.
 - `prompts/qa_v3_verifier_routed.md` — adaptive: code+tests → ensemble OK, otherwise → single+grounding.
 - `bench/README.md` — how to run.
-- `bench/run_swe_slice.sh` — SWE-bench Verified slice runner (default 20 instances).
-- `bench/run_ac_self_audit.py` — replays N past `agents-config` PRs through V1 vs V2.
-- `bench/vibe_check.py` — selects 5 best/worst examples for Brando's eyeball pass + auto-agreement.
+- `bench/run_swe_slice.sh` — SWE-bench Verified slice runner (default 20 instances). Tier 2.
+- `bench/run_ac_self_audit.py` — replays N past `agents-config` PRs through V1 vs V2 vs V3. Tier 1.
+- `bench/run_bug_injection.py` — plants known bugs in past PRs to measure the H3 miss-rate. Tier 3.
+- `bench/vibe_check.py` — selects K best/worst examples for Brando's eyeball pass + auto-agreement.
 
 ---
 
@@ -95,6 +96,10 @@ python ~/agents-config/experiments/02_qa_polling_truthfulness/bench/run_ac_self_
 # Vibe check (writes 5 best/worst examples for human inspection):
 python ~/agents-config/experiments/02_qa_polling_truthfulness/bench/vibe_check.py \
     --in ~/dfs/qa-polling-results/ac-self/ --out ~/dfs/qa-polling-results/vibe/
+
+# Adversarial: plant known bugs in past PRs and see what V1 / V2 catch (Tier 3):
+python ~/agents-config/experiments/02_qa_polling_truthfulness/bench/run_bug_injection.py \
+    --n 20 --out ~/dfs/qa-polling-results/bug-injection/
 
 # Public benchmark (slower, ~2-4h, requires SWE-bench-Verified env):
 bash ~/agents-config/experiments/02_qa_polling_truthfulness/bench/run_swe_slice.sh \

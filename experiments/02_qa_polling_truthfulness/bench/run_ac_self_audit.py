@@ -21,8 +21,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shlex
 import shutil
 import subprocess
 import sys
@@ -223,19 +221,23 @@ def dispatch_v2(wt: Path, prompt_path: Path) -> StageResult:
 
 
 def dispatch_v3(wt: Path, summary: dict, prompts_dir: Path) -> dict:
-    """V3: routed — markdown-only OR no-verifier source -> V2; else -> V1."""
+    """V3: routed — markdown-only OR no-verifier source -> V2; else -> V1.
+    Edge cases: empty diff (languages=[]) → all([])==True → text_only → V2
+    (the cheaper failure mode, per the V3 prompt). Missing
+    has_runnable_verifier defaults to False → also routes to V2."""
+    languages = summary.get("languages") or []
     text_only = all(
         ext in {"md", "txt", "rst", "json", "yml", "yaml", "toml", "tex", "_none"}
-        for ext in summary["languages"]
+        for ext in languages
     )
-    if text_only or not summary["has_runnable_verifier"]:
-        route, reason = "V2", "markdown_only" if text_only else "source_no_verifier"
+    has_verifier = bool(summary.get("has_runnable_verifier"))
+    if text_only or not has_verifier:
+        reason = "markdown_only" if text_only else "source_no_verifier"
         result = dispatch_v2(wt, prompts_dir / "qa_v2_verifier_first.md")
-        return {"route_decision": route, "route_reason": reason,
+        return {"route_decision": "V2", "route_reason": reason,
                 "stage": asdict(result)}
-    route, reason = "V1", "verifier_present"
     stages = dispatch_v1(wt, prompts_dir / "qa_v1_polling_baseline.md")
-    return {"route_decision": route, "route_reason": reason,
+    return {"route_decision": "V1", "route_reason": "verifier_present",
             "stages": [asdict(s) for s in stages]}
 
 
@@ -271,8 +273,10 @@ def _extract_code_block(path: Path, header_substr: str) -> str:
 
 
 def _parse_verdict(reviewer: str, rc: int, out: str, err: str, dt: float) -> StageResult:
-    """Parse the VERDICT block out of stdout. Tolerant — missing fields
-    default to ERROR/0."""
+    """Parse the VERDICT block + JSON sidecar (if present) out of stdout.
+    Tolerant — missing fields default to ERROR/0. The text VERDICT lines
+    populate scalar fields; a fenced ```json sidecar populates richer fields
+    (flagged_issues, tokens_in, tokens_out)."""
     res = StageResult(reviewer=reviewer, wall_time_s=dt,
                       raw_stdout_tail=out[-2000:])
     fields = {
@@ -294,9 +298,47 @@ def _parse_verdict(reviewer: str, rc: int, out: str, err: str, dt: float) -> Sta
                         pass
                 else:
                     setattr(res, attr, value)
+    sidecar = _extract_json_sidecar(out, err)
+    if sidecar:
+        flags = sidecar.get("flagged_issues")
+        if isinstance(flags, list):
+            res.flagged_issues = flags
+        for k in ("tokens_in", "tokens_out"):
+            v = sidecar.get(k)
+            if isinstance(v, int):
+                setattr(res, k, v)
     if rc != 0 and res.verdict == "ERROR":
         res.summary = (res.summary + f" | exit={rc}").strip(" |")
     return res
+
+
+def _extract_json_sidecar(out: str, err: str) -> dict | None:
+    """Find the first fenced ```json block in stdout/stderr that parses to a
+    dict containing 'flagged_issues' (the V1/V2 logging schema). Returns None
+    if not found or unparseable. Reviewers may emit it on stderr (per the V1
+    prompt) or inline in stdout."""
+    for stream in (err, out):
+        if not stream:
+            continue
+        idx = 0
+        while True:
+            open_fence = stream.find("```json", idx)
+            if open_fence < 0:
+                break
+            body_start = open_fence + len("```json")
+            close_fence = stream.find("```", body_start)
+            if close_fence < 0:
+                break
+            body = stream[body_start:close_fence].strip()
+            try:
+                parsed = json.loads(body)
+            except json.JSONDecodeError:
+                idx = close_fence + 3
+                continue
+            if isinstance(parsed, dict) and "flagged_issues" in parsed:
+                return parsed
+            idx = close_fence + 3
+    return None
 
 
 def jaccard(a: list, b: list, line_window: int = 10) -> float:
@@ -322,6 +364,40 @@ def jaccard(a: list, b: list, line_window: int = 10) -> float:
                 break
     union = len(a) + len(b) - matches
     return matches / max(1, union)
+
+
+def _audit_one_pr(repo: Path, pr: dict, prompts_dir: Path,
+                  out_path: Path) -> None:
+    """Run V1+V2+V3 on one PR and write the per-PR result file."""
+    sha = pr["sha"]
+    summary = diff_summary(repo, sha)
+    wt = build_worktree(repo, sha)
+    try:
+        v1_stages = dispatch_v1(wt, prompts_dir / "qa_v1_polling_baseline.md")
+        v2_result = dispatch_v2(wt, prompts_dir / "qa_v2_verifier_first.md")
+        v3_result = dispatch_v3(wt, summary, prompts_dir)
+    finally:
+        cleanup_worktree(repo, wt)
+
+    v1_flags = [f for s in v1_stages for f in s.flagged_issues]
+    v2_flags = list(v2_result.flagged_issues)
+    v3_flags = (v3_result.get("stage", {}).get("flagged_issues")
+                or [f for s in v3_result.get("stages", [])
+                    for f in s.get("flagged_issues", [])])
+    record = {
+        "id": sha,
+        "subject": pr["subject"],
+        "diff_summary": summary,
+        "v1": {"stages": [asdict(s) for s in v1_stages]},
+        "v2": asdict(v2_result),
+        "v3": v3_result,
+        "agreement": {
+            "v1_v2_jaccard": jaccard(v1_flags, v2_flags),
+            "v1_v3_jaccard": jaccard(v1_flags, v3_flags),
+            "v2_v3_jaccard": jaccard(v2_flags, v3_flags),
+        },
+    }
+    out_path.write_text(json.dumps(record, indent=2))
 
 
 def main() -> int:
@@ -350,36 +426,7 @@ def main() -> int:
         if out_path.exists():
             print(f"skip {sha[:10]} (cached)", file=sys.stderr)
             continue
-
-        summary = diff_summary(repo, sha)
-        wt = build_worktree(repo, sha)
-        try:
-            v1_stages = dispatch_v1(wt, args.prompts_dir / "qa_v1_polling_baseline.md")
-            v2_result = dispatch_v2(wt, args.prompts_dir / "qa_v2_verifier_first.md")
-            v3_result = dispatch_v3(wt, summary, args.prompts_dir)
-        finally:
-            cleanup_worktree(repo, wt)
-
-        v1_flags = [f for s in v1_stages for f in s.flagged_issues]
-        v2_flags = list(v2_result.flagged_issues)
-        v3_flags = (v3_result.get("stage", {}).get("flagged_issues")
-                    or [f for s in v3_result.get("stages", [])
-                        for f in s.get("flagged_issues", [])])
-
-        record = {
-            "id": sha,
-            "subject": pr["subject"],
-            "diff_summary": summary,
-            "v1": {"stages": [asdict(s) for s in v1_stages]},
-            "v2": asdict(v2_result),
-            "v3": v3_result,
-            "agreement": {
-                "v1_v2_jaccard": jaccard(v1_flags, v2_flags),
-                "v1_v3_jaccard": jaccard(v1_flags, v3_flags),
-                "v2_v3_jaccard": jaccard(v2_flags, v3_flags),
-            },
-        }
-        out_path.write_text(json.dumps(record, indent=2))
+        _audit_one_pr(repo, pr, args.prompts_dir, out_path)
         print(f"wrote {out_path}", file=sys.stderr)
 
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2))
