@@ -21,6 +21,10 @@ Trigger when the user asks for help drafting or revising the **Introduction** se
 
 This skill is a sibling of [`~/agents-config/writing/ml_research_writing.md`](ml_research_writing.md) (GitHub fallback: <https://github.com/brando90/agents-config/blob/main/writing/ml_research_writing.md>); load that file too if you need the broader writing-voice and LaTeX-rules guide. This file is specifically about the **introduction section's structure**.
 
+## ⚠ Jargon boundary (CS197 terms)
+
+This skill uses bit-flip vocabulary internally to scaffold the intro. **Never put any of those terms in the actual intro text** — `bit flip`, `the bit`, `flip the bit`, `vectoring`, `(research) velocity`, `north star`, `killer demo`. They're planning shorthand between you and Brando, not reviewer-facing language. Allowed as `% LaTeX comment` to guide structure (e.g., `% paragraph 3: flip the bit`). Not allowed in topic sentences, body prose, or captions a reviewer reads. See `INDEX_RULES.md` Trigger Rule 23.
+
 ## Required inputs (interpret from the user's message)
 
 - **Abstract path** — file path to the finished / current abstract (`.tex` or `.md`). The user will name this explicitly.
