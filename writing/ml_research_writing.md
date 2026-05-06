@@ -42,7 +42,7 @@ A good heuristic for structuring an impactful contribution:
 >
 > Identify the assumption in prior work → flip it → that's your contribution. The bit flip is the atom of your paper's narrative.
 
-**Important — jargon boundary:** "Bit flip" is CS 197 shorthand. Use it freely in `%` LaTeX comments to guide structure (e.g., `% bit flip: prior work assumes X, we show Y`), and it appears throughout this guide as planning vocabulary. But **never write "bit flip" in reader-facing paper prose.** The published text must read as normal professional scientific writing — present the problem, the gap, and your solution directly.
+**Important — CS197 jargon boundary (≡ `INDEX_RULES.md` Trigger Rule 23):** "Bit flip" and the other CS197 / Sanmi-lab planning terms — `the bit`, `flip the bit`, `vectoring`, `(research) velocity`, `north star`, `killer demo` — are shorthand between you and Brando. Use them freely in `%` LaTeX comments to guide structure (e.g., `% bit flip: prior work assumes X, we show Y`), and they appear throughout this guide as planning vocabulary. But **never write any of them in reader-facing paper prose** — no `\section{...}` titles, no abstract body, no intro prose, no captions, no slides. The published text must read as normal professional scientific writing — present the problem, the gap, and your solution directly. ~99% of readers haven't taken CS197; these terms read as in-group jargon to everyone else and signal an unpolished paper to top-venue reviewers.
 
 ---
 
