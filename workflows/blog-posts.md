@@ -1,9 +1,11 @@
 # Workflow: Blog Posts (SAIL Blog Style)
-
 **TLDR:** Reference for writing and publishing research blog posts in the
 Stanford AI Lab (SAIL) Blog format. Use when starting a project blog post
 or porting an existing draft into the SAIL template — covers structure,
-voice, figures, citations, and the publish flow.
+voice, figures, citations, and the publish flow. For Brando's personal
+site at `~/brandomiranda/`, use `~/agents-config/writing/blog/` instead;
+do not import SAIL-specific figure, co-author review, or launch requirements
+unless the user explicitly asks for a lab-style post.
 
 ---
 

@@ -45,7 +45,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 │ README.md        ← repo docs (you are here)                                              │
 │ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
 │ workflows/       ← Layer 3: reusable workflows (qa-correctness.md, git-worktrees.md, …)  │
-│ writing/         ← Layer 3: reusable writing guides (ml_research_writing.md, …)           │
+│ writing/         ← Layer 3: reusable writing guides (ml_research/, blog/)                 │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -109,10 +109,17 @@ agents-config/
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern
 │   ├── tweprints.md             ← tweet thread format
-│   └── blog-posts.md            ← SAIL-style blog posts
+│   └── blog-posts.md            ← SAIL-style research lab blog posts
 │
 ├── writing/                     ← Layer 3: reusable writing guides (loaded on demand)
-│   └── ml_research_writing.md   ← ML research paper writing guide for `.tex` edits
+│   ├── ml_research/             ← ML research paper writing guides and section skills
+│   │   ├── ml_research_writing.md
+│   │   ├── write-intro.md
+│   │   └── write-abstract.md
+│   └── blog/                    ← Brando personal blog rules, voice guide, and draft skill
+│       ├── rules.md
+│       ├── blog_writing.md
+│       └── write-blog-post.md
 │
 ├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
 │   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` / `gemini` fresh
