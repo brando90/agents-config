@@ -19,7 +19,7 @@ Trigger when the user asks for help drafting or revising the **Introduction** se
 > Draft: `<path to draft directory or file>`
 > Write me a first draft.
 
-This skill is a sibling of [`~/agents-config/writing/ml_research_writing.md`](ml_research_writing.md) (GitHub fallback: <https://github.com/brando90/agents-config/blob/main/writing/ml_research_writing.md>); load that file too if you need the broader writing-voice and LaTeX-rules guide. This file is specifically about the **introduction section's structure**.
+This skill is a sibling of [`~/agents-config/writing/ml_research/ml_research_writing.md`](ml_research_writing.md) (GitHub fallback: <https://github.com/brando90/agents-config/blob/main/writing/ml_research/ml_research_writing.md>); load that file too if you need the broader writing-voice and LaTeX-rules guide. This file is specifically about the **introduction section's structure**.
 
 ## ⚠ Jargon boundary (CS197 terms)
 
@@ -46,9 +46,9 @@ This skill uses bit-flip vocabulary internally to scaffold the intro. **Never pu
 
 Each paragraph has a topic sentence stating the claim, then 2–5 supporting sentences with citations for every factual claim. Treat the topic sentence as the thesis the paragraph must prove. Do not stray.
 
-1. **Problem motivation.** Sentence 1 names the problem directly — no "In recent years" buildup. Motivate why the problem matters with evidence / citations. End by explaining why the problem isn't solved (sets up paragraph 2).
+1. **Problem motivation.** Sentence 1 names the problem directly — no "In recent years" buildup. Motivate why the problem matters with evidence / citations. End by explaining why the problem isn't solved (sets up paragraph 2). If escalating to a high-stakes domain (security, kernels, finance), build the bridge — name the *mechanism* that ties the general problem to that domain (see [`ml_research_writing.md`](ml_research_writing.md) § Sentence-Level Prose Discipline #8).
 
-2. **Set up the bit (prior assumption).** Identify the SINGLE shared assumption across prior work that this paper inverts. Focused mini related-work summary in service of the bit flip — NOT a survey. Cite only papers that share the inverted assumption.
+2. **Set up the bit (prior assumption).** Identify the SINGLE shared assumption across prior work that this paper inverts. Focused mini related-work summary in service of the bit flip — NOT a survey. Cite only papers that share the inverted assumption. Attach each prior-work mention's specific gap in the same sentence (no fact-dump → critique-at-end); name the missing capability — never vague pejoratives like "artificial" or "naive" (see [`ml_research_writing.md`](ml_research_writing.md) § Sentence-Level Prose Discipline #9–10). When the reader audience is outside the paper's home subfield, translate jargon to their vocabulary (#7).
 
 3. **Flip the bit (conceptual contribution).** Begin with a pivot — "However," "In contrast," "We instead." State the contribution at the conceptual level. State the idea before naming the system.
 

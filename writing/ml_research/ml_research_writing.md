@@ -131,6 +131,24 @@ Persona-level guidance ("crisply", "active voice") is necessary but not sufficie
    - ✗ *"performance of the agent on evaluation of held-out tasks"*
    - ✓ *"the agent's performance on held-out tasks"*
 
+7. **Audience-calibrated terminology — translate subfield jargon to the reader's vocabulary.** A term that's clear in your subfield can mislead an ML reader. *Specification* in formal methods means a logical property to prove; an ML reader hears *prompt spec*, *API spec*, or product spec. *Soundness* in FM means "no false positives" — alien to most ML reviewers. Default-translate to vocabulary the audience already owns. For each technical noun in the abstract / intro, ask "what would an ML reviewer assume this means?" — if that's wrong, swap. Mirrored at `INDEX_RULES.md` Trigger Rule 24.
+   - ✗ *"We benchmark agents on specification generation."* (ML reader: prompt spec? API spec?)
+   - ✓ *"We benchmark agents on theorem formulation: extracting a provable mathematical property from raw source."*
+   - ✗ *"sound and complete"* → ✓ *"every accepted proof is correct; every correct proof is accepted."*
+
+8. **Bridge before escalating stakes — no abrupt domain pivots.** Don't jump from a general problem to a high-stakes domain (security, kernels, finance) without a bridging sentence that names the *mechanism* tying them together. Without the bridge, "tests miss bugs → therefore: kernel exploits" reads as a non-sequitur. The bridge names *why* the general problem forces the escalation.
+   - ✗ *"Tests miss bugs. In safety-critical kernels, this is unacceptable."* (escalation without mechanism)
+   - ✓ *"Tests certify behavior only on the inputs they run; every other input is a black box. For code whose correctness must hold on all inputs — kernels, cryptographic protocols, financial settlement — finite testing is structurally insufficient."*
+
+9. **Attach critique to fact in the same sentence — no dry literature dumps.** In a setup / related-work paragraph, each prior-work mention arrives with its specific gap *pre-attached* in the same clause — not deferred to a verdict at the end of the paragraph. A "fact dump → critique at end" structure reads like a literature review, not an argument; the reader can't tell which paper the critique applies to.
+   - ✗ *"VERINA evaluates spec generation. CLEVER scores proof completion. DafnyBench scores Dafny proofs. **However, all these benchmarks evaluate isolated subtasks.**"* (late critique; reader can't tell which paper has which gap)
+   - ✓ *"\textsc{VERINA} evaluates spec generation in isolation by feeding models natural-language descriptions, abstracting away the agentic core: extracting properties from raw code. \textsc{CLEVER} scores proof completion against pre-written specifications, removing the burden of formulating the right theorem."*
+
+10. **Vague pejoratives in prior-work critique — name the specific missing capability.** "Artificial," "unrealistic," "naive," "simplistic," "limited" dismiss without diagnosing. Replace with a *named* gap: which specific capability does prior work omit? Often prior work represents a real older paradigm (e.g., chatbot-style scaffolded prompting), not a flawed one — say what newer paradigm your work targets (agentic autonomy, end-to-end inference) and what capability that paradigm requires.
+   - ✗ *"Existing benchmarks are artificial: they feed models partial scaffolds."* — "artificial" is wrong since chatbot-style prompting is a real paradigm.
+   - ✓ *"Existing benchmarks score isolated subtasks under chatbot-style scaffolding, abstracting away the autonomy required by modern agentic coding: extracting and formalizing properties directly from raw source."*
+   - **Test:** can you finish "the gap is ___"? If not, the critique is too vague.
+
 ### Self-edit checklist (≤30 seconds per sentence, run at write-time)
 
 | Check | What to do | Fix if failing |

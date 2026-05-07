@@ -13,7 +13,7 @@ Trigger when the user asks for help drafting or revising the **abstract** of a r
 > Output path (optional): `<where to write the abstract>`
 > Write me a first draft.
 
-This skill is a sibling of [`~/agents-config/writing/write-intro.md`](write-intro.md) and [`~/agents-config/writing/ml_research_writing.md`](ml_research_writing.md) (GitHub fallback: <https://github.com/brando90/agents-config/blob/main/writing/ml_research_writing.md>); load those if the user is working on adjacent sections or wants the broader writing-voice and LaTeX-rules guide. This file is specifically about the **abstract section's structure**.
+This skill is a sibling of [`~/agents-config/writing/ml_research/write-intro.md`](write-intro.md) and [`~/agents-config/writing/ml_research/ml_research_writing.md`](ml_research_writing.md) (GitHub fallback: <https://github.com/brando90/agents-config/blob/main/writing/ml_research/ml_research_writing.md>); load those if the user is working on adjacent sections or wants the broader writing-voice and LaTeX-rules guide. This file is specifically about the **abstract section's structure**.
 
 ## ⚠ Jargon boundary (CS197 terms)
 

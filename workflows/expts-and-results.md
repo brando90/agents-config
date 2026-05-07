@@ -188,7 +188,7 @@ Rules:
 - Mark it `% Status: DRAFT` at the top so no one accidentally `\input{}`s it.
 - Reference the experiment's prompts, proposal, and data files in `%` comments.
 - When the draft is finalized, copy/adapt it into `paper_latex/` — the experiment dir keeps the historical draft.
-- Follow `~/agents-config/writing/ml_research_writing.md` for writing style.
+- Follow `~/agents-config/writing/ml_research/ml_research_writing.md` for writing style.
 
 ---
 

@@ -15,6 +15,6 @@ These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the h
 3. **QA gating** — Before reporting a non-trivial task as "done," run the two-step QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`). When unsure whether to run it, run it.
 4. **No secrets** — Never commit secrets. Review diffs before pushing.
 5. **Fresh config** — At the start of each new task, `git -C ~/agents-config pull` and re-read `~/agents-config/INDEX_RULES.md`.
-6. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
+6. **LaTeX writing** — When editing `.tex` files for ML research papers, read `~/agents-config/writing/ml_research/ml_research_writing.md` first. Follow its persona, abstract structure, and writing rules.
 7. **Agent CLI freshness** — `SessionStart` in `~/.claude/settings.json` calls `~/agents-config/scripts/auto-update-tools.sh`. Major CLIs: `codex`, `claude` / `clauded`, `gemini`. Example extras: Cursor, Mistral, Harmonic, Axiom, and similar installed tools. If one looks stale, use the right package manager or print the exact update command.
 8. **Codex default model** — Codex CLI should always default to `gpt-5.5` with `model_reasoning_effort = "xhigh"`. Keep `~/.codex/config.toml` set with those values, and when dispatching Codex from Claude use `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"`.
