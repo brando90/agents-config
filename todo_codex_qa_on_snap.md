@@ -13,7 +13,7 @@ bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted
 ```
 
 This blocks the cross-agent QA chain (Hard Rule 3 in `~/agents-config/INDEX_RULES.md`),
-which requires Claude Code to dispatch `codex exec --full-auto "<review prompt>"`.
+which requires Claude Code to dispatch `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "<review prompt>"`.
 
 ## Root Cause
 
@@ -30,7 +30,7 @@ user namespaces, so bwrap fails before any command runs.
 - [x] **Inherit env vars.** Set `shell_environment_policy.inherit = "all"` in config.toml
       so Codex inherits `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc. from the parent shell.
 
-- [x] **Verify.** `codex exec --full-auto "echo hello && git log --oneline -3"` succeeds
+- [x] **Verify.** `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "echo hello && git log --oneline -3"` succeeds
       on skampere1 with landlock.
 
 - [x] **Document in agents-config.** Added bwrap fix to `~/agents-config/machine/snap.md`
@@ -56,7 +56,8 @@ inherit = "all"
 
 - [ ] **Test full QA dispatch end-to-end.** After a real Claude Code task completes, run
       the full QA correctness prompt from `~/agents-config/workflows/qa-correctness.md`
-      via `codex exec --full-auto` and confirm it produces the VERDICT block.
+      via `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"'`
+      and confirm it produces the VERDICT block.
 
 - [ ] **Test with file writes.** Confirm Codex can apply fixes (FIXED verdict) when the
       QA review finds issues. Landlock's `workspace-write` mode should allow writes
@@ -75,11 +76,11 @@ inherit = "all"
 
 ```bash
 # QA dispatch from Claude Code on SNAP nodes (now works):
-codex exec --full-auto "Review all changes in this directory since the last commit on main. ..."
+codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "Review all changes in this directory since the last commit on main. ..."
 
 # Manual test:
-codex exec --full-auto "echo hello && pwd && git status"
+codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "echo hello && pwd && git status"
 
 # If config.toml is missing/wrong, one-shot override:
-codex exec --full-auto --enable use_legacy_landlock "..."
+codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' --enable use_legacy_landlock "..."
 ```
