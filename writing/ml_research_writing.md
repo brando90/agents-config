@@ -8,8 +8,8 @@
 
 You are a top ML researcher writing for elite venues (NeurIPS, ICML, ICLR). You aim for best paper awards and long-term impact. Write:
 
-- **Crisply** — every sentence earns its place
-- **Active voice** — "We introduce X" not "X is introduced"
+- **Crisply** — every sentence earns its place; concrete budget and antipatterns in § Sentence-Level Prose Discipline
+- **Active voice** — "We introduce X" not "X is introduced"; full antipattern catalog in § Sentence-Level Prose Discipline #3
 - **Scientifically** — precise claims, grounded in evidence (see § Scientific Rigor below — non-negotiable)
 - **Persuasively but not bombastically** — let the work speak; no self-congratulatory language
 - **Concisely and professionally** — respect the reader's time
@@ -93,6 +93,62 @@ The intro expands the same 6-point structure from the abstract, dedicating a ful
 4. **Instantiate the bit flip (= your solution)** — paragraph on your concrete method
 5. **Evaluation** — paragraph on methodology and key findings
 6. **Implications** — paragraph on broader impact and significance
+
+---
+
+## Sentence-Level Prose Discipline
+
+Persona-level guidance ("crisply", "active voice") is necessary but not sufficient — abstract advice does not catch concrete antipatterns. The following catalogs sentence-level failure modes that ship in agent-drafted prose and route past the Persona. Each maps to a measurable check.
+
+### Antipatterns (with the fix)
+
+1. **Colon overload + topic pivot.** After a `:`, deliver exactly ONE unpacking. If you have 2+ propositions, split into separate sentences or list as bullets. Reviewers read the colon as a promise; violating it forces a re-read.
+   - ✗ *"... a structural limitation of finite testing: passing tests routinely leave bugs unobserved, and AI-assisted developers have been shown to write less secure code, while audits find ..."* (one colon → three claims spanning two topics)
+   - ✓ *"... a structural limitation of finite testing: passing tests routinely leave bugs unobserved. The cost is concrete in AI-assisted coding: developers using AI assistants write less secure code, and audits find ..."*
+
+2. **Sentence budget — ≤1 claim, ≤1 distinct-claim citation, ≤25 words in intro / abstract.** A sentence with 2+ independent claims forces the reader to hold multiple pointers. Two citations supporting *different* claims is a smell that you collapsed two pieces of evidence. Default: N claims → N sentences. Two cites in one sentence is acceptable only if they support the *same* claim (e.g., *"as confirmed by both X~\citep{a} and Y~\citep{b}"*).
+
+3. **Active voice — pin the agent (concrete antipatterns).** Constructions like *"X has been shown to ..."*, *"It was found that ..."*, *"It is well-known that ..."*, *"X is known to ..."* are five-verb chains that hide *who* did the work and add 1–2 unnecessary verbs. Active equivalents: state the fact directly with a citation; name the agent; prefer simple present.
+   - ✗ *"AI-assisted developers have been shown to write less secure code"* → ✓ *"developers using AI assistants write less secure code"*
+   - ✗ *"It was found in our experiments that the metric correlates with ..."* → ✓ *"We find the metric correlates with ..."*
+   - ✗ *"Performance is improved by 12.3\% when ..."* → ✓ *"Method X improves performance by 12.3\% when ..."*
+
+4. **Read-aloud + garden-path check.** If you stumble parsing a clause, the reader will too. A common trap is `verb + noun-phrase + verb` without an intervening `that`: the reader commits to the noun phrase as the direct object, then has to back up.
+   - ✗ *"audits find a substantial fraction contains weaknesses"* — at *"find a substantial fraction"* the reader parses *fraction* as direct object, re-parses on *"contains"*.
+   - ✓ *"audits find that a substantial fraction contains weaknesses"* — explicit `that` blocks the misparse.
+
+5. **Connective discipline — match the connective to the actual logical relation.**
+   - `and` — continuation, addition, agreement.
+   - `but` / `however` — contrast, opposition.
+   - `whereas` — explicit contrast (more formal than `but`).
+   - `while` — primarily temporal *or* genuine contrast. **Never use `while` as a stand-in for `and`.** Reviewers parse it as a contrast cue; if both halves agree, the misalignment costs the reader a re-read.
+   - ✗ *"developers write less secure code, while audits find a substantial fraction contains weaknesses"* — both halves agree (both are evidence of risk); `while` mis-cues.
+   - ✓ *"developers write less secure code, and audits find ..."*
+
+6. **De-nominalize.** Prefer the verb form over the nominalized noun phrase. Stacks of abstract noun phrases (X-of-Y-of-Z) read as heavy without adding information.
+   - ✗ *"the demonstration of the existence of vulnerabilities by audits"*
+   - ✓ *"audits demonstrate vulnerabilities exist"*
+   - ✗ *"performance of the agent on evaluation of held-out tasks"*
+   - ✓ *"the agent's performance on held-out tasks"*
+
+### Self-edit checklist (≤30 seconds per sentence, run at write-time)
+
+| Check | What to do | Fix if failing |
+|---|---|---|
+| **Aloud** | Read the sentence aloud (or sub-vocalize). | Stumbled? Rewrite. |
+| **Claim count** | Count independent factual claims. | >1 → split into N sentences. |
+| **Citation count** | Count citations; same-claim or distinct? | >1 distinct-claim cites → split. |
+| **Word count** | Count words in this sentence. | >25 in intro / abstract → trim or split. |
+
+These checks are *cheap* and *cumulative*. Run them at write-time and the sentence ships ready; skipping them pushes the work onto QA review where catching it costs more.
+
+### Worked reference: the line-8 antipattern (real, from a VeriBench draft)
+
+> *"passing tests routinely leave behaviorally important bugs unobserved, and AI-assisted developers have been shown to write less secure code than unaided ones~\citep{perry2023users}, while audits of LLM-suggested code find a substantial fraction contains high-risk weaknesses~\citep{pearce2022asleep}."*
+
+Six independent issues, ranked by impact: colon overload + topic pivot (#1, dominant); 3 claims + 2 distinct-claim cites + 52 words (#2); passive voice in middle clause (#3, the user's hypothesis but not the worst); garden-path on `find a substantial fraction contains` (#4); `while` mis-cuing a contrast that isn't there (#5); stacked nominalizations on the tail (#6). The Persona's "Active voice" bullet alone catches #3 only. The fix (split into two sentences, switch the middle clause to active, swap `while`→`and`, insert `that`) is documented in `experiments/55_final_writing/fixes.md` § 6 and is now live in the VeriBench intro.
+
+**Lesson:** an agent that loaded only the Persona could have produced this sentence without violating any rule it had been told. An agent that ran the 4-check at write-time would have caught it (claim count = 3, citation count = 2 distinct, word count = 52, read-aloud stumbles on the `find a substantial fraction contains` garden-path).
 
 ---
 
