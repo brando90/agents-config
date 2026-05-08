@@ -765,6 +765,52 @@ Verified end-to-end on macOS (MacBook Air, Apple Silicon, Node 25 via Homebrew) 
 
 > **Prerequisite (one-time, per machine):** `codex login` against your ChatGPT/Codex Pro account. Verify with `cat ~/.codex/auth.json | grep chatgpt_plan_type` → `"chatgpt_plan_type": "pro"`.
 
+### A.0 First-run setup checklist (do these in order)
+
+If a step fails, check §A.6 Gotchas before retrying — most failures are documented there.
+
+- [ ] **A.0.1** Pre-flight: confirm `codex login` worked → `grep chatgpt_plan_type ~/.codex/auth.json` shows `"pro"`. (If using piped/non-TTY, it will silently fail; do this in Terminal.app.)
+- [ ] **A.0.2** Install OpenClaw (§A.1, ~30 s) — npm install + `~/.npmrc cafile` if Homebrew Node.
+- [ ] **A.0.3** Run `openclaw onboard` **in Terminal.app, not from inside another Claude Code or Codex session** (§A.2, ~1 min). Subprocess deadlocks if you don't.
+- [ ] **A.0.4** PONG smoke test (§A.3, ~5 s) — confirms gateway + Codex Pro round-trip works.
+- [ ] **A.0.5** Pre-grant macOS TCC permissions to the Homebrew node binary so the agent never trips dialogs mid-task (§A.0.5 below).
+- [ ] **A.0.6** Telegram channel (§A.4, ~5 min) — `@BotFather` → bot per host (`ultimate_brando9_<host>_bot`) → token to `~/keys/` → `openclaw channels add` → `/start` from phone → approve pairing code.
+- [ ] **A.0.7** Create private `openclaw-ops` Telegram channel; add the bot as admin. Heartbeats land here.
+- [ ] **A.0.8** Google Workspace via `gog` skill (§A.5, ~3 min + 2 min API enables) — `brew install gogcli`, `gog auth credentials set`, `gog auth add`, enable 8 APIs in GCP, smoke test, `openclaw skills info gog` shows ✓ Ready.
+- [ ] **A.0.9** First DM the bot — *"send an email to brandojazz@gmail.com saying hi from openclaw"*. Should land in your inbox in ~10 s. If it doesn't, see §A.8.
+- [ ] **A.0.10** Populate `config/admin-filter.txt` with 3–8 sender patterns and run the Phase 1.6 E2E real-email triage test (§6).
+
+**Time on a fresh machine:** ~30–45 min Brando-time (mostly waiting on browser OAuth + GCP API enables). Re-runs on additional hosts are faster (~15 min) once you know where the prompts come from.
+
+### A.0.5 First-run TCC pre-grants (so `post` is fire-and-forget)
+
+macOS shows two distinct TCC ("Transparency, Consent, Control") prompts the first time `node` accesses protected resources:
+
+1. **Files-and-folders / Full Disk Access** — *"node would like to access data from other apps"*
+2. **Automation** — *"node wants access to control "<App Name>". Allowing control will provide access to documents and data in "<App Name>", and to perform actions within that app."*
+
+**Macro principle:** when Brando says `post` he means *fire-and-forget*. Approve all of these **proactively, once**, so the agent never blocks on a dialog mid-task.
+
+**Step 1 — Full Disk Access (kills the file/folder prompts).** Find the exact node binary:
+```bash
+which node                                  # symlink path (e.g. ~/homebrew/bin/node)
+readlink -f $(which node)                   # real path (e.g. ~/homebrew/Cellar/node/25.9.0_2/bin/node)
+```
+
+In **System Settings → Privacy & Security → Full Disk Access**, click **+** and add **both** paths (the real Cellar path AND the Homebrew symlink). Adding both means a future `brew upgrade node` doesn't strip the permission. Toggle **ON** for each.
+
+Restart the gateway so the change takes effect:
+```bash
+launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist && sleep 2 && launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+```
+
+**Step 2 — Automation (kills the per-app control prompts).** macOS has no "allow all" UI for Automation; permissions are per-(source-binary, target-app) pair. Two options:
+
+- **Lazy approach (default):** click **Allow** on each prompt as it appears the first time the agent tries to control an app (Mail, Outlook, Calendar, Reminders, Notes, iMessage/Messages, Music, Slack, etc.). Each pair is then permanent. macOS remembers it under Privacy & Security → Automation → node.
+- **Eager approach (recommended for `post`-fire-and-forget):** run `~/agents-config/scripts/pre-grant-tcc-automation.sh` once per host. It triggers a harmless `osascript` ping at every app the agent might control, so all the prompts fire at once and Brando clicks **Allow** through them in one sitting. Then `post` never blocks again.
+
+The script is small enough to read; it's the canonical list of apps OpenClaw might script-control. Add new apps to it as the agent's surface grows.
+
 ### A.1 Install (~30 s)
 
 macOS (Homebrew Node) needs an `~/.npmrc` cafile entry first:
@@ -869,7 +915,7 @@ DM the bot *"send me an email saying hi"* and watch it execute.
 
 > **Multi-instance:** `gog` tokens at `~/Library/Application Support/gogcli/` (macOS) / `~/.config/gogcli/` (Linux). To avoid re-OAuthing, `scp` that directory between hosts. Tokens auto-refresh.
 
-### A.6 Gotchas (real ones)
+### A.6 Gotchas (real ones, learned the hard way)
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -880,6 +926,51 @@ DM the bot *"send me an email saying hi"* and watch it execute.
 | `claude -p` subprocess hangs forever | OpenClaw spawning `claude -p` deadlocks on `~/.claude/sessions` lockfiles when called from inside another claude session | Don't drive OpenClaw from inside Claude Code; use Codex harness |
 | Telegram `Network request for 'sendMessage' failed!` despite working `curl` | Gateway lacks `NODE_EXTRA_CA_CERTS` in launchd env | Edit plist → add `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem` to `EnvironmentVariables`, `openclaw gateway restart` |
 | Bot won't DM you proactively | Telegram bots can't initiate; user must `/start` first | Open chat, hit `/start`, then approve the pairing code |
+| **Bot delivers messages (✓✓ read receipts) but never replies** (added 2026-05-08) | Embedded agent session got stuck on stale codex errors *and/or* a previous restart left `plugin-runtime-deps` half-installed so the Telegram plugin failed to register | Full reset: `launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist && pkill -f openclaw && rm -rf ~/.openclaw/plugin-runtime-deps && launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist` then wait ~3 min for npm to reinstall plugin runtime deps. Verify with `openclaw channels status` showing `Telegram default: ... running, connected, mode:polling`. See §A.8 for the full triage flow. |
+| `[plugins] telegram failed during register: Error: ENOTEMPTY ... plugin-runtime-deps/.../plugin-sdk` (in `gateway.err.log`) (added 2026-05-08) | Plugin runtime cache got into a half-state during a prior boot/restart cycle | `rm -rf ~/.openclaw/plugin-runtime-deps` while gateway is unloaded; on next boot it rebuilds from scratch (~3 min) |
+| Stuck agent session: `embedded run failover decision ... rawError=codex app-server error` looping repeatedly in `gateway.err.log` (added 2026-05-08) | Agent session has been "processing" for hundreds of seconds and the codex backend keeps failing to recover; PONG smoke test still passes because it uses a different code path | `openclaw gateway restart` to clear the stuck session. If it keeps recurring, also clear plugin-runtime-deps as above. |
+| `node would like to access data from other apps` macOS dialog blocks an agent action (added 2026-05-08) | macOS TCC prompts when node first touches protected dirs (Documents, Drive folder, Mail data, etc.) | Pre-grant Full Disk Access to both `~/homebrew/bin/node` and the real Cellar path `~/homebrew/Cellar/node/<ver>/bin/node` per §A.0.5. |
+| `node wants access to control "<App>"` macOS dialog blocks an agent action (added 2026-05-08) | macOS Automation TCC; per-(source-binary, target-app) pair. No "allow all" UI exists. | Click **Allow** once — pair is then permanent. Or run `scripts/pre-grant-tcc-automation.sh` to batch-trigger prompts for all common apps (Mail, Outlook, Calendar, Reminders, Notes, Messages, Slack, Music, etc.) and approve them in one sitting. |
+
+### A.8 If the bot stops replying — triage flow (added 2026-05-08)
+
+The most common operational failure: you DM the bot, the messages get ✓✓ delivered, no reply. Run these checks in order:
+
+```bash
+# 1. Is the gateway daemon even running?
+launchctl list | grep openclaw           # expect: ai.openclaw.gateway running with a PID
+
+# 2. Are the channels healthy?
+openclaw channels status                 # expect: Telegram default: ... running, connected, mode:polling
+
+# 3. Does the model round-trip work?
+timeout 30 openclaw infer model run --gateway --prompt "say only the word PONG"
+# expect: provider: openai / model: gpt-5.5 / PONG
+
+# 4. Are there errors in the agent runtime?
+tail -80 ~/.openclaw/logs/gateway.err.log | grep -E "agent|codex|telegram|plugin"
+# look for: stuck session, "codex app-server error", plugin register failures
+```
+
+Decision tree:
+
+- If **all 4 pass** but the bot still doesn't reply → embedded agent session is stuck (stale state). Fix: `openclaw gateway restart` (clears the session).
+- If **PONG passes** but `channels status` doesn't show Telegram OR shows it stopped → Telegram plugin failed to register. Fix: full reset including `rm -rf ~/.openclaw/plugin-runtime-deps`; see §A.6 row "ENOTEMPTY".
+- If **PONG fails** with `Requested agent harness "codex" is not registered` → onboarding broke; re-run `openclaw onboard` in Terminal.app.
+- If **PONG fails** with `gateway closed (1006/...)` → gateway is still booting after a restart; wait 30–60 s and retry. If it persists >2 min, full reset.
+- If **gateway not running** at all → `launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist`; check `gateway.err.log` for boot errors.
+
+The full reset (use when in doubt — takes ~3 min):
+
+```bash
+launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+pkill -f openclaw
+rm -rf ~/.openclaw/plugin-runtime-deps
+launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+# wait ~3 min for npm to reinstall plugin runtime deps; watch:
+until openclaw channels status 2>/dev/null | grep -q "Gateway reachable"; do sleep 5; done
+openclaw channels status
+```
 
 ### A.7 What not to do
 
