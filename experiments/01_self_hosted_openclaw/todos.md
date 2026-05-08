@@ -10,7 +10,7 @@ Air instance is the active one; Pro and mercury2 untouched. Last working state o
 
 | Channel / capability | State | Notes |
 |---|---|---|
-| Telegram (chat surface) | ✅ working | Bot `@ultimate_brando9_bot` paired with Brando, agent replies via Codex Pro / GPT-5.5. Token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600), already rotated once. |
+| Telegram (chat surface) | ✅ working | Bot `@ultimate_brando9_sk_air_bot` (renamed 2026-05-08 from `@ultimate_brando9_bot` via BotFather `/setusername`; token unchanged) paired with Brando, agent replies via Codex Pro / GPT-5.5. Token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600), already rotated once. |
 | Gmail (read + send) | ✅ working via `gog` skill | `gogcli` 0.13.0 installed, OAuth done, all 7 Workspace APIs enabled in GCP project 721441778080. `openclaw skills info gog` shows ✓ Ready. |
 | Calendar / Drive / Docs / Sheets / Tasks / People | ✅ working via `gog` skill | All verified end-to-end (`gog -a brandojazz@gmail.com calendar list`, etc.) |
 | Discord | 🟡 blocked on user actions | Bot created (ID `1498169663278813254`, token in `~/keys/openclaw_discord_bot_token.txt`), wired into OpenClaw config, but Discord refuses with **code 4014** because Message Content Intent is OFF on the dev portal AND bot is in 0 servers. **To resume:** flip the toggle in Bot tab → Save Changes; then run the OAuth2 URL Generator and invite the bot to a server Brando owns. |
@@ -35,7 +35,7 @@ Last commit on this experiment as of pickup: see `git -C ~/agents-config log --o
 - [x] OpenClaw 2026.4.24 installed via npm (with `~/.npmrc cafile` fix)
 - [x] Codex Pro CLI auth verified (`~/.codex/auth.json`, plan=pro, valid 2026-12-11)
 - [x] Smoke test: `openclaw infer model run --gateway --prompt PONG` returns PONG via `openai/gpt-5.5` on codex harness
-- [x] Telegram bot created via @BotFather (`@ultimate_brando9_bot`), wired via `openclaw channels add --channel telegram`, paired with Brando's user id, two-way chat works
+- [x] Telegram bot created via @BotFather (`@ultimate_brando9_sk_air_bot`, renamed 2026-05-08 from `@ultimate_brando9_bot`), wired via `openclaw channels add --channel telegram`, paired with Brando's user id, two-way chat works
 - [ ] **Fix gateway operator-CLI sendMessage HttpError** *(PARKED — agent runtime reply path works fine via gateway's grammy session; this only blocks `openclaw message send` from the CLI for operators; come back to it after the triage loop is otherwise complete)*. Diagnosis so far: cert chain to api.telegram.org is legit (GoDaddy → telegram.org), `node -e "fetch(...)"` with `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem` returns OK, but the plist-set env doesn't reach the gateway's send subprocess despite bootout/bootstrap. Adding `NODE_OPTIONS=--dns-result-order=ipv4first --use-system-ca` and even `NODE_TLS_REJECT_UNAUTHORIZED=0` to the plist didn't help. Suggests OpenClaw's CLI `message send` spawns a fresh node subprocess outside the gateway session.
 - [ ] **Wire Gmail** — `openclaw channels add --channel google` (browser OAuth, scopes: readonly + send + modify)
 - [ ] **Enable agent shell/tool execution** — current agent reports "shell commands blocked by the local hook relay"; need to flip the right approval/exec-policy setting so the triage agent can read Gmail and apply labels

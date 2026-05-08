@@ -61,10 +61,33 @@ Default approval level per channel:
 - [ ] Never enter payment info
 
 ### Travel
-- [ ] Flight search (cheapest reasonable / best schedule / reimbursement-safe)
-- [ ] Compare options, summarize tradeoffs
-- [ ] Never book without approval, never enter payment info
-- [ ] Preference template: home airport, alternates, max layovers, red-eye tolerance, reimbursement constraints
+- [x] Flight search (cheapest reasonable / best schedule / reimbursement-safe) — promoted to [`standing_orders/travel_search.md`](./standing_orders/travel_search.md) 2026-05-08
+- [x] Compare options, summarize tradeoffs — covered by `travel_search.md`
+- [x] Never book without approval, never enter payment info — encoded in `travel_search.md` § Safety rules
+- [x] Preference template: home airport, alternates, max layovers, red-eye tolerance, reimbursement constraints — encoded as `travel_search.md` § Inputs
+
+**First concrete trip — McAllen / Harlingen summer 2026:**
+- **Window:** Sat Jun 13 → Sun Jun 21 2026 (the 8-day natural gap between Stanford spring quarter end Jun 10 and summer quarter start Jun 22)
+- **Backup window:** Aug 16 → Aug 23 (after summer quarter ends Aug 15) if June 13–21 doesn't work
+- **Origin:** SFO (alt: SJC, OAK)
+- **Destinations:** MFE (McAllen) OR HRL (Harlingen) — flexible, pick whichever is cheaper / more convenient
+- **Duration:** 8 days, depart Sat morning, return Sun evening
+- **Ceiling:** TBD by Brando (typical SFO→RGV is $300–500 RT)
+- **Airline:** Southwest preferred (carry-on free, frequent SFO→DAL/HOU→RGV routes); American/United also fine
+- **Why first test:** real trip Brando actually wants to book → proving-ground for the `travel_search.md` standing order end-to-end
+- **Status:** spec'd, blocked on `travel_search.md` going live (Phase 6.8)
+- Verified Stanford 2026 calendar: spring quarter ends Wed Jun 10, commencement Sun Jun 14, summer quarter Mon Jun 22 → Sat Aug 15 ([source](https://studentservices.stanford.edu/calendar-events/academic-calendars/stanford-academic-calendar-2025-2026))
+
+### Personal portals — medical / utilities / subscriptions
+
+- [ ] **SuperCare ASV resupply auto-confirmation** — Brando uses a ResMed AirCurve / BiPAP ASV machine for sleep apnea. SuperCare Health (his DME supplier) gates each insurance-defined resupply cycle (masks every 1–3 mo, headgear/tubing on staggered cadences) on Brando confirming "yes still using, ship the next batch."
+  - **Tier 1 (easy)** if SuperCare's trigger is **email-based**: add their sender to `config/admin-filter.txt`; triage agent drafts "yes please ship, machine in active daily use" → Brando approves in Telegram → agent sends. Slots straight into the email-triage MVP.
+  - **Tier 2 (medium)** if **portal login required**: use OpenClaw's bundled `browser` plugin per [`todos.md`](./todos.md):75. Credentials in `~/keys/supercare_credentials.json` (mode 600). Screenshot-before-submit per the standing-orders default safety rules.
+  - **Tier 2.5 (harder)** if **SMS**: needs Twilio or iMessage relay; Telegram can't see SMS.
+  - **Tier 0 (out of scope)** if **phone-call only**: voice agent territory; not realistic for v1.
+  - **Status:** blocked on Brando forwarding one recent SuperCare resupply notification (any redacted PII fine) so we know which tier applies before designing.
+
+- [ ] Other recurring personal-portal logins (utilities, subscriptions, doctor portals) — same pattern as SuperCare; add as they come up.
 
 ### Event ads (bachata / SBSBZ zouk / social dance)
 - [ ] Weekly drafting workflow

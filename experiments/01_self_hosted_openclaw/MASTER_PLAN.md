@@ -121,8 +121,17 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
 | Stanford AI for Lean announcements | [`standing_orders/lean_ai_club.md`](./standing_orders/lean_ai_club.md) | skeleton | Phase 6.5 |
 | Experiment dispatch | [`standing_orders/experiment_dispatch.md`](./standing_orders/experiment_dispatch.md) | skeleton | Phase 6.6 |
 | Paper announcements | [`standing_orders/paper_announcements.md`](./standing_orders/paper_announcements.md) | skeleton | Phase 6.7 |
+| Travel search (flights + price drops) | [`standing_orders/travel_search.md`](./standing_orders/travel_search.md) | skeleton | Phase 6.8 |
 
 Shared template + approval-vocab standard: [`standing_orders/README.md`](./standing_orders/README.md). Every new standing order should follow that shape.
+
+**Adjacent artifacts** (same experiment dir, not standing orders):
+
+| Artifact | File | Purpose |
+|---|---|---|
+| Concepts / Q&A explainer | [`concepts.md`](./concepts.md) | Plain-English explainers (Telegram 409, cron, idempotency, etc.); TLDR-first per Trigger Rule 27 |
+| Test tasks (one-shot validation) | [`test_tasks/`](./test_tasks/) | One-off agent test inputs (DM Sri, email Saumya) — not recurring workflows |
+| Chatops / fleet management | [`chatops.md`](./chatops.md) | Future extension: bots.yaml registry + DM-driven restart commands; absorbs conjecture-prover dispatcher reliability |
 
 ---
 
@@ -346,7 +355,7 @@ Skeleton already exists at `config/agent-prompt.md`. Three placeholders need Bra
 This is where heartbeats land. Phase 2 needs it; create it now so Phase 1 testing can also exercise the channel.
 
 - 👤 In Telegram: tap pencil (new message) → New Channel → name `openclaw-ops` → Private.
-- 👤 Add `@ultimate_brando9_bot` as **admin** (Channel info → Administrators → Add Admin).
+- 👤 Add `@ultimate_brando9_sk_air_bot` (renamed from `@ultimate_brando9_bot` per BotFather `/setusername`) as **admin** (Channel info → Administrators → Add Admin).
 - 👤 Send the channel ID to Claude. Easiest way:
   ```bash
   # On the Air, after the bot is in the channel and you've sent any message:
@@ -551,7 +560,7 @@ These are not on the critical path but should not be forgotten.
 
 Current Air token was pasted in a Claude Code chat log (per `todos.md:80`). Risk: anyone with that log can hijack the bot. (Pro and mercury2 bots from Phase 3/4 will have fresh, never-leaked tokens — no rotation needed there at first.)
 
-- 👤 Open Telegram → `@BotFather` → `/revoke` → select `@ultimate_brando9_bot` → confirm. Copy new token.
+- 👤 Open Telegram → `@BotFather` → `/revoke` → select `@ultimate_brando9_sk_air_bot` (formerly `@ultimate_brando9_bot`) → confirm. Copy new token.
 - 👤 Paste new token into `~/keys/openclaw_telegram_bot_token.txt` on **the Air only** (mode 600). The other instances have their own bots.
 - 🤖 Re-load on Air via env var (see H.2) or in-place config edit; restart gateway.
 - 🤖 Verify pairing still works post-rotation (`openclaw pairing list telegram`).
@@ -636,6 +645,9 @@ Filing these is good open-source citizenship and forces upstream to think about 
 - Live checklist: [`todos.md`](./todos.md) (granular per-task TODOs, Status & Log)
 - Wishlist (pre-promotion backlog): [`wishlist.md`](./wishlist.md)
 - Standing orders (per-feature specs): [`standing_orders/`](./standing_orders/) — see [`standing_orders/README.md`](./standing_orders/README.md) for the shared template
+- Concepts / Q&A explainers: [`concepts.md`](./concepts.md) — TLDR-first format per `INDEX_RULES.md` Trigger Rule 27
+- Test tasks (one-shot validation): [`test_tasks/`](./test_tasks/) — see [`test_tasks/README.md`](./test_tasks/README.md)
+- Chatops / fleet management (future): [`chatops.md`](./chatops.md) — bots.yaml registry + DM-driven commands
 - SNAP playbook: [`~/agents-config/machine/snap.md`](../../machine/snap.md)
 - Mac playbook: [`~/agents-config/machine/mac.md`](../../machine/mac.md)
 - Redirect stub: [`PLAN.md`](./PLAN.md) (points here)
