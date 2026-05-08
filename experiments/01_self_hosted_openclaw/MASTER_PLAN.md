@@ -97,7 +97,7 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
 
 - **Gmail label idempotency** — each instance applies `claw-claimed-by-${HOSTNAME}` atomically on pickup; final swap to `triaged-by-claw` only after `gmail.send` returns success. 5-minute stale-claim TTL (tightened from spec's 30 min for 3 readers).
 - **Heartbeat** — every 15 min each instance posts `[host] alive @ <ts>` to private Telegram channel `openclaw-ops`. Lifecycle events (`STARTING`, `RECOVERED`) post immediately. SILENT >30 min triggers an alert from the other instances.
-- **Rate limit** — max 1 approval-DM per minute per instance, max 2 per minute total (across all 3 hosts).
+- **Rate limit** — *none by default*. (Original spec had max 1 approval-DM/min/instance + max 2/min total to "not spam Brando", but per Brando 2026-05-08: he prefers max throughput over throttling, especially on his own Codex Pro / Claude Pro subscription where there's no API spend pressure. Re-introduce only as a runaway-loop circuit-breaker if a real spam incident happens.)
 - **Audit logs** — per-workflow JSONL appended to `~/openclaw/audit/<workflow>.jsonl`:
   - `gmail_sends.jsonl`, `whatsapp_sends.jsonl`, `discord_sends.jsonl`
   - `se_posts.jsonl`, `grants_drafted.jsonl`, `grants_filled.jsonl`
@@ -406,10 +406,11 @@ Per [cron-jobs docs](https://docs.openclaw.ai/automation/cron-jobs.md), OpenClaw
 - 🤖 Hook gateway lifecycle events: `STARTING` on start, `RECOVERED` after a restart-from-crash. (Verify whether OpenClaw exposes lifecycle hooks via plugin API; if not, fall back to a launchd `LaunchEvents` trigger that posts via `openclaw message send --channel telegram --target <ops-chat-id> --message "..."`.)
 - 🤖 Add the SILENT watcher: a separate `openclaw cron add` job that fetches recent `openclaw-ops` posts via `gog`-style Telegram lookup (or just maintains its own state file of last-seen-ts per peer), and posts `[<peer>] SILENT >30min — investigate` if threshold breached. No-op until Pro/mercury2 are up; verify the cron itself fires.
 
-#### Step 2.3 — 🤖 Claude: implement rate limit ⏱ 15 min
+#### Step 2.3 — Skip default rate-limiting (per Brando 2026-05-08) ⏱ 0 min
 
-- 🤖 Per-instance: max 1 approval-DM / 60s.
-- 🤖 Global ceiling: 2 / 60s across instances. Per `agent-prompt.md:72-77`, this is enforced via per-instance limit + the Gmail label lock; verify both layers are in place.
+Brando explicitly opted out of artificial DM throttling — preferring max throughput on his own Codex Pro / Claude subscription. Keep the rate-limit primitive available in code as a circuit-breaker (e.g. `--max-dms-per-min N`) but do not enable it by default. Re-evaluate only if a real runaway-loop spam incident occurs.
+
+- 🤖 No work needed for default behavior. Document the circuit-breaker hook in `config/agent-prompt.md` so a future incident can flip it on without code changes.
 
 ---
 
