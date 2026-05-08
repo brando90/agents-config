@@ -69,14 +69,37 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
    i. If Brando doesn't reply within 30 min, remove your claim label (so
       another instance can re-pick on next loop) and move on. Do not nag.
 
-3. RATE LIMITS (mandatory):
-   - Max one approval-DM per 60 seconds per instance.
-   - Max two approval-DMs per 60 seconds across all 3 instances (you can't
-     observe the others directly; trust the per-instance limit + the Gmail
-     label lock to keep the global rate sane).
-   - If you would exceed: queue locally and dispatch on the next 60s tick.
+3. COMPLETION NOTIFICATION (mandatory, per Brando 2026-05-08):
+   After a successful gmail.send (i.e. the reply was actually sent on
+   Brando's behalf), emit BOTH of these before moving on:
 
-4. If you encounter an unexpected error (Gmail API auth lapsed, Telegram
+   a. Reply in the originating Telegram chat (the same DM where Brando
+      typed "approve" / "edit:"). Format:
+        "✅ sent reply to <sender> — <gmail-thread-url>"
+      Keep it one line. The Telegram reply is the primary signal because
+      it ties the result to the conversation thread.
+
+   b. Email Brando a completion summary, BUT — exception applies here —
+      since the executed action was itself an email reply on Brando's
+      behalf, sending him another email would be circular. SKIP step (b)
+      for the email-triage workflow specifically. The Sent folder + the
+      "triaged-by-claw" Gmail label + the Telegram reply (a) are the
+      audit trail.
+
+      For OTHER workflows that are NOT "email Brando" (e.g. /experiment,
+      grant fill, FB event post, /paper, /social, etc.), the standing
+      order's spec MUST include step (b): email brando.science@gmail.com,
+      CC brando9@stanford.edu and brandojazz@gmail.com (per
+      INDEX_RULES.md Trigger Rule 26), subject "OpenClaw: <workflow> done
+      — <summary>", body listing what was done + links + audit-log row.
+
+4. RATE LIMITS:
+   None by default — Brando opted out 2026-05-08 (prefers throughput over
+   throttling on his Codex Pro / Claude Pro subscription). The rate-limit
+   primitive is preserved as a circuit-breaker; do not enable unless a
+   real runaway-loop spam incident occurs.
+
+5. If you encounter an unexpected error (Gmail API auth lapsed, Telegram
    send fails, etc.):
    - Log to stderr.
    - DM Brando: "🚨 [${OPENCLAW_HOST}] error: <one-line summary>".

@@ -103,6 +103,11 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
   - `se_posts.jsonl`, `grants_drafted.jsonl`, `grants_filled.jsonl`
   - `social_posts.jsonl` (FB + IG + mailing list)
   - `experiments_dispatched.jsonl`, `paper_announcements.jsonl`
+- **Completion notifications (mandatory, per Brando 2026-05-08)** — every successfully executed task (anything that went through a `post` approval) ends with **two** notifications, in this order:
+  1. **Telegram reply in the originating chat** — the same DM thread where Brando issued / approved the task. One-line summary + relevant URLs (sent-message link, FB event URL, PR URL, etc.). E.g. `✅ sent reply to registrar@stanford.edu — gmail.com/threads/<id>`. This is the *primary* signal because it ties the result to the conversation.
+  2. **Email to Brando** — with all 3 CCs per [`INDEX_RULES.md`](../../INDEX_RULES.md) Trigger Rule 26 (`brando.science@gmail.com` + `brando9@stanford.edu` + `brandojazz@gmail.com`). Subject: `OpenClaw: <workflow> done — <one-line summary>`. Body: what was done, links, audit-log entry. This is the durable record so a muted Telegram never causes Brando to lose a task.
+  - **Exception:** if the executed action was itself sending an email *to* Brando (e.g. email-triage replied to a sender on his behalf), skip step 2 (would be circular) and rely on the Telegram reply + the Sent folder + the `triaged-by-claw` Gmail label as the audit trail.
+  - **Failure mode:** if either notification path fails (Telegram down, Gmail API auth lapsed), retry once and then DM `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action — it's already done; the audit trail is the recovery path.
 - **Cross-instance audit aggregation** — deferred to Phase 6 (weekly summary report DM'd to Brando).
 
 ---
