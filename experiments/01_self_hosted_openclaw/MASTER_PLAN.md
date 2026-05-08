@@ -111,7 +111,7 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
 
 | Workflow | File | State | Phase |
 |---|---|---|---|
-| Email triage (Stanford admin) | [`cc_prompt.md`](./cc_prompt.md) + [`config/agent-prompt.md`](./config/agent-prompt.md) | partial (Air) | Phase 1 |
+| Email triage (Stanford admin) | §6 Phase 1 + [`config/agent-prompt.md`](./config/agent-prompt.md) | partial (Air) | Phase 1 |
 | WhatsApp voice-draft | [`standing_orders/whatsapp_voice_draft.md`](./standing_orders/whatsapp_voice_draft.md) | specced | Phase 6.1 |
 | Stack Exchange `/ask` posting | [`standing_orders/stackexchange_proofassistants_post.md`](./standing_orders/stackexchange_proofassistants_post.md) | specced (absorbed from #42) | Phase 6.2 |
 | Grant applications | [`standing_orders/grant_applications.md`](./standing_orders/grant_applications.md) | skeleton | Phase 6.3 |
@@ -640,17 +640,15 @@ Filing these is good open-source citizenship and forces upstream to think about 
 
 ### Internal (this repo)
 
-- Spec: [`cc_prompt.md`](./cc_prompt.md) (6-phase plan, idempotency strategy, DoD, hard rules)
-- Recipe: [`setup-tutorial.md`](./setup-tutorial.md) (reproducible install, gotchas)
-- Live checklist: [`todos.md`](./todos.md) (granular per-task TODOs, Status & Log)
-- Wishlist (pre-promotion backlog): [`wishlist.md`](./wishlist.md)
 - Standing orders (per-feature specs): [`standing_orders/`](./standing_orders/) — see [`standing_orders/README.md`](./standing_orders/README.md) for the shared template
 - Concepts / Q&A explainers: [`concepts.md`](./concepts.md) — TLDR-first format per `INDEX_RULES.md` Trigger Rule 27
 - Test tasks (one-shot validation): [`test_tasks/`](./test_tasks/) — see [`test_tasks/README.md`](./test_tasks/README.md)
 - Chatops / fleet management (future): [`chatops.md`](./chatops.md) — bots.yaml registry + DM-driven commands
+- Operational artifacts: [`config/`](./config/) (`admin-filter.txt`, `agent-prompt.md`, `openclaw.json.template`), [`scripts/`](./scripts/) (`install_openclaw_instance.sh`, etc.)
 - SNAP playbook: [`~/agents-config/machine/snap.md`](../../machine/snap.md)
 - Mac playbook: [`~/agents-config/machine/mac.md`](../../machine/mac.md)
 - Redirect stub: [`PLAN.md`](./PLAN.md) (points here)
+- Project history — prior `cc_prompt.md` / `setup-tutorial.md` / `todos.md` / `wishlist.md` content is now absorbed into **Appendices A–F** at the bottom of this file.
 
 ### Upstream OpenClaw docs (verified 2026-05-08)
 
@@ -674,3 +672,252 @@ Filing these is good open-source citizenship and forces upstream to think about 
 - X / Twitter: https://x.com/BrandoHablando
 - Google Scholar: https://scholar.google.com/citations?user=_NQJoBkAAAAJ
 - Stanford AI for Lean: https://aiforlean.org
+
+---
+
+# Appendices
+
+These sections absorb content from the prior `cc_prompt.md`, `setup-tutorial.md`, `todos.md`, and `wishlist.md` so this file is the single source of truth.
+
+## Appendix A — Reproducible Install Recipe
+
+Verified end-to-end on macOS (MacBook Air, Apple Silicon, Node 25 via Homebrew) on 2026-04-26. Same recipe is meant to repeat on Mac Pro and SNAP `mercury2`.
+
+> **Prerequisite (one-time, per machine):** `codex login` against your ChatGPT/Codex Pro account. Verify with `cat ~/.codex/auth.json | grep chatgpt_plan_type` → `"chatgpt_plan_type": "pro"`.
+
+### A.1 Install (~30 s)
+
+macOS (Homebrew Node) needs an `~/.npmrc` cafile entry first:
+
+```bash
+test -f ~/.npmrc || echo "cafile=/etc/ssl/cert.pem" > ~/.npmrc
+npm install -g openclaw@latest
+openclaw --version    # expect: OpenClaw 2026.4.24 (cbcfdf6) or newer
+```
+
+If you see `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`: add the cafile line, then `rm -rf ~/.openclaw/plugin-runtime-deps` and retry.
+
+### A.2 Onboarding — must be in a real Terminal (~1 min)
+
+Run in Terminal.app or iTerm — needs a TTY (do **not** drive from inside another Claude Code / Codex session):
+
+```bash
+openclaw onboard
+```
+
+Answer the prompts:
+- **Where will the Gateway run?** → `Local (this machine)`
+- **Auth choice** → `Codex (ChatGPT/OpenAI)` (auto-detects `~/.codex/auth.json`)
+- **Default model** → accept `openai/gpt-5.5` (routes through the codex harness, billed against your Pro plan)
+- **Daemon install** → yes (writes `~/Library/LaunchAgents/ai.openclaw.gateway.plist` on macOS)
+
+If onboarding picked a different model:
+
+```bash
+openclaw config set agents.defaults.model.primary openai/gpt-5.5
+openclaw config set agents.defaults.embeddedHarness.runtime codex
+openclaw gateway restart
+```
+
+### A.3 Smoke test (~5 s)
+
+```bash
+openclaw infer model run --gateway --prompt "say only the word PONG"
+# expect: provider: openai / model: gpt-5.5 / PONG
+```
+
+If `Requested agent harness "codex" is not registered` → onboarding didn't take; re-run A.2 in a real Terminal.
+If `gateway closed (1006/1000)` → `openclaw gateway restart && sleep 5`, retry.
+
+Sanity-check Codex Pro billing (not API key billing):
+```bash
+grep chatgpt_plan_type ~/.codex/auth.json   # → "pro"
+openclaw config get agents.defaults.embeddedHarness.runtime   # → "codex"
+```
+
+### A.4 Telegram channel (~5 min, requires phone)
+
+1. Telegram → `@BotFather` → `/newbot` → name (e.g. `ultimate_brando9_<host>_bot`) → copy token
+2. (Optional) `/newchannel` → create private `openclaw-ops` channel; add bot as admin
+
+```bash
+mkdir -p ~/keys && chmod 700 ~/keys
+echo 'PASTE_TOKEN_HERE' > ~/keys/openclaw_telegram_bot_token.txt
+chmod 600 ~/keys/openclaw_telegram_bot_token.txt
+
+openclaw channels add --channel telegram --token "$(cat ~/keys/openclaw_telegram_bot_token.txt)"
+openclaw gateway restart
+sleep 4
+openclaw channels status   # → "Telegram default: enabled, configured, running"
+```
+
+First contact (the bot can't DM you until you DM it):
+1. Search for your bot's `@handle`, tap `/start`, send any message
+2. Bot replies with a pairing code (e.g. `KBK4LMYU`) and the approval command
+3. Run: `openclaw pairing approve telegram <CODE>`
+4. DM the bot again — it now replies as the agent (Codex Pro / GPT-5.5)
+
+### A.5 Google Workspace via the bundled `gog` skill
+
+> **Important:** OpenClaw's stock `google` plugin is for Gemini models, NOT Gmail/Calendar/Drive. Workspace integration is the *skill* `gog` wrapping the `gogcli` Homebrew binary.
+
+```bash
+brew install gogcli
+gog --version                                                       # 0.13.0+
+gog auth credentials set ~/keys/client_secret_*.apps.googleusercontent.com.json
+gog auth add YOUR_GOOGLE_EMAIL@gmail.com                            # opens browser
+```
+
+**Enable APIs in your GCP project** (otherwise: `403 accessNotConfigured`). Open `https://console.cloud.google.com/apis/library?project=<YOUR_PROJECT_ID>` and enable each (~30s propagation each):
+Gmail · Calendar · Drive · Docs · Sheets · Tasks · People · Slides.
+
+Smoke test gog:
+```bash
+A=YOUR_GOOGLE_EMAIL@gmail.com
+gog -a $A gmail send --to $A --subject "🦞 gog test" --body "via gog"
+gog -a $A gmail list "is:unread" --max 5 -p
+gog -a $A calendar list --max 5 -p
+gog -a $A drive ls --max 5 -p
+```
+
+Confirm OpenClaw picked up the skill:
+```bash
+openclaw skills info gog   # → "🎮 gog ✓ Ready" with "Binaries: ✓ gog"
+```
+
+DM the bot *"send me an email saying hi"* and watch it execute.
+
+> **Multi-instance:** `gog` tokens at `~/Library/Application Support/gogcli/` (macOS) / `~/.config/gogcli/` (Linux). To avoid re-OAuthing, `scp` that directory between hosts. Tokens auto-refresh.
+
+### A.6 Gotchas (real ones)
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `npm` SSL: `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` | Homebrew Node has no CA bundle | `echo cafile=/etc/ssl/cert.pem > ~/.npmrc` |
+| `Error: No provider plugins found.` | Stale plugin cache from partial install | `rm -rf ~/.openclaw/plugin-runtime-deps` then retry |
+| `models auth login requires an interactive TTY` | Auth wizards need a real terminal | Run in Terminal.app, not from a non-TTY shell |
+| `Requested agent harness "codex" is not registered` | Onboarding skipped or failed | Re-run `openclaw onboard` in a real Terminal |
+| `claude -p` subprocess hangs forever | OpenClaw spawning `claude -p` deadlocks on `~/.claude/sessions` lockfiles when called from inside another claude session | Don't drive OpenClaw from inside Claude Code; use Codex harness |
+| Telegram `Network request for 'sendMessage' failed!` despite working `curl` | Gateway lacks `NODE_EXTRA_CA_CERTS` in launchd env | Edit plist → add `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem` to `EnvironmentVariables`, `openclaw gateway restart` |
+| Bot won't DM you proactively | Telegram bots can't initiate; user must `/start` first | Open chat, hit `/start`, then approve the pairing code |
+
+### A.7 What not to do
+
+- **Don't** sign up at clawhub.ai for the smoke test — the 63 stock plugins (`google`, `telegram`, `whatsapp`, etc.) are bundled with the npm package. ClawHub is the optional marketplace for *third-party* skills.
+- **Don't** put `gateway.auth.token`, `channels.telegram.botToken`, or any other secret in agents-config — they live in `~/keys/` (mode 600) per machine, scp'd between hosts.
+- **Don't** copy `~/.codex/auth.json` between machines — refresh tokens rotate and break whichever host pulled it last.
+- **Don't** run multiple instances pointing at the same Gmail label without the idempotency strategy from §2.5.
+
+---
+
+## Appendix B — Hard rules for the executing agent
+
+Agents picking this experiment up cold should re-read `~/agents-config/INDEX_RULES.md` first.
+
+- **Refresh agents-config** (`git -C ~/agents-config pull`) and re-read `INDEX_RULES.md` (Hard Rule #5).
+- **Never commit secrets.** Tokens live in `~/keys/`, mode 600 (Hard Rule #1).
+- **Run QA** before reporting any non-trivial milestone done (Hard Rule #3).
+- **Email Brando** at `brando.science@gmail.com` (CC `brando9@stanford.edu` + `brandojazz@gmail.com`) when each phase completes — counts as a "big task" (Hard Rule #13). Per Trigger Rule 26: always CC all 3 of Brando's emails on outbound mail.
+- **Dual TLDR** on every response (Hard Rule #4).
+- **Q&A leads with `**A (TLDR):**`** before detail (Trigger Rule 27).
+- **Just-do-it** (Guideline #14) — but for OpenClaw, **stop and ask** before any of these:
+  - Sending a reply from Gmail before the approval flow is verified end-to-end on **all** instances.
+  - Pairing Baileys to a WhatsApp account other than Brando's.
+  - Granting OpenClaw shell access on a SNAP node shared with other users (mercury2 — coordinate with `machine/mercury2.md`).
+  - Modifying `~/Library/LaunchAgents/` outside the OpenClaw plist.
+
+---
+
+## Appendix C — Decision rationale (rejected paths)
+
+- **Why not extend `uutils` with inbound webhook handlers + bot frameworks?** `uutils` is a notification utility library (one-way: `emailing.py`, `discord_uu.py`, `whatsapp_uu.py` — called from job schedulers and watchers). Building inbound + agent loop inside `uutils` would change its shape from utility to service. See `~/ultimate-utils/README.md` §"Notifications vs. Interactive Agents" and issue [brando90/ultimate-utils#41](https://github.com/brando90/ultimate-utils/issues/41).
+- **Why not pay for `myclaw.ai` ($33–$66/mo hosted)?** Brando has the hardware and skills to self-host. Codex Pro covers the model calls. The recurring fee provides no benefit.
+- **Why not make Claude Code the in-app agent?** It's a coding CLI, not a personal-assistant runtime. Wrong shape for "fire from phone, get reply back."
+- **Why 3 instances and not 2 (the original spec)?** Original 2-instance plan (mercury2 + Mac mini) was superseded 2026-04-26 because the actual hardware is 3 (mercury2 + MacBook Air + MacBook Pro), and dropping WhatsApp (4-device cap exceeded) for Telegram-as-substrate let us scale up without device-cap pain.
+
+---
+
+## Appendix D — Status & Log (project history)
+
+Append-only. Most recent entry on top.
+
+| Date | Author | Phase | Status | Notes |
+|------|--------|-------|--------|-------|
+| 2026-05-08 | claude-code (mac-air) | — | files consolidated | Absorbed prior `cc_prompt.md`, `setup-tutorial.md`, `todos.md`, `wishlist.md` into MASTER_PLAN.md Appendices A–F; deleted those 4 files. Bot handle update (`@ultimate_brando9_sk_air_bot`) preserved across the absorption. SuperCare ASV resupply 4-tier analysis + McAllen summer 2026 travel test case + Outlook notification silence TODO absorbed into Appendix F. |
+| 2026-05-08 | claude-code (mac-air) | — | persistence pass | Captured all chat-drafted artifacts: added `concepts.md` (Q&A explainers), `chatops.md` (fleet-management design), `standing_orders/travel_search.md`, `test_tasks/` (DM Sri + Saumya/NeurIPS email). Renamed Telegram bot `@ultimate_brando9_bot` → `@ultimate_brando9_sk_air_bot` across 5 sites. Added `lean_ai_club.md` "Monthly workhackathon nudge" sub-template. Added `INDEX_RULES.md` Trigger Rules 26 + 27. |
+| 2026-05-08 | claude-code (mac-air) | — | master plan consolidated | Renamed `PLAN.md` → `MASTER_PLAN.md`; expanded to single source of truth. Absorbed PR #42's SE standing order verbatim. Added 7 new standing-order skeletons (grants, FB events, IG, Drive→social, Lean AI, experiment dispatch, paper announcements). Closed PR #42 as superseded by #46. Cross-checked against [docs.openclaw.ai](https://docs.openclaw.ai/llms.txt). 4 doc-verified corrections folded in. 8 new open decisions added to §9. |
+| 2026-04-26 | claude-code (mac-air) | 0–1 | Air partially working | Codex-Pro-backed install live on the Air (gateway under launchd, `openclaw infer model run --gateway` returns `PONG` via `openai/gpt-5.5` on codex harness, Telegram bot `@ultimate_brando9_sk_air_bot` paired and chats with Brando). Open: gateway-side `openclaw message send --channel telegram` still fails with `HttpError: Network request for 'sendMessage' failed!` despite `NODE_EXTRA_CA_CERTS` + `NODE_OPTIONS=--dns-result-order=ipv4first --use-system-ca` + `NODE_TLS_REJECT_UNAUTHORIZED=0` set in plist; agent runtime's reply path through grammy works fine, so this only blocks operator CLI not the feature itself — parked. Architecture v2 (3 instances + Telegram-as-substrate) committed alongside. |
+| 2026-04-26 | claude-code (worktree) | — | scope expanded | Added wishlist (full backlog) and `standing_orders/whatsapp_voice_draft.md` (voice-dictation → cleanup → approve → send flow, `never_autonomous` for auto-reply). Email-MVP plan unchanged. |
+| 2026-04-26 | claude-code (mac-air, pre-flight) | 0 | blocked | Verified the spec's repo URL `steipete/claw-bot` returns 404; canonical repo is `https://github.com/openclaw/openclaw` (latest release v2026.4.24, MIT, Node 24 recommended). Spec edited to fix the dead URL and reference the built-in `openclaw onboard --install-daemon` (which obsoletes most of Phase 5's manual launchd work). |
+| 2026-04-26 | claude-code (planning) | — | spec drafted | Initial spec drafted. Two-instance plan, Codex Pro as model, auto-restart required. No setup actions taken yet. |
+
+---
+
+## Appendix E — Current pickup state
+
+(Verified 2026-04-26; bot handle updated 2026-05-08; refresh as state changes.)
+
+| Channel / capability | State | Notes |
+|---|---|---|
+| Telegram (chat surface) | ✅ working | Bot `@ultimate_brando9_sk_air_bot` (renamed 2026-05-08 from `@ultimate_brando9_bot` via BotFather `/setusername`; token unchanged) paired with Brando, agent replies via Codex Pro / GPT-5.5. Token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600), already rotated once. |
+| Gmail (read + send) | ✅ working via `gog` skill | `gogcli` 0.13.0 installed, OAuth done, all 7 Workspace APIs enabled in GCP project 721441778080. `openclaw skills info gog` shows ✓ Ready. |
+| Calendar / Drive / Docs / Sheets / Tasks / People | ✅ working via `gog` skill | All verified end-to-end |
+| Discord | 🟡 blocked on user actions | Bot created (ID `1498169663278813254`, token in `~/keys/openclaw_discord_bot_token.txt`), wired into config, Discord refuses with **code 4014** because Message Content Intent is OFF on dev portal AND bot is in 0 servers. **To resume:** flip the toggle in Bot tab → Save Changes; run OAuth2 URL Generator and invite bot to a server Brando owns. |
+| WhatsApp | 🟡 parked on upstream | Baileys 7.0.0-rc.9 returns `status=500` from web.whatsapp.com on every pair attempt. Not local. **To resume:** wait 24h+ then retry once; if still broken, defer until stable Baileys v7. |
+| Gmail label idempotency / heartbeat / rate limit | ◯ not started | Blocked on Air email-triage E2E first |
+| Triage admin-email loop end-to-end | ◯ not started | Needs admin-filter list (Brando) + one real test email |
+| MacBook Pro install | ◯ not started | Needs SSH config OR Brando runs install script himself |
+| mercury2 install | ◯ not started | Needs SSH access; Linux path (no launchd) |
+
+**Suggested resume sequence (smallest unblocked next step first):**
+1. Brando enables Discord Message Content Intent + invites bot to a server (~90s) → Claude restarts gateway, confirms Discord ✓ (parallelizable)
+2. Brando edits `config/admin-filter.txt` with his real admin-sender list (~1 min) and DMs the Telegram bot one real triage to validate the loop
+3. Replicate to Pro via the install script
+4. Replicate to mercury2 (Linux path — different recipe; see §6 Phase 4)
+5. Wire idempotency labels + heartbeat + rate limit (autonomous)
+6. 7-day soak
+
+---
+
+## Appendix F — Beyond admin-email triage (post-MVP capabilities)
+
+Downstream of the Phase 5 soak and the Phase 6 standing-order rollout. Tracked as Phase 7+ work.
+
+### F.1 Personal-portal automation
+
+- **SuperCare Health login + tasks (general)** — agent should log in to supercare.com (and similar personal portals) via OpenClaw's bundled `browser` plugin and complete tasks Brando assigns ("check my prescription status", "request a refill", "schedule X"). Requires: (a) browser plugin enabled (already loaded in stock 63); (b) credentials in `~/keys/supercare_credentials.json` (mode 600, not committed); (c) per-task prompt from Brando in Telegram; (d) 2FA strategy — for sites that require it, agent DMs Brando the code request, Brando pastes back. Start with non-2FA flows.
+
+- **SuperCare ASV resupply auto-confirmation** — Brando uses a ResMed AirCurve / BiPAP ASV machine for sleep apnea. SuperCare Health (his DME supplier) gates each insurance-defined resupply cycle (masks every 1–3 mo, headgear/tubing on staggered cadences) on Brando confirming "yes still using, ship the next batch."
+  - **Tier 1 (easy)** if SuperCare's trigger is **email-based**: add their sender to `config/admin-filter.txt`; triage agent drafts "yes please ship, machine in active daily use" → Brando approves in Telegram → agent sends. Slots straight into the email-triage MVP.
+  - **Tier 2 (medium)** if **portal login required**: use OpenClaw's bundled `browser` plugin. Credentials in `~/keys/supercare_credentials.json` (mode 600). Screenshot-before-submit per the standing-orders default safety rules.
+  - **Tier 2.5 (harder)** if **SMS**: needs Twilio or iMessage relay; Telegram can't see SMS.
+  - **Tier 0 (out of scope)** if **phone-call only**: voice-agent territory; not realistic for v1.
+  - **Status:** blocked on Brando forwarding one recent SuperCare resupply notification (any redacted PII fine) so we know which tier applies before designing.
+
+- **General "do X for me" capability** — extend the triage prompt to handle ad-hoc requests Brando DMs the bot (not just inbox triage): "book me a haircut", "summarize my W&B runs from this week", etc. Requires the same exec-policy / tool-execution unlock as the triage shell unlock plus per-capability prompts and credential storage.
+
+### F.2 Quick personal TODOs (track here, don't lose)
+
+Small ad-hoc fixes Brando wants to do once and forget:
+
+- [ ] **Silence Outlook (Stanford email) notification sounds without closing the app.** Beeps from Outlook while working are disruptive. Fix path (any one):
+  - **macOS System Settings:** Settings → Notifications → Outlook → uncheck **Allow notifications** (or just **Play sound for notifications** to keep banners but kill sound).
+  - **Outlook for Mac in-app:** Outlook → Settings → Notifications & Sounds → uncheck "Play a sound" (also "Show on screen" if Brando wants full silence).
+  - **Outlook web:** Settings → General → Notifications → uncheck the relevant ones.
+  - Effect: Outlook keeps running in the background (mail still syncs); no more sounds. Brando can re-enable any time.
+  - This is a 30-second fix; tracked here so it doesn't get lost.
+
+### F.3 First test cases queued
+
+Concrete real-world inputs to validate pipelines as standing orders ship:
+
+- **Travel search (Phase 6.8):** McAllen / Harlingen summer 2026 trip.
+  - **Window:** Sat Jun 13 → Sun Jun 21 2026 (8-day natural gap between Stanford spring quarter end Jun 10 and summer quarter start Jun 22). Backup: Aug 16 → Aug 23.
+  - **Origin:** SFO (alt: SJC, OAK). **Destinations:** MFE (McAllen) or HRL (Harlingen) — flexible, pick cheaper.
+  - **Airline preference:** Southwest (free carry-on, frequent SFO→DAL/HOU→RGV routes); American/United also fine.
+  - **Verified Stanford 2026 calendar:** spring quarter ends Wed Jun 10, commencement Sun Jun 14, summer quarter Mon Jun 22 → Sat Aug 15 ([source](https://studentservices.stanford.edu/calendar-events/academic-calendars/stanford-academic-calendar-2025-2026)).
+  - **Status:** spec'd, blocked on `travel_search.md` going live.
+
+- Other concrete validation inputs live in [`test_tasks/`](./test_tasks/) — `dm_sri_agent_flex.md` (Discord DM test) and `email_saumya_neurips.md` (Gmail send + CC-3-emails rule test).
+
+These are tracked here; they're not on the Phase 0–6 critical path.
