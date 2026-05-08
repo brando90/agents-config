@@ -77,6 +77,7 @@ agents-config/
 ├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
 ├── setup_gemini_cli.sh          ← one-shot installer for the `gemini` CLI (OAuth on Mac, --api-key on servers)
 ├── email-signature.md           ← canonical email signature + default From/CC for outbound mail
+├── contacts.md                  ← contact-resolution workflow; points to ultimate-utils collaborator roster
 ├── bm-agents-config.code-workspace  ← VS Code multi-root workspace for editing this repo
 │
 ├── init_no_passwords_snap_kinit.md              ← one-time keytab setup for passwordless SSH to SNAP
@@ -162,6 +163,25 @@ ln -s ~/agents-config/agents.md ~/agents.md
 Setting up a new SNAP node? See [`machine/snap-init.md`](machine/snap-init.md) -- copy-paste prompt that checks/fixes all symlinks, auth, tools, keys, and GPUs on a fresh SNAP node.
 
 **Important convention:** On SNAP, all project directories under `~/` (LFS) must be **symlinks** to their canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/brando9/veribench`. This ensures every server sees the same repo state. Never clone or copy repos directly to LFS. See [`machine/snap.md`](machine/snap.md) for details.
+
+### OpenClaw self-healing watcher (per host)
+
+Brando's OpenClaw bots must be alive 24/7. `launchd KeepAlive` only catches process death — it doesn't catch a stuck agent session or a half-installed plugin cache (the kind of failure where the bot delivers ✓✓ but never replies). Install the self-healing watcher on every host that runs OpenClaw:
+
+```bash
+# 1. Run the script every 5 min via launchd (macOS) or cron (Linux); see
+#    install instructions at the bottom of:
+sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
+#    The script: checks gateway is up + Telegram is `running, connected`
+#    + PONG round-trip works. On failure it escalates: restart → full
+#    reset (clear plugin-runtime-deps + reload) → DM openclaw-ops if it
+#    still can't recover.
+
+# 2. Pre-grant macOS TCC prompts once per host so the agent is fire-and-forget:
+sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-automation.sh
+```
+
+Full design + decision tree: [`experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](experiments/01_self_hosted_openclaw/MASTER_PLAN.md) §A.0.5 (TCC pre-grants), §A.6 (gotchas), §A.8 (triage flow when bot stops replying).
 
 ---
 
