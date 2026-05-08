@@ -75,7 +75,7 @@ Specific instance of the `meeting / grant-broadcast` flow above. Lives here rath
 **Cadence + idempotency.** One run per calendar month. Agent skips if a `lean-ai-club-nudge-<YYYY-MM>` Gmail label already exists for the current month — protects against double-fire if cron triggers twice or instances race.
 
 **Prereqs.**
-- [ ] Discord intent enabled + bot invited to Lean AI server (per [`todos.md`](../todos.md):16)
+- [ ] Discord intent enabled + bot invited to Lean AI server (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Discord row marked 🟡 blocked)
 - [ ] Bot has post permissions in #leadership channel
 - [ ] Fred / Henry B / Eric Pineda emails captured (Brando provides)
 - [ ] Lean AI Club Discord server name + leadership channel name (Brando provides)

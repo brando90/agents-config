@@ -40,7 +40,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 
 ## Prereqs (must be true before this can run)
 
-- [x] `gog` skill exposed to agent and Ready ✓ (per [`todos.md`](../todos.md):14 — already working on the Air)
+- [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working — already working on the Air)
 - [ ] Saumya's full email captured (Brando provides, ideally added to a contacts roster file)
 - [ ] Paper ID / submission identifier confirmed (which paper is this for?)
 - [ ] CC-3 Trigger Rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) (so the agent knows the CC list is canonical, not just for this task)

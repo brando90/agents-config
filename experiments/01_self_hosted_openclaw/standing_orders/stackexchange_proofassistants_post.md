@@ -159,9 +159,8 @@ The standing order is "live" when, sustained for ≥4 weeks of real use:
 
 ## References
 
-- [`experiments/01_self_hosted_openclaw/cc_prompt.md`](../cc_prompt.md) — parent OpenClaw architecture
+- [`experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](../MASTER_PLAN.md) — parent OpenClaw architecture (Appendix A absorbed the prior `cc_prompt.md`; Appendix F absorbed the prior `wishlist.md`)
 - [`experiments/01_self_hosted_openclaw/standing_orders/whatsapp_voice_draft.md`](./whatsapp_voice_draft.md) — pattern this is based on
-- [`experiments/01_self_hosted_openclaw/wishlist.md`](../wishlist.md) — broader OpenClaw backlog
 - Proof Assistants SE: https://proofassistants.stackexchange.com
 - Stack Exchange API docs: https://api.stackexchange.com/docs
 - Playwright (Python): https://playwright.dev/python/

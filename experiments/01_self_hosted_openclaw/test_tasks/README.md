@@ -1,6 +1,6 @@
 # OpenClaw Test Tasks — One-Shot Validation Inputs
 
-**TLDR:** This directory holds **one-off** test inputs for the OpenClaw agent — discrete tasks that exercise the system end-to-end (multi-channel send, tone calibration, approval flow) once and don't need to recur. Distinct from `standing_orders/` (recurring workflows) and `wishlist.md` (backlog ideas).
+**TLDR:** This directory holds **one-off** test inputs for the OpenClaw agent — discrete tasks that exercise the system end-to-end (multi-channel send, tone calibration, approval flow) once and don't need to recur. Distinct from `standing_orders/` (recurring workflows) and [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix F (post-MVP capability backlog).
 
 ## When to put something here vs. elsewhere
 
@@ -8,7 +8,7 @@
 | ------------------------- | ---------------------- | --------------------------------------------------------- |
 | `test_tasks/`             | One-shot, named, runnable | "DM Sri showing off the agent", "Email Saumya re: NeurIPS reciprocal reviewer" |
 | `standing_orders/<name>.md` | Recurring or invocable workflow | Travel search watcher, monthly Lean AI workhackathon nudge, paper announcement |
-| `wishlist.md`             | Idea, not yet shaped   | "OpenClaw should handle SuperCare resupply (need trigger format)" |
+| [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix F | Idea, not yet shaped | "OpenClaw should handle SuperCare resupply (need trigger format)" |
 | `concepts.md`             | Q&A explainer          | "What does X mean in Phase Y of the plan?"               |
 
 A test task graduates **out** of this directory in two ways:

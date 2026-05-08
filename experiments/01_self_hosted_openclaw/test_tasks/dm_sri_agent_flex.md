@@ -43,7 +43,7 @@ Discord DM (one-to-one, not a server channel).
 
 ## Prereqs (must be true before this can run)
 
-- [ ] Discord Message Content Intent ON in dev portal Bot tab (currently 🟡 blocked per [`todos.md`](../todos.md):16) — 90 seconds of Brando's time
+- [ ] Discord Message Content Intent ON in dev portal Bot tab (currently 🟡 blocked per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Discord row) — 90 seconds of Brando's time
 - [ ] Bot invited to a Discord server where Sri is also a member
 - [ ] Bot has permission to DM users in that server
 - [ ] Sri's Discord handle captured in Brando's contacts (when contacts roster lands)
@@ -51,7 +51,7 @@ Discord DM (one-to-one, not a server channel).
 ## Open questions
 
 1. **Sri's Discord handle?** (`@username` or full name; Brando provides)
-2. **Macbook minis topic?** Reading [`cc_prompt.md`](../cc_prompt.md):8 mentions "Mac mini at home" as a candidate OpenClaw host. Is this about (a) Sri ordering/recommending them for the lab, (b) Brando considering one as a 4th OpenClaw box, (c) something Sri asked earlier and Brando owes him an answer, (d) other?
+2. **Macbook minis topic?** [`MASTER_PLAN.md`](../MASTER_PLAN.md) §2 / Appendix A reference "Mac mini at home" as a candidate OpenClaw host. Is this about (a) Sri ordering/recommending them for the lab, (b) Brando considering one as a 4th OpenClaw box, (c) something Sri asked earlier and Brando owes him an answer, (d) other?
 3. **Tone choice?** A deadpan-cool / B warm-show-offy / C drier reveal / paste a custom voice example.
 
 ## What this test validates

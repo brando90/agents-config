@@ -77,10 +77,10 @@ Eliminate "I should buy that ticket but I keep forgetting / waiting" indecision.
 
 ## First test case (concrete)
 
-McAllen / Harlingen summer 2026 — see [`wishlist.md`](../wishlist.md) §Travel for the spec. Window: Sat Jun 13 → Sun Jun 21 2026 (the 8-day natural gap between Stanford spring quarter end and summer quarter start). This is the proving-ground trip; if travel_search.md works for this, it works for the rest.
+McAllen / Harlingen summer 2026 — see [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix F.3 "First test cases queued" for the spec. Window: Sat Jun 13 → Sun Jun 21 2026 (the 8-day natural gap between Stanford spring quarter end and summer quarter start). This is the proving-ground trip; if travel_search.md works for this, it works for the rest.
 
 ## Status
 
 | Date       | Status                                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------------------------- |
-| 2026-05-08 | Skeleton drafted. 6 setup questions pending. First test case: McAllen/Harlingen Jun 13-21 (see wishlist.md). Implementation deferred to Phase 6.x of [`MASTER_PLAN.md`](../MASTER_PLAN.md). |
+| 2026-05-08 | Skeleton drafted. 6 setup questions pending. First test case: McAllen/Harlingen Jun 13-21 (see [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix F.3). Implementation deferred to Phase 6.x of [`MASTER_PLAN.md`](../MASTER_PLAN.md). |
