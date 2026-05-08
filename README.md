@@ -77,6 +77,7 @@ agents-config/
 ├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
 ├── setup_gemini_cli.sh          ← one-shot installer for the `gemini` CLI (OAuth on Mac, --api-key on servers)
 ├── email-signature.md           ← canonical email signature + default From/CC for outbound mail
+├── contacts.md                  ← contact-resolution workflow; points to ultimate-utils collaborator roster
 ├── bm-agents-config.code-workspace  ← VS Code multi-root workspace for editing this repo
 │
 ├── init_no_passwords_snap_kinit.md              ← one-time keytab setup for passwordless SSH to SNAP
