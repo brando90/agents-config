@@ -2,6 +2,8 @@
 
 **TLDR:** Iterative log of veribench-paper writing fixes promoted to general agents-config rules under `writing/ml_research/` and `INDEX_RULES.md`. Each round records: the original critique surfaced from a writing model's feedback → the general principle extracted → where the codified rule now lives. Companion to `agents.md` (raw user prompts).
 
+**Status (2026-05-08):** Round 1 is the only in-scope round so far. No new ML-research-writing changes have landed since `fc5f13b`. Adjacent ac work (out-of-scope for this experiment) is summarized in `## Adjacent ac changes` at the bottom.
+
 ---
 
 ## Round 1 — 2026-05-06 (commit `fc5f13b`)
@@ -108,3 +110,16 @@ For each new round, append a section like Round 1 above with these subsections:
 3. **Meta** — restructure / cleanup work that landed alongside the rules.
 4. **Commit** — hash + one-line summary + diff stats.
 5. **QA** — what was reviewed, by whom (cross-agent or self-review), and outcome.
+
+---
+
+## Adjacent ac changes (out-of-scope for this experiment)
+
+For situational awareness only — these landed on `main` after Round 1 but did *not* touch `writing/ml_research/` and are tracked elsewhere.
+
+| Commit | Date | Author | Summary | Files |
+|---|---|---|---|---|
+| `742b7fe` | 2026-05-06 | Claude (Round 1 cont.) | This `fixes.md` + `agents.md` archive | `experiments/02_improving_ml_research_writing_skills/` |
+| `603e459` | 2026-05-07 | Brando (solo) | Personal blog writing guides + Trigger Rule 25 | `writing/blog/{rules,blog_writing,write-blog-post}.md`, `INDEX_RULES.md`, `README.md`, `workflows/blog-posts.md` |
+
+The blog-writing additions (`603e459`) live under `writing/blog/` and are loaded via Trigger Rule 25 — separate from the ML-research-writing pipeline this experiment improves. If a future blog/ML overlap surfaces a generalizable writing principle, codify it once and link both trigger rules.
