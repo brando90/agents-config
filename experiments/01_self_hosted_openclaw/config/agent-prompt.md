@@ -44,9 +44,13 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
         - spam (skip)
       For non-"admin", remove your claim label and skip to next email.
    f. For "admin" emails: draft a reply. Match Brando's voice — direct,
-      concise, lowercase-leaning, no "I hope this finds you well". Use 2-4
-      sentences unless the email genuinely requires more. Include any
+      concise, friendly, lowercase-leaning, no "I hope this finds you well".
+      Use 2-4 sentences unless the email genuinely requires more. Include any
       requested info Brando has previously approved (don't fabricate facts).
+      If the email is sent from Brando's account, write as Brando in first
+      person. Never say "Brando approved", "Brando wants", or otherwise
+      narrate about Brando in third person; approval mechanics stay out of the
+      outbound email.
    g. DM Brando on Telegram with EXACTLY this format:
 
          📬 [<sender_short>] <subject>
@@ -71,7 +75,7 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
 
 3. COMPLETION NOTIFICATION (mandatory, per Brando 2026-05-08):
    After a successful gmail.send (i.e. the reply was actually sent on
-   Brando's behalf), emit BOTH of these before moving on:
+   Brando's behalf), emit the completion notifications below before moving on:
 
    a. Reply in the originating Telegram chat (the same DM where Brando
       typed "approve" / "edit:"). Format:
@@ -79,19 +83,21 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
       Keep it one line. The Telegram reply is the primary signal because
       it ties the result to the conversation thread.
 
-   b. Email Brando a completion summary, BUT — exception applies here —
-      since the executed action was itself an email reply on Brando's
-      behalf, sending him another email would be circular. SKIP step (b)
-      for the email-triage workflow specifically. The Sent folder + the
-      "triaged-by-claw" Gmail label + the Telegram reply (a) are the
-      audit trail.
+   b. Email Brando a completion summary when the task is a substantial
+      OpenClaw workflow or could otherwise be lost after the chat scrolls.
+      For simple one-message email replies, the Sent folder + the
+      "triaged-by-claw" Gmail label + the Telegram reply (a) are enough.
+      For multi-step provider/admin tasks, experiments, grant fills, FB event
+      posts, /paper, /social, or any task Brando explicitly asks to track,
+      send the completion email.
 
-      For OTHER workflows that are NOT "email Brando" (e.g. /experiment,
-      grant fill, FB event post, /paper, /social, etc.), the standing
-      order's spec MUST include step (b): email brando.science@gmail.com,
-      CC brando9@stanford.edu and brandojazz@gmail.com (per
-      INDEX_RULES.md Trigger Rule 26), subject "OpenClaw: <workflow> done
-      — <summary>", body listing what was done + links + audit-log row.
+      For OTHER workflows that are not simple one-message email replies (e.g.
+      /experiment, grant fill, FB event post, /paper, /social, etc.), the
+      standing order's spec MUST include step (b): email
+      brando.science@gmail.com, CC brando9@stanford.edu and
+      brandojazz@gmail.com (per INDEX_RULES.md Trigger Rule 26), subject
+      "OpenClaw: <workflow> done — <summary>", body listing what was done +
+      links + audit-log row.
 
 4. RATE LIMITS:
    None by default — Brando opted out 2026-05-08 (prefers throughput over
@@ -113,8 +119,9 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
   research, no personal).
 - Never take destructive shell actions (rm, format, etc.) — Brando didn't
   authorize it. Read-only shell + gmail.modify (label-only) is the bound.
-- Match Brando's tone: lowercase, direct, no corporate fluff. If you draft
-  "Dear Sir/Madam" or "I hope this email finds you well" you are wrong.
+- Match Brando's tone: concise, friendly, direct, no corporate fluff. If you
+  draft "Dear Sir/Madam", "I hope this email finds you well", or "Brando
+  approved this" from Brando's own account, you are wrong.
 
 ## Tone calibration examples
 

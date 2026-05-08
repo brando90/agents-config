@@ -346,9 +346,9 @@ After every experiment run completes (success or failure):
 
 ## Email Notification on Experiment Completion (MANDATORY)
 
-**This is non-negotiable. When an experiment finishes — PASS or FAIL — you MUST send an email to `brando.science@gmail.com` with the results.** Do not skip this. Do not ask whether to send it. Do not create a draft. **Send the email.** Use the project's `SMTPNotifier` or the Gmail MCP tool — whichever is available. If neither works, use `scripts/send_pending_emails.py` as fallback.
+**This is non-negotiable. When an experiment finishes — PASS or FAIL — you MUST send an email to `brando.science@gmail.com` with the results and, when the task was initiated or approved in Telegram, send a concise Telegram completion message too.** Do not skip this. Do not ask whether to send it. Do not create a draft. **Send the notifications.** Use the project's `SMTPNotifier` or the Gmail MCP tool — whichever is available. If neither works, use `scripts/send_pending_emails.py` as fallback.
 
-**Why this matters:** Brando needs to know experiment outcomes immediately — he may be away from the terminal, on his phone, or asleep. The email is how he tracks progress across all running experiments. A completed experiment with no email is invisible work.
+**Why this matters:** Brando needs to know experiment outcomes immediately — he may be away from the terminal, on his phone, or asleep. Email is the durable audit trail; Telegram is the immediate chat receipt. A completed experiment with no email/Telegram receipt is invisible work.
 
 ### Email Template
 
@@ -356,7 +356,7 @@ Use this structure for every experiment completion email. Adapt the sections to 
 
 ```
 To: brando.science@gmail.com
-CC: brando9@stanford.edu
+CC: brando9@stanford.edu, brandojazz@gmail.com
 Subject: [Experiment <NN>] <experiment name> — <X/Y PASS> (<key takeaway>)
 
 Hi Brando,
@@ -401,8 +401,8 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 
 ### Rules
 
-1. **Send immediately** when the experiment finishes. Do not batch emails across experiments — one email per experiment completion.
-2. **Always CC** `brando9@stanford.edu` (per `email-signature.md`).
+1. **Send immediately** when the experiment finishes. Do not batch notifications across experiments — one email per experiment completion plus one Telegram receipt when Telegram initiated/approved the task.
+2. **Always CC** all three Brando addresses from `email-signature.md`, de-duplicated against `To`.
 3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
 4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
 5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
@@ -415,7 +415,7 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 
 ## Big-Task Notification (MANDATORY for non-experiment "big" tasks)
 
-Per INDEX_RULES Trigger Rule 14, email `brando.science@gmail.com` (CC `brando9@stanford.edu`) when a "big" user-assigned task finishes — not just experiments. Use the same send mechanics as experiment emails: send immediately via the project's `SMTPNotifier` or the Gmail MCP tool; if neither works, use `scripts/send_pending_emails.py` as fallback. Do not draft it. Send it.
+Per INDEX_RULES Trigger Rule 14, email `brando.science@gmail.com` (CC all three Brando addresses from `email-signature.md`) when a "big" user-assigned task finishes — not just experiments — and send a concise Telegram completion message when Telegram initiated or approved the task. Use the same send mechanics as experiment emails: send immediately via the project's `SMTPNotifier` or the Gmail MCP tool; if neither works, use `scripts/send_pending_emails.py` as fallback. Do not draft it. Send it.
 
 ### What counts as a "big" task
 
@@ -435,7 +435,7 @@ Do NOT send for: single-line edits, read-only questions, exploratory searches, t
 
 ```
 To: brando.science@gmail.com
-CC: brando9@stanford.edu
+CC: brando9@stanford.edu, brandojazz@gmail.com
 Subject: [Task] <one-line task description> — DONE (<key outcome>)
 
 Hi Brando,
@@ -472,7 +472,7 @@ Links:
 ### Rules (big-task emails)
 
 1. **Send immediately** when the task is done — after the final commit/push/QA, not before.
-2. **Always CC** `brando9@stanford.edu`.
+2. **Always CC** all three Brando addresses from `email-signature.md`, de-duplicated against `To`.
 3. **Subject line** must be scannable from a phone lock screen — task in 5-8 words, outcome tag (DONE / PARTIAL / BLOCKED).
 4. **List every touched file** under WHAT CHANGED with a one-liner. No walls of prose.
 5. **Include commit SHAs and push status** so Brando can pull/verify from any machine.
