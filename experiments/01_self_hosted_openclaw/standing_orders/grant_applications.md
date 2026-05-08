@@ -33,14 +33,14 @@ Collapse "I have ten grants I could apply to but each one takes a full afternoon
    - Letters of recommendation (count, deadline)
    - Submission portal URL
    - Estimated effort (low / med / high) based on materials count
-4. **Draft** application material from `config/brando_bio.md` + `config/brando_projects.md`:
-   - Match length: pick the bio at the appropriate word count (50 / 100 / 250 / 500).
-   - Match focus: select project paragraphs that align with the funder's interests.
-   - Generate research statement (if requested) by combining project paragraphs + a stitching narrative.
-   - Generate personal statement (if requested) from bio + diversity/impact paragraphs.
+4. **Draft** application material from Brando's identity sources (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) §4.3 hybrid identity-source design):
+   - **Bio** — fetch `_data/bio.yml` from [`brando90/brandomiranda`](https://github.com/brando90/brandomiranda) website repo via raw GitHub URL; pick the variant matching the requested word count (50 / 100 / 250 / 500) or the elevator pitch.
+   - **Active projects** — call GitHub API `api.github.com/users/brando90/repos?sort=pushed&per_page=15` to get the freshest project list; for each project that aligns with the funder's interests, pull the narrative from that repo's `README.md` (raw GitHub URL), or from `_data/projects.yml` override in the website repo if the README is a stub.
+   - **Reusable paragraphs** (diversity / impact / research statement core) — fetch from `_data/grant_paragraphs.yml` in the website repo.
+   - **Compose** — generate research statement / personal statement by stitching the matched bio + project narratives + reusable paragraphs.
 5. **Fill safe form fields** (Playwright):
-   - Always-safe: name, email, affiliation, ORCID, links.
-   - Pre-confirmed drop-downs (citizenship, PhD year, etc.) from `config/brando_personal_facts.json`.
+   - Always-safe: name, email, affiliation, ORCID, links — pulled from `_data/bio.yml` (public) and `~/keys/brando_personal_facts.json` (sensitive subset).
+   - Pre-confirmed drop-downs (citizenship, PhD year, etc.) from `~/keys/brando_personal_facts.json` (mode 600, never committed).
    - **Skip**: payment info, signature fields, free-form essays Brando hasn't pre-approved.
 6. **Screenshot before submit** — full-page screenshot of the filled form, DM'd to Brando along with: extracted requirements summary + draft materials + checklist.
 7. **Approve (Brando)**: `post` marks the draft as ready (does NOT submit); `edit:` / `tweak:` to revise; `cancel` to discard.
@@ -65,11 +65,16 @@ Collapse "I have ten grants I could apply to but each one takes a full afternoon
 
 ## Open setup questions
 
-1. **Bio library bootstrap** — Brando provides 1 successful past application (e.g. GRFP) so OpenClaw extracts bio paragraphs at 50 / 100 / 250 / 500 words and project summaries.
-2. **Project library bootstrap** — VeriBench, Moogle.ai, Stanford AI for Lean, formal verification — 1–3 paragraphs each, in `config/brando_projects.md`.
-3. **Personal-facts file** — `config/brando_personal_facts.json` (mode 600 if it contains anything sensitive; encrypt the truly-sensitive subset via `~/keys/`).
-4. **Letter-writers list** — names + emails + relationship; `config/brando_lor_template.md` (or sibling file).
-5. **Known-grants seed** — `config/known_grants.txt` with 5–10 programs Brando is currently watching (NSF GRFP, Hertz, NSF CAREER-eligible, Stanford internal, conference-specific).
+> **Identity-source design (2026-05-08):** the original plan stored bio + project narratives as flat files in this repo. That goes stale because Brando would have to update his real CV (his website) AND these files for every change. Pivoted to a hybrid where Brando's website + GitHub `pushed_at` is the source of truth; this repo only holds the workflow + sensitive data lives in `~/keys/`. Full rationale in [`MASTER_PLAN.md`](../MASTER_PLAN.md) §4.3.
+
+1. **Website-repo data files (Brando's side, one-time setup):**
+   - [ ] Add `_data/bio.yml` to [`brando90/brandomiranda`](https://github.com/brando90/brandomiranda) with 4 length variants (50 / 100 / 250 / 500 words) + 1 elevator pitch.
+   - [ ] Add `_data/grant_paragraphs.yml` with 3–5 reusable paragraphs (diversity statement, broader impact, research-statement core).
+   - [ ] Audit top 15 most-recently-pushed repos: any with a stub README that wouldn't survive a grant reviewer gets either a paragraph-length README *or* an override entry in `_data/projects.yml`.
+2. **Sensitive personal facts** — `~/keys/brando_personal_facts.json` (mode 600, never committed) populated with: legal name, ORCID, citizenship, current affiliation, home + mailing address, letter-writer roster (name + email + relationship).
+3. **Letter-of-recommendation template** — `~/agents-config/email-signature.md`-style template for "asking a recommender" emails. Brando confirms the template language; agent uses it for LoR-request drafts (still subject to `post` approval before any send).
+4. **Known-grants seed** — `experiments/01_self_hosted_openclaw/config/known_grants.txt` with 5–10 programs Brando is currently watching (NSF GRFP, Hertz, NSF CAREER-eligible, Stanford internal, conference-specific).
+5. **Bootstrap from past success** — Brando provides 1 successful past application (e.g. GRFP) so OpenClaw can extract the 4-length bios + reusable paragraphs from real proven text rather than a blank page.
 6. **Playwright skill state** — does OpenClaw ship a browser-automation skill, or do we need to add one? Same blocker as Stack Exchange posting (see [`stackexchange_proofassistants_post.md`](./stackexchange_proofassistants_post.md)).
 
 ## Status
@@ -77,3 +82,4 @@ Collapse "I have ten grants I could apply to but each one takes a full afternoon
 | Date | Status |
 |------|--------|
 | 2026-05-08 | Skeleton drafted. Setup questions pending. Implementation deferred until Phase 6.3 of [`MASTER_PLAN.md`](../MASTER_PLAN.md). |
+| 2026-05-08 | Identity-source design pivot: bio / projects / paragraphs no longer live as flat files in this repo. Hybrid: website (`_data/*.yml`) + GitHub API (`pushed_at` for active projects) + `~/keys/` (sensitive). See [`MASTER_PLAN.md`](../MASTER_PLAN.md) §4.3 for full rationale. Removes the "this will go stale" failure mode. |

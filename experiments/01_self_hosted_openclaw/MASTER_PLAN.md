@@ -174,9 +174,83 @@ Workflow (full spec in [`standing_orders/grant_applications.md`](./standing_orde
 
 Library files to build (Phase 6.3 prerequisites):
 
-- `config/brando_bio.md` — 4 bio lengths, plus an "elevator pitch" version.
-- `config/brando_projects.md` — VeriBench, Moogle.ai, Lean 4, Stanford AI for Lean, with reusable paragraphs.
-- `config/brando_personal_facts.json` — name, email, ORCID, affiliation, address (encrypted in `~/keys/`), letter-writers list, etc.
+> **Design pivot 2026-05-08 (per Brando):** the original plan kept the bio + project library as flat files in this repo (`config/brando_bio.md`, `config/brando_projects.md`). That goes stale fast — when Brando writes a new paper or wins an award, he'd have to remember to update *two places* (his actual CV and these files). Replaced with a hybrid that uses Brando's existing artifacts as source-of-truth.
+
+**Hybrid identity-source design (single source of truth where possible):**
+
+| Data class                | Source                                                                                                                                              | Why                                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Bio (4 lengths + elevator pitch)** | `_data/bio.yml` in [`brando90/brandomiranda`](https://github.com/brando90/brandomiranda) website repo                                       | Brando updates his website anyway for his own CV; agent fetches via raw GitHub URL.          |
+| **Active project list (top 15)** | GitHub API: `api.github.com/users/brando90/repos?sort=pushed&per_page=15`                                                                       | Automatic freshness — `pushed_at` is maintained by every commit; no manual list to keep current. |
+| **Per-project narrative** | Each repo's `README.md` (raw GitHub URL); fallback to `_data/projects.yml` override in website repo for projects whose READMEs are stubs or whose narrative differs for grant context | Repo READMEs are already maintained for code reasons; grants want a slightly different framing for some projects, so an override file handles that small gap. |
+| **Awards / talks / mentorship / non-code activity** | Website pages (e.g. `/about/`, `/cv/`) or `_data/cv.yml`                                                                       | Live on the website Brando already curates; agent scrapes / fetches as needed.               |
+| **Reusable diversity / impact / research-statement paragraphs** | `_data/grant_paragraphs.yml` in website repo                                                                          | Small structured file; lives alongside bio; rarely changes more than a few times a year.      |
+| **Sensitive personal facts** (home address, SSN, citizenship, letter-writer contact info) | `~/keys/brando_personal_facts.json` (mode 600, never committed)                                  | Never goes on the public website; never goes in agents-config; agent reads locally per run.  |
+| **Known-grants seed list** (sender domains / keywords for triage detection) | `experiments/01_self_hosted_openclaw/config/known_grants.txt` (this repo)                                          | Small, stable, slow-changing; lives near the workflow that uses it.                           |
+
+**Why this beats the flat-file approach:**
+
+- ✅ Brando's website is updated anyway when he writes a paper / wins an award / changes affiliation — agent picks up the change automatically on next grant draft, no separate sync step.
+- ✅ GitHub `pushed_at` provides automatic "what am I currently working on?" signal — top 15 by recent push is exactly the projects you'd put in a grant.
+- ✅ Sensitive data has its own home (`~/keys/`) and isn't tempted to drift into the agents-config repo.
+- ✅ Removes 3 manual config files this repo would otherwise have to keep fresh.
+
+**What Brando has to do once (Phase 6.3 setup, mostly his side):**
+
+- [ ] Add `_data/bio.yml` to [`brando90/brandomiranda`](https://github.com/brando90/brandomiranda) with 4 length variants + 1 elevator pitch.
+- [ ] Audit top 15 most-recently-pushed repos; for any with a stub README that wouldn't survive a grant reviewer, write a paragraph-length README *or* override in `_data/projects.yml`.
+- [ ] Add `_data/grant_paragraphs.yml` with 3–5 reusable paragraphs (diversity statement, broader impact, research statement core).
+- [ ] Populate `~/keys/brando_personal_facts.json` (mode 600) with: legal name, ORCID, citizenship, current affiliation, home + mailing address, letter-writer roster (name + email + relationship). **Never committed.**
+- [ ] Seed `experiments/01_self_hosted_openclaw/config/known_grants.txt` with 5–10 grant programs currently being watched.
+
+**Seed entries for `_data/projects.yml`** (Brando's idea 2026-05-08 — pre-populate the override file with his ongoing projects so they're never missed even if their repos are private / paused / renamed):
+
+```yaml
+# brando90/brandomiranda/_data/projects.yml — seed
+- slug: veribench
+  full_name: VeriBench
+  status: active
+  description: |
+    Lean 4 formal-verification benchmark for AI agents. Headline benchmark of
+    Brando's PhD; <fill from real bullets>.
+  repos: [brando90/veribench]
+  # links: [paper_arxiv_url, project_page_url]
+
+- slug: veribench-dt
+  full_name: VeriBench-DT
+  status: active
+  description: |
+    VeriBench extension <Brando fills the one-paragraph "what + why">.
+  repos: [TBD]
+
+- slug: veribench-deps
+  full_name: VeriBench-Deps
+  status: active
+  description: |
+    VeriBench extension <Brando fills>.
+  repos: [TBD]
+
+- slug: cert-judge
+  full_name: Cert-Judge
+  status: active
+  description: |
+    <Brando fills — "certified judge / verifier for ML-generated proofs"?>
+  repos: [TBD]
+
+- slug: openclaw-self-hosted
+  full_name: OpenClaw self-hosted personal assistant (Experiment 01)
+  status: active
+  description: |
+    3-instance self-hosted OpenClaw deployment that triages admin email,
+    drafts replies, posts cross-channel content (Discord/Telegram/IG/FB),
+    on-demand grant + travel automation. This experiment.
+  repos: [brando90/agents-config]
+  # links: [https://github.com/brando90/agents-config/pull/46]
+```
+
+The point of this seed file is to capture every active or paused project, even those without a public repo — so a grant reviewer never sees a one-line "I work on AI." When Brando spins up a new project, add a stub here within a day; the entry will get filled out as the project progresses.
+
+**Cost:** Brando does the bio + grant_paragraphs YAMLs once, then maintains them as he would maintain his website. README updates happen naturally through code work. The `~/keys/` file is roughly never updated (annual at most). Net: less manual work over time than the flat-file approach, and dramatically less stale.
 
 ### 4.4 SBSBZ — Stanford bachata/zouk events
 
