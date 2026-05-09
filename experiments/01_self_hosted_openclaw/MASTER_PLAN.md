@@ -1092,3 +1092,252 @@ Concrete real-world inputs to validate pipelines as standing orders ship:
 - Other concrete validation inputs live in [`test_tasks/`](./test_tasks/) — `dm_sri_agent_flex.md` (Discord DM test) and `email_saumya_neurips.md` (Gmail send + CC-3-emails rule test).
 
 These are tracked here; they're not on the Phase 0–6 critical path.
+
+---
+
+## Appendix G — Connection Instructions per service
+
+Verified-as-of 2026-05-09 via web research. Each subsection answers: *what auth flow does this service want, what tier do I need, how do I store secrets, and what's the fallback if the official API path is gated/expensive?*
+
+**Macro principle:** prefer official APIs where free or cheap; fall back to **Playwright with persisted login** otherwise. Playwright sessions (cookies / IndexedDB) live in `~/keys/playwright-state/<service>.json` (mode 600, never committed). Official-API tokens go in `~/keys/<service>_token.json` (mode 600, never committed); reference them via SecretRef per [docs.openclaw.ai/gateway/secrets.md](https://docs.openclaw.ai/gateway/secrets.md).
+
+### G.1 Gmail — ✅ verified working
+
+Path: `gog` skill (gogcli) wrapping the bundled `google` Workspace plugin. Full instructions in §A.5. Used by: email-triage MVP, grant-pipeline notifications, paper-announcement sends, completion notifications.
+
+### G.2 Telegram — ✅ verified working
+
+Path: bundled `telegram` plugin + `@BotFather` bots, one per host. Full instructions in §A.4. Used by: the cockpit (DM thread per host) + `openclaw-ops` channel for heartbeats.
+
+### G.3 Microsoft Graph — Outlook / Stanford email — ⚠️ NOT YET WIRED
+
+Stanford's email is on Microsoft 365. Two options for OpenClaw to read/send Stanford-side mail:
+
+**Option A — forward to Gmail (recommended).** Set up Stanford Outlook to forward all incoming mail to `brandojazz@gmail.com` (or a tagged folder Brando filters in Gmail). OpenClaw then handles it via the existing Gmail/`gog` integration. **Pros:** zero new auth flow; one inbox; existing `triaged-by-claw` labels work. **Cons:** sending FROM Stanford address requires Gmail "Send Mail As" alias (which Stanford permits via SMTP credentials — see Stanford IT docs on "Email Account Settings"). Brando configures this once in Gmail Settings → Accounts → Send mail as, then Gmail can send-as `brando9@stanford.edu`.
+
+**Option B — Microsoft Graph API directly (more ceremony, more capability).** Stanford uses standard Microsoft 365 / Entra ID SSO. Steps:
+
+1. **Register an app in Microsoft Entra ID.** Go to [portal.azure.com](https://portal.azure.com) → Microsoft Entra ID → App registrations → New registration. Name: `OpenClaw-Brando`. Supported account types: *Accounts in any organizational directory and personal Microsoft accounts* (or pick Single tenant if Stanford requires it).
+2. **Add Microsoft Graph API permissions.** API permissions → Add → Microsoft Graph → Delegated permissions → check: `Mail.Read`, `Mail.Send`, `Mail.ReadWrite` (for label/folder ops). Click "Grant admin consent" — for Stanford, this may require IT approval; Brando files a request via [help.stanford.edu](https://help.stanford.edu) referencing app ID.
+3. **Configure auth.** Add a redirect URI of type "Mobile and desktop applications" → `http://localhost:8400` (or whatever port OpenClaw uses for the OAuth dance). Generate a client secret if using server-side flow; OR use device-code flow (no secret needed, no redirect required).
+4. **OAuth 2.0 device-code flow (simplest).** Run `openclaw skills install msgraph` (if/when MS Graph skill exists) OR write a tiny helper that hits `https://login.microsoftonline.com/common/oauth2/v2.0/devicecode`, prints a code Brando enters at [microsoft.com/devicelogin](https://microsoft.com/devicelogin), then exchanges for a token. Cache tokens at `~/keys/msgraph_token.json` (mode 600).
+5. **Use the Graph endpoint.** Send mail: `POST https://graph.microsoft.com/v1.0/me/sendMail`. List mail: `GET https://graph.microsoft.com/v1.0/me/mailFolders/Inbox/messages`. Tokens auto-refresh.
+
+**Recommendation:** start with Option A (Gmail forward + send-as) — zero new infra. Move to Option B only if a Stanford workflow needs Outlook-specific features (calendar resources, shared mailboxes, distribution lists Stanford restricts to MS Graph).
+
+**Tenant ID:** Stanford's Entra ID tenant is `4cb1faab-6c0b-4f6a-a80f-d7b0617c7c74` per public Stanford IT docs (subject to change; verify when wiring).
+
+### G.4 Facebook Pages + Events (SBSBZ) — ⚠️ NOT YET WIRED
+
+Used by: SBSBZ event posting (`fb_event_post.md`), Drive→social pipeline (FB cross-post), paper-announcement cross-post.
+
+**Auth flow — long-lived Page access token (no expiry):**
+
+1. **Create a Meta developer app.** [developers.facebook.com](https://developers.facebook.com) → My Apps → Create App → Type: Business → name `OpenClaw-Brando`.
+2. **Add the Page admin link.** Brando must be admin of the SBSBZ FB Page. If he's not, the SBSBZ FB Page admin grants him the role first.
+3. **Get a User access token via Graph Explorer.** [developers.facebook.com/tools/explorer](https://developers.facebook.com/tools/explorer) → select your app → "Get user access token" → check scopes: `pages_show_list`, `pages_manage_posts`, `pages_read_engagement`, `pages_manage_metadata`, `pages_manage_events` (for Events).
+4. **Exchange for a long-lived user token (60 days):**
+   ```bash
+   curl -G "https://graph.facebook.com/v21.0/oauth/access_token" \
+     --data-urlencode "grant_type=fb_exchange_token" \
+     --data-urlencode "client_id=<APP_ID>" \
+     --data-urlencode "client_secret=<APP_SECRET>" \
+     --data-urlencode "fb_exchange_token=<USER_TOKEN_FROM_STEP_3>"
+   ```
+5. **Get the Page access token (does NOT expire if Marketing API Standard access):**
+   ```bash
+   curl -G "https://graph.facebook.com/v21.0/me/accounts" \
+     --data-urlencode "access_token=<LONG_LIVED_USER_TOKEN>"
+   ```
+   Find the SBSBZ Page entry → its `access_token` field is the never-expiring Page token. Cache at `~/keys/fb_page_token_sbsbz.json` (mode 600).
+6. **Create an event:**
+   ```bash
+   curl -X POST "https://graph.facebook.com/v21.0/<PAGE_ID>/events" \
+     -d "name=Bachata Social: Sensual Night" \
+     -d "start_time=2026-05-17T20:00:00-0700" \
+     -d "end_time=2026-05-18T00:00:00-0700" \
+     -d "place=<location>" \
+     -d "description=..." \
+     -d "access_token=<PAGE_TOKEN>"
+   ```
+
+**Caveat:** FB has tightened Page Events posting; some kinds of events (e.g. recurring) require additional review. Test with a single one-off event first.
+
+**Fallback:** Playwright with a persisted Page-admin login. Slower, more brittle, but works without Meta app review.
+
+### G.5 Instagram — ⚠️ NOT YET WIRED
+
+Used by: SBSBZ recap posts (`ig_post.md`), paper announcements, Drive→social.
+
+**Auth flow — Instagram Graph API (only API path; Basic Display API was deprecated Dec 2024):**
+
+1. **Account requirement:** the IG account MUST be a Business or Creator account, AND linked to a Facebook Page. (Personal IG accounts cannot use Graph API.) If Brando's IG is personal, switch in IG app: Settings → Account → Switch to Professional → Creator. Then link to the SBSBZ FB Page (same Meta app from G.4).
+2. **Add Instagram Graph API to the same Meta app from G.4.** App dashboard → Add product → Instagram → Instagram Graph API → Set up.
+3. **Permissions:** add scopes `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement` to the same User access token.
+4. **Get the IG Business Account ID:**
+   ```bash
+   curl -G "https://graph.facebook.com/v21.0/<PAGE_ID>" \
+     --data-urlencode "fields=instagram_business_account" \
+     --data-urlencode "access_token=<PAGE_TOKEN>"
+   ```
+5. **Publish a feed post (2-step container flow):**
+   ```bash
+   # Step 1 — create container
+   curl -X POST "https://graph.facebook.com/v21.0/<IG_USER_ID>/media" \
+     -d "image_url=https://<public-host>/photo.jpg" \
+     -d "caption=Bachata night recap. #bachata #stanforddance" \
+     -d "access_token=<PAGE_TOKEN>"
+   # Returns {"id": "<container_id>"}
+
+   # Step 2 — publish container (poll until status is FINISHED)
+   curl -X POST "https://graph.facebook.com/v21.0/<IG_USER_ID>/media_publish" \
+     -d "creation_id=<container_id>" \
+     -d "access_token=<PAGE_TOKEN>"
+   ```
+6. **Image URL requirement:** the `image_url` must be publicly accessible. Easiest: upload to Drive, make file shareable, use the direct-download URL. Or stage in a temp public S3/R2 bucket if Brando has one.
+
+**Meta app review:** publishing on behalf of users typically requires app review (4–6 weeks). For Brando's *own* account on his *own* app, dev-mode often suffices without full review — verify in the app dashboard before launch.
+
+**Fallback:** Playwright with persisted IG login. The 2-step flow above is API-clean; Playwright is needed only if app review fails.
+
+### G.6 X (Twitter) — ⚠️ NOT YET WIRED — RECOMMEND PLAYWRIGHT
+
+Used by: paper announcements (`paper_announcements.md`).
+
+**Auth flow — pay-per-use API (no free tier as of 2026-04-20):**
+
+1. Sign up at [developer.x.com](https://developer.x.com). New developer signups default to pay-per-use.
+2. Pricing (effective 2026-04-20):
+   - Write a post: **$0.015 per post** (was $0.01)
+   - Read a post: $0.001 per owned read (capped at 2M/mo)
+   - Posting a URL: $0.20 per post (incentive against link-farms)
+   - **No Basic ($200/mo) or Pro ($5,000/mo) tier for new signups** — those legacy tiers grandfather existing subscribers only.
+3. **Endpoint:** `POST https://api.twitter.com/2/tweets` with OAuth 2.0 user-context token.
+4. Cost calculation for Brando: ~5 paper announcements/yr × ~3 tweets per thread = 15 writes/yr × $0.015 = **$0.23/yr**. Trivial. Same scale on Reads.
+
+**Recommendation:** **Playwright fallback** is more cost-effective for Brando's volume (15 writes/yr is below the dev-portal setup overhead). Persisted login at `~/keys/playwright-state/x.json`. Accept a one-time login session every ~30 days when X invalidates cookies.
+
+**If the API path is taken later:** OAuth 2.0 user-context flow with PKCE; refresh tokens valid 6 months; cache at `~/keys/x_token.json`.
+
+Sources: [X API pricing 2026](https://docs.x.com/x-api/getting-started/pricing), [Apr 2026 update](https://devcommunity.x.com/t/x-api-pricing-update-owned-reads-now-0-001-other-changes-effective-april-20-2026/263025).
+
+### G.7 LinkedIn — ⚠️ NOT YET WIRED — RECOMMEND PLAYWRIGHT
+
+Used by: paper announcements (`paper_announcements.md`), grant announcements.
+
+**Auth flow — Marketing Developer Platform (MDP) approval required for posting:**
+
+1. **Apply for MDP access.** [developer.linkedin.com](https://developer.linkedin.com) → My Apps → create app → request Marketing Developer Platform access. Free tier exposes only auth + basic share endpoints; posting on behalf of users requires MDP approval.
+2. **Approval window:** 2–4 weeks. Not guaranteed. Submit a use-case description: *"automate sharing my own academic paper announcements + research updates"*.
+3. **If approved:** OAuth 2.0 with `w_member_social` scope. POST to `/v2/ugcPosts`.
+4. **Token expiry:** 60 days; refresh via OAuth refresh token.
+
+**Recommendation:** **Playwright fallback first** — Brando's posting volume (15 paper announcements + occasional research updates per year) doesn't justify the 4-week MDP wait. Persisted login at `~/keys/playwright-state/linkedin.json`; accept ~monthly re-login. Apply for MDP only if Playwright proves too brittle (LinkedIn's anti-automation signals are aggressive on long-running sessions).
+
+### G.8 Discord — 🟡 BLOCKED ON ONE TOGGLE
+
+Used by: Lean-AI server pings, personal-server triage, SBSBZ Discord (if exists).
+
+**Status:** bot created (ID `1498169663278813254`), token in `~/keys/openclaw_discord_bot_token.txt`. **Blocked because:**
+
+1. **Message Content Intent is OFF** in the dev portal.
+2. **Bot is in 0 servers** — needs an OAuth2 invite link.
+
+**Fix (~90 sec, Brando-side):**
+
+1. Go to [discord.com/developers/applications/1498169663278813254](https://discord.com/developers/applications/1498169663278813254) → Bot tab → scroll to "Privileged Gateway Intents" → toggle **MESSAGE CONTENT INTENT** ON → Save Changes.
+2. Same dashboard → OAuth2 → URL Generator → Scopes: `bot` + `applications.commands`. Bot Permissions: `Send Messages`, `Read Message History`, `Embed Links`, `Add Reactions`. Copy the generated URL.
+3. Paste URL in browser → select a Discord server you own (or have Manage Server on) → Authorize.
+4. After bot is in server: `openclaw gateway restart` on the Air → `openclaw channels status` should show Discord `running, connected`.
+
+### G.9 WhatsApp (Baileys) — 🟡 PARKED ON UPSTREAM
+
+Used by: voice-dictation message drafts (`whatsapp_voice_draft.md`), bulk class reminders.
+
+**Status:** Baileys 7.0.0-rc.9 returns `status=500` from web.whatsapp.com on every pair attempt. Not local. Upstream issue.
+
+**Path forward:**
+1. Wait for stable Baileys v7 (track [github.com/WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys/releases)).
+2. When stable: `openclaw skills update whatsapp` → re-pair via QR.
+3. Alternative: **WhatsApp Cloud API** (Meta-hosted, paid: $0.005–$0.10 per message depending on region/category). Requires phone-number registration with Meta + business verification. Much heavier than Baileys.
+
+**Recommendation:** stay parked on Baileys; Brando's volume doesn't justify Cloud API setup. Revisit in 30 days; if still broken, defer indefinitely.
+
+### G.10 SuperCare Health (CPAP / ASV resupply) — ⚠️ PLAYWRIGHT ONLY
+
+Used by: SuperCare ASV resupply auto-confirmation (Appendix F.1).
+
+**Status:** SuperCare has **no public API**. Patient portal at [scpatient.link](https://scpatient.link). PAP Resupply orders confirmed via email (most common) or portal login.
+
+**Path:**
+
+1. **Tier 1 (most likely)** — SuperCare's resupply trigger is an email. Add their sender domain (`*@supercarehealth.com`, `*@supercare.com`) to `config/admin-filter.txt` (already done in the seed defaults). Email-triage agent drafts a "yes please ship, machine in active daily use" reply; Brando approves in Telegram; agent sends. **No new auth flow.**
+2. **Tier 2 (if portal login required)** — Playwright with persisted SuperCare credentials at `~/keys/supercare_credentials.json` (mode 600) + session at `~/keys/playwright-state/supercare.json`. Workflow: agent navigates to scpatient.link, logs in, navigates to PAP Resupply, clicks "Continue with order", screenshots before submit, DMs Brando, awaits `post`. Submits after approval.
+3. **Blocking on:** Brando forwards one recent SuperCare resupply notification (any redacted PII fine) so we know which tier applies. Until then, leave as Tier 1 placeholder.
+
+### G.11 iMessage / SMS — DEFERRED
+
+Used by: occasional iMessage replies; SMS not in scope.
+
+**Path (when needed):**
+- **iMessage (Mac-local only):** AppleScript bridge via `osascript -e 'tell application "Messages" to ...'`. Requires macOS Automation TCC pre-grant for `node → Messages` (covered by `pre-grant-tcc-automation.sh`). Mac-local only — mercury2 has no iMessage.
+- **SMS (cross-platform):** Twilio API. ~$0.0079/SMS US-domestic. Free tier $15.50 trial. Only worth wiring if Brando hits a real "OpenClaw must SMS me" use case. Default: defer indefinitely.
+
+### G.12 Decision matrix — API vs Playwright per service
+
+| Service | API status | Recommended path | Auth file location |
+|---|---|---|---|
+| Gmail | ✅ working | gog skill (OAuth) | `~/Library/Application Support/gogcli/` |
+| Telegram | ✅ working | bundled plugin | `~/keys/openclaw_telegram_bot_token.txt` (per-host) |
+| Codex Pro | ✅ working | codex CLI auth | `~/.codex/auth.json` (per-host) |
+| Outlook / Stanford email | ⚠️ no auth wired | Forward to Gmail (Option A) | n/a (uses Gmail path) |
+| Facebook Pages + Events | ⚠️ no auth wired | Graph API + long-lived Page token | `~/keys/fb_page_token_sbsbz.json` |
+| Instagram | ⚠️ no auth wired | Graph API (Business/Creator linked) | uses FB Page token |
+| X (Twitter) | ⚠️ no auth wired | **Playwright fallback** (volume too low for $) | `~/keys/playwright-state/x.json` |
+| LinkedIn | ⚠️ no auth wired | **Playwright fallback** (MDP approval not worth wait) | `~/keys/playwright-state/linkedin.json` |
+| Discord | 🟡 90s toggle pending | bundled plugin once intent enabled | `~/keys/openclaw_discord_bot_token.txt` |
+| WhatsApp | 🟡 upstream parked | Baileys when stable; Cloud API fallback | `~/keys/baileys-state-*` |
+| SuperCare | ⚠️ no API exists | Tier 1: email-triage; Tier 2: Playwright | `~/keys/supercare_credentials.json` |
+| iMessage | deferred | AppleScript bridge (Mac-local) | n/a |
+| SMS | deferred | Twilio | `~/keys/twilio_token.json` if added |
+
+### G.13 Per-account credentials inventory (where to find / store everything)
+
+```
+~/.codex/auth.json                                    Codex Pro session (per-host)
+~/.openclaw/openclaw.json                             OpenClaw config (token via SecretRef)
+~/keys/                                               (mode 700 dir)
+  ├── openclaw_telegram_bot_token.txt                 Telegram bot token (mode 600, per-host)
+  ├── openclaw_discord_bot_token.txt                  Discord bot token
+  ├── client_secret_*.apps.googleusercontent.com.json Google OAuth client (shared)
+  ├── fb_page_token_sbsbz.json                        FB Page never-expiring token
+  ├── msgraph_token.json                              MS Graph token (if Option B chosen)
+  ├── supercare_credentials.json                      SuperCare portal login
+  ├── brando_personal_facts.json                      Personal facts (home addr, ORCID, etc.)
+  └── playwright-state/                               (mode 700 subdir)
+      ├── x.json                                      X persisted login session
+      ├── linkedin.json                               LinkedIn persisted session
+      ├── stackexchange.json                          SE persisted session (for SE posting)
+      └── supercare.json                              SuperCare persisted session
+
+~/Library/Application Support/gogcli/                 (macOS) gogcli OAuth tokens
+~/.config/gogcli/                                     (Linux) gogcli OAuth tokens
+```
+
+**Setup invariants (every new host):**
+- `~/keys/` is mode 700 (`chmod 700 ~/keys`)
+- Every file in `~/keys/` is mode 600
+- `~/keys/` is **never** in agents-config (`.gitignore` enforces this; verify with `git check-ignore ~/keys`)
+- Inter-host secret distribution: `scp -p` between hosts; never commit, never paste in any chat log
+
+### G.14 First-time setup script (recommended, build later)
+
+When this matures, write `experiments/01_self_hosted_openclaw/scripts/setup-connections.sh` that interactively walks Brando through G.3–G.10, prompting for each service: *"Set up FB now? (y/n)"* → if yes, runs the OAuth flow / generates the token / stores in the right `~/keys/` location. Until that script exists, this Appendix G is the manual recipe.
+
+Sources for this appendix (verified 2026-05-09):
+- [X API pricing 2026](https://docs.x.com/x-api/getting-started/pricing) · [Apr 2026 update](https://devcommunity.x.com/t/x-api-pricing-update-owned-reads-now-0-001-other-changes-effective-april-20-2026/263025)
+- [Instagram Graph API guide](https://developers.facebook.com/docs/instagram-platform/overview/) · [Publishing flow](https://developers.facebook.com/docs/instagram-platform/content-publishing/)
+- [FB long-lived Page tokens](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/)
+- [LinkedIn Marketing Developer Platform](https://developer.linkedin.com/product-catalog/marketing) · [API access guide 2026](https://www.getphyllo.com/post/linkedin-api-ultimate-guide-on-linkedin-api-integration)
+- [Microsoft Graph + Outlook auth](https://learn.microsoft.com/en-us/office/dev/add-ins/develop/authorize-to-microsoft-graph)
+- [SuperCare patient portal](https://scpatient.link) · [PAP resupply](https://supercarehealth.com/pap-resupply-orders/)

@@ -1,0 +1,136 @@
+name: openclaw-lint
+
+# Lightweight CI: lint markdown + validate YAML/JSON in the OpenClaw experiment dir
+# (and the standing_orders/ specs). Resolves the "CI checks unavailable" gh
+# message Brando saw on PR #46 — that was just because no workflow existed
+# yet, not a gh-auth issue.
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/01_self_hosted_openclaw/**'
+      - '.github/workflows/openclaw-lint.yml'
+      - 'INDEX_RULES.md'
+      - 'README.md'
+  push:
+    branches: [main]
+    paths:
+      - 'experiments/01_self_hosted_openclaw/**'
+      - '.github/workflows/openclaw-lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli@0.43.0
+      - name: Lint markdown (lenient — warnings only, never fail the job)
+        # Style is opinionated and Brando moves fast. Surface issues as
+        # warnings in the Annotations tab; don't block PRs.
+        run: |
+          markdownlint \
+            --disable MD013 MD024 MD033 MD034 MD036 MD041 MD040 \
+            'experiments/01_self_hosted_openclaw/**/*.md' \
+            'README.md' \
+            'INDEX_RULES.md' \
+            || echo "::warning::markdownlint reported issues (non-blocking)"
+
+  yaml-lint:
+    name: YAML / JSON validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate YAML
+        run: |
+          python3 - <<'PY'
+          import sys, glob
+          import yaml
+          fails = 0
+          for path in sorted(set(
+              glob.glob('experiments/01_self_hosted_openclaw/**/*.yml', recursive=True) +
+              glob.glob('experiments/01_self_hosted_openclaw/**/*.yaml', recursive=True) +
+              glob.glob('.github/workflows/*.yml', recursive=True)
+          )):
+              try:
+                  with open(path) as f:
+                      yaml.safe_load(f)
+                  print(f"OK  {path}")
+              except Exception as e:
+                  print(f"FAIL {path}: {e}")
+                  fails += 1
+          sys.exit(1 if fails else 0)
+          PY
+      - name: Validate JSON
+        run: |
+          python3 - <<'PY'
+          import sys, glob, json
+          fails = 0
+          for path in sorted(set(
+              glob.glob('experiments/01_self_hosted_openclaw/**/*.json', recursive=True)
+          )):
+              try:
+                  with open(path) as f:
+                      json.load(f)
+                  print(f"OK  {path}")
+              except Exception as e:
+                  print(f"FAIL {path}: {e}")
+                  fails += 1
+          sys.exit(1 if fails else 0)
+          PY
+
+  shell-lint:
+    name: Shell script lint (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint shell scripts (lenient — warnings, no block)
+        run: |
+          set +e
+          # SC2086 (unquoted vars), SC2155 (declare-and-assign) noisy in our
+          # scripts; suppress for now.
+          shellcheck -e SC2086,SC2155,SC1090,SC1091 \
+            experiments/01_self_hosted_openclaw/scripts/*.sh \
+            || echo "::warning::shellcheck reported issues (non-blocking)"
+          exit 0
+
+  links:
+    name: Internal link sanity (relative path existence)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that relative links point to real files
+        run: |
+          python3 - <<'PY'
+          import sys, re, os, glob
+          fails = 0
+          # Match markdown links to relative paths that look like they should
+          # resolve in-repo (./, ../). Skip http(s), anchors, mailto, etc.
+          link_re = re.compile(r'\[[^\]]*\]\(\s*(\.{1,2}/[^)\s#]+)')
+          for md in sorted(glob.glob('experiments/01_self_hosted_openclaw/**/*.md', recursive=True)):
+              base = os.path.dirname(md)
+              with open(md) as f:
+                  text = f.read()
+              for m in link_re.finditer(text):
+                  rel = m.group(1)
+                  target = os.path.normpath(os.path.join(base, rel))
+                  if not os.path.exists(target):
+                      print(f"BROKEN  {md} -> {rel}  (resolved: {target})")
+                      fails += 1
+          if fails:
+              print(f"\n{fails} broken relative link(s)")
+              sys.exit(1)
+          print("All relative links resolve.")
+          PY

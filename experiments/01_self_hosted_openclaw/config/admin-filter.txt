@@ -2,23 +2,70 @@
 # Lines starting with # are comments. Match against From: header (case-insensitive).
 # Glob patterns (* and ?) supported. Anything matching = "must triage".
 #
-# PLACEHOLDER — Brando, fill this in. Suggested starter set; adjust:
+# Seed defaults (autonomous pass 2026-05-09). Brando, edit/extend as needed:
+# - DELETE rules that don't apply to your inbox to reduce noise
+# - ADD specific senders you triage often (e.g. dept admin staff names)
 
 # Stanford / academic
 *@stanford.edu
 *@cs.stanford.edu
+*@su.stanford.edu
+*@registrar.stanford.edu
+*@stanfordhealth.org
 
-# Conferences (examples — edit)
+# Conferences / journals (extend as you submit)
 *@aaai.org
 *@iclr.cc
 *@neurips.cc
 *@icml.cc
+*@iclr-blogposts.github.io
+*@openreview.net
+*@arxiv.org
+*@nature.com
+*@science.org
+*@aclweb.org
 
-# Financial / ops (examples — edit)
-financial-aid@*
-billing@*
-no-reply-billing@*
+# Financial / ops
+*financial-aid*@*
+*billing*@*
+*no-reply-billing*@*
+*invoice*@*
+*payments*@*
+*ach@*
+*receipts@*
 
-# Editorial (examples — edit)
+# Editorial / publishing
 editor@*
+*editors*@*
 submissions@*
+*reviews*@*
+*-editor@*
+
+# Healthcare / medical (e.g. SuperCare resupply notifications)
+*@supercarehealth.com
+*@supercare.com
+*@onehealth.org
+appointments@*
+*-appointments@*
+*medical-records*@*
+
+# Travel / reimbursements
+*@concur.com
+*@expensify.com
+travel@*
+reimbursement@*
+
+# Government / official
+*@irs.gov
+*@uscis.gov
+*@socialsecurity.gov
+*@dmv.ca.gov
+
+# Lean AI / community (extend as needed)
+*@aiforlean.org
+*@leandojo.org
+
+# Job applications / recruiting (only if Brando wants them auto-triaged)
+# *@workday.com
+# *@greenhouse.io
+# *@lever.co
