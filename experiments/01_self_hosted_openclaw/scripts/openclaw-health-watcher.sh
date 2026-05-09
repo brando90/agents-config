@@ -3,17 +3,18 @@
 #
 # Self-healing liveness check for the OpenClaw gateway on this host.
 #
-# Runs three checks; if any fails it escalates: restart → full reset (clear
+# Cross-platform: macOS uses launchd, Linux uses tmux+respawn wrapper
+# (see machine/snap.md and start_openclaw_at_reboot.sh).
+#
+# Three checks; if any fails it escalates: restart → full reset (clear
 # plugin-runtime-deps cache + reload) → DM Brando via openclaw-ops if even
 # the full reset doesn't recover.
 #
-# Schedule via launchd (preferred on macOS) or cron, every 5 minutes:
+# Schedule every 5 minutes:
 #
-#   # launchd plist (~/Library/LaunchAgents/ai.openclaw.health-watcher.plist) —
-#   # see install instructions at the bottom of this file.
-#
-#   # OR cron:
-#   */5 * * * *  /Users/sanmikoyejo-mba-1/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh >> ~/openclaw/watcher.log 2>&1
+#   # macOS launchd: see install instructions at the bottom of this file.
+#   # Linux cron:
+#   */5 * * * *  bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh >> ~/openclaw/watcher.log 2>&1
 #
 # Exits 0 if healthy or self-healed; 1 if it gave up.
 
@@ -21,30 +22,90 @@ set -u
 
 LOG_PREFIX="$(date '+%F %T') openclaw-watcher [${HOSTNAME%%.*}]"
 HOST_TAG="${OPENCLAW_HOST:-${HOSTNAME%%.*}}"
+PLAT="$(uname -s)"
+TMUX_SESSION="openclaw-gateway"
+RESPAWN_WRAPPER="$HOME/openclaw/run_gateway_respawn.sh"
 
 log() { echo "$LOG_PREFIX $*"; }
 
-# 1. Is the gateway daemon running?
-if ! launchctl list 2>/dev/null | grep -q ai.openclaw.gateway; then
-  log "FAIL: gateway not in launchctl list — loading"
-  launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>&1 | sed "s/^/$LOG_PREFIX /"
+# Source bashrc on Linux so nvm + PATH are available under cron
+if [ "$PLAT" = "Linux" ] && [ -f "$HOME/.bashrc" ]; then
+  # shellcheck disable=SC1091
+  . "$HOME/.bashrc" >/dev/null 2>&1 || true
+fi
+
+is_gateway_alive() {
+  case "$PLAT" in
+    Darwin) launchctl list 2>/dev/null | grep -q ai.openclaw.gateway ;;
+    Linux)  tmux has-session -t "$TMUX_SESSION" 2>/dev/null ;;
+    *)      return 1 ;;
+  esac
+}
+
+start_gateway() {
+  case "$PLAT" in
+    Darwin)
+      launchctl load "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>&1 | sed "s/^/$LOG_PREFIX /"
+      ;;
+    Linux)
+      if [ -x "$RESPAWN_WRAPPER" ]; then
+        tmux new-session -d -s "$TMUX_SESSION" "bash -lc '$RESPAWN_WRAPPER'"
+      else
+        log "ERROR: $RESPAWN_WRAPPER missing — cannot start gateway"
+        return 1
+      fi
+      ;;
+  esac
+}
+
+restart_gateway() {
+  case "$PLAT" in
+    Darwin)
+      openclaw gateway restart >/dev/null 2>&1 || true
+      ;;
+    Linux)
+      # Kill the inner gateway process; respawn wrapper will relaunch within ~5s.
+      pkill -f 'openclaw gateway run' 2>/dev/null || true
+      ;;
+  esac
+}
+
+full_reset() {
+  case "$PLAT" in
+    Darwin)
+      launchctl unload "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>/dev/null || true
+      pkill -f openclaw 2>/dev/null || true
+      sleep 3
+      rm -rf "$HOME/.openclaw/plugin-runtime-deps"
+      launchctl load "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist"
+      ;;
+    Linux)
+      tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
+      pkill -f 'openclaw gateway run' 2>/dev/null || true
+      sleep 3
+      rm -rf "$HOME/.openclaw/plugin-runtime-deps"
+      start_gateway
+      ;;
+  esac
+}
+
+# 1. Is the gateway daemon/session running?
+if ! is_gateway_alive; then
+  log "FAIL: gateway not running — starting"
+  start_gateway
   sleep 30
 fi
 
 # 2. Channels status — must show Telegram running+connected
 if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default:.*running.*connected"; then
   log "FAIL: telegram channel not running+connected — restarting gateway"
-  openclaw gateway restart >/dev/null 2>&1 || true
+  restart_gateway
   sleep 30
 
   # Recheck
   if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default:.*running.*connected"; then
     log "FAIL: still not connected after restart — running full reset (clear plugin cache)"
-    launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null || true
-    pkill -f openclaw 2>/dev/null || true
-    sleep 3
-    rm -rf ~/.openclaw/plugin-runtime-deps
-    launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
+    full_reset
     log "full reset issued; waiting up to 5 min for plugin reinstall"
     for _ in $(seq 1 60); do
       sleep 5
@@ -57,8 +118,8 @@ if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default
 fi
 
 # 3. Final liveness — channels OK + PONG round-trip
-if timeout 30 openclaw infer model run --gateway --prompt "PONG" 2>/dev/null | grep -q "PONG"; then
-  log "HEALTHY: gateway+telegram+codex round-trip OK"
+if timeout 60 openclaw infer model run --gateway --prompt "PONG" 2>/dev/null | grep -q "PONG"; then
+  log "HEALTHY: gateway+telegram+model round-trip OK"
   exit 0
 fi
 
@@ -74,7 +135,7 @@ openclaw message send \
 
 exit 1
 
-# ─── Install as a launchd job (5-min interval) ──────────────────────────────
+# ─── Install as a launchd job on macOS (5-min interval) ──────────────────────
 #
 # cat > ~/Library/LaunchAgents/ai.openclaw.health-watcher.plist <<'PLIST'
 # <?xml version="1.0" encoding="UTF-8"?>
@@ -98,6 +159,8 @@ exit 1
 #
 # Verify: tail -f ~/openclaw/watcher.log
 #
-# ─── Linux (mercury2) — tmux + cron pattern from machine/snap.md ────────────
-# Add to user crontab:
+# ─── Linux (mercury2 / SNAP) — tmux + cron pattern ──────────────────────────
+# Requires a respawn wrapper at ~/openclaw/run_gateway_respawn.sh that runs
+# `openclaw gateway run` in a while-true loop (created by
+# install_openclaw_instance_linux.sh). Add to user crontab:
 #   */5 * * * * bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh >> ~/openclaw/watcher.log 2>&1

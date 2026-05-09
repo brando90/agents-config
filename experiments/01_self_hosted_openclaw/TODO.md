@@ -35,10 +35,18 @@
 
 ## Phase 4 — replicate to mercury2 (Linux, different recipe)
 
-- [ ] **4.1** Brando: confirm `ssh mercury2` works (per `MASTER_PLAN.md` Phase 4.1, last attempt failed with host-key verification). ⏱ 5 min
-- [ ] **4.2** Linux install path: `/dfs/scratch0/<user>/openclaw` + `~/openclaw` symlink, tmux + watchdog + `@reboot` cron + `krenew`. Need to write `install_openclaw_instance_linux.sh`. ⏱ 30 min
-- [ ] **4.3** Brando: create third bot for mercury2; scp gogcli (different OS path: `~/.config/gogcli/`); `codex login` once. ⏱ 15 min
-- [ ] **4.4** SNAP-specific hardening: `krenew` cron, `@reboot` cron, logrotate. ⏱ 30 min
+- [x] **4.1** ssh mercury2 works (verified 2026-05-09; auto-resolved when run from on-mercury2 itself; from peer SNAP nodes it works via Kerberos keytab).
+- [x] **4.2** Linux install path: `/dfs/scratch0/<user>/openclaw` + `~/openclaw` symlink + `~/.openclaw` (LFS, per-host) + tmux respawn wrapper + `@reboot` cron + 5-min health-watcher cron. Codified in `scripts/install_openclaw_instance_linux.sh` (2026-05-09). Verified end-to-end: hostname/pwd/whoami via agent, `clauded --version`, `codex --version`, and ssh-into-skampere1+nvidia-smi all return correctly through the local agent path.
+- [x] **4.3 (partial)** mercury2 bot created (`@ubrando_mercury2_bot`); token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600); `codex login` already done. **Still TODO:** Brando manually `/start`s the bot in Telegram + (optional) scp gogcli auth from instance #1.
+- [x] **4.4** SNAP-specific hardening complete: `krenew` cron pre-existed, `@reboot` cron added (relaunches `openclaw-gateway` tmux after waiting for DFS + krenew), 5-min cron runs cross-platform `openclaw-health-watcher.sh`. Logrotate not yet wired (gateway.log will grow; revisit if it exceeds ~100MB).
+
+### Phase 4 gotchas worth carrying forward
+
+- **`--auth-choice openai-codex` is interactive-only.** `openclaw onboard --non-interactive --accept-risk --auth-choice openai-codex` errors with "requires interactive mode" because the OpenAI Codex provider plugin doesn't implement non-interactive setup. The `codex` choice does succeed but doesn't write the auth-profile that downstream `agents.defaults.model = openai/gpt-5.5` then needs (smoke test fails with "No API key found for provider openai" / "Failed to extract accountId from token" — the codex CLI auth file at `~/.codex/auth.json` has all four token fields populated under `auth_mode: chatgpt`, but the OpenClaw codex plugin can't bootstrap from it under the current code path on Linux).
+- **Workaround used by `install_openclaw_instance_linux.sh`:** pin `agents.defaults.model.primary = anthropic/claude-haiku-4-5` and inject `ANTHROPIC_API_KEY` via `env.vars` from `~/keys/anthropic_api_key.txt`. Reliable, but uses paid Anthropic API rather than free Codex Pro inference.
+- **Fix-forward:** when the codex plugin lands a non-interactive `auth login` (or once we figure out the right manual auth-profiles.json shape for `chatgptAuthTokens` profiles), flip the default model back to `codex/gpt-5.5` to use the subscription. Tracking: filed under "Hygiene / upstream issues" below.
+- **`pkill -f openclaw` is dangerous in interactive sessions.** It matches any shell whose command line *contains* the string "openclaw" — including the bash that's currently running the install script if you're interactive. The Linux installer + watcher use `pkill -f 'openclaw gateway run'` (more specific) instead.
+- **Don't share a Telegram token across hosts.** Long-polling collisions cause `HTTP 409` conflicts and drop messages — per `concepts.md` Q1. Each host needs its own `@BotFather` bot.
 
 ## Phase 5 — 7-day soak (Definition of Done)
 

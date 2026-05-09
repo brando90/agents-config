@@ -1,6 +1,6 @@
 {
   "model": "opus",
-  "effortLevel": "xhigh",
+  "effortLevel": "max",
   "skipDangerousModePermissionPrompt": true,
   "hooks": {
     "SessionStart": [

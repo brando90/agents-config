@@ -183,6 +183,65 @@ sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-aut
 
 Full design + decision tree: [`experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](experiments/01_self_hosted_openclaw/MASTER_PLAN.md) §A.0.5 (TCC pre-grants), §A.6 (gotchas), §A.8 (triage flow when bot stops replying).
 
+### OpenClaw on a new SNAP / Linux node — fast path
+
+The Linux install path is automated. From a fresh SNAP node (after the standard SNAP node setup has run):
+
+```bash
+# 1. Create a per-host bot via @BotFather on Telegram. /newbot, name it after
+#    the host (e.g. ubrando_<HOST>_bot). Copy the token — DO NOT paste it
+#    anywhere that gets recorded (chat logs, screenshots), and if it leaks,
+#    /revoke + /token to rotate before continuing.
+#    Why per-host: one bot can only be long-polled by one process. Sharing
+#    causes HTTP 409 conflicts that drop messages — see:
+#    experiments/01_self_hosted_openclaw/concepts.md Q1.
+
+# 2. Drop the token on the host (mode 600):
+printf '%s\n' '<TOKEN-FROM-BOTFATHER>' > ~/keys/openclaw_telegram_bot_token.txt
+chmod 600 ~/keys/openclaw_telegram_bot_token.txt
+
+# 3. Make sure these prereqs are in place:
+#      - Node 22.14+ (SNAP installs nvm to /dfs/scratch0/<user>/.nvm — already loaded by .bashrc)
+#      - codex CLI logged in: codex login   (interactive ChatGPT OAuth)
+#      - tmux on PATH
+#      - ~/keys/anthropic_api_key.txt (the Linux installer pins anthropic/claude-haiku-4-5
+#        as default model since openai-codex chatgpt-OAuth is currently flaky on Linux)
+
+# 4. Run the installer:
+bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance_linux.sh
+#    What it does: npm install openclaw, install the @openclaw/codex plugin,
+#    render ~/.openclaw/openclaw.json from the template, write a tmux respawn
+#    wrapper + an @reboot wrapper (waits for DFS, runs krenew first), launch
+#    the gateway in tmux session 'openclaw-gateway', install both cron entries
+#    (@reboot + 5-min health-watcher), and PONG-test through the gateway.
+
+# 5. Manual finish on Telegram:
+#    Open Telegram → search the new bot → /start → if OpenClaw asks for a
+#    pairing code: 'openclaw pairing approve telegram <CODE>'.
+
+# 6. Quick verification (try these from the bot DM):
+#    hostname && pwd && nvidia-smi --list-gpus | head -1
+#    ssh skampere1.stanford.edu 'nvidia-smi --query-gpu=name,memory.free --format=csv,noheader | head -2'
+```
+
+Restart / recovery (any host):
+
+```bash
+# Tail the live log:
+tail -f ~/openclaw/gateway.log
+
+# Force a restart (the respawn wrapper rebuilds within 5s):
+tmux kill-session -t openclaw-gateway
+
+# Manually re-run the health-watcher to trigger self-heal logic:
+bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
+
+# Hit gateway health directly (loopback only):
+curl -s http://127.0.0.1:18789/health
+```
+
+Architecture summary: gateway runs in `tmux new-session -d -s openclaw-gateway` wrapped by `~/openclaw/run_gateway_respawn.sh` (a `while true; do openclaw gateway run --force; sleep 5; done` loop). `@reboot` cron starts a fresh tmux session after a node reboot once DFS is mounted and Kerberos has been renewed via the keytab (same pattern as the DFS job-queue watcher in [`machine/snap.md`](machine/snap.md)). The 5-min cron runs the cross-platform health-watcher which checks gateway → Telegram-connected → PONG round-trip and self-heals via restart → full plugin-cache reset → DM `openclaw-ops` on give-up.
+
 ---
 
 ## Remote Access (Claude Remote Control & Codex)
