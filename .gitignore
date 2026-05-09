@@ -31,3 +31,6 @@ Thumbs.db
 
 # Private business sub-projects (kept locally, not part of public agents-config)
 ai-for-lean-site/
+
+# Claude Code per-cwd runtime state (scheduled_tasks.lock, etc.)
+.claude/

@@ -38,12 +38,48 @@ OPENCLAW_DIR="${HOME}/.openclaw"
 TELEGRAM_TOKEN_FILE="${HOME}/keys/openclaw_telegram_bot_token.txt"
 ANTHROPIC_KEY_FILE="${HOME}/keys/anthropic_api_key.txt"
 OC_WORK_DIR="${HOME}/openclaw"
+USER_NAME="$(id -un)"
+HOST_SHORT="$(hostname -s 2>/dev/null || hostname)"
+DFS_ROOT="${DFS:-/dfs/scratch0/${USER_NAME}}"
+OC_WORK_DFS="${DFS_ROOT}/openclaw"
 TMUX_SESSION="openclaw-gateway"
 RESPAWN_WRAPPER="${OC_WORK_DIR}/run_gateway_respawn.sh"
 REBOOT_WRAPPER="${OC_WORK_DIR}/start_openclaw_at_reboot.sh"
 
 log() { printf '[install-linux] %s\n' "$*"; }
 die() { printf '[install-linux] ERROR: %s\n' "$*" >&2; exit 1; }
+require_mode_600() {
+  local path="$1"
+  [[ "$(stat -c '%a' "$path")" == "600" ]] || die "$path permissions must be 600"
+}
+
+ensure_openclaw_workdir() {
+  [[ -d "$DFS_ROOT" ]] || die "DFS root $DFS_ROOT is unavailable; run this on a SNAP node with DFS mounted"
+  mkdir -p "$OC_WORK_DFS"
+
+  if [[ -L "$OC_WORK_DIR" ]]; then
+    local target
+    target="$(readlink -f "$OC_WORK_DIR" 2>/dev/null || true)"
+    [[ "$target" == "$OC_WORK_DFS" ]] \
+      || die "$OC_WORK_DIR already symlinks to $target; expected $OC_WORK_DFS"
+  elif [[ -e "$OC_WORK_DIR" ]]; then
+    [[ -d "$OC_WORK_DIR" ]] || die "$OC_WORK_DIR exists but is not a directory or symlink"
+    if find "$OC_WORK_DIR" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
+      local backup
+      backup="${OC_WORK_DIR}.lfs-backup.$(date +%Y%m%d%H%M%S)"
+      log "migrating existing real LFS $OC_WORK_DIR to $OC_WORK_DFS (backup: $backup)"
+      cp -a "$OC_WORK_DIR"/. "$OC_WORK_DFS"/
+      mv "$OC_WORK_DIR" "$backup"
+    else
+      rmdir "$OC_WORK_DIR"
+    fi
+    ln -s "$OC_WORK_DFS" "$OC_WORK_DIR"
+  else
+    ln -s "$OC_WORK_DFS" "$OC_WORK_DIR"
+  fi
+
+  mkdir -p "$OC_WORK_DIR"/{audit,experiments,logs}
+}
 
 # --- prereq checks ---
 [[ "$(uname -s)" == "Linux" ]] || die "this script is for Linux; use install_openclaw_instance.sh on macOS"
@@ -52,12 +88,16 @@ command -v node  >/dev/null    || die "node not in PATH (source ~/.bashrc to loa
 command -v npm   >/dev/null    || die "npm not in PATH"
 command -v codex >/dev/null    || die "codex CLI missing — install + run 'codex login' first"
 command -v tmux  >/dev/null    || die "tmux not in PATH"
+command -v curl  >/dev/null    || die "curl not in PATH"
+command -v python3 >/dev/null  || die "python3 not in PATH"
+command -v crontab >/dev/null  || die "crontab not in PATH"
 [[ -f "$TELEGRAM_TOKEN_FILE" ]] || die "missing $TELEGRAM_TOKEN_FILE — create per-host bot via @BotFather, save token here"
-[[ "$(stat -c '%a' "$TELEGRAM_TOKEN_FILE")" == "600" ]] \
-  || die "$TELEGRAM_TOKEN_FILE permissions must be 600"
+require_mode_600 "$TELEGRAM_TOKEN_FILE"
 [[ -f "$ANTHROPIC_KEY_FILE" ]]  || die "missing $ANTHROPIC_KEY_FILE — needed for default Anthropic backend"
+require_mode_600 "$ANTHROPIC_KEY_FILE"
 
-mkdir -p "$OC_WORK_DIR"/{audit,experiments,logs}
+ensure_openclaw_workdir
+mkdir -p "$OPENCLAW_DIR"
 
 # --- verify the Telegram token actually corresponds to a real bot ---
 TOKEN=$(tr -d '\n' < "$TELEGRAM_TOKEN_FILE")
@@ -65,6 +105,12 @@ BOT_USERNAME=$(curl -s --max-time 8 "https://api.telegram.org/bot${TOKEN}/getMe"
   | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['result']['username']) if d.get('ok') else sys.exit(1)" \
   || die "Telegram getMe failed — token at $TELEGRAM_TOKEN_FILE is invalid")
 log "verified Telegram bot: @${BOT_USERNAME}"
+if [[ "${OPENCLAW_ALLOW_HOSTNAME_MISMATCH:-0}" != "1" ]]; then
+  BOT_LOWER="${BOT_USERNAME,,}"
+  HOST_LOWER="${HOST_SHORT,,}"
+  [[ "$BOT_LOWER" == *"$HOST_LOWER"* ]] \
+    || die "bot @${BOT_USERNAME} does not include host '${HOST_SHORT}'; use a per-host bot token (or set OPENCLAW_ALLOW_HOSTNAME_MISMATCH=1)"
+fi
 
 # --- install OpenClaw npm package if missing ---
 if ! command -v openclaw >/dev/null; then
@@ -114,7 +160,11 @@ merged["plugins"] = cfg.get("plugins", {})
 
 # Channels from template
 merged.setdefault("channels", {})
-merged["channels"]["telegram"] = cfg.get("channels", {}).get("telegram", {"enabled": True})
+template_telegram = cfg.get("channels", {}).get("telegram", {"enabled": True})
+existing_telegram = merged.get("channels", {}).get("telegram", {})
+telegram = dict(template_telegram)
+telegram.update(existing_telegram)
+merged["channels"]["telegram"] = telegram
 
 # Agents.defaults: keep existing workspace, take model + harness from template
 # but pin to anthropic/claude-haiku-4-5 for Linux (known-working path)
@@ -158,7 +208,13 @@ cat > "$RESPAWN_WRAPPER" <<'EOF'
 # Respawn wrapper: keep openclaw gateway alive in this tmux session.
 # Crashes get auto-restarted with backoff. Logs to ~/openclaw/gateway.log.
 set -u
+set -o pipefail
+if [ -f "$HOME/.bashrc" ]; then
+  # shellcheck disable=SC1091
+  . "$HOME/.bashrc" >/dev/null 2>&1 || true
+fi
 LOG="$HOME/openclaw/gateway.log"
+mkdir -p "$(dirname "$LOG")"
 echo "[$(date '+%F %T')] respawn wrapper starting on $(hostname -s)" >> "$LOG"
 while true; do
   echo "[$(date '+%F %T')] launching openclaw gateway run" >> "$LOG"
@@ -175,22 +231,39 @@ log "writing @reboot wrapper to $REBOOT_WRAPPER"
 cat > "$REBOOT_WRAPPER" <<'EOF'
 #!/usr/bin/env bash
 # @reboot wrapper: relaunch openclaw gateway in tmux after a node reboot.
-# Pattern mirrors /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh.
+# Pattern mirrors the SNAP start_watcher_at_reboot.sh flow.
 set -u
-LOG="$HOME/openclaw/start_at_reboot.log"
+USER_NAME="$(id -un)"
+HOST_SHORT="$(hostname -s 2>/dev/null || hostname)"
+LFS_HOME="/lfs/${HOST_SHORT}/0/${USER_NAME}"
+if [ -d "$LFS_HOME" ]; then
+  export HOME="$LFS_HOME"
+fi
+DFS_ROOT="${DFS:-/dfs/scratch0/${USER_NAME}}"
+LOG="/tmp/start_openclaw_at_reboot_${HOST_SHORT}.log"
 log() { echo "[$(date '+%F %T')] $*" >> "$LOG"; }
 log "boot wrapper starting on $(hostname -s)"
 
 # Wait for DFS to come up (up to 5 min)
+DFS_READY=0
 for _ in $(seq 1 60); do
-  [ -d /dfs/scratch0/brando9 ] && break
+  if [ -d "$DFS_ROOT" ]; then
+    DFS_READY=1
+    break
+  fi
   sleep 5
 done
-log "DFS check complete"
+if [ "$DFS_READY" != "1" ]; then
+  log "ERROR: DFS root $DFS_ROOT did not become available"
+  exit 1
+fi
+mkdir -p "$HOME/openclaw" 2>/dev/null || true
+LOG="$HOME/openclaw/start_at_reboot.log"
+log "DFS ready at $DFS_ROOT"
 
 # Renew Kerberos via keytab
-if [ -x /dfs/scratch0/brando9/bin/krenew.sh ]; then
-  /dfs/scratch0/brando9/bin/krenew.sh >> "$LOG" 2>&1 || true
+if [ -x "$DFS_ROOT/bin/krenew.sh" ]; then
+  "$DFS_ROOT/bin/krenew.sh" >> "$LOG" 2>&1 || true
 fi
 
 # Source bashrc so nvm + PATH are loaded
@@ -227,7 +300,7 @@ crontab -l 2>/dev/null \
 {
   cat "$TMP"
   echo "@reboot $REBOOT_WRAPPER"
-  echo "*/5 * * * * bash \$HOME/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh >> \$HOME/openclaw/watcher.log 2>&1"
+  echo "*/5 * * * * bash ${EXP_DIR}/scripts/openclaw-health-watcher.sh >> ${OC_WORK_DIR}/watcher.log 2>&1"
 } | crontab -
 rm -f "$TMP"
 

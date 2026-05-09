@@ -20,11 +20,12 @@
 
 set -u
 
-LOG_PREFIX="$(date '+%F %T') openclaw-watcher [${HOSTNAME%%.*}]"
-HOST_TAG="${OPENCLAW_HOST:-${HOSTNAME%%.*}}"
+HOST_SHORT="${HOSTNAME:-$(hostname 2>/dev/null || printf unknown)}"
+HOST_SHORT="${HOST_SHORT%%.*}"
+LOG_PREFIX="$(date '+%F %T') openclaw-watcher [${HOST_SHORT}]"
+HOST_TAG="${OPENCLAW_HOST:-${HOST_SHORT}}"
 PLAT="$(uname -s)"
 TMUX_SESSION="openclaw-gateway"
-RESPAWN_WRAPPER="$HOME/openclaw/run_gateway_respawn.sh"
 
 log() { echo "$LOG_PREFIX $*"; }
 
@@ -34,10 +35,24 @@ if [ "$PLAT" = "Linux" ] && [ -f "$HOME/.bashrc" ]; then
   . "$HOME/.bashrc" >/dev/null 2>&1 || true
 fi
 
+RESPAWN_WRAPPER="$HOME/openclaw/run_gateway_respawn.sh"
+
+run_with_timeout() {
+  local seconds="$1"
+  shift
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$seconds" "$@"
+  elif command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$seconds" "$@"
+  else
+    "$@"
+  fi
+}
+
 is_gateway_alive() {
   case "$PLAT" in
     Darwin) launchctl list 2>/dev/null | grep -q ai.openclaw.gateway ;;
-    Linux)  tmux has-session -t "$TMUX_SESSION" 2>/dev/null ;;
+    Linux)  command -v tmux >/dev/null 2>&1 && tmux has-session -t "$TMUX_SESSION" 2>/dev/null ;;
     *)      return 1 ;;
   esac
 }
@@ -48,12 +63,20 @@ start_gateway() {
       launchctl load "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>&1 | sed "s/^/$LOG_PREFIX /"
       ;;
     Linux)
+      if ! command -v tmux >/dev/null 2>&1; then
+        log "ERROR: tmux not in PATH — cannot start gateway"
+        return 1
+      fi
       if [ -x "$RESPAWN_WRAPPER" ]; then
         tmux new-session -d -s "$TMUX_SESSION" "bash -lc '$RESPAWN_WRAPPER'"
       else
         log "ERROR: $RESPAWN_WRAPPER missing — cannot start gateway"
         return 1
       fi
+      ;;
+    *)
+      log "ERROR: unsupported platform $PLAT"
+      return 1
       ;;
   esac
 }
@@ -67,6 +90,9 @@ restart_gateway() {
       # Kill the inner gateway process; respawn wrapper will relaunch within ~5s.
       pkill -f 'openclaw gateway run' 2>/dev/null || true
       ;;
+    *)
+      return 1
+      ;;
   esac
 }
 
@@ -74,7 +100,7 @@ full_reset() {
   case "$PLAT" in
     Darwin)
       launchctl unload "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>/dev/null || true
-      pkill -f openclaw 2>/dev/null || true
+      pkill -f 'openclaw gateway run' 2>/dev/null || true
       sleep 3
       rm -rf "$HOME/.openclaw/plugin-runtime-deps"
       launchctl load "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist"
@@ -86,7 +112,15 @@ full_reset() {
       rm -rf "$HOME/.openclaw/plugin-runtime-deps"
       start_gateway
       ;;
+    *)
+      return 1
+      ;;
   esac
+}
+
+channels_connected() {
+  run_with_timeout 12 openclaw channels status 2>/dev/null \
+    | grep -q "Telegram default:.*running.*connected"
 }
 
 # 1. Is the gateway daemon/session running?
@@ -97,19 +131,19 @@ if ! is_gateway_alive; then
 fi
 
 # 2. Channels status — must show Telegram running+connected
-if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default:.*running.*connected"; then
+if ! channels_connected; then
   log "FAIL: telegram channel not running+connected — restarting gateway"
   restart_gateway
   sleep 30
 
   # Recheck
-  if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default:.*running.*connected"; then
+  if ! channels_connected; then
     log "FAIL: still not connected after restart — running full reset (clear plugin cache)"
     full_reset
     log "full reset issued; waiting up to 5 min for plugin reinstall"
     for _ in $(seq 1 60); do
       sleep 5
-      if timeout 8 openclaw channels status 2>/dev/null | grep -q "Telegram default:.*running.*connected"; then
+      if channels_connected; then
         log "OK: telegram recovered after full reset"
         break
       fi
@@ -118,7 +152,9 @@ if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default
 fi
 
 # 3. Final liveness — channels OK + PONG round-trip
-if timeout 60 openclaw infer model run --gateway --prompt "PONG" 2>/dev/null | grep -q "PONG"; then
+if channels_connected \
+  && run_with_timeout 60 openclaw infer model run --gateway --prompt "say only the word PONG" 2>/dev/null \
+    | grep -q "PONG"; then
   log "HEALTHY: gateway+telegram+model round-trip OK"
   exit 0
 fi
