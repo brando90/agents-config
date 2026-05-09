@@ -43,7 +43,15 @@ if ! timeout 12 openclaw channels status 2>/dev/null | grep -q "Telegram default
     launchctl unload ~/Library/LaunchAgents/ai.openclaw.gateway.plist 2>/dev/null || true
     pkill -f openclaw 2>/dev/null || true
     sleep 3
-    rm -rf ~/.openclaw/plugin-runtime-deps
+    # rm -rf can fail with "Directory not empty" when openclaw-node is
+    # still racing to recreate files. Fall back to mv-aside (works even
+    # when rm fails); a broken-aside dir is harmless and gets garbage-
+    # collected later.
+    if ! rm -rf ~/.openclaw/plugin-runtime-deps 2>/dev/null; then
+      log "WARN: rm failed; mv-aside fallback"
+      mv ~/.openclaw/plugin-runtime-deps "$HOME/.openclaw/plugin-runtime-deps.broken.$(date +%s)" 2>/dev/null \
+        || log "WARN: mv-aside also failed; gateway boot may still fail"
+    fi
     launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist
     log "full reset issued; waiting up to 5 min for plugin reinstall"
     for _ in $(seq 1 60); do
