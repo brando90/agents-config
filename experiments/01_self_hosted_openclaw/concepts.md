@@ -26,7 +26,7 @@ Telegram only allows **one process at a time** to hold an open `getUpdates` call
 
 Brando DMs whichever bot is handy; that instance handles the conversation. All three post to the shared `openclaw-ops` channel — channels are write-only fan-out, not polled, so no 409 risk there.
 
-**Alternative considered + rejected.** OpenClaw's [`--profile rescue` pattern](https://docs.openclaw.ai/gateway/multiple-gateways.md) lets only the primary bot DM Brando, with the others silent until the primary dies. Cleaner UI (one bot to DM), but more failover complexity. Default plan is 3 active bots since the agent already rate-limits to 2 DMs/min total — redundancy beats tidiness here.
+**Alternative considered + rejected.** OpenClaw's [`--profile rescue` pattern](https://docs.openclaw.ai/gateway/multiple-gateways.md) lets only the primary bot DM Brando, with the others silent until the primary dies. Cleaner UI (one bot to DM), but more failover complexity. Default plan is 3 active bots; artificial DM throttling is intentionally off per Brando's 2026-05-08 throughput preference, with a circuit-breaker reserved for a real runaway-loop incident.
 
 ---
 
@@ -58,7 +58,7 @@ Without cron we'd hand-roll a bash `while true; sleep 900; ...` per host and plu
 
 ## Q3: What does "Idempotency + ops layer" mean in [`MASTER_PLAN.md`](./MASTER_PLAN.md) Phase 2?
 
-**A (TLDR):** Idempotency = Gmail-label locks so the 3 instances don't double-send the same reply; ops layer = heartbeats + silence watcher + rate limits posted to a private Telegram channel. Together they're the safety net that makes multi-instance safe.
+**A (TLDR):** Idempotency = Gmail-label locks so the 3 instances don't double-send the same reply; ops layer = heartbeats + silence watcher + an optional runaway-loop circuit breaker. Together they're the safety net that makes multi-instance safe.
 
 **Detail — Idempotency (the duplicate-send prevention layer).**
 
@@ -78,13 +78,13 @@ Plus a **5-minute stale-claim TTL**: if Instance A crashes mid-draft (claim labe
 
 Why Gmail labels work as a lock: applying a label is atomic on Gmail's server. Either it's there or it isn't — no race condition on the lock itself.
 
-**Detail — Ops layer (alarm system + rate limits).**
+**Detail — Ops layer (alarm system + optional circuit breaker).**
 
 Three small mechanisms, all on Telegram:
 
 1. **Heartbeat** — each instance posts `[host] alive @ <ts>` to private `openclaw-ops` every 15 min via `openclaw cron add`. One channel scrollback shows all 3 reporting in.
 2. **Silence watcher** — separate cron posts `[mercury2] SILENT >30min — investigate` if a peer stops checking in. That's how Brando notices mercury2 died at 3am.
-3. **Rate limits** — max 1 approval-DM per minute per instance, max 2 per minute total. If the agent goes haywire, the worst case is 2 DMs/min spam, not 200.
+3. **Optional circuit breaker** — default rate limiting is off. If the agent ever goes haywire, re-enable a cap such as max 1 approval-DM per minute per instance / max 2 per minute total.
 
 Plus **lifecycle events**: agent posts `STARTING` on boot and `RECOVERED` after a crash → the launch/recovery shows up in the same channel where heartbeats land.
 

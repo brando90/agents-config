@@ -19,7 +19,8 @@
 #   - Generates a fresh per-machine gateway.auth.token
 #   - Wires Telegram channel from the token file
 #   - Installs the launchd/systemd-user daemon
-#   - Prompts you to do `openclaw channels add --channel google` (browser OAuth) at the end
+#   - Prints next steps for wiring Gmail/Calendar/Drive via the `gog` skill (gogcli),
+#     since Gmail is NOT a stock OpenClaw channel — see MASTER_PLAN.md §"Gmail / Calendar / Drive via gog skill"
 
 set -euo pipefail
 
@@ -102,6 +103,49 @@ out_path.chmod(0o600)
 print(f"wrote {out_path} (mode 600, gateway token {'preserved' if existing.get('gateway') else 'generated'})")
 PYEOF
 
+# --- force tools.profile = messaging (chat replies silently fail with "coding") ---
+# The default "coding" profile bundles image_gen + web_search, which require
+# reasoning>=low. The Telegram auto-reply path invokes the agent at minimal
+# reasoning, so every incoming message hits OpenAI HTTP 400 and dies silently.
+# See runbook.md "When the bot doesn't reply" #3 for the failure signature.
+log "setting tools.profile=messaging (required for Telegram chat replies to work)"
+openclaw config set tools.profile messaging 2>&1 | tail -2 || true
+
+# --- patch broken nativeHookRelay (blocks ALL shell tools) ---
+# Upstream codex extension registers a relay then loses lookup at PreToolUse
+# time ("native hook relay not found"). 1-line patch disables the hook chain;
+# codex falls back to its own sandbox/approval (already yolo+danger-full-access
+# in ~/.codex/config.toml). Idempotent: skips if already patched. Re-applies
+# after any `npm install -g openclaw@latest` that overwrites node_modules.
+# Full background: runbook.md "Shell exec — local patch required".
+HARNESS_JS="$(npm root -g)/openclaw/dist/extensions/codex/harness.js"
+if [[ -f "$HARNESS_JS" ]]; then
+  if grep -q 'OPENCLAW LOCAL PATCH' "$HARNESS_JS"; then
+    log "harness.js already patched (nativeHookRelay disabled) — skipping"
+  else
+    log "patching $HARNESS_JS to disable broken nativeHookRelay"
+    cp -n "$HARNESS_JS" "${HARNESS_JS}.bak.preopenclawpatch"
+    python3 - "$HARNESS_JS" <<'PYEOF'
+import sys
+path = sys.argv[1]
+src = open(path).read()
+needle = 'return runCodexAppServerAttempt(params, { pluginConfig: options?.pluginConfig });'
+patch = (
+    '// OPENCLAW LOCAL PATCH (runbook.md "Shell exec — local patch required"):\n'
+    '\t\t\t// disable broken nativeHookRelay so codex falls back to its own sandbox/approval.\n'
+    '\t\t\treturn runCodexAppServerAttempt(params, { pluginConfig: options?.pluginConfig, nativeHookRelay: { enabled: false } });'
+)
+if needle not in src:
+    print(f"[install] WARN: patch needle not found in {path}; upstream may have changed — skipping", file=sys.stderr)
+    sys.exit(0)
+open(path, 'w').write(src.replace(needle, patch, 1))
+print(f"[install] patched {path}")
+PYEOF
+  fi
+else
+  log "WARN: $HARNESS_JS not found — skipping shell-exec patch"
+fi
+
 # --- install + start daemon ---
 log "installing daemon (launchd on macOS / systemd-user on Linux)"
 openclaw onboard --install-daemon --non-interactive --accept-risk 2>&1 | tail -5 || true
@@ -147,16 +191,30 @@ What's done:
   - Telegram channel wired
 
 What you still need to do MANUALLY on this host:
-  1. Open Telegram, /start the bot, complete pairing approval if prompted
-       openclaw pairing approve telegram <CODE>
-  2. Wire Gmail (browser OAuth):
-       openclaw channels add --channel google
-  3. (If this is instance #2 or #3) scp the Gmail token from instance #1:
-       scp instance-1:~/.openclaw/agents/main/agent/auth-profiles.json \\
-           ~/.openclaw/agents/main/agent/auth-profiles.json
-       (skips re-OAuthing on each host)
+  1. Open Telegram, /start the bot. The agent's auto-reply will issue a
+     pairing code; approve it with:
+       openclaw pairing list --channel telegram          # find <CODE>
+       openclaw pairing approve --channel telegram <CODE>
+  2. Wire Gmail / Calendar / Drive via the bundled \`gog\` skill (NOT
+     \`openclaw channels add --channel google\` — that channel is Google Chat,
+     not Gmail; see MASTER_PLAN.md §"Gmail ... via gog skill"):
+       brew install gogcli
+       gog auth credentials set ~/keys/client_secret_*.apps.googleusercontent.com.json
+       gog auth add YOUR_GOOGLE_EMAIL@gmail.com    # browser OAuth, once
+       openclaw skills info gog                     # expect: "✓ Ready"
+  3. (If this is instance #2 or #3) scp the gog OAuth tokens from instance #1
+     to skip the browser OAuth dance:
+       # macOS source/destination:
+       scp -r instance-1:'~/Library/Application\\ Support/gogcli/' \\
+              ~/Library/Application\\ Support/gogcli/
+       # Linux destination uses ~/.config/gogcli/ instead.
 
 When done, verify with:
-  openclaw channels status
+  openclaw channels status                           # telegram connected
+  openclaw skills info gog                           # ✓ Ready
+  gog -a YOUR_EMAIL@gmail.com gmail list "is:unread" --max 1 -p
+
+Recurring ops (token swap, restart, "bot won't reply" triage) are documented
+in: experiments/01_self_hosted_openclaw/runbook.md
 ================================================================================
 EOF

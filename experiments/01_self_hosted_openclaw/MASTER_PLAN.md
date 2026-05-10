@@ -55,7 +55,7 @@ Telegram is the **single human-in-the-loop surface** for OpenClaw. It is **not**
 Why Telegram specifically:
 - **Reliable cross-platform** — phone, laptop, web all stay in sync.
 - **Clean bot APIs** — no phone number / multi-device caps the way WhatsApp has.
-- **Per-instance bots** — Air / Pro / mercury2 each get their own `@BotFather` bot, avoiding `getUpdates` 409 conflicts (per [Telegram channel docs](https://docs.openclaw.ai/channels/telegram.md)). Brando ends up DMing 3 bots; rate-limit caps the total to 2 DMs/min so it stays manageable.
+- **Per-instance bots** — Air / Pro / mercury2 each get their own `@BotFather` bot, avoiding `getUpdates` 409 conflicts (per [Telegram channel docs](https://docs.openclaw.ai/channels/telegram.md)). Brando ends up DMing 3 bots; default rate limiting is intentionally off per Brando's 2026-05-08 throughput preference, with a circuit-breaker reserved for a real runaway-loop incident.
 - **Private ops channel** — heartbeats and lifecycle events go to `openclaw-ops` (channel, not DM), so Brando's main bot threads stay clean.
 
 WhatsApp is for outbound to friends/family (Baileys, currently parked on upstream `status=500`). Discord is for Lean-AI-style multi-server triage (parked on Message Content Intent toggle). iMessage is local-Mac only via AppleScript bridge (deferred).
@@ -503,7 +503,7 @@ Goal: byte-identical OpenClaw on the Pro using the install script.
 
 - 👤 Telegram → `@BotFather` → `/newbot` → name e.g. `ultimate_brando9_pro_bot` → copy token.
 - 👤 Add the new bot as admin to the `openclaw-ops` channel (so this instance can also post heartbeats).
-- 👤 Decide: do you want to DM 3 different bots (one per host) or use the [`--profile rescue` failover pattern](https://docs.openclaw.ai/gateway/multiple-gateways.md) where only the primary bot DMs you and the others stay silent until the primary is silent? Default recommendation: **3 separate bots, all DM-capable**, since the triage loop already rate-limits to 2 DMs/min total — redundancy > tidiness here.
+- 👤 Decide: do you want to DM 3 different bots (one per host) or use the [`--profile rescue` failover pattern](https://docs.openclaw.ai/gateway/multiple-gateways.md) where only the primary bot DMs you and the others stay silent until the primary is silent? Default recommendation: **3 separate bots, all DM-capable**; keep the circuit-breaker rate-limit primitive available, but do not enable artificial throttling by default.
 
 #### Step 3.2 — 👤 Brando: choose access path ⏱ 1 min decision
 

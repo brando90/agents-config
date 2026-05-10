@@ -6,7 +6,8 @@
 
 - [ ] **1.1** Brando: write `config/admin-filter.txt` with 3–8 sender patterns (`*@stanford.edu`, `*financialaid*@*`, etc.) — ⏱ 2 min
 - [ ] **1.2** Verify `gog` skill exposed to agent: `openclaw skills info gog` → ✓ Ready; smoke test via DM
-- [ ] **1.3** **Unlock agent shell/tool execution** — agent currently reports "shell commands blocked by the local hook relay". Claude proposes the exec-policy diff, Brando approves, restart gateway. ⏱ 15 min
+- [x] **1.3** **Unlock agent shell/tool execution** — *done 2026-05-09 on Pro via local node_modules patch.* Upstream codex extension registers a hook relay then loses lookup at PreToolUse time (gateway logs `native hook relay not found` on every `nativeHook.invoke`). 1-line patch to `dist/extensions/codex/harness.js` adds `{nativeHookRelay:{enabled:false}}` to the runAttempt options, which sends `features.codex_hooks: false` to codex. Codex falls back to its own sandbox/approval (already yolo+danger-full-access+never per `~/.codex/config.toml`). Patch + diff + how-to-undo + how-to-reapply-after-`npm install` documented in [`runbook.md` "Shell exec — local patch required"](./runbook.md). Install script now applies the patch automatically on every run. Verified with real `date +%s && uname -n && pwd` round-trip via Telegram. Apply on Air + mercury2 next time their gateways are touched.
+- [x] **1.3.b** **Chat-reply silent failure (`tools.profile=coding` bug)** — *fixed 2026-05-09 on Pro.* Default `coding` profile bundles `image_gen`+`web_search` which require reasoning≥low; auto-reply path runs at `minimal` → every incoming msg dies with HTTP 400 and is not relayed. Fix: `openclaw config set tools.profile messaging`. Now baked into [`scripts/install_openclaw_instance.sh`](./scripts/install_openclaw_instance.sh). Decision tree for the 3 most common "bot doesn't reply" causes is in [`runbook.md`](./runbook.md). Apply on Air + mercury2 next time their gateways are touched.
 - [ ] **1.4** Finalize `config/agent-prompt.md` — answer the 3 placeholders: home address, payment posture, 2–3 sample-tone emails. ⏱ 10 min
 - [ ] **1.5** Brando: create private Telegram channel `openclaw-ops`, add bot as admin, send channel ID to Claude. ⏱ 2 min
 - [ ] **1.6** **THE PROOF POINT** — one real unread admin email goes through the full loop end-to-end. ⏱ 10 min
@@ -25,12 +26,12 @@
 
 ## Phase 3 — replicate to MacBook Pro
 
-- [ ] **3.1** Brando: create second `@BotFather` bot for the Pro (`ultimate_brando9_pro_bot`), add to `openclaw-ops`. ⏱ 3 min
+- [x] **3.1** Brando: create second `@BotFather` bot for the Pro — done 2026-05-09: `@ultimate_brando9_pro_macbook_bot` (display name `ultimate_brando9_pro_mac_book_bot`; @handle has no underscore between mac/book). Token in `~/keys/openclaw_telegram_bot_token.txt` on Pro. Not yet added to `openclaw-ops` channel.
 - [ ] **3.2** Decide access path: SSH config OR Brando runs install script in Pro's terminal himself. ⏱ 1 min
 - [ ] **3.3** Per-host prereqs: `codex login`, `brew install node@24 gogcli`. ⏱ 10 min
 - [ ] **3.4** scp gogcli auth from Air → Pro; verify with `gog gmail list`. ⏱ 2 min
-- [ ] **3.5** Run `scripts/install_openclaw_instance.sh` on Pro. ⏱ 5 min
-- [ ] **3.6** Pair Pro's bot via Telegram + `openclaw pairing approve`. ⏱ 3 min
+- [~] **3.5** Run `scripts/install_openclaw_instance.sh` on Pro — partial: install ran 2026-04-26 with the Air token; on 2026-05-09 the Pro token replaced it via manual swap + `openclaw config set tools.profile messaging` + `openclaw gateway restart`. Re-running the (now updated) install script would normalize state.
+- [x] **3.6** Pair Pro's bot via Telegram + `openclaw pairing approve` — done 2026-05-09: code `SVND4BDH` approved (channel-scoped pairing carried over after token swap). Bot now replies in `@ultimate_brando9_pro_macbook_bot` chat.
 - [ ] **3.7** Verify Pro joins heartbeat + idempotency dance. ⏱ 10 min
 
 ## Phase 4 — replicate to mercury2 (Linux, different recipe)
