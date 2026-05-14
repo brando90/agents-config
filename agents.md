@@ -10,3 +10,7 @@ another CLI, pass them explicitly:
 ```bash
 codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
 ```
+
+## CV edits (~/brandomiranda/professional_documents/cvs/)
+
+Before touching `cv_short.tex` / `cv_long.tex`, read **Trigger Rule 28** in `~/agents-config/INDEX_RULES.md` — it specifies the consistency invariants (descending chronological order, bolded full-form venue lines, author order, `\flushbottom`, sync between the two CVs, recompile-and-verify, audience framing for the active grant application).
