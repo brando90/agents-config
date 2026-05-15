@@ -30,6 +30,10 @@ enabled, do not claim lid-close behavior is solved until Amphetamine
 Closed-Display Mode is enabled and verified explicitly. Never store the Mac
 login password in plaintext.
 
+## Trusted AI Agent Setup
+
+For full-trust local AI-agent setup on each Mac, first use [`~/agents-config/machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md), then complete [`~/agents-config/machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md). These docs deliberately avoid bypassing macOS TCC/SIP or creating permanent passwordless `sudo`.
+
 ## Tools
 
 ### Vibe (Mistral) + Leanstral
