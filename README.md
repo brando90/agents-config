@@ -1,5 +1,7 @@
 # Agent-Config: Modular Documentation Architecture for Multi-Agent Coding Workflows
 
+**TLDR:** This repo is the shared, modular instruction layer for Brando's AI coding agents. Start at `~/agents-config/INDEX_RULES.md`, then load only the machine, workflow, or writing docs relevant to the current task.
+
 A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond). Designed for scalability and context-window efficiency.
 
 As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
@@ -98,6 +100,9 @@ agents-config/
 │   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
 │   ├── snap_setup.sh            ← scripted SNAP-node bootstrap (symlinks, auth, tools)
 │   ├── mac.md                   ← local macOS dev
+│   ├── macos-ai-apps/           ← reusable Mac AI-agent setup + permissions docs
+│   │   ├── ai_agent_automatable_setup_codex_clauded.md
+│   │   └── manual_macos_permissions_checklist_ai_apps.md
 │   ├── sherlock.md              ← Stanford Sherlock HPC
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
@@ -155,6 +160,12 @@ ln -s ~/agents-config/agents.md ~/agents.md
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
 # Codex will automatically read agents.md → INDEX_RULES.md
 ```
+
+---
+
+## Reusable macOS AI App Setup
+
+For each Mac, first use [`~/agents-config/machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) to configure shell-automatable trusted-agent setup, then use [`~/agents-config/machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) for the macOS Privacy & Security toggles that require manual approval.
 
 ---
 

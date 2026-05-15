@@ -135,6 +135,8 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install)
+- [`machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) — reusable shell-automatable trusted-agent setup for Codex, Claude Code, Gemini, Cursor, ChatGPT, and Manus on macOS
+- [`machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) — reusable manual macOS Privacy & Security checklist for local AI apps
 
 ## Workflows
 
