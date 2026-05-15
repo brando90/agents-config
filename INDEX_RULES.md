@@ -135,6 +135,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install)
+- [`machine/mac-never-sleep-lid.md`](machine/mac-never-sleep-lid.md) — reusable prompt/workflow for configuring a Mac to stay awake when the lid closes; load via `machine/mac.md` when Brando asks for never-sleep lid behavior.
 
 ## Workflows
 

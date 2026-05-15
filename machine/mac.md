@@ -19,6 +19,17 @@ mkdir -p ~/.claude
 ln -sf ~/agents-config/claude-code-settings.json ~/.claude/settings.json
 ```
 
+### Lid Never Sleeps
+
+If Brando says this Mac should never sleep, especially when the lid closes, load
+[`~/agents-config/machine/mac-never-sleep-lid.md`](mac-never-sleep-lid.md)
+before acting.
+The core setting is `pmset disablesleep 1`; do not rely on Amphetamine or
+`caffeinate` assertions alone for lid-close behavior. If the live lid flag stays
+enabled, do not claim lid-close behavior is solved until Amphetamine
+Closed-Display Mode is enabled and verified explicitly. Never store the Mac
+login password in plaintext.
+
 ## Tools
 
 ### Vibe (Mistral) + Leanstral
