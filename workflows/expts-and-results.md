@@ -60,6 +60,9 @@ experiments/<NN>_<name>/
 │   ├── template/               ← Dockerfile, task.toml, test.sh, solve.sh
 │   └── single_call_agent.py    ← custom agent (if needed)
 ├── tasks/                      ← generated task dirs (one per task)
+├── assets/                     ← user-attached images: photos of handwritten notes, whiteboards,
+│                                  screenshots, paper figures (+ optional .md transcriptions
+│                                  with the same basename). See "Assets folder" below.
 ├── collect_scores.py           ← shared scoring script (or per-version in expt_vN/)
 ├── compute_correlations.py     ← correlation analysis
 ├── generate_plots.py           ← scatter plots + histograms
@@ -69,6 +72,10 @@ experiments/<NN>_<name>/
 │   └── temporary_results/      ← unverified intermediates
 └── expt_results/               ← optional shared/aggregated CSVs, JSONs, plots across versions
 ```
+
+### Assets folder (`assets/`)
+
+When the user attaches an image in a prompt (handwritten note photo, whiteboard, screenshot, paper figure) and asks to save / transcribe / keep it in the context of a specific experiment, save it under that experiment's `assets/` folder with a descriptive snake_case filename — never leave it at the opaque `~/.claude/uploads/<uuid>/` upload path, which is ephemeral and meaningless across sessions and machines. If a transcription is requested, save a sibling `.md` with the same basename containing provenance + a `**TLDR:**`. Existing precedent: `experiments/01_toy_ebm_training/assets/{toy_ebm_notes_photo_1.jpg, ...}`. Full rule: [`INDEX_RULES.md`](../INDEX_RULES.md) Trigger Rule 28.
 
 ### Versioned Sub-Experiments (`expt_v1/`, `expt_v2/`, …)
 
