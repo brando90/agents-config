@@ -35,10 +35,12 @@
 
 ## Phase 4 — replicate to mercury2 (Linux, different recipe)
 
+Detailed runbook: [`snap_telegram_setup_plan.md`](./snap_telegram_setup_plan.md).
+
 - [ ] **4.1** Brando: confirm `ssh mercury2` works (per `MASTER_PLAN.md` Phase 4.1, last attempt failed with host-key verification). ⏱ 5 min
-- [ ] **4.2** Linux install path: `/dfs/scratch0/<user>/openclaw` + `~/openclaw` symlink, tmux + watchdog + `@reboot` cron + `krenew`. Need to write `install_openclaw_instance_linux.sh`. ⏱ 30 min
+- [x] **4.2** Linux install path: `/dfs/scratch0/<user>/openclaw` + `~/openclaw` symlink, tmux + watchdog + `@reboot` cron + `krenew`. ✅ `install_openclaw_instance_linux.sh` written (2026-05-09, PR #48).
 - [ ] **4.3** Brando: create third bot for mercury2; scp gogcli (different OS path: `~/.config/gogcli/`); `codex login` once. ⏱ 15 min
-- [ ] **4.4** SNAP-specific hardening: `krenew` cron, `@reboot` cron, logrotate. ⏱ 30 min
+- [x] **4.4** SNAP-specific hardening: `krenew` cron (already in `machine/snap.md:108-113`), `@reboot` cron (`start_openclaw_at_reboot.sh`), watchdog cron (`openclaw-watchdog.sh`), logrotate (`config/snap-logrotate.conf`). ✅ All artifacts in PR #48; activation happens when 4.2's installer runs on mercury2.
 
 ## Phase 5 — 7-day soak (Definition of Done)
 
