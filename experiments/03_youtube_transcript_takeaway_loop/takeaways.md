@@ -13,66 +13,64 @@ takeaways below are split into two clearly labelled sections:
 
 ## Section A — Meta-takeaways from the fetch attempt
 
-### A1. Add a "talk-distillation" experiment template
+### A1. Add a "talk-distillation" experiment template — **DONE**
 
-The repo has `experiments/experiment_template_readme.tex` aimed at ML-research
+The repo's `experiments/experiment_template_readme.tex` is aimed at ML-research
 experiments (Objective / Hypothesis / Dataset / Metric). It does not fit
-"distil a talk or paper into repo changes." Today every video/talk experiment
-will reinvent the layout.
+"distil a talk or paper into repo changes." Every video/talk experiment was
+about to reinvent the layout.
 
-**Concrete change:** add `experiments/experiment_template_talk_distill.md`
-with the structure used in this folder (README + metadata.json + fetch log +
-fetch script + transcript.md + takeaways.md), so the next talk-to-takeaways
-loop is `cp -r` away.
+**Done in this PR:** added `experiments/experiment_template_talk_distill.md`
+codifying the structure used here (README + metadata.json + fetch log +
+fetch script + transcript.md + takeaways.md), with a fixed item shape for
+takeaways and a definition-of-done.
 
-### A2. Promote `fetch_transcript.sh` to `scripts/`
+### A2. Promote `fetch_transcript.sh` to `scripts/` — **DONE**
 
-Right now `fetch_transcript.sh` lives inside this experiment. Every future
-experiment that wants to ingest a YouTube talk will copy-paste it.
+The fetch helper used to live only inside this experiment. Every future
+experiment that wants to ingest a YouTube talk would have copy-pasted it.
 
-**Concrete change:** move the script to `scripts/fetch_youtube_transcript.sh`
-once it is shown to work from a non-blocked machine, and reference it from the
-talk-distillation template. Keep the experiment-local copy as a thin wrapper
-that calls the shared one.
+**Done in this PR:** moved the implementation to
+`scripts/fetch_youtube_transcript.sh` (now always writes
+`video_metadata.json` first, then attempts the transcript; appends to
+`fetch_attempts.md` on failure). The experiment-local `fetch_transcript.sh`
+is now a 5-line wrapper.
 
-### A3. Codify the "external fetch is blocked" failure mode in `CLAUDE.md`
+### A3. Codify "external fetch is blocked" failure mode in `CLAUDE.md` — **DONE**
 
 When an agent cannot reach an external resource, the correct behaviour is
 (a) log the attempts, (b) capture whatever metadata *is* reachable (oEmbed
 worked here), (c) build the rest of the deliverable as a skeleton, and
-(d) ask the user for the missing piece — never fabricate. The current
-`CLAUDE.md` does not say this anywhere.
+(d) ask the user for the missing piece — never fabricate.
 
-**Concrete change:** append a "When external fetches fail" bullet to the
-Mandatory Response Protocol in `CLAUDE.md` (or in `INDEX_RULES.md` if it
-lives there), with the four-step pattern above. Reference this experiment as
-the canonical example.
+**Done in this PR:** added a "When external fetches fail" behavioral rule to
+`CLAUDE.md` with the four-step pattern, referencing this experiment as the
+canonical example.
 
-### A4. Cache oEmbed metadata before the transcript step
+### A4. Always-fetch oEmbed metadata first — **DONE**
 
 `https://www.youtube.com/oembed` and `https://noembed.com/embed` were the only
-two YouTube endpoints that *did* answer. They give title, channel, thumbnail
-— enough to start an experiment folder even when the transcript itself is
-out of reach. The template should fetch oEmbed *first* so the experiment
-folder is partially populated even on a total transcript failure.
+two YouTube endpoints that answered. They give title, channel, thumbnail —
+enough to start an experiment folder even when the transcript itself is out
+of reach.
 
-**Concrete change:** add an `oembed` step to the talk-distillation script
-that always runs and always writes `video_metadata.json`, independent of
-whether the transcript fetch succeeds.
+**Done in this PR:** `scripts/fetch_youtube_transcript.sh` always runs the
+oEmbed step first and writes `video_metadata.json` independently of whether
+the transcript fetch succeeds.
 
-### A5. Add `WebFetch` allow/deny notes for known-blocked hosts
+### A5. Allowlist oEmbed hosts via project settings — **DEFERRED**
 
-The repo's `.claude/settings.json` could pre-allow the oEmbed hosts (so the
-permission prompt is skipped on read-only metadata calls) and document which
-YouTube paths are known not to work from this sandbox so future Claude sessions
-don't burn time rediscovering it. The `fewer-permission-prompts` skill is the
-right place to add this.
+The repo could pre-allow the oEmbed hosts (so the permission prompt is
+skipped on read-only metadata calls) and document which YouTube paths are
+known not to work from this sandbox. The `fewer-permission-prompts` skill is
+the right driver.
 
-**Concrete change:** run `/fewer-permission-prompts` after this PR merges and
-add `WebFetch(https://www.youtube.com/oembed*)` and
-`WebFetch(https://noembed.com/*)` to the project allowlist; leave a comment
-that direct `youtube.com`, `googlevideo.com`, and `youtu.be` fetches are
-blocked from cloud IPs.
+**Status:** deferred to a follow-up because it requires a transcript-of-a-real-
+session to populate `.claude/settings.json` properly. To execute: run
+`/fewer-permission-prompts` and add `WebFetch(https://www.youtube.com/oembed*)`
+plus `WebFetch(https://noembed.com/*)` to the project allowlist, with a
+comment noting that direct `youtube.com`, `googlevideo.com`, and `youtu.be`
+fetches are blocked from cloud IPs.
 
 ---
 

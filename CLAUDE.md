@@ -5,6 +5,7 @@
 
 - **Just do it** — When Brando gives a direct instruction (send email, run command, etc.), execute it immediately. Do not ask for confirmation, offer alternatives, or create drafts when "send" was requested. Only pause for truly destructive/irreversible actions on shared systems.
 - **No unnecessary drafts** — If told to "send" an email, send it. Only create a draft if explicitly asked for a draft.
+- **When external fetches fail** — If a needed external resource (video transcript, paywalled page, gated API, IP-blocked service) is unreachable: (1) log every attempt and its failure mode in a `fetch_attempts.md` next to the work, (2) capture whatever lighter metadata *is* reachable (e.g. oEmbed for YouTube), (3) build the rest of the deliverable as a clearly-marked skeleton with a populate-script, (4) ask the user to supply the missing piece. **Never fabricate the missing content.** Canonical example: `experiments/03_youtube_transcript_takeaway_loop/`.
 
 ## Mandatory Response Protocol (inline — do not skip)
 

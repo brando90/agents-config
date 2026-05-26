@@ -1,6 +1,6 @@
 # Experiment 03 — YouTube Transcript → Repo Takeaways Loop
 
-**Status:** Partial (transcript unavailable from sandbox; meta-takeaways captured)
+**Status:** Section A patches landed; Section B awaits transcript paste.
 **Started:** 2026-05-26
 **Branch:** `claude/video-transcript-experiment-FXZNd`
 **Source video:** https://youtu.be/u-2F63eD9tE
@@ -33,14 +33,21 @@ patch the repo" loop.
 
 1. From a residential IP (not a cloud sandbox), run:
    ```
-   bash experiments/03_youtube_transcript_takeaway_loop/fetch_transcript.sh \
-     https://youtu.be/u-2F63eD9tE
+   bash experiments/03_youtube_transcript_takeaway_loop/fetch_transcript.sh
    ```
-   Or paste the transcript text into `transcript.md` manually.
-2. Re-run Claude on this folder with the prompt: "read transcript.md and update
-   takeaways.md with concrete repo improvements tied to specific files/sections."
-3. Open a follow-up PR that implements the highest-value takeaway (do not bundle
-   all takeaways into one PR — each should be reviewable independently).
+   (Defaults to this video; or pass a URL.) Or paste the transcript text into
+   `transcript.md` manually.
+2. Re-run Claude on this folder with the prompt: "read transcript.md and fill
+   Section B of takeaways.md with cited, file-specific items."
+3. Open a follow-up PR per actionable takeaway.
+
+## What Section A delivered in this PR
+
+- `experiments/experiment_template_talk_distill.md` — reusable template.
+- `scripts/fetch_youtube_transcript.sh` — promoted, oEmbed-first helper.
+- `CLAUDE.md` — new "When external fetches fail" behavioral rule referencing
+  this folder.
+- Local `fetch_transcript.sh` is now a thin wrapper around the shared helper.
 
 ## Why the transcript was not fetched here
 
