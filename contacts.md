@@ -25,11 +25,12 @@ The same repo also exposes `email_collaborator(...)` in `~/ultimate-utils/py_src
 
 ## Brando Addresses
 
-When sending any email on Brando's behalf or to Brando, apply the invariant CC rule from `INDEX_RULES.md`: visible-CC all three Brando addresses unless doing so would duplicate an address already in `To`.
+When sending any email on Brando's behalf or to Brando, apply the routing rule from `INDEX_RULES.md` Trigger Rule 26:
 
-- `brando.science@gmail.com`
-- `brando9@stanford.edu`
-- `brandojazz@gmail.com`
+- Internal agent notifications to Brando go to `brando.science@gmail.com` with no CC by default.
+- External emails sent on Brando's behalf CC `brando.science@gmail.com` for auditability.
+- Add `brando9@stanford.edu` only when a Stanford/academic record is useful.
+- Do not CC `brandojazz@gmail.com` unless Brando explicitly asks.
 
 Also recognize `brando9@cs.stanford.edu`, `brando90@mit.edu`, `miranda9@illinois.edu`, `miranda9@ibm.com`, and `miranebr@amazon.com` as Brando aliases in the collaborator registry.
 

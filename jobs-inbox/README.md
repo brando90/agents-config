@@ -5,9 +5,9 @@ Drop `.sh` files in [`pending/`](pending/) from **any context that can reach thi
 1. `git pull` this repo every ~30 s.
 2. Move each `pending/*.sh` into `~/dfs/job_queue/pending/` on the cluster (the DFS watcher queue).
 3. Move the source file to [`dispatched/`](dispatched/) and commit+push.
-4. The DFS watcher daemon (smart mode) then wraps the job in a coding agent that diagnoses failures, retries up to 3×, and emails PASS/FAIL.
+4. The DFS watcher daemon (smart mode) then wraps the job in a coding agent that diagnoses failures, retries up to 3×, and optionally emails final PASS/FAIL only for explicitly tracked jobs.
 
-End-to-end: commit from phone → running on cluster within ~30 s → email on completion.
+End-to-end: commit from phone → running on cluster within ~30 s → inspect logs/queue state; explicitly tracked jobs can send one final completion email.
 
 ---
 
@@ -21,8 +21,8 @@ Plain bash, standard SNAP env. The poller adds a timestamp prefix but otherwise 
 # Brief description of what this job does.
 set -euo pipefail
 
-export ANTHROPIC_API_KEY=$(cat ~/keys/anthropic_bm_key_koyejolab.txt | tr -d '[:space:]')
 cd ~/veribench
+# Route LLM work through local CLIs per ~/agents-config/INDEX_RULES.md Hard Rule 9.
 bash run_some_experiment.sh
 ```
 
@@ -35,7 +35,7 @@ Commit path: `jobs-inbox/pending/<descriptive-name>.sh`
 Paste this into a claude.ai session (mobile or web) in an Anthropic cloud env with `gh` available:
 
 ```
-Clone my agents-config repo, add a job file to jobs-inbox/pending/<NAME>.sh that does X, commit and push. The cluster poller will pick it up within 30 seconds and email me when it finishes.
+Clone my agents-config repo, add a job file to jobs-inbox/pending/<NAME>.sh that does X, commit and push. The cluster poller will pick it up within 30 seconds. Email brando.science@gmail.com only if this is an explicitly tracked job.
 
 Repo: https://github.com/brando90/agents-config
 ```

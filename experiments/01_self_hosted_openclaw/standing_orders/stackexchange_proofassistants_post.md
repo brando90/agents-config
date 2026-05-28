@@ -134,7 +134,7 @@ The standing order is "live" when, sustained for ≥4 weeks of real use:
 - Refresh agents-config first (`git -C ~/agents-config pull`); re-read `INDEX_RULES.md`.
 - **Never commit secrets** — `storage_state.json`, OAuth tokens, all live in `~/keys/` mode 600 (Hard Rule 1).
 - Run **QA** before reporting any phase done (Hard Rule 3).
-- **Email Brando** on phase completion — counts as a big task (Trigger Rule 14).
+- **Email Brando** only when Brando explicitly requested email/notification/tracking for that phase per Trigger Rule 14; otherwise report in chat/Telegram.
 - **Dual TLDR** on every response (Hard Rule 4).
 - **Stop and ask** before:
   - The first real post to PA SE (not a meta sandbox).

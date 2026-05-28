@@ -18,7 +18,7 @@ Each standing order lives in its own `standing_orders/<name>.md` and is referenc
 2. **Goal** — what friction this collapses.
 3. **When this fires** — invocation triggers (Brando command, cron, inbound event). **Never** auto-trigger on incoming high-value channels (email reply, WhatsApp, Discord) unless explicitly approved.
 4. **Inputs** — recipient, raw content, optional context. Be explicit about ambiguity-resolution.
-5. **Workflow** — numbered steps: Capture → Clean → Show → Approve → Execute → **Notify (Telegram reply in originating chat + email to Brando)** → Log. The Notify step is mandatory per Default Safety Rule 8 below.
+5. **Workflow** — numbered steps: Capture → Clean → Show → Approve → Execute → **Notify (Telegram reply; email only for explicitly tracked significant workflows)** → Log. The Notify step follows Default Safety Rule 8 below.
 6. **Outputs** — what gets sent / posted / created, plus the audit-log row.
 7. **Safety rules** — approval level, secret-leak detection, bulk-send threshold, tone-drift callout, never-do list.
 8. **Open setup questions** — what needs to be answered before this standing order goes live.
@@ -69,11 +69,11 @@ Sensitive fields (full draft text, recipient phone, etc.) are NOT in the audit l
 5. **Never enter payment info** — no credit card, bank, Venmo/Zelle/PayPal payment forms. Ever.
 6. **Never bypass CAPTCHA** — escalate to Brando.
 7. **Screenshot before submit on web forms** — DM the screenshot, wait for `post`.
-8. **Always notify on completion** (per Brando 2026-05-08) — on a successful Execute, emit **both**:
+8. **Notify on completion without mailbox spam** — on a successful Execute, emit:
    - **(a) Telegram reply in the originating chat** with `✅ <one-line summary> — <relevant URL>`.
-   - **(b) Email to Brando** with all 3 CCs per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26 (`brando.science@gmail.com` + `brando9@stanford.edu` + `brandojazz@gmail.com`); subject `OpenClaw: <workflow> done — <summary>`; body lists what was done + links + audit-log row.
+   - **(b) Email to Brando only when explicitly requested/tracked** per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 14: user-triggered big/mega QA or explicit "email me when done." Send to `brando.science@gmail.com` with no CC by default; subject `OpenClaw: <workflow> done — <summary>`; body lists what was done + links + audit-log row.
    - **Exception:** if the executed action was itself sending an email *to* Brando, skip (b) (circular). Telegram reply alone is sufficient.
-   - **Failure handling:** if either notification path fails, retry once, then post `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action.
+   - **Failure handling:** if a required notification path fails, retry once, then post `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action.
 
 ## Inline template (copy this when writing a new standing order)
 
@@ -107,7 +107,7 @@ Sensitive fields (full draft text, recipient phone, etc.) are NOT in the audit l
 3. **Show (OpenClaw):** <the preview format Brando sees>
 4. **Approve (Brando):** `post` / `edit:` / `tweak:` / `cancel`
 5. **Execute (OpenClaw):** <skill calls, API calls, browser automation>
-6. **Notify (OpenClaw):** Telegram reply in the originating chat (`✅ <summary> — <url>`) AND email to Brando with 3 CCs per Trigger Rule 26 (skip the email if the executed action was itself an email *to* Brando — would be circular).
+6. **Notify (OpenClaw):** Telegram reply in the originating chat (`✅ <summary> — <url>`). Email `brando.science@gmail.com` with no CC only when the workflow is explicitly tracked/requested per Trigger Rule 14.
 7. **Log (OpenClaw):** append to `~/openclaw/audit/<workflow>.jsonl`
 
 ## Outputs
