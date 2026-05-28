@@ -1,9 +1,10 @@
 # Email Signature & Defaults
 
 ## Default send address
-- **From:** brandojazz@gmail.com
-- **CC:** brando.science@gmail.com, brando9@stanford.edu, brandojazz@gmail.com (visible CC, not BCC; de-duplicate if one is already in `To`)
-- **Alias:** brando9@cs.stanford.edu is a Brando alias, but the invariant automation CC rule uses the three addresses above unless a task-specific rule says otherwise.
+- **From:** `brandojazz@gmail.com` by default for SMTP delivery unless a workflow explicitly sets a configured alias such as `brando.science@gmail.com`.
+- **Internal agent notifications to Brando:** `To: brando.science@gmail.com`, no CC by default.
+- **External emails sent on Brando's behalf:** CC `brando.science@gmail.com` for auditability; add `brando9@stanford.edu` only when a Stanford/academic record is useful; do not CC `brandojazz@gmail.com` unless Brando explicitly asks.
+- **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
 
 ## Voice rules for emails sent as Brando
 

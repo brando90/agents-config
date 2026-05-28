@@ -1,6 +1,6 @@
 # Test Task — Email Bay Area Saxophone Repair Shops re: Repad / Overhaul Quote
 
-**TLDR:** Personalized outreach emails to 4–6 Bay Area saxophone repair shops asking for a repad / overhaul quote on Brando's ~10-year-old saxophone (currently squeaking, pads almost certainly worn). Each shop gets its own email (not bulk-CC'd — they don't want to see each other's contact info). CC's all 3 Brando emails per Trigger Rule 26. Validates the multi-recipient send pattern when each recipient gets a separate email rather than a single bulk send.
+**TLDR:** Personalized outreach emails to 4–6 Bay Area saxophone repair shops asking for a repad / overhaul quote on Brando's ~10-year-old saxophone (currently squeaking, pads almost certainly worn). Each shop gets its own email (not bulk-CC'd — they don't want to see each other's contact info). CC `brando.science@gmail.com` for auditability per Trigger Rule 26. Validates the multi-recipient send pattern when each recipient gets a separate email rather than a single bulk send.
 
 ## Channel
 
@@ -21,7 +21,7 @@ Sourced from saxontheweb.net forum threads + shop pages, verified 2026-05-08:
 
 Brando picks 3–5 to email (probably skip the most premium / most distant unless spec'd in). Shops differ enough in pricing and approach that individual emails get better quotes than a bulk blast.
 
-**CC on every send (Trigger Rule 26):** `brando.science@gmail.com`, `brando9@stanford.edu`, `brandojazz@gmail.com`.
+**CC on every send (Trigger Rule 26):** `brando.science@gmail.com`; add other Brando aliases only if explicitly requested.
 
 ## Drafted message (template — agent personalizes per shop)
 
@@ -62,7 +62,7 @@ Brando picks 3–5 to email (probably skip the most premium / most distant unles
          - Best Instrument Repair <... TBD>
          - Lee's Sax Worx <... TBD>
          - <etc.>
-       CC (every email): brando.science@gmail.com, brando9@stanford.edu, brandojazz@gmail.com
+       CC (every email): brando.science@gmail.com
        Subject template: quote request — saxophone overhaul / repad on 10yr-old <SAX_MODEL>
        Body preview: <first ~200 chars>
        ---
@@ -75,7 +75,7 @@ Brando picks 3–5 to email (probably skip the most premium / most distant unles
 ## Prereqs (must be true before this can run)
 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working)
-- [x] CC-3 Trigger Rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26 ✓
+- [x] Brando email routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26
 - [ ] Brando's saxophone brand + model (e.g. "Yamaha YAS-62 alto", "Selmer Mark VI tenor") — populates the SAX_BRAND_MODEL placeholder in subject + body
 - [ ] Brando picks which 3–5 shops to email (default: Saxology + Best Instrument Repair + Anthony's Woodwind — geographically closer, mid-tier pricing band)
 - [ ] Verified email addresses for each picked shop — agent does the contact-page scrape if shop site has a contact form / email listed; otherwise prompt Brando

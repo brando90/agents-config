@@ -1,6 +1,6 @@
 # Test Task — Email Saumya re: NeurIPS Reciprocal Reviewer
 
-**TLDR:** Single email to Saumya asking her to email NeurIPS PCs to register Brando as the reciprocal reviewer for `<paper / submission TBD>`. CC's all 3 of Brando's email addresses per the global CC-3 rule. Validates Gmail send + CC-3 behavior + tone calibration on a colleague-grade email.
+**TLDR:** Single email to Saumya asking her to email NeurIPS PCs to register Brando as the reciprocal reviewer for `<paper / submission TBD>`. CCs `brando.science@gmail.com` for auditability per the current routing rule. Validates Gmail send behavior + tone calibration on a colleague-grade email.
 
 ## Channel
 
@@ -9,10 +9,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 ## Recipient
 
 - **To:** Saumya `<full email TBD by Brando>`
-- **CC:** all 3 of Brando's email addresses, per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26 ("always CC 3 emails on outbound mail"):
-  - `brando.science@gmail.com`
-  - `brando9@stanford.edu`
-  - `brandojazz@gmail.com`
+- **CC:** `brando.science@gmail.com`, per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26. Add `brando9@stanford.edu` or `brandojazz@gmail.com` only if Brando explicitly asks.
 
 ## Drafted message
 
@@ -43,7 +40,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working — already working on the Air)
 - [ ] Saumya's full email captured (Brando provides, ideally added to a contacts roster file)
 - [ ] Paper ID / submission identifier confirmed (which paper is this for?)
-- [ ] CC-3 Trigger Rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) (so the agent knows the CC list is canonical, not just for this task)
+- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) (so the agent knows the CC behavior is canonical, not just for this task)
 
 ## Open questions
 
@@ -54,7 +51,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 ## What this test validates
 
 - `gog gmail send` end-to-end with CC field populated
-- The global CC-3 rule (Trigger Rule 26) is followed in practice — verify all 3 Brando addresses appear in CC line
+- The Brando routing rule (Trigger Rule 26) is followed in practice — verify `brando.science@gmail.com` appears in CC and personal email does not unless explicitly requested
 - Tone calibration on a colleague-grade email (more formal than the Sri DM, less formal than admin reply)
 - Single-channel send approval flow (vs. multi-channel like the workhackathon nudge)
 
@@ -62,4 +59,4 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 
 | Date       | Status                                                                                                  |
 | ---------- | ------------------------------------------------------------------------------------------------------- |
-| 2026-05-08 | Drafted. Blocked on Saumya's email + paper ID. CC-3 rule needs to land in INDEX_RULES.md first.        |
+| 2026-05-08 | Drafted. Blocked on Saumya's email + paper ID. Brando routing rule now lives in INDEX_RULES.md.        |

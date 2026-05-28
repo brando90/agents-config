@@ -103,11 +103,11 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
   - `se_posts.jsonl`, `grants_drafted.jsonl`, `grants_filled.jsonl`
   - `social_posts.jsonl` (FB + IG + mailing list)
   - `experiments_dispatched.jsonl`, `paper_announcements.jsonl`
-- **Completion notifications (mandatory, per Brando 2026-05-08)** — every successfully executed task (anything that went through a `post` approval) ends with **two** notifications, in this order:
+- **Completion notifications** — every successfully executed task (anything that went through a `post` approval) gets a Telegram receipt; email is optional and only for explicitly tracked workflows:
   1. **Telegram reply in the originating chat** — the same DM thread where Brando issued / approved the task. One-line summary + relevant URLs (sent-message link, FB event URL, PR URL, etc.). E.g. `✅ sent reply to registrar@stanford.edu — gmail.com/threads/<id>`. This is the *primary* signal because it ties the result to the conversation.
-  2. **Email to Brando** — with all 3 CCs per [`INDEX_RULES.md`](../../INDEX_RULES.md) Trigger Rule 26 (`brando.science@gmail.com` + `brando9@stanford.edu` + `brandojazz@gmail.com`). Subject: `OpenClaw: <workflow> done — <one-line summary>`. Body: what was done, links, audit-log entry. This is the durable record so a muted Telegram never causes Brando to lose a task.
+  2. **Optional email to Brando** — only when Brando explicitly asked for email/notification/tracking per [`INDEX_RULES.md`](../../INDEX_RULES.md) Trigger Rule 14. Send to `brando.science@gmail.com` with no CC by default per Trigger Rule 26. Subject: `OpenClaw: <workflow> done — <one-line summary>`. Body: what was done, links, audit-log entry.
   - **Exception:** if the executed action was itself sending an email *to* Brando (e.g. email-triage replied to a sender on his behalf), skip step 2 (would be circular) and rely on the Telegram reply + the Sent folder + the `triaged-by-claw` Gmail label as the audit trail.
-  - **Failure mode:** if either notification path fails (Telegram down, Gmail API auth lapsed), retry once and then DM `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action — it's already done; the audit trail is the recovery path.
+  - **Failure mode:** if the required notification path fails (Telegram down, or Gmail only when email tracking was explicitly requested), retry once and then DM `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action — it's already done; the audit trail is the recovery path.
 - **Cross-instance audit aggregation** — deferred to Phase 6 (weekly summary report DM'd to Brando).
 
 ---
@@ -777,7 +777,7 @@ If a step fails, check §A.6 Gotchas before retrying — most failures are docum
 - [ ] **A.0.6** Telegram channel (§A.4, ~5 min) — `@BotFather` → bot per host (`ultimate_brando9_<host>_bot`) → token to `~/keys/` → `openclaw channels add` → `/start` from phone → approve pairing code.
 - [ ] **A.0.7** Create private `openclaw-ops` Telegram channel; add the bot as admin. Heartbeats land here.
 - [ ] **A.0.8** Google Workspace via `gog` skill (§A.5, ~3 min + 2 min API enables) — `brew install gogcli`, `gog auth credentials set`, `gog auth add`, enable 8 APIs in GCP, smoke test, `openclaw skills info gog` shows ✓ Ready.
-- [ ] **A.0.9** First DM the bot — *"send an email to brandojazz@gmail.com saying hi from openclaw"*. Should land in your inbox in ~10 s. If it doesn't, see §A.8.
+- [ ] **A.0.9** First DM the bot — *"send an email to brando.science@gmail.com saying hi from openclaw"*. Should land in the science inbox in ~10 s. If it doesn't, see §A.8.
 - [ ] **A.0.10** Populate `config/admin-filter.txt` with 3–8 sender patterns and run the Phase 1.6 E2E real-email triage test (§6).
 
 **Time on a fresh machine:** ~30–45 min Brando-time (mostly waiting on browser OAuth + GCP API enables). Re-runs on additional hosts are faster (~15 min) once you know where the prompts come from.
@@ -988,7 +988,7 @@ Agents picking this experiment up cold should re-read `~/agents-config/INDEX_RUL
 - **Refresh agents-config** (`git -C ~/agents-config pull`) and re-read `INDEX_RULES.md` (Hard Rule #5).
 - **Never commit secrets.** Tokens live in `~/keys/`, mode 600 (Hard Rule #1).
 - **Run QA** before reporting any non-trivial milestone done (Hard Rule #3).
-- **Email Brando** at `brando.science@gmail.com` (CC `brando9@stanford.edu` + `brandojazz@gmail.com`) when each phase completes — counts as a "big task" (Hard Rule #13). Per Trigger Rule 26: always CC all 3 of Brando's emails on outbound mail.
+- **Email Brando** at `brando.science@gmail.com` with no CC only when Brando explicitly requested email/notification/tracking for that phase per Trigger Rules 14 and 26. Routine phase/checkpoint updates should stay in chat/Telegram.
 - **Dual TLDR** on every response (Hard Rule #4).
 - **Q&A leads with `**A (TLDR):**`** before detail (Trigger Rule 27).
 - **Just-do-it** (Guideline #14) — but for OpenClaw, **stop and ask** before any of these:
@@ -1089,6 +1089,6 @@ Concrete real-world inputs to validate pipelines as standing orders ship:
   - **Verified Stanford 2026 calendar:** spring quarter ends Wed Jun 10, commencement Sun Jun 14, summer quarter Mon Jun 22 → Sat Aug 15 ([source](https://studentservices.stanford.edu/calendar-events/academic-calendars/stanford-academic-calendar-2025-2026)).
   - **Status:** spec'd, blocked on `travel_search.md` going live.
 
-- Other concrete validation inputs live in [`test_tasks/`](./test_tasks/) — `dm_sri_agent_flex.md` (Discord DM test) and `email_saumya_neurips.md` (Gmail send + CC-3-emails rule test).
+- Other concrete validation inputs live in [`test_tasks/`](./test_tasks/) — `dm_sri_agent_flex.md` (Discord DM test) and `email_saumya_neurips.md` (Gmail send + Brando routing rule test).
 
 These are tracked here; they're not on the Phase 0–6 critical path.

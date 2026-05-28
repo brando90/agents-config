@@ -33,7 +33,7 @@ Loose by design — these are throwaway-ish — but include at minimum:
 ## Current entries
 
 - [`dm_sri_agent_flex.md`](./dm_sri_agent_flex.md) — first playful Discord DM from the agent to Sri ("this is brando's agent ;)"); validates Discord bridge + tone.
-- [`email_saumya_neurips.md`](./email_saumya_neurips.md) — single email to Saumya asking her to register Brando as a NeurIPS reciprocal reviewer; validates Gmail send + CC-3 rule.
+- [`email_saumya_neurips.md`](./email_saumya_neurips.md) — single email to Saumya asking her to register Brando as a NeurIPS reciprocal reviewer; validates Gmail send + Brando routing rule.
 
 ## Why this dir exists at all
 
@@ -41,4 +41,4 @@ The standing-orders template assumes **recurring** workflows. One-off requests d
 
 - They survive session boundaries.
 - They're greppable when a similar pattern shows up again ("we did this once for Sri, what did we say?").
-- They serve as concrete first-uses for new capabilities (the Sri DM is the first multi-host Discord test; the Saumya email is the first cross-recipient CC-3 send).
+- They serve as concrete first-uses for new capabilities (the Sri DM is the first multi-host Discord test; the Saumya email is the first cross-recipient Brando-routing send).

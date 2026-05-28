@@ -1,6 +1,6 @@
 # Test Task — Email Alex Aiken's PhD Students re: Verifying Agent-Generated Semantics for VeriVeribench
 
-**TLDR:** Single outreach email from Brando to Alex Aiken's current PhD students (Stanford formal-methods / PL group) asking how to verify the correctness of formal semantics that an agent generates — for the VeriVeribench project. CC's all 3 of Brando's emails per Trigger Rule 26 + Stepan Nesterov (Stanford AI for Lean / `aiforlean.org`) since this is his expertise area. Validates Gmail bulk-send to multiple TO recipients with a non-trivial CC list.
+**TLDR:** Single outreach email from Brando to Alex Aiken's current PhD students (Stanford formal-methods / PL group) asking how to verify the correctness of formal semantics that an agent generates — for the VeriVeribench project. CCs `brando.science@gmail.com` per Trigger Rule 26 + Stepan Nesterov (Stanford AI for Lean / `aiforlean.org`) since this is his expertise area. Validates Gmail bulk-send to multiple TO recipients with a non-trivial CC list.
 
 ## Channel
 
@@ -10,10 +10,7 @@ Email only (no Discord, no Telegram channel post). Outbound is `gog gmail send`.
 
 - **TO:** Alex Aiken's current PhD students at Stanford. List TBD — populate from Aiken's lab page ([https://theory.stanford.edu/~aiken/](https://theory.stanford.edu/~aiken/) or current Stanford CS faculty page). Likely include current students working on FM / PL / SAT / verification (names redacted here until Brando confirms the list — common names from Aiken's lineage tend to be 4–8 active PhD students at any time).
 - **CC:** Stepan Nesterov (Stanford AI for Lean) — email TBD; likely on `aiforlean.org` mailing list or via Stanford CS directory. Brando wrote his handle as "neserov55" then clarified "stepan from the lean ai club".
-- **CC (Trigger Rule 26):** all 3 of Brando's email addresses:
-  - `brando.science@gmail.com`
-  - `brando9@stanford.edu`
-  - `brandojazz@gmail.com`
+- **CC (Trigger Rule 26):** `brando.science@gmail.com`; add other Brando aliases only if explicitly requested.
 
 > **Note on bulk-send safety:** if the resolved TO list is > 3 recipients, this triggers `confirm-bulk` per the [`standing_orders/README.md`](../standing_orders/README.md) default safety rules — Brando confirms the full recipient list before send.
 
@@ -45,7 +42,7 @@ Email only (no Discord, no Telegram channel post). Outbound is `gog gmail send`.
 
        📬 [test-aiken-veriveribench] Email — bulk send (N recipients)
        TO: <comma-separated list of Aiken students>
-       CC: stepan@<...>, brando.science@gmail.com, brando9@stanford.edu, brandojazz@gmail.com
+       CC: stepan@<...>, brando.science@gmail.com
        Subject: verifying agent-generated semantics — quick question for aiken students (re: VeriVeribench)
        ---
        <body>
@@ -60,7 +57,7 @@ Email only (no Discord, no Telegram channel post). Outbound is `gog gmail send`.
 ## Prereqs (must be true before this can run)
 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working)
-- [x] CC-3 Trigger Rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26 ✓ (committed 2026-05-08)
+- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26
 - [ ] Alex Aiken's current PhD student list resolved (Brando provides, OR Claude looks up from `theory.stanford.edu/~aiken/` if asked)
 - [ ] Stepan Nesterov's email resolved (Brando provides; check Stanford CS directory or `aiforlean.org` member list)
 - [ ] VeriVeribench project name confirmed — is it "VeriBench" (existing benchmark) or "VeriVeribench" (typo or distinct project)?
@@ -77,7 +74,7 @@ Email only (no Discord, no Telegram channel post). Outbound is `gog gmail send`.
 ## What this test validates
 
 - Bulk-send approval flow with `confirm-bulk` token (first real test of the >3-recipient threshold)
-- Multi-CC composition: Trigger Rule 26 (3 brando addrs) + named external CC (Stepan) all in one email
+- Multi-CC composition: Trigger Rule 26 (`brando.science@gmail.com`) + named external CC (Stepan) all in one email
 - `gog gmail send --to "list" --cc "list"` syntax with non-trivial recipient lists
 - Tone calibration on a colleague-grade outreach to people Brando may not know personally (different from the Saumya email which is to a known close colleague)
 - Evidence the audit log captures bulk sends correctly (who got it, when, message ID)
@@ -90,4 +87,4 @@ The question itself ("how to verify agent-generated semantics") is a real resear
 
 | Date       | Status                                                                                                                                                                                          |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-05-08 | Drafted. Blocked on: Aiken student list (Brando provides or Claude scrapes lab page on Brando's word), Stepan's email, VeriVeribench name confirmation. CC-3 Trigger Rule already in place ✓. |
+| 2026-05-08 | Drafted. Blocked on: Aiken student list (Brando provides or Claude scrapes lab page on Brando's word), Stepan's email, VeriVeribench name confirmation. Brando routing rule already in place. |

@@ -73,7 +73,7 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
    i. If Brando doesn't reply within 30 min, remove your claim label (so
       another instance can re-pick on next loop) and move on. Do not nag.
 
-3. COMPLETION NOTIFICATION (mandatory, per Brando 2026-05-08):
+3. COMPLETION NOTIFICATION:
    After a successful gmail.send (i.e. the reply was actually sent on
    Brando's behalf), emit the completion notifications below before moving on:
 
@@ -83,19 +83,17 @@ Every 90 seconds (or when poked by a Telegram message from Brando):
       Keep it one line. The Telegram reply is the primary signal because
       it ties the result to the conversation thread.
 
-   b. Email Brando a completion summary when the task is a substantial
-      OpenClaw workflow or could otherwise be lost after the chat scrolls.
-      For simple one-message email replies, the Sent folder + the
-      "triaged-by-claw" Gmail label + the Telegram reply (a) are enough.
-      For multi-step provider/admin tasks, experiments, grant fills, FB event
-      posts, /paper, /social, or any task Brando explicitly asks to track,
-      send the completion email.
+   b. Email Brando a completion summary only when Brando explicitly asks for
+      email tracking, or when the task is a user-triggered big/mega QA. For
+      simple one-message email
+      replies, ordinary provider/admin tasks, routine paper edits, grant fills,
+      FB event posts, /paper, /social, and normal QA, the Sent folder + labels +
+      Telegram reply (a) are enough unless Brando asked for email.
 
-      For OTHER workflows that are not simple one-message email replies (e.g.
-      /experiment, grant fill, FB event post, /paper, /social, etc.), the
-      standing order's spec MUST include step (b): email
-      brando.science@gmail.com, CC brando9@stanford.edu and
-      brandojazz@gmail.com (per INDEX_RULES.md Trigger Rule 26), subject
+      For workflows that explicitly require email tracking, the standing
+      order's spec MUST include step (b): email
+      brando.science@gmail.com with no CC by default (per
+      INDEX_RULES.md Trigger Rule 26), subject
       "OpenClaw: <workflow> done — <summary>", body listing what was done +
       links + audit-log row.
 

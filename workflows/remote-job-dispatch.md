@@ -5,10 +5,11 @@ cluster node you are not currently sitting on: (1) direct SSH,
 (2) DFS-watcher dispatch (drop a file, the watcher runs it),
 (3) phone-side dispatch via the OpenClaw gateway. All three share
 the same **smart-mode agent wrapper** (`smart-job-agent-prompt.md`):
-diagnose failures → retry up to 3× → email `STARTING` + `PASS`/`FAIL`.
+diagnose failures → retry up to 3× → optionally email final `PASS`/`FAIL`
+only for explicitly tracked jobs.
 Pick the path that matches your starting context.
 
-Three ways to run a job on a SNAP cluster node that isn't the one you're sitting on. All three share the same **smart-mode agent wrapper** from [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md): diagnose failures → retry up to 3× → email STARTING + PASS/FAIL. Pick the path that matches your starting context.
+Three ways to run a job on a SNAP cluster node that isn't the one you're sitting on. All three share the same **smart-mode agent wrapper** from [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md): diagnose failures → retry up to 3× → optionally email final PASS/FAIL only for explicitly tracked jobs. Pick the path that matches your starting context.
 
 ---
 
@@ -33,7 +34,7 @@ Three ways to run a job on a SNAP cluster node that isn't the one you're sitting
 | Visibility during run | `ssh <node> "tmux attach -t <session>"` | `tail -f ~/dfs/job_queue/logs/<job>.log` | same as watcher (it's the second stage) |
 | Latency from submit → running | seconds | seconds (watcher poll = 15 s) | ~30 s (git pull interval) + watcher poll |
 | Smart-mode agent wrapping | yes, same prompt | yes | yes |
-| Emails (start + end) | yes | yes (via agent) | yes |
+| Emails | optional final email only for explicitly tracked jobs | optional final email only for explicitly tracked jobs | optional final email only for explicitly tracked jobs |
 | Audit trail | tmux history + log file | `completed/` + `failed/` dirs on DFS | git history + DFS dirs |
 | Best for | "Launch this now on that node, I'll watch" | "Queue many jobs, let them drain" | "I'm on my phone and want to dispatch" |
 | Main limitation | you must choose a node up front | requires daemon to be alive | requires poller + private git repo |
@@ -50,14 +51,14 @@ Fast path for "I'm on node A, I want this running on node B within seconds."
 
 ```bash
 ~/agents-config/scripts/ssh-submit.sh --node skampere2 --job ~/path/to/job.sh
-# defaults: smart mode, tmux session prefix ssh_job_, email brando.science@gmail.com
+# defaults: smart mode, tmux session prefix ssh_job_; email only if --notify-email is set
 ```
 
 The launcher:
 1. `scp`s the job into `~/dfs/ssh_job_queue/<timestamp>__<name>/` on the target.
 2. Reads [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md), substitutes placeholders.
 3. `ssh <node> "tmux new -d -s <session> 'clauded -p <prompt>'"`.
-4. Returns immediately. You get a STARTING email within ~1 min, PASS/FAIL at end.
+4. Returns immediately. Watch live with `tmux attach`; if `--notify-email` was set for an explicitly tracked job, you get one final PASS/FAIL email at the end.
 
 ### Options
 
@@ -104,7 +105,7 @@ python -m uutils.job_scheduler_uu.scheduler --poll 15 --max-concurrent 4
 
 Attach / kill: `tmux attach -t job_watcher` / `tmux kill-session -t job_watcher`
 
-The daemon emails `brando.science@gmail.com` on start, stop (Ctrl-C), and crash.
+The daemon logs start, stop (Ctrl-C), and crash events. Email `brando.science@gmail.com` only when the watcher/job was explicitly configured as a tracked task.
 
 ### Submit a job
 
@@ -176,9 +177,9 @@ The watcher uses `os.link()` not `os.rename()`. `rename()` is *not* reliably ato
 
 ### Key details
 
-- **Smart mode default.** Agent wraps, retries, emails. Override via `--default-mode direct` or per-job header.
+- **Smart mode default.** Agent wraps and retries. Final email is optional only for explicitly tracked jobs. Override via `--default-mode direct` or per-job header.
 - **Agent priority:** `clauded -p` > `codex exec --full-auto` > `claude -p --dangerously-skip-permissions`. All bypass permission prompts — it's a daemon.
-- **Daemon lifecycle emails** on start, stop, crash.
+- **Daemon lifecycle logs** on start, stop, crash; email only when explicitly configured for a tracked job.
 - **GPU-idle kill:** default 4 h of ≤1 % GPU util → kill. `--gpu-idle-timeout` seconds (0 = disable), `--gpu-idle-threshold` (default 1.0).
 - **Wall-clock safety net:** default 48 h hard timeout. `--timeout`.
 - **Env inheritance.** Subprocess inherits the host env (`CUDA_VISIBLE_DEVICES`, API keys, etc.).
@@ -224,9 +225,9 @@ If `last_heartbeat` is more than ~3× the poll interval old, restart it.
 
 Open claude.ai (mobile or web) in a context where `gh` works (most Anthropic cloud envs have it). Tell Claude:
 
-> "Clone my agents-config repo, add a job file to `jobs-inbox/pending/<name>.sh` that does X, commit and push. Cluster poller will pick it up within 30 s and email me when it finishes. Repo: https://github.com/brando90/agents-config"
+> "Clone my agents-config repo, add a job file to `jobs-inbox/pending/<name>.sh` that does X, commit and push. Cluster poller will pick it up within 30 s. Email `brando.science@gmail.com` only if this is an explicitly tracked job. Repo: https://github.com/brando90/agents-config"
 
-Claude writes the script, commits, pushes. Poller fetches, dispatches. Watcher runs. You get STARTING + PASS/FAIL emails — same as the other two paths.
+Claude writes the script, commits, pushes. Poller fetches, dispatches. Watcher runs. You inspect status from the queue/logs; explicitly tracked jobs may send one final PASS/FAIL email.
 
 ### Writing an inbox job
 
@@ -236,9 +237,8 @@ Claude writes the script, commits, pushes. Poller fetches, dispatches. Watcher r
 # Descriptive comment.
 set -euo pipefail
 
-# Load keys exactly as you would on the cluster:
-export ANTHROPIC_API_KEY=$(cat ~/keys/anthropic_bm_key_koyejolab.txt | tr -d '[:space:]')
 cd ~/veribench
+# Route LLM work through local CLIs per INDEX_RULES.md Hard Rule 9.
 bash my_experiment.sh
 ```
 
@@ -288,8 +288,8 @@ ls -lt ~/dfs/job_queue/watchers/
 
 **Why three paths, not one?** Different submitter contexts have different primitives available. SSH needs Kerberos/keys. DFS write needs a logged-in session. Git push needs only HTTPS. The three paths cover the full range from "I'm at a terminal" to "I'm on my phone."
 
-**Why reuse the smart-mode prompt across all three?** Agent retry/diagnose + email notification is useful in every path. Duplicating the prompt would mean fixing every bug three times. See [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md) for the single source of truth.
+**Why reuse the smart-mode prompt across all three?** Agent retry/diagnose behavior is useful in every path. Duplicating the prompt would mean fixing every bug three times. See [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md) for the single source of truth.
 
-**Why default to smart mode?** Jobs on a remote node are invisible otherwise. Silent failures + missing email = "where did my experiment go?" Smart mode + STARTING + PASS/FAIL email makes the remote dispatch feel like a local run that pings you.
+**Why default to smart mode?** Jobs on a remote node are invisible otherwise. Smart mode gives diagnosis/retry and leaves logs; email is reserved for final status on explicitly tracked jobs.
 
 **Why `~/dfs/ssh_job_queue/` instead of reusing `~/dfs/job_queue/` for SSH?** Keeps SSH-launched jobs out of the watcher's queue dirs (avoiding accidental double-pickup by the watcher). SSH jobs are already running — putting them in `pending/` would be wrong; putting them in `running/` would confuse the watcher's filename convention.

@@ -3,14 +3,14 @@
 #
 # Launches a job on a remote SNAP node in a detached tmux session. The job is
 # wrapped in an AI coding agent (clauded/codex/claude) that diagnoses failures,
-# retries up to 3 times, and emails PASS/FAIL results — same semantics as the
-# DFS watcher daemon's smart mode.
+# retries up to 3 times. Final PASS/FAIL email is optional and only sent when
+# --notify-email is provided for an explicitly tracked job.
 #
 # The agent prompt lives in ~/agents-config/workflows/smart-job-agent-prompt.md
 # (shared with the watcher). Keep it there, not here.
 #
 # Usage:
-#   ssh-submit.sh --node <host> --job <path> [--name <str>] [--direct] [--tmux-prefix <str>]
+#   ssh-submit.sh --node <host> --job <path> [--name <str>] [--direct] [--tmux-prefix <str>] [--notify-email <addr>]
 #
 # Examples:
 #   # Fire-and-forget, smart mode (default):
@@ -30,7 +30,8 @@
 #   - ~/agents-config/ cloned at /dfs/scratch0/$USER/agents-config (standard SNAP layout).
 #
 # Returns immediately after ssh-spawn; does NOT wait for the job.
-# You will receive TWO emails per job: STARTING (within seconds) and PASS/FAIL (at end).
+# No email is sent by default. Use --notify-email brando.science@gmail.com only
+# for explicitly tracked jobs.
 #
 # For live visibility: `ssh <node> "tmux attach -t <prefix>_<name>_<stamp>"`
 # To list active jobs on a node:    `ssh <node> "tmux ls | grep <prefix>_"`
@@ -48,8 +49,8 @@ JOB=""
 NAME=""
 MODE="smart"          # smart | direct
 TMUX_PREFIX="ssh_job"
-NOTIFY_EMAIL="brando.science@gmail.com"
-NOTIFY_CC="brando9@stanford.edu"
+NOTIFY_EMAIL=""
+NOTIFY_CC=""
 
 # ── arg parse ────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -198,7 +199,7 @@ cd "$REMOTE_STAGE_DIR"
 PROMPT="\$(cat "$REMOTE_PROMPT_FILE")"
 case "\${AGENT:-}" in
     clauded) exec clauded -p "\$PROMPT" ;;
-    codex)   exec codex exec --full-auto "\$PROMPT" ;;
+    codex)   exec codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "\$PROMPT" ;;
     claude)  exec claude -p --dangerously-skip-permissions "\$PROMPT" ;;
     *)       echo "agent_runner: unknown AGENT=\${AGENT:-<unset>}" >&2; exit 2 ;;
 esac
@@ -247,4 +248,8 @@ ssh "$NODE" "bash \"$REMOTE_LAUNCHER\""
 echo "[ssh-submit] dispatched."
 echo "[ssh-submit] attach:  ssh $NODE \"tmux attach -t $SESSION\""
 echo "[ssh-submit] sessions: ssh $NODE \"tmux ls | grep ^${TMUX_PREFIX}_\""
-echo "[ssh-submit] expect email from $NOTIFY_EMAIL within ~1 min (STARTING) and on finish (PASS|FAIL)."
+if [[ -n "$NOTIFY_EMAIL" ]]; then
+    echo "[ssh-submit] final PASS/FAIL email enabled for: $NOTIFY_EMAIL"
+else
+    echo "[ssh-submit] email disabled; monitor via tmux/logs."
+fi
