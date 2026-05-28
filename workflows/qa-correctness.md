@@ -1,16 +1,12 @@
-# Workflow: QA — Cross-Agent Review
+# Workflow: QA — Proportionate Review
 
-**TLDR:** Whenever an agent (`A1`) finishes building/changing code,
-dispatch a different agent (`A2`) to do full correctness + structural QA
-**and fix what it finds**. Fallback chain: Codex → Gemini CLI → self-review
-with best model (or CC → Gemini CLI → self-review with best model, if
-Codex built). Run before opening any non-trivial PR.
+**TLDR:** QA is mandatory for non-trivial work, but model-reviewer dispatch is not. Use deterministic checks for routine prose/docs, one independent reviewer for code/behavior or claim/result risk, and Mega QA only when explicitly requested.
 
-> **Design: A1 builds → A2 does full QA.** The builder dispatches one independent reviewer for full QA (correctness + structural). The reviewer finds AND fixes issues. Fallback: Codex → Gemini CLI → self-review with best model (or CC → Gemini CLI → self-review with best model, if Codex built).
+> **Design: A1 builds → appropriate QA tier.** The builder picks the lightest tier that covers the risk. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
 
 ## Hard Rule: CLI-only, no API keys
 
-**QA ALWAYS runs through the locally-logged-in CLIs: `codex`, `claude` / `clauded`, `gemini`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth / `~/.gemini/settings.json`). They are what Brando has logged into and pays for.
+**Any model QA dispatch ALWAYS runs through the locally-logged-in CLIs: `codex`, `claude` / `clauded`, `gemini`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth / `~/.gemini/settings.json`). They are what Brando has logged into and pays for.
 
 **Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an auth error ("set GEMINI_API_KEY", "no credentials"), treat it as a **local setup issue**: skip that stage, note the skip in the QA report, and suggest the user re-run the CLI's interactive login (`gemini`, `codex login`, `claude login`). Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
 
@@ -19,31 +15,46 @@ Fallback order when a CLI stage fails:
 2. Self-dispatch with the current CLI (repeat the stage).
 3. Never use API keys.
 
-This applies to default QA, Mega QA, and any downstream workflow that dispatches a reviewer.
+This applies to any workflow that dispatches a reviewer.
 
 ---
 
-## Default Behavior
+## QA Tiers
 
-**After completing your task, dispatch one independent reviewer before reporting done.**
+**Pick the QA tier before reporting done.** The goal is enough verification, not maximum agent traffic.
 
-This is the default, not opt-in. Every agent that finishes work should dispatch
-a reviewer. An independent model catches mistakes the builder is blind to — so
-the human doesn't have to manually review everything.
+### Tier 0 — trivial
 
-The reviewer handles both correctness (logic errors, edge cases, broken behavior)
-and structural quality (god functions, duplication, anti-patterns) in a single
-pass. On repos with substantial source code, the reviewer also runs the
-structural checks defined in
-[`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On
-markdown-only or config-only repos, the reviewer skips structural checks.
+Use for typo fixes, comment-only edits, one-line formatting fixes, or no-op file moves. Review the diff and stop.
 
-Skip review ONLY for trivial changes (typo fixes, comment edits, single-line
-config changes).
+### Tier 1 — lightweight deterministic QA
 
----
+Use for routine prose polish, paper wording edits, README/doc edits, markdown-only logs, and small config-doc updates that do not change behavior or shared policy.
+
+Required checks:
+- Self-review the diff against the user's request.
+- Run `git diff --check`.
+- Run the relevant deterministic check: LaTeX compile/render for `.tex`, link/path grep for docs, targeted grep for banned/risky phrases, or formatting/lint checks if available.
+
+Do not dispatch a fallback model reviewer for Tier 1 just because another reviewer stalled. If a previous model QA stalls during routine writing polish, kill it, record that it was skipped, and finish with deterministic checks.
+
+### Tier 2 — independent reviewer QA
+
+Use when changes affect code behavior, scripts, infra/auth, packaging/deployment, data/results, experiments, generated artifacts, nontrivial shared workflows/rules, or paper claims/numbers/tables/citations/experimental conclusions. Also use Tier 2 when the agent is uncertain about scientific or behavioral correctness.
+
+For Tier 2, dispatch one independent reviewer before reporting done. The reviewer handles correctness (logic errors, edge cases, broken behavior, inconsistencies with project docs) and structural quality in a single pass. On repos with substantial source code, the reviewer also runs the structural checks defined in [`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On markdown-only or config-only repos, structural checks are skipped, but correctness and consistency review still apply.
+
+### Tier 3 — Mega QA
+
+Use only when the user says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. Run the sequential multi-model chain in the Mega QA section.
+
+### Paper-writing rule of thumb
+
+Routine wording/style edits are Tier 1. Escalate to Tier 2 only if the edit changes a factual claim, headline framing, theorem/proof status, dataset/result number, citation support, table/figure content, or final/pre-submission readiness. Uncertainty about taste stays Tier 1; uncertainty about truth goes Tier 2.
 
 ## How to Dispatch
+
+Use this section only for Tier 2 or Tier 3. Tier 1 uses deterministic checks, not model dispatch.
 
 ### Step 1: Define the review prompt
 
@@ -100,14 +111,9 @@ Claude Code as an unattended reviewer; run the same prompt in interactive
 
 ### Single-model fallback
 
-If only one model is available (e.g., only Claude Code on Anthropic's default
-environment, or only Codex in an OpenAI sandbox), the agent should still run QA
-by dispatching **itself** with the QA prompt. Self-review with the best available
-model/reasoning mode (e.g., extended thinking, Opus) is always better than no
-review. In unattended environments, the fallback chain handles this
-automatically — the last option in the `||` chain is always self-dispatch. If
-Claude Code must run interactively, use the same QA prompt in `claude` for the
-self-review round instead.
+For Tier 2, if only one model is available (e.g., only Claude Code on Anthropic's default environment, or only Codex in an OpenAI sandbox), the agent should still run QA by dispatching **itself** with the QA prompt. In unattended environments, the fallback chain handles this automatically — the last option in the `||` chain is always self-dispatch. If Claude Code must run interactively, use the same QA prompt in `claude` for the self-review round instead.
+
+Do not use single-model fallback to turn Tier 1 writing polish into model QA. Tier 1 already includes self-review plus deterministic checks.
 
 ---
 

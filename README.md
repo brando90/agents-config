@@ -53,7 +53,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
 
-**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, QA gating, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, proportionate QA, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
@@ -107,7 +107,7 @@ agents-config/
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
 ├── workflows/                   ← Layer 3: reusable workflows (loaded on demand)
-│   ├── qa-correctness.md        ← cross-agent QA review (correctness + structural)
+│   ├── qa-correctness.md        ← proportionate QA tiers (deterministic checks, reviewer QA, Mega QA)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox
@@ -678,7 +678,7 @@ Read through your old CLAUDE.md and sort each section into one of these buckets:
 | Bucket | Where it goes | Examples |
 |:-------|:-------------|:---------|
 | **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
-| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (QA gating, worktrees), global rules (no secrets, verify before push) |
+| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (proportionate QA, worktrees), global rules (no secrets, verify before push) |
 | **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
 | **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
 
