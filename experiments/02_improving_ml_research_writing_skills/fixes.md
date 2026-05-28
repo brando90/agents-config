@@ -2,7 +2,7 @@
 
 **TLDR:** Iterative log of veribench-paper writing fixes promoted to general agents-config rules under `writing/ml_research/` and `INDEX_RULES.md`. Each round records: the original critique surfaced from a writing model's feedback → the general principle extracted → where the codified rule now lives. Companion to `agents.md` (raw user prompts).
 
-**Status (2026-05-08):** Round 1 is the only in-scope round so far. No new ML-research-writing changes have landed since `fc5f13b`. Adjacent ac work (out-of-scope for this experiment) is summarized in `## Adjacent ac changes` at the bottom.
+**Status (2026-05-28):** Rounds 1–2 in scope. Round 2 adds antipatterns #11–14 (deepity, rhetorical register, em-dash/colon mechanics, micro-brevity) from abstract-polishing feedback. Adjacent ac work (out-of-scope for this experiment) is summarized in `## Adjacent ac changes` at the bottom.
 
 ---
 
@@ -95,6 +95,78 @@ Pushed to `brando90/agents-config@main`.
 ### QA
 
 Self-review only (markdown-only, additive doc edits, single-reviewer dispatch skipped per Hard Rule 3: "structural checks are skipped for markdown-only repos"). Verified: all path references migrated (grep clean), Trigger Rule numbering correct (24 follows 23), antipattern numbering correct (7–10 follow 6), cross-references resolve.
+
+---
+
+## Round 2 — 2026-05-28 (claude.ai abstract-polishing session)
+
+### Source
+
+A claude.ai chat session polishing the VeriBench NeurIPS-2026 abstract (`paper_latex/NeurIPS_2026_VeriBench/00_abstract.tex`) for arXiv, plus a follow-up Brando note before committing the rule update. Four issues surfaced, none caught by Round 1's antipatterns (#1–10):
+
+1. **Empty-but-fancy phrasing** — "preserving partial-credit signal among sub-frontier systems." Brando flagged "sub-frontier systems" as a *deepity* (Dennett): sounds deep, says little.
+
+2. **Register** — "We argue that ... benchmarks must be X ... and must aggregate ... conjunctively" reads like a position paper; is that appropriate for a datasets/benchmarks or main-track submission?
+
+3. **Mechanics** — the opening sentence had a dangling em-dash, a colon whose unpacking attached to the wrong noun, and a "finite testing / finite test suites" repetition.
+
+4. **Micro-brevity** — "\textsc{VeriBench} instantiates this setting as ..." was active but still wordier than needed; "instantiates this via ..." carries the same relation with fewer frame words.
+
+### Takeaway → codified rule mapping
+
+#### Takeaway 1 — Deepity / empty evocative jargon
+
+Cut evocative phrases that don't survive a plain paraphrase; ban capability-ranking marketing shorthand ("frontier" / "sub-frontier").
+
+**Codified at:**
+
+- `writing/ml_research/ml_research_writing.md` § Sentence-Level Prose Discipline **#11**
+- "Plain-paraphrase" row added to the self-edit checklist
+- "frontier" / "sub-frontier" added to § Scientific Rigor **#7** no-hype list
+
+**Example:** ✗ "preserving partial-credit signal among sub-frontier systems" → ✓ "while partial progress still earns partial credit."
+
+#### Takeaway 2 — Rhetorical register: prescription vs. contribution
+
+Normative "the field must X" framing is position-paper register; in a benchmarks / main-track paper, carry it as design rationale or as a descriptive fact about the domain. A universal "must" from one artifact is over-extrapolation (Scientific Rigor #4).
+
+**Codified at:** `writing/ml_research/ml_research_writing.md` § Sentence-Level Prose Discipline **#12**.
+
+**Example:** ✗ "We argue that ... benchmarks must be ... agentic ... and must aggregate ... conjunctively" → ✓ "Verification is conjunctive by nature ... \textsc{VeriBench} therefore scores the full pipeline with a geometric mean ..."
+
+#### Takeaway 3 — Em-dash and colon mechanics
+
+Close em-dash pairs; a colon binds its unpacking to the nearest preceding noun phrase — restructure if the intended referent is the whole clause.
+
+**Codified at:** `writing/ml_research/ml_research_writing.md` § Sentence-Level Prose Discipline **#13**. The "name-then-restate" sub-point ("finite testing / finite test suites") is already covered by #6 (de-nominalize) + #11; no separate rule added.
+
+#### Takeaway 4 — Micro-brevity after active voice
+
+Active voice is necessary but not sufficient; after pinning the agent, cut low-content frame nouns and preposition chains.
+
+**Codified at:**
+
+- `writing/ml_research/ml_research_writing.md` § Sentence-Level Prose Discipline **#14**
+- "Frame words" row added to the self-edit checklist
+
+**Example:** ✗ "\textsc{VeriBench} instantiates this setting as \emph{agentic} Python-to-Lean~4 autoformalization under verifier feedback." → ✓ "\textsc{VeriBench} instantiates this via \emph{agentic} Python-to-Lean~4 autoformalization under verifier feedback."
+
+### Meta
+
+Additive only; no restructure. Antipatterns #11–14 follow #10, the self-edit checklist gains two rows, and § Scientific Rigor #7's no-hype list is extended. Existing Trigger Rule 13 already routes "apply § Sentence-Level Prose Discipline," so no new `INDEX_RULES.md` trigger was needed. Not codified as rules: a paper-specific TODO to cite `sosso2026agenticprovingprogramverification` in the VeriBench intro, and that "active voice" alone doesn't decide between a colon sentence and a sentence split — the deciding lever there is the #2 sentence budget.
+
+### Commit
+
+```
+[BACKFILL_SHA] ML writing: add Round 2 ML prose antipatterns (#11-14)
+
+  writing/ml_research/ml_research_writing.md
+  experiments/02_improving_ml_research_writing_skills/fixes.md
+```
+
+### QA
+
+Self-review only (markdown-only, additive doc edits; single-reviewer dispatch skipped per Hard Rule 3). Verified: antipattern numbering (#11–14 follow #10), checklist rows added, Rigor #7 list extended, cross-refs (#3, #4, #6, #7, #11, #14) resolve.
 
 ---
 

@@ -26,7 +26,7 @@ This guide is loaded for ML papers aimed at top venues (NeurIPS, ICML, ICLR) and
 4. **Don't extrapolate.** Tested on 5 problems? Don't write "scales to thousands." Evaluated on `easy_set`? Don't claim `realcode_set` works. Over-extrapolation is one of the top reasons top-venue reviewers reject otherwise good papers.
 5. **Significance, not vibes.** "X outperforms Y" requires confidence intervals, multiple seeds, or an explicit caveat ("on 1 seed"). Single-number comparisons without variance are weak evidence — flag them as such; do not silently let them carry a headline claim.
 6. **Calibrate hedging.** Distinguish *we conjecture* (hypothesis), *we observe* (empirical, with N), and *we prove* (formal, compiled). Never blur the three.
-7. **No hype.** Drop "novel," "unprecedented," "revolutionary," "first of its kind," "for the first time," "fundamentally changes." Let the result speak. Removing hype is anti-rejection insurance for top venues.
+7. **No hype.** Drop "novel," "unprecedented," "revolutionary," "first of its kind," "for the first time," "fundamentally changes," and capability-ranking marketing shorthand like "frontier" / "sub-frontier" (see § Sentence-Level Prose Discipline #11). Let the result speak. Removing hype is anti-rejection insurance for top venues.
 8. **Be willing to argue against the paper.** If a number, framing, or claim looks fishy, mark it with `% TODO(internal-review): <concern>` in the LaTeX source and surface it to Brando before merging. The cheapest reviewer is an internal one.
 9. **Disclose negatives.** Failed configurations, ablations that hurt, models that didn't work — these belong in the appendix, not deleted. Top venues reward honesty about what doesn't work; reviewers punish the appearance of cherry-picking.
 
@@ -149,6 +149,25 @@ Persona-level guidance ("crisply", "active voice") is necessary but not sufficie
    - ✓ *"Existing benchmarks score isolated subtasks under chatbot-style scaffolding, abstracting away the autonomy required by modern agentic coding: extracting and formalizing properties directly from raw source."*
    - **Test:** can you finish "the gap is ___"? If not, the critique is too vague.
 
+11. **Deepity check — cut evocative phrases that don't survive plain paraphrase.** A *deepity* (Dennett) sounds profound by toggling between a trivially true reading and an impressive-but-unsupported one. For each abstract phrase, say what it literally asserts; if that reading is trivial, unsupported, or marketing vocabulary, cut it. Capability-ranking lab terms like "frontier" / "sub-frontier" are frequent offenders when they make the reader reverse-engineer a simple claim. Compose with #6 (de-nominalize) and #7 (audience-calibrated terminology).
+   - ✗ *"... so that weakness at any stage strongly penalizes the score while preserving partial-credit signal among sub-frontier systems."* — "sub-frontier systems" just means "imperfect current systems"; the clause reduces to "partial progress still earns partial credit."
+   - ✓ *"... so that weakness at any stage sharply lowers the score while partial progress still earns partial credit."*
+   - **Test:** finish "in plain words this says ___." If you can't, it's decoration.
+
+12. **Match rhetorical register to the track — prescription vs. contribution.** Field-directed claims ("benchmarks must X") are position-paper register. In a datasets/benchmarks or main-track paper, carry the same idea as design rationale ("we adopt X because Y") or as a descriptive fact about the domain ("verification is conjunctive by nature, so we score it conjunctively"). A universal "must" backed by one artifact over-extrapolates (Scientific Rigor #4) and invites rebuttal.
+   - ✗ *"We argue that code-verification benchmarks must be end-to-end and agentic ... and must aggregate verification stages conjunctively ..."* — position-paper register; asserts universal necessity from one benchmark.
+   - ✓ *"Verification is conjunctive by nature: a program is verified only if every stage holds. \textsc{VeriBench} therefore scores the full pipeline with a geometric mean rather than a compensatory average, so that weakness at any stage sharply lowers the total while partial progress still earns partial credit."*
+   - ✓ (scoped "should," if an argumentative frame is wanted) *"Code-verification benchmarks should score the full pipeline end-to-end, because evaluating isolated subtasks rewards systems that cannot actually produce a verified artifact."*
+
+13. **Em-dash and colon mechanics.** An em-dash that opens a mid-sentence parenthetical needs a closing dash, or the sentence must end. A colon explains the nearest preceding noun phrase; if the intended referent is the whole clause, restructure so the colon does not appear to explain only the last noun.
+   - ✗ *"... required strengthening passes---HumanEval gave way to HumanEval+ ... in code that passed the prior suite: finite test suites can leave bugs unobserved."* — the `---` never closes, and the colon appears to explain "the prior suite."
+   - ✓ Split into two sentences (*"... that passed the prior suite. Finite test suites can leave behaviorally important bugs unobserved."*), or lead with the principle so the colon's referent is unambiguous.
+
+14. **Micro-brevity — cut frame words after the sentence is active.** Active voice is mandatory (#3), but active sentences can still carry low-content scaffolding: "this setting as," "the use of," "the process of," "in the context of." In abstracts and intros, replace frame nouns and preposition chains with the shortest precise relation.
+   - ✗ *"\textsc{VeriBench} instantiates this setting as \emph{agentic} Python-to-Lean~4 autoformalization under verifier feedback."*
+   - ✓ *"\textsc{VeriBench} instantiates this via \emph{agentic} Python-to-Lean~4 autoformalization under verifier feedback."*
+   - **Test:** after active voice, can any noun-preposition frame collapse to one precise verb or preposition?
+
 ### Self-edit checklist (≤30 seconds per sentence, run at write-time)
 
 | Check | What to do | Fix if failing |
@@ -157,6 +176,8 @@ Persona-level guidance ("crisply", "active voice") is necessary but not sufficie
 | **Claim count** | Count independent factual claims. | >1 → split into N sentences. |
 | **Citation count** | Count citations; same-claim or distinct? | >1 distinct-claim cites → split. |
 | **Word count** | Count words in this sentence. | >25 in intro / abstract → trim or split. |
+| **Plain-paraphrase** | State what each evocative phrase literally asserts (#11). | trivial / marketing → cut or replace. |
+| **Frame words** | Circle "setting/process/use/context/as" scaffolding (#14). | direct verb/preposition → shorten. |
 
 These checks are *cheap* and *cumulative*. Run them at write-time and the sentence ships ready; skipping them pushes the work onto QA review where catching it costs more.
 
