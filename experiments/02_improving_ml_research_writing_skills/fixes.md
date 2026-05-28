@@ -158,7 +158,7 @@ Additive only; no restructure. Antipatterns #11–14 follow #10, the self-edit c
 ### Commit
 
 ```
-[BACKFILL_SHA] ML writing: add Round 2 ML prose antipatterns (#11-14)
+c41e7df ML writing: add Round 2 ML prose antipatterns (#11-14)
 
   writing/ml_research/ml_research_writing.md
   experiments/02_improving_ml_research_writing_skills/fixes.md
