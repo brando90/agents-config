@@ -19,6 +19,21 @@ This skill is a sibling of [`~/agents-config/writing/ml_research/write-intro.md`
 
 This skill uses bit-flip vocabulary internally to scaffold the abstract. **Never put any of those terms in the actual abstract text** — `bit flip`, `the bit`, `flip the bit`, `vectoring`, `(research) velocity`, `north star`, `killer demo`. They're planning shorthand between you and Brando, not reviewer-facing language. Allowed as `% LaTeX comment` to guide structure (e.g., `% move 3: flip the bit`). Not allowed in body prose, sentences, or anything a reviewer reads. See `INDEX_RULES.md` Trigger Rule 23.
 
+## Required source comments for `.tex` abstracts
+
+When writing or revising a LaTeX abstract, always add or preserve `% CS197 move ...` comments immediately above the sentences they label. Brando should be able to open the `.tex` file and see what each part of the abstract is doing without reverse-engineering the structure. Use the six-move scaffold as the labels:
+
+```tex
+% CS197 move 1: problem motivation / failure mode -- <specific problem>.
+% CS197 move 2: set up the bit / prior assumption -- <assumption being challenged>.
+% CS197 move 3: flip the bit / contribution claim -- <new idea>.
+% CS197 move 4: instantiate the bit flip -- <system, mechanism, metric, or benchmark>.
+% CS197 move 5: evaluation -- <headline setup and numbers>.
+% CS197 move 6: implication / north star -- <field-level shift>.
+```
+
+Split move 5 into `5a`, `5b`, etc. when the abstract separately states the benchmark artifact, metric, headline result, and calibration caveat. Keep these labels in comments only; never put CS197 jargon in rendered prose. If an existing `.tex` abstract lacks the comments, add them. If the prose changes, update the comments so they remain accurate.
+
 ## Required and optional inputs (interpret from the user's message)
 
 **Required:**
@@ -106,6 +121,7 @@ Abstracts get rewritten *many* times. After producing the first draft, also prod
 
 - If writing to a `.tex` file, wrap output in `\begin{abstract} ... \end{abstract}`.
 - If the file already had a `\begin{abstract}` block, replace its contents rather than appending.
+- Always include `% CS197 move ...` source comments in `.tex` abstracts, immediately above the relevant sentences. These comments are part of the deliverable and should be preserved across revisions.
 - If writing to `.md` or stdout (no output path), use plain prose (no LaTeX wrapping).
 - Do NOT delete the existing abstract file. Edit in place.
 - Do NOT compile — abstract changes are usually iterated many times before compile is worth running. The user will compile when ready.

@@ -63,6 +63,8 @@ Each point gets 1–2 sentences in the abstract (vs. a full paragraph in the int
 
 > **Reminder:** The labels above (bit flip, etc.) are planning shorthand for you and the agent. In the actual abstract text, write professionally — no jargon, just clear scientific prose.
 
+**LaTeX source-comments rule:** When editing or drafting a `.tex` abstract, add or preserve `% CS197 move ...` comments immediately above the relevant sentences. The comments should identify the problem motivation, prior assumption, bit flip / contribution, instantiation, evaluation, and implication so Brando can inspect the abstract's structure directly in source. These labels are allowed only as `%` comments; never put CS197 jargon in rendered prose.
+
 ### Abstract Tactics (Before → After)
 
 | Element | Weak | Strong |
