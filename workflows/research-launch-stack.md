@@ -119,7 +119,7 @@ The first target for this workflow is `ehersch/veribench-blog`.
 Observed repo shape:
 
 - GitHub repo: https://github.com/ehersch/veribench-blog
-- Local clone path used in the first setup pass: `/Users/sanmikoyejo-mba-1/veribench-blog`
+- Local clone path used in the first setup pass: `~/veribench-blog` (on Brando's Mac)
 - Static GitHub Pages convention: `docs/index.html`, `docs/assets/site.css`, `docs/figs/`
 - Existing page already has VeriBench figures and an interactive example; the launch-stack pass should make it feel more like HourVideo/Grafting: stronger hero, clearer action buttons, at-a-glance benchmark numbers, linked tweprint/blog assets, and a saved launch brief.
 
