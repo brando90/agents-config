@@ -106,6 +106,9 @@ agents-config/
 │   ├── sherlock.md              ← Stanford Sherlock HPC
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
+├── skills/                      ← Codex skills versioned with agents-config
+│   └── research-launch-stack/   ← Kesh-style paper launch skill
+│
 ├── workflows/                   ← Layer 3: reusable workflows (loaded on demand)
 │   ├── qa-correctness.md        ← proportionate QA tiers (deterministic checks, reviewer QA, Mega QA)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)

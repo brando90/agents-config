@@ -3,6 +3,8 @@
 
 This workflow generalizes the pattern in Keshigeyan Chandrasegaran's research launches: a sharp public hook, concrete scale numbers, polished project page, artifact links, visual results, and a thread/blog/site that all point to each other. Copy the structure and craft, not the wording or assets.
 
+Codex skill companion: use `$research-launch-stack` from `~/agents-config/skills/research-launch-stack/` when skills are available; this workflow remains the plain Markdown fallback.
+
 ---
 
 ## Trigger Phrases
