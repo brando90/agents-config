@@ -114,6 +114,7 @@ agents-config/
 │   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern
+│   ├── research-launch-stack.md ← Kesh-style paper launch stack: website, tweprint, blog, links
 │   ├── tweprints.md             ← tweet thread format
 │   └── blog-posts.md            ← SAIL-style research lab blog posts
 │

@@ -76,7 +76,7 @@ experiments/<NN>_<name>/
 
 ### Assets folder (`assets/`)
 
-When the user attaches an image in a prompt (handwritten note photo, whiteboard, screenshot, paper figure) and asks to save / transcribe / keep it in the context of a specific experiment, save it under that experiment's `assets/` folder with a descriptive snake_case filename — never leave it at the opaque `~/.claude/uploads/<uuid>/` upload path, which is ephemeral and meaningless across sessions and machines. If a transcription is requested, save a sibling `.md` with the same basename containing provenance + a `**TLDR:**`. Existing precedent: `experiments/01_toy_ebm_training/assets/{toy_ebm_notes_photo_1.jpg, ...}`. Full rule: [`INDEX_RULES.md`](../INDEX_RULES.md) Trigger Rule 28.
+When the user attaches an image in a prompt (handwritten note photo, whiteboard, screenshot, paper figure) and asks to save / transcribe / keep it in the context of a specific experiment, save it under that experiment's `assets/` folder with a descriptive snake_case filename — never leave it at the opaque `~/.claude/uploads/<uuid>/` upload path, which is ephemeral and meaningless across sessions and machines. If a transcription is requested, save a sibling `.md` with the same basename containing provenance + a `**TLDR:**`. Existing precedent: `experiments/01_toy_ebm_training/assets/{toy_ebm_notes_photo_1.jpg, ...}`. Full rule: [`INDEX_RULES.md`](../INDEX_RULES.md) Trigger Rule 29.
 
 ### Versioned Sub-Experiments (`expt_v1/`, `expt_v2/`, …)
 
