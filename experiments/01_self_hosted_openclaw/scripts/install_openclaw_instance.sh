@@ -29,6 +29,7 @@ EXP_DIR="${REPO_ROOT}/experiments/01_self_hosted_openclaw"
 TEMPLATE="${EXP_DIR}/config/openclaw.json.template"
 OPENCLAW_DIR="${HOME}/.openclaw"
 TELEGRAM_TOKEN_FILE="${HOME}/keys/openclaw_telegram_bot_token.txt"
+DISCORD_TOKEN_FILE="${HOME}/keys/openclaw_discord_bot_token.txt"
 
 log() { printf '[install] %s\n' "$*"; }
 die() { printf '[install] ERROR: %s\n' "$*" >&2; exit 1; }
@@ -41,6 +42,12 @@ command -v codex >/dev/null  || die "codex CLI missing — install it and run 'c
 [[ -f "$TELEGRAM_TOKEN_FILE" ]] || die "missing $TELEGRAM_TOKEN_FILE (scp it from instance #1)"
 [[ "$(stat -f '%Lp' "$TELEGRAM_TOKEN_FILE" 2>/dev/null || stat -c '%a' "$TELEGRAM_TOKEN_FILE")" == "600" ]] \
   || die "$TELEGRAM_TOKEN_FILE permissions must be 600"
+
+[[ -f "$DISCORD_TOKEN_FILE" ]] || log "WARN: missing $DISCORD_TOKEN_FILE (Discord channel will be disabled)"
+if [[ -f "$DISCORD_TOKEN_FILE" ]]; then
+  [[ "$(stat -f '%Lp' "$DISCORD_TOKEN_FILE" 2>/dev/null || stat -c '%a' "$DISCORD_TOKEN_FILE")" == "600" ]] \
+    || die "$DISCORD_TOKEN_FILE permissions must be 600"
+fi
 
 # --- macOS Homebrew Node SSL fix ---
 if [[ "$(uname -s)" == "Darwin" ]] && [[ ! -f "${HOME}/.npmrc" ]]; then
@@ -72,6 +79,7 @@ from pathlib import Path
 template_path = Path(os.environ['HOME']) / "agents-config/experiments/01_self_hosted_openclaw/config/openclaw.json.template"
 out_path      = Path(os.environ['HOME']) / ".openclaw/openclaw.json"
 token_path    = Path(os.environ['HOME']) / "keys/openclaw_telegram_bot_token.txt"
+discord_token_path = Path(os.environ['HOME']) / "keys/openclaw_discord_bot_token.txt"
 
 cfg = json.loads(template_path.read_text())
 
@@ -96,6 +104,16 @@ cfg.setdefault("channels", {}).setdefault("telegram", {})
 cfg["channels"]["telegram"]["enabled"] = True
 cfg["channels"]["telegram"]["botToken"] = bot_token
 cfg["channels"]["telegram"].pop("_comment", None)
+
+# Inject Discord bot token if present
+cfg.setdefault("channels", {}).setdefault("discord", {})
+if discord_token_path.exists():
+    discord_token = discord_token_path.read_text().strip()
+    cfg["channels"]["discord"]["enabled"] = True
+    cfg["channels"]["discord"]["botToken"] = discord_token
+else:
+    cfg["channels"]["discord"]["enabled"] = False
+cfg["channels"]["discord"].pop("_comment", None)
 
 out_path.parent.mkdir(parents=True, exist_ok=True)
 out_path.write_text(json.dumps(cfg, indent=2) + "\n")

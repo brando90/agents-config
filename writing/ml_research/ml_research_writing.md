@@ -29,6 +29,7 @@ This guide is loaded for ML papers aimed at top venues (NeurIPS, ICML, ICLR) and
 7. **No hype.** Drop "novel," "unprecedented," "revolutionary," "first of its kind," "for the first time," "fundamentally changes." Let the result speak. Removing hype is anti-rejection insurance for top venues.
 8. **Be willing to argue against the paper.** If a number, framing, or claim looks fishy, mark it with `% TODO(internal-review): <concern>` in the LaTeX source and surface it to Brando before merging. The cheapest reviewer is an internal one.
 9. **Disclose negatives.** Failed configurations, ablations that hurt, models that didn't work — these belong in the appendix, not deleted. Top venues reward honesty about what doesn't work; reviewers punish the appearance of cherry-picking.
+10. **No stale echoes — propagate every results change across the whole paper.** A headline number, table value, metric definition, judge / model name, or artifact path is almost always echoed elsewhere: abstract, intro, captions, the appendix, the reproducibility / checklist appendix. When you change one, the copies go stale silently. Before finishing any results edit, `grep -rn` the old value (and every alias of it) across all `.tex` and reconcile every hit in the same change. A main-table update that leaves the appendix citing the old number, the old results path (e.g. an `experiments/NN_.../results/` directory), or the old judge name reads as careless to reviewers and breaks reproducibility. **Test:** could a reviewer find two different values for the same quantity, or a path / judge name that no longer matches the main table? If yes, you are not done.
 
 **Why:** Top-venue / award-aiming papers are read closely by adversarial reviewers and re-read by future researchers for years. One unsourced number, one unverified proof, or one over-extrapolated claim can sink the paper — and it embarrasses Brando and the lab. **Cheap test:** every assertion you place in the paper, you should be willing to defend in a rebuttal. If you wouldn't, it doesn't belong.
 
@@ -151,6 +152,11 @@ Persona-level guidance ("crisply", "active voice") is necessary but not sufficie
    - ✓ *"Existing benchmarks score isolated subtasks under chatbot-style scaffolding, abstracting away the autonomy required by modern agentic coding: extracting and formalizing properties directly from raw source."*
    - **Test:** can you finish "the gap is ___"? If not, the critique is too vague.
 
+11. **No AI-tell phrasing — match the human-written prose around you.** Default agent vocabulary leaks words that read as machine-generated to the author and to reviewers; Brando flags these on sight because they signal the text wasn't written by him. The worst offenders in a research artifact: framing a one-line setup step as a *"smoke test"* or gratuitous *"sanity check"*; tutorial scaffolding (*"The expected X is:"*, *"Simply run ..."*, *"Let's ..."*, a cutesy `verbatim` command block dropped into prose); and corporate/LLM filler (*leverage*, *seamless*, *robust* as praise, *delve*, *it's worth noting that*, *in this section we will*). When you assist with prose, read the surrounding human-written text and match its register — prefer the plain word the author would use (*"reproduction commands,"* *"a check,"* *"run"*).
+    - ✗ *"The expected smoke test is: \begin{verbatim} cd repo; bash setup.sh; lake build \end{verbatim}"* → ✓ *"The artifact's setup and reproduction commands are in Appendix~\ref{...}."* (or just drop the command block from the prose entirely)
+    - ✗ *"We leverage a robust pipeline to seamlessly evaluate agents."* → ✓ *"Our pipeline evaluates each agent in one container per task."*
+    - **Test:** would Brando have written this word? If it reads like a tutorial or a product page, cut it.
+
 ### Self-edit checklist (≤30 seconds per sentence, run at write-time)
 
 | Check | What to do | Fix if failing |
@@ -159,6 +165,7 @@ Persona-level guidance ("crisply", "active voice") is necessary but not sufficie
 | **Claim count** | Count independent factual claims. | >1 → split into N sentences. |
 | **Citation count** | Count citations; same-claim or distinct? | >1 distinct-claim cites → split. |
 | **Word count** | Count words in this sentence. | >25 in intro / abstract → trim or split. |
+| **AI-tell** | Scan for *smoke test* / *leverage* / *seamless* / tutorial scaffolding. | Replace with the plain word the author would use. |
 
 These checks are *cheap* and *cumulative*. Run them at write-time and the sentence ships ready; skipping them pushes the work onto QA review where catching it costs more.
 
