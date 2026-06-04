@@ -146,44 +146,70 @@ openclaw channels status --deep | grep -E 'Discord|Telegram'
 # - Discord default: enabled, configured, running, connected, bot:@ultimate_brando9_bot, token:config
 ```
 
-Functional send test requires a Discord target. Prefer a private test channel first.
+## Telegram bot to Discord test
+
+Use this section when testing whether the mercury2 Telegram OpenClaw bot can cause a Discord message. Keep the test order strict: first prove both transports are alive, then prove the Discord target is visible, then send a raw Discord CLI message, and only then test Telegram-driven routing.
+
+Current readiness, verified 2026-06-04 on `mercury2.stanford.edu`:
+
+| Test surface | Ready? | Why |
+| --- | --- | --- |
+| Telegram bot reply | ✅ yes | `tools.profile` is `messaging`; Telegram reports `running, connected`. |
+| Discord bot login | ✅ yes | Discord reports `running, connected` as `@ultimate_brando9_bot`. |
+| Raw Discord CLI send | 🟡 needs target | Works only after the bot can see a `channel:<CHANNEL_ID>` or `user:<USER_ID>`. |
+| Telegram text -> Discord | ❌ not ready | Telegram-bound sessions currently hit `Cross-context messaging denied` when calling `message channel=discord`. |
+| Telegram voice -> Discord | ❌ not ready | Voice files arrive as `.ogg`, but OpenClaw 2026.5.7 may not insert a transcript; Whisper uses `OPENAI_API_KEY`, which needs explicit spend approval under `~/agents-config/INDEX_RULES.md` Hard Rule 9. |
+
+Status smoke from mercury2:
 
 ```bash
-# Find candidate channel IDs and user IDs.
-openclaw directory groups list --channel discord
-openclaw directory peers list --channel discord --query "<name>"
-openclaw channels resolve --channel discord --kind group "<server-or-channel-name>"
-
-# Dry-run, then send a visible test message to a channel.
-openclaw message send --channel discord --dry-run \
-  -t channel:<CHANNEL_ID> \
-  -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
-
-openclaw message send --channel discord \
-  -t channel:<CHANNEL_ID> \
-  -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
-
-# DM form, if the bot shares a server with the user and DMs are allowed.
-openclaw message send --channel discord \
-  -t user:<USER_ID> \
-  -m "OpenClaw Discord DM smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+ssh mercury2.stanford.edu 'openclaw channels status --deep; openclaw config get tools'
 ```
 
-Full human-in-the-loop test: DM the OpenClaw Telegram bot with a request like `send "OpenClaw smoke test" to Discord channel <channel name>`, confirm the preview with `post`, and verify the message appears in Discord. This exercises Telegram approval plus Discord execution instead of only the raw Discord send path.
+Expected:
 
-Telegram voice-to-Discord currently has two extra failure modes:
+```text
+- Discord default: enabled, configured, running, connected, bot:@ultimate_brando9_bot, token:config
+- Telegram default: enabled, configured, running, connected, mode:polling, token:config
+{"profile":"messaging", ...}
+```
 
-- Telegram voice files are saved under `~/.openclaw/media/inbound/*.ogg`, but OpenClaw 2026.5.7 may pass them to the session as `<media:audio>` without inserting a transcript. `openclaw skills info openai-whisper-api` may show ready, but it uses `OPENAI_API_KEY`; per `~/agents-config/INDEX_RULES.md` Hard Rule 9, do not invoke it without explicit spend approval.
-- A Telegram-bound agent session cannot directly call the `message` tool with `channel=discord`; the tool returns `Cross-context messaging denied: action=send target provider "discord" while bound to "telegram"`. For now, send Discord tests from the gateway CLI (`openclaw message send --channel discord ...`) or build an explicit approved bridge/taskflow instead of assuming a Telegram standing order can cross-post.
-
-If Discord target discovery returns no rows, the bot has no visible guild/channel or shared user to address:
+Check whether Discord has a visible target:
 
 ```bash
-openclaw directory groups list --channel discord
-openclaw directory peers list --channel discord --query "<name>"
+ssh mercury2.stanford.edu '
+  openclaw directory groups list --channel discord
+  openclaw directory peers list --channel discord --query "<name>"
+'
 ```
 
-Invite the bot to a server where the target channel/user is visible, or provide a concrete `channel:<CHANNEL_ID>` / `user:<USER_ID>` target before retrying.
+If both return `No groups found` / `No peers found`, the E2E Telegram-to-Discord test is blocked. Invite the bot to a server where it can see the test channel, or get a concrete Discord `channel:<CHANNEL_ID>` / `user:<USER_ID>` first. The bot invite URL is:
+
+```text
+https://discord.com/oauth2/authorize?client_id=1498169663278813254&permissions=68608&scope=bot%20applications.commands
+```
+
+Once a target exists, run the raw Discord send test first:
+
+```bash
+ssh mercury2.stanford.edu '
+  openclaw message send --channel discord --dry-run \
+    -t channel:<CHANNEL_ID> \
+    -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+
+  openclaw message send --channel discord \
+    -t channel:<CHANNEL_ID> \
+    -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+'
+```
+
+Only after that raw send works should you test the Telegram side. Use a plain text Telegram DM first, not voice:
+
+```text
+send "OpenClaw Telegram-to-Discord smoke test" to Discord channel <channel name or id>
+```
+
+Expected current result: the Telegram bot may acknowledge the request, but the actual Discord send is not expected to succeed until an explicit approved cross-channel bridge/taskflow is implemented. Do not treat voice-to-Discord as ready until both a transcription path and cross-channel send path have been approved and tested.
 
 Current verified state, 2026-06-04:
 
