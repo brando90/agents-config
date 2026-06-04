@@ -340,24 +340,24 @@ The plan is sequenced **smallest-unblocked-next-step first**. Don't skip ahead �
 
 ---
 
-### Phase 0 — Where we are now (Air partial, Pro/mercury2 untouched)
+### Phase 0 — Where we are now (Air + mercury2 partial, Pro untouched)
 
 From `todos.md:13-21` (verified 2026-04-26):
 
 | Capability                                  | Air | Pro | mercury2 |
 | ------------------------------------------- | --- | --- | -------- |
-| OpenClaw 2026.4.24 installed                | ✅  | ◯   | ◯        |
+| OpenClaw installed                          | ✅  | ◯   | ✅       |
 | Codex Pro CLI auth (`~/.codex/auth.json`)   | ✅  | ◯   | ◯        |
-| Gateway smoke test (`PONG`)                 | ✅  | ◯   | ◯        |
-| Telegram bot wired + paired                 | ✅  | ◯   | ◯        |
+| Gateway smoke test (`PONG`)                 | ✅  | ◯   | ✅       |
+| Telegram bot wired + paired                 | ✅  | ◯   | ✅       |
 | Gmail / Calendar / Drive via `gog` skill    | ✅  | ◯   | ◯        |
-| Discord                                     | 🟡  | ◯   | ◯        |
+| Discord                                     | ✅  | ◯   | ✅       |
 | WhatsApp                                    | 🟡  | —   | —        |
 | Triage agent loop end-to-end                | ◯   | ◯   | ◯        |
 | Idempotency labels + heartbeat + rate limit | ◯   | ◯   | ◯        |
 | Daemon survives reboot                      | ✅  | ◯   | ◯        |
 
-**Out of scope for this plan:** WhatsApp (Baileys upstream `status=500` — `todos.md:17`), Discord (parked behind a 90s manual toggle — `todos.md:16`; can be picked up anytime but not on the critical path). Telegram is the mandatory channel.
+**Out of scope for this plan:** WhatsApp (Baileys upstream `status=500` — `todos.md:17`). Telegram is the mandatory channel. Discord is now connected on Mac + mercury2; remaining work is a real target-channel/user functional send test and any Message Content Intent follow-up if inbound ordinary message reads fail.
 
 ---
 
@@ -1033,18 +1033,18 @@ Append-only. Most recent entry on top.
 | Telegram (chat surface) | ✅ working | Bot `@ultimate_brando9_sk_air_bot` (renamed 2026-05-08 from `@ultimate_brando9_bot` via BotFather `/setusername`; token unchanged) paired with Brando, agent replies via Codex Pro / GPT-5.5. Token at `~/keys/openclaw_telegram_bot_token.txt` (mode 600), already rotated once. |
 | Gmail (read + send) | ✅ working via `gog` skill | `gogcli` 0.13.0 installed, OAuth done, all 7 Workspace APIs enabled in GCP project 721441778080. `openclaw skills info gog` shows ✓ Ready. |
 | Calendar / Drive / Docs / Sheets / Tasks / People | ✅ working via `gog` skill | All verified end-to-end |
-| Discord | 🟡 blocked on user actions | Bot created (ID `1498169663278813254`, token in `~/keys/openclaw_discord_bot_token.txt`), wired into config, Discord refuses with **code 4014** because Message Content Intent is OFF on dev portal AND bot is in 0 servers. **To resume:** flip the toggle in Bot tab → Save Changes; run OAuth2 URL Generator and invite bot to a server Brando owns. |
+| Discord | ✅ connected on Mac + mercury2 | Bot created (ID `1498169663278813254`, handle `@ultimate_brando9_bot`). Token lives only in `~/keys/openclaw_discord_bot_token.txt` / `~/keys/discord_bot_token.txt` (mode 600); OpenClaw config uses a file-backed SecretRef. Verified 2026-06-04 on local Mac and `mercury2.stanford.edu`; mercury2 requires `@openclaw/discord@2026.5.7` with OpenClaw 2026.5.7. Status may show `intents:content=limited`; if inbound ordinary message content fails, enable Message Content Intent in the Discord Developer Portal and confirm the bot is in the target server. Test recipe lives in [`runbook.md`](./runbook.md#discord-setup-and-testing). |
 | WhatsApp | 🟡 parked on upstream | Baileys 7.0.0-rc.9 returns `status=500` from web.whatsapp.com on every pair attempt. Not local. **To resume:** wait 24h+ then retry once; if still broken, defer until stable Baileys v7. |
 | Gmail label idempotency / heartbeat / rate limit | ◯ not started | Blocked on Air email-triage E2E first |
 | Triage admin-email loop end-to-end | ◯ not started | Needs admin-filter list (Brando) + one real test email |
 | MacBook Pro install | ◯ not started | Needs SSH config OR Brando runs install script himself |
-| mercury2 install | ◯ not started | Needs SSH access; Linux path (no launchd) |
+| mercury2 install | ✅ partial/live | OpenClaw 2026.5.7 running from the custom respawn wrapper; Telegram + Discord connected. systemd user service is disabled, so restart through the wrapper path (`pkill -f 'openclaw gateway run'`; the wrapper relaunches it) in [`runbook.md`](./runbook.md#discord-setup-and-testing). |
 
 **Suggested resume sequence (smallest unblocked next step first):**
-1. Brando enables Discord Message Content Intent + invites bot to a server (~90s) → Claude restarts gateway, confirms Discord ✓ (parallelizable)
+1. Pick a private Discord test channel or DM target, then run the [`runbook.md`](./runbook.md#discord-setup-and-testing) functional send test and the Telegram-approval-to-Discord test.
 2. Brando edits `config/admin-filter.txt` with his real admin-sender list (~1 min) and DMs the Telegram bot one real triage to validate the loop
 3. Replicate to Pro via the install script
-4. Replicate to mercury2 (Linux path — different recipe; see §6 Phase 4)
+4. Keep mercury2 OpenClaw/plugin versions pinned or upgrade both together (`openclaw update` then `openclaw plugins install @openclaw/discord`)
 5. Wire idempotency labels + heartbeat + rate limit (autonomous)
 6. 7-day soak
 

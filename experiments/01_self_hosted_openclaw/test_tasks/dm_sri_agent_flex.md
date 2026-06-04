@@ -43,7 +43,8 @@ Discord DM (one-to-one, not a server channel).
 
 ## Prereqs (must be true before this can run)
 
-- [ ] Discord Message Content Intent ON in dev portal Bot tab (currently 🟡 blocked per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Discord row) — 90 seconds of Brando's time
+- [x] Discord transport connected in OpenClaw (`@ultimate_brando9_bot` verified on Mac + mercury2, 2026-06-04)
+- [ ] If inbound ordinary message reads fail: Discord Message Content Intent ON in dev portal Bot tab
 - [ ] Bot invited to a Discord server where Sri is also a member
 - [ ] Bot has permission to DM users in that server
 - [ ] Sri's Discord handle captured in Brando's contacts (when contacts roster lands)
@@ -66,3 +67,4 @@ Discord DM (one-to-one, not a server channel).
 | Date       | Status                                                                                  |
 | ---------- | --------------------------------------------------------------------------------------- |
 | 2026-05-08 | Drafted. Blocked on: Discord intent toggle (Brando, 90s) + Sri's handle + macbook minis topic context + tone choice. |
+| 2026-06-04 | Discord transport connected on Mac + mercury2. Still needs Sri target identity/shared-server DM permissions, topic context, and tone choice before sending. |
