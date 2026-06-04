@@ -12,6 +12,7 @@
       "anthropic": { "enabled": true },
       "google":    { "enabled": true },
       "telegram":  { "enabled": true },
+      "discord":   { "enabled": true },
       "browser":   { "enabled": true }
     }
   },
@@ -24,6 +25,25 @@
     "telegram": {
       "enabled": true,
       "_comment": "botToken is injected by install_openclaw_instance.sh from ~/keys/openclaw_telegram_bot_token.txt — never commit the literal token here"
+    },
+    "discord": {
+      "enabled": true,
+      "_comment": "botToken is injected by install_openclaw_instance.sh from ~/keys/openclaw_discord_bot_token.txt"
+    }
+  },
+  "tools": {
+    "media": {
+      "audio": {
+        "enabled": true,
+        "models": [
+          {
+            "type": "cli",
+            "command": "python3",
+            "args": [ "-m", "whisper", "{{MediaPath}}", "--model", "tiny" ]
+          }
+        ],
+        "echoTranscript": true
+      }
     }
   }
 }

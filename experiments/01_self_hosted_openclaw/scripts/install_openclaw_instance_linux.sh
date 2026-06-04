@@ -36,6 +36,7 @@ EXP_DIR="${REPO_ROOT}/experiments/01_self_hosted_openclaw"
 TEMPLATE="${EXP_DIR}/config/openclaw.json.template"
 OPENCLAW_DIR="${HOME}/.openclaw"
 TELEGRAM_TOKEN_FILE="${HOME}/keys/openclaw_telegram_bot_token.txt"
+DISCORD_TOKEN_FILE="${HOME}/keys/openclaw_discord_bot_token.txt"
 ANTHROPIC_KEY_FILE="${HOME}/keys/anthropic_api_key.txt"
 OC_WORK_DIR="${HOME}/openclaw"
 USER_NAME="$(id -un)"
@@ -93,6 +94,11 @@ command -v python3 >/dev/null  || die "python3 not in PATH"
 command -v crontab >/dev/null  || die "crontab not in PATH"
 [[ -f "$TELEGRAM_TOKEN_FILE" ]] || die "missing $TELEGRAM_TOKEN_FILE — create per-host bot via @BotFather, save token here"
 require_mode_600 "$TELEGRAM_TOKEN_FILE"
+
+[[ -f "$DISCORD_TOKEN_FILE" ]] || log "WARN: missing $DISCORD_TOKEN_FILE (Discord channel will be disabled)"
+if [[ -f "$DISCORD_TOKEN_FILE" ]]; then
+  require_mode_600 "$DISCORD_TOKEN_FILE"
+fi
 [[ -f "$ANTHROPIC_KEY_FILE" ]]  || die "missing $ANTHROPIC_KEY_FILE — needed for default Anthropic backend"
 require_mode_600 "$ANTHROPIC_KEY_FILE"
 
@@ -135,6 +141,7 @@ fi
 # --- render config: merge template into existing config, inject tokens + keys ---
 log "rendering ${OPENCLAW_DIR}/openclaw.json (preserving onboarded fields)"
 TELEGRAM_TOKEN_FILE="$TELEGRAM_TOKEN_FILE" \
+DISCORD_TOKEN_FILE="$DISCORD_TOKEN_FILE" \
 ANTHROPIC_KEY_FILE="$ANTHROPIC_KEY_FILE" \
 TEMPLATE="$TEMPLATE" \
 OPENCLAW_JSON="${OPENCLAW_DIR}/openclaw.json" \
@@ -145,6 +152,7 @@ from pathlib import Path
 template = Path(os.environ['TEMPLATE'])
 out      = Path(os.environ['OPENCLAW_JSON'])
 tg_path  = Path(os.environ['TELEGRAM_TOKEN_FILE'])
+discord_path = Path(os.environ.get('DISCORD_TOKEN_FILE', ''))
 ak_path  = Path(os.environ['ANTHROPIC_KEY_FILE'])
 
 cfg = json.loads(template.read_text())
@@ -189,6 +197,15 @@ merged["gateway"]["auth"].setdefault("token", secrets.token_hex(32))
 merged["channels"]["telegram"]["enabled"] = True
 merged["channels"]["telegram"]["botToken"] = tg_path.read_text().strip()
 merged["channels"]["telegram"].pop("_comment", None)
+
+# Discord bot token from ~/keys/
+merged["channels"].setdefault("discord", {})
+if discord_path and discord_path.exists():
+    merged["channels"]["discord"]["enabled"] = True
+    merged["channels"]["discord"]["botToken"] = discord_path.read_text().strip()
+else:
+    merged["channels"]["discord"]["enabled"] = False
+merged["channels"]["discord"].pop("_comment", None)
 
 # Anthropic API key in env.vars (via shellEnvFallback path)
 merged.setdefault("env", {})
