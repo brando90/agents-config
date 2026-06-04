@@ -1038,7 +1038,7 @@ Append-only. Most recent entry on top.
 | Gmail label idempotency / heartbeat / rate limit | ◯ not started | Blocked on Air email-triage E2E first |
 | Triage admin-email loop end-to-end | ◯ not started | Needs admin-filter list (Brando) + one real test email |
 | MacBook Pro install | ◯ not started | Needs SSH config OR Brando runs install script himself |
-| mercury2 install | ✅ partial/live | OpenClaw 2026.5.7 running from the custom respawn wrapper; Telegram + Discord connected. systemd user service is disabled, so restart through the wrapper path (`pkill -f 'openclaw gateway run'`; the wrapper relaunches it) in [`runbook.md`](./runbook.md#discord-setup-and-testing). |
+| mercury2 install | ✅ partial/live | OpenClaw 2026.5.7 running from the custom respawn wrapper; Telegram + Discord connected. systemd user service is disabled, so restart through the wrapper path (`pgrep -u "$USER" -x openclaw` then `kill -TERM`; the wrapper relaunches it) in [`runbook.md`](./runbook.md#discord-setup-and-testing). |
 
 **Suggested resume sequence (smallest unblocked next step first):**
 1. Pick a private Discord test channel or DM target, then run the [`runbook.md`](./runbook.md#discord-setup-and-testing) functional send test and the Telegram-approval-to-Discord test.

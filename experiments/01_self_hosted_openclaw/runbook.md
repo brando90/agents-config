@@ -133,9 +133,10 @@ Restart or signal the gateway:
 openclaw gateway restart
 
 # mercury2 custom respawn-wrapper host if the service reports disabled:
-# Kill the inner gateway; the respawn wrapper relaunches it within a few seconds.
-pkill -f 'openclaw gateway run'
-sleep 20
+# The respawn wrapper relaunches after this process exits.
+pid=$(pgrep -u "$USER" -x openclaw | head -1)
+test -n "$pid" && kill -TERM "$pid"
+sleep 35
 ```
 
 Expected smoke status:
@@ -169,6 +170,20 @@ openclaw message send --channel discord \
 ```
 
 Full human-in-the-loop test: DM the OpenClaw Telegram bot with a request like `send "OpenClaw smoke test" to Discord channel <channel name>`, confirm the preview with `post`, and verify the message appears in Discord. This exercises Telegram approval plus Discord execution instead of only the raw Discord send path.
+
+Telegram voice-to-Discord currently has two extra failure modes:
+
+- Telegram voice files are saved under `~/.openclaw/media/inbound/*.ogg`, but OpenClaw 2026.5.7 may pass them to the session as `<media:audio>` without inserting a transcript. `openclaw skills info openai-whisper-api` may show ready, but it uses `OPENAI_API_KEY`; per `~/agents-config/INDEX_RULES.md` Hard Rule 9, do not invoke it without explicit spend approval.
+- A Telegram-bound agent session cannot directly call the `message` tool with `channel=discord`; the tool returns `Cross-context messaging denied: action=send target provider "discord" while bound to "telegram"`. For now, send Discord tests from the gateway CLI (`openclaw message send --channel discord ...`) or build an explicit approved bridge/taskflow instead of assuming a Telegram standing order can cross-post.
+
+If Discord target discovery returns no rows, the bot has no visible guild/channel or shared user to address:
+
+```bash
+openclaw directory groups list --channel discord
+openclaw directory peers list --channel discord --query "<name>"
+```
+
+Invite the bot to a server where the target channel/user is visible, or provide a concrete `channel:<CHANNEL_ID>` / `user:<USER_ID>` target before retrying.
 
 Current verified state, 2026-06-04:
 
