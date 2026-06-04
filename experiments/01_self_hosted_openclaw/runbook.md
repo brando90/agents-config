@@ -92,6 +92,92 @@ If it stays `disconnected` past 60s, check `openclaw logs | tail -30` for `gatew
 
 ---
 
+## Discord setup and testing
+
+Use this when the Discord bot token has already been copied to `~/keys/` on the target machine. Never paste the token into chat, shell history, or git.
+
+```bash
+# 1. Normalize the expected filenames and permissions.
+chmod 600 ~/keys/openclaw_discord_bot_token.txt
+if [ ! -e ~/keys/discord_bot_token.txt ]; then
+  ln ~/keys/openclaw_discord_bot_token.txt ~/keys/discord_bot_token.txt
+fi
+chmod 600 ~/keys/discord_bot_token.txt ~/keys/openclaw_discord_bot_token.txt
+
+# 2. Point OpenClaw at the token file via SecretRef, not plaintext config.
+openclaw config set secrets.providers.discord_bot \
+  --provider-source file \
+  --provider-path "$HOME/keys/openclaw_discord_bot_token.txt" \
+  --provider-mode singleValue
+openclaw config set channels.discord.token \
+  --ref-provider discord_bot --ref-source file --ref-id value
+openclaw config set channels.discord.enabled true --strict-json
+openclaw config set plugins.entries.discord.enabled true --strict-json
+openclaw config validate
+```
+
+If `openclaw config validate` warns `plugin not installed: discord`, install the Discord plugin. Match the plugin to the local OpenClaw version unless you are intentionally upgrading OpenClaw:
+
+```bash
+# mercury2 was verified on OpenClaw 2026.5.7 with this exact plugin version.
+openclaw plugins install @openclaw/discord@2026.5.7
+
+# On newer hosts, this is usually fine:
+openclaw plugins install @openclaw/discord
+```
+
+Restart or signal the gateway:
+
+```bash
+# Service-managed hosts:
+openclaw gateway restart
+
+# mercury2 custom respawn-wrapper host if the service reports disabled:
+# Kill the inner gateway; the respawn wrapper relaunches it within a few seconds.
+pkill -f 'openclaw gateway run'
+sleep 20
+```
+
+Expected smoke status:
+
+```bash
+openclaw channels status --deep | grep -E 'Discord|Telegram'
+# - Discord default: enabled, configured, running, connected, bot:@ultimate_brando9_bot, token:config
+```
+
+Functional send test requires a Discord target. Prefer a private test channel first.
+
+```bash
+# Find candidate channel IDs and user IDs.
+openclaw directory groups list --channel discord
+openclaw directory peers list --channel discord --query "<name>"
+openclaw channels resolve --channel discord --kind group "<server-or-channel-name>"
+
+# Dry-run, then send a visible test message to a channel.
+openclaw message send --channel discord --dry-run \
+  -t channel:<CHANNEL_ID> \
+  -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+
+openclaw message send --channel discord \
+  -t channel:<CHANNEL_ID> \
+  -m "OpenClaw Discord smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+
+# DM form, if the bot shares a server with the user and DMs are allowed.
+openclaw message send --channel discord \
+  -t user:<USER_ID> \
+  -m "OpenClaw Discord DM smoke test from $(hostname) at $(date +%Y-%m-%dT%H:%M:%S%z)."
+```
+
+Full human-in-the-loop test: DM the OpenClaw Telegram bot with a request like `send "OpenClaw smoke test" to Discord channel <channel name>`, confirm the preview with `post`, and verify the message appears in Discord. This exercises Telegram approval plus Discord execution instead of only the raw Discord send path.
+
+Current verified state, 2026-06-04:
+
+- Mac local OpenClaw: Discord connected as `@ultimate_brando9_bot`; token file is `~/keys/openclaw_discord_bot_token.txt` mode `600`; config uses `channels.discord.token` SecretRef.
+- `mercury2.stanford.edu`: `~/keys` is `/dfs/scratch0/brando9/keys`; `@openclaw/discord@2026.5.7` is installed; Discord and Telegram both report `running, connected`.
+- Status may show `intents:content=limited`. If inbound ordinary message content does not work, enable **Message Content Intent** in the Discord Developer Portal for bot ID `1498169663278813254` and ensure the bot is invited to the target server/channel.
+
+---
+
 ## Swap bot token (repoint gateway to a different bot, or rotate)
 
 ```bash
