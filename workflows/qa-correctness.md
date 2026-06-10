@@ -159,15 +159,16 @@ code. No parallel writes, no aggregation — just a chain.
 ### Chain order
 
 The builder reviews in the **middle** (it knows the code intent best and can
-verify the first reviewer's changes). Gemini always does the **final** pass as
-clean-eyes reviewer. Default is 3 stages (one per model). If the user requests
-more rounds, cycle through the chain again (e.g., 6 rounds = chain × 2, 9
-rounds = chain × 3).
+verify the first reviewer's changes). Antigravity (Google's agentic CLI —
+replaces the deprecated Gemini CLI as the Google reviewer, 2026-06-10) always
+does the **final** pass as clean-eyes reviewer. Default is 3 stages (one per
+model). If the user requests more rounds, cycle through the chain again
+(e.g., 6 rounds = chain × 2, 9 rounds = chain × 3).
 
 | Builder | Chain (default 3 stages) |
 |---|---|
-| CC built | Codex → **CC** → Gemini |
-| Codex built | CC → **Codex** → Gemini |
+| CC built | Codex → **CC** → Antigravity |
+| Codex built | CC → **Codex** → Antigravity |
 
 ### How to run
 
@@ -180,8 +181,8 @@ codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMP
 # Stage 2: CC (the builder) reviews Codex's changes — knows the intent best
 # Run the QA prompt inline (self-review with best model)
 
-# Stage 3: Gemini does final clean-eyes pass
-gemini -p "$QA_PROMPT"
+# Stage 3: Antigravity does final clean-eyes pass
+antigravity -p "$QA_PROMPT"   # if the antigravity CLI is missing/flags differ on a machine, check `antigravity --help` and apply the per-stage fallback below
 ```
 
 Each reviewer uses the same `$QA_PROMPT` from Step 1 above. Each one sees the
@@ -190,17 +191,17 @@ code as improved by the previous reviewer.
 ### Configuring rounds
 
 Default is **3 stages** (one per available model). The user can request more
-rounds — the chain cycles (e.g., × 2 = 6 stages, × 3 = 9 stages). Gemini
+rounds — the chain cycles (e.g., × 2 = 6 stages, × 3 = 9 stages). Antigravity
 always occupies the last stage of each cycle.
 
-- If CC built: "mega QA" → Codex → CC → Gemini (3 stages, × 1)
-- If CC built: "mega QA x2" → Codex → CC → Gemini → Codex → CC → Gemini (6 stages)
-- If CC built: "mega QA x3" → (Codex → CC → Gemini) × 3 (9 stages)
-- If CC built: "mega QA 2 rounds" → Codex → Gemini (2 stages, skip builder middle pass)
+- If CC built: "mega QA" → Codex → CC → Antigravity (3 stages, × 1)
+- If CC built: "mega QA x2" → Codex → CC → Antigravity → Codex → CC → Antigravity (6 stages)
+- If CC built: "mega QA x3" → (Codex → CC → Antigravity) × 3 (9 stages)
+- If CC built: "mega QA 2 rounds" → Codex → Antigravity (2 stages, skip builder middle pass)
 - If Codex built: swap CC and Codex positions in the examples above.
 
 Each stage uses the same QA prompt and the same verdict format. The **last
-reviewer's verdict** (Gemini in the default chain) is the final verdict.
+reviewer's verdict** (Antigravity in the default chain) is the final verdict.
 
 ### Per-stage fallback (coin-flip)
 
@@ -209,7 +210,7 @@ overflow, backend 5xx, sandbox-blocked tools, etc. **Never bail.** When a
 stage fails, replace that stage with a working CLI:
 
 1. **Coin-flip** among the other CLIs that haven't failed yet (`codex`,
-   `clauded`, `gemini`).
+   `clauded`, `antigravity`).
 2. **Self-dispatch** the agent currently driving the chain if no other CLI
    works (it's already authed and running, so it's guaranteed available).
 3. Always complete the planned number of stages — count substitutions toward
@@ -220,7 +221,7 @@ self-review of the same model** (e.g., CC → CC → CC). That is still useful:
 each stage is a fresh context that re-examines previous fixes with
 different attention. Cross-model is preferred but not required.
 
-Example (CC built; Gemini out of credits at stage 3):
+Example (CC built; Antigravity out of credits at stage 3):
 
 - Stage 1: Codex (worked) → Stage 2: CC self (worked) → Stage 3: coin-flip
   picks Codex (worked) ⇒ chain done in 3 stages: Codex → CC → Codex.
