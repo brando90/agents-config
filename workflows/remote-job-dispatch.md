@@ -68,8 +68,8 @@ The launcher:
 --name STR           override job name (default: basename without .sh)
 --smart|--direct     wrap in agent (default) | plain bash (no retries, no email)
 --tmux-prefix STR    tmux session prefix (default: ssh_job)
---notify-email ADDR  override primary recipient
---notify-cc ADDR     override CC
+--notify-email ADDR  override primary recipient; use brando.science@gmail.com for tracked internal notifications
+--notify-cc ADDR     explicit CC only; omit for internal notifications unless Brando named extra recipients
 ```
 
 ### Watch live
