@@ -2,23 +2,34 @@
 # Lines starting with # are comments. Match against From: header (case-insensitive).
 # Glob patterns (* and ?) supported. Anything matching = "must triage".
 #
-# PLACEHOLDER — Brando, fill this in. Suggested starter set; adjust:
+# Phase 1.6 proof point: SuperCare / SnapWorx CPAP supply admin thread.
+# Current unread target: amanadero@supercare.com, cc papresupply@supercare.com.
+# Do not echo DOB/customer IDs from subjects into Telegram previews or audit logs.
+*amanadero@supercare.com*
+*papresupply@supercare.com*
+*@supercare.com*
+*@supercarehealth.com*
+
+# Delivery-status notifications. Extra prompt guard required: only triage
+# mailer-daemon bounces when the failed recipient/body references a configured
+# admin domain such as supercarehealth.com; otherwise skip normal bounces.
+*mailer-daemon@googlemail.com*
 
 # Stanford / academic
-*@stanford.edu
-*@cs.stanford.edu
+*@stanford.edu*
+*@cs.stanford.edu*
 
 # Conferences (examples — edit)
-*@aaai.org
-*@iclr.cc
-*@neurips.cc
-*@icml.cc
+*@aaai.org*
+*@iclr.cc*
+*@neurips.cc*
+*@icml.cc*
 
 # Financial / ops (examples — edit)
-financial-aid@*
-billing@*
-no-reply-billing@*
+*financial-aid@*
+*billing@*
+*no-reply-billing@*
 
 # Editorial (examples — edit)
-editor@*
-submissions@*
+*editor@*
+*submissions@*

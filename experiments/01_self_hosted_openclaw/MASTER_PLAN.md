@@ -363,15 +363,20 @@ From `todos.md:13-21` (verified 2026-04-26):
 
 ### Phase 1 — Finish the Air triage loop (smallest-unblocked first)
 
-Goal: one real admin email triaged end-to-end (read → classify → DM Brando → approve → send → label) on the Air alone, before replicating.
+Goal: one real admin email triaged end-to-end (read → classify → DM Brando → `post`/approve → send → label) on the Air alone, before replicating.
 
-#### Step 1.1 — 👤 Brando: write `config/admin-filter.txt` ⏱ 2 min
+#### Step 1.1 — 🤖 Claude: seed `config/admin-filter.txt` ⏱ done 2026-06-12
 
-You list the senders/domains that count as "admin" so the agent only DMs you about those.
+The sender filter now includes the Phase 1.6 SuperCare proof point so the agent
+can pick up a real unread provider-admin thread without Brando opening Gmail.
 
-- 👤 Open `experiments/01_self_hosted_openclaw/config/admin-filter.txt` (Claude will create a starter file with placeholders if it doesn't exist — see Step 1.1b).
-- 👤 Add 3–8 lines, one per sender pattern. Examples:
+- Patterns currently include:
   ```
+  *amanadero@supercare.com*
+  *papresupply@supercare.com*
+  *@supercare.com*
+  *@supercarehealth.com*
+  *mailer-daemon@googlemail.com*
   *@stanford.edu
   *@cs.stanford.edu
   *financialaid*@*
@@ -379,7 +384,11 @@ You list the senders/domains that count as "admin" so the agent only DMs you abo
   noreply@*conference*
   *@registrar.*
   ```
-- 👤 Commit: `git -C ~/agents-config add experiments/01_self_hosted_openclaw/config/admin-filter.txt && git commit -m "OpenClaw: seed admin-email filter" && git push`
+- The `mailer-daemon@googlemail.com` pattern has an extra prompt guard: triage
+  only when the bounce references a configured admin/vendor domain such as
+  `supercarehealth.com`; skip unrelated delivery failures quietly.
+- Preserve the existing Stanford/conference/finance/editorial seed patterns so
+  later admin triage still has a starter scope.
 
 #### Step 1.1b — 🤖 Claude: create the empty `admin-filter.txt` skeleton ⏱ 1 min
 
@@ -443,14 +452,21 @@ This is where heartbeats land. Phase 2 needs it; create it now so Phase 1 testin
   ```
 - 🤖 Store the channel ID in `~/.openclaw/openclaw.json` under `channels.telegram.opsChannelId` (or whatever OpenClaw's config schema names it — verify via `openclaw config schema`).
 
-#### Step 1.6 — 🤖 Claude + 👤 Brando: end-to-end real-email test ⏱ 10 min
+#### Step 1.6 — 🤖 Claude + 👤 Brando: SuperCare end-to-end real-email test ⏱ 10 min
 
 The proof point. One real unread admin email goes through the full loop.
 
-- 👤 Brando: identify one unread email from a sender already in `admin-filter.txt`. Don't open it (so it stays unread and the agent picks it up).
-- 🤖 Claude: poke the agent (`openclaw agent poke main` or DM the bot "check my email") and watch logs (`openclaw logs --follow`).
-- Expected: bot DMs Brando with the `📬 [sender] subject / summary / Draft / approve / edit / skip` format.
-- 👤 Brando: reply `approve` (or `edit: <text>`) in Telegram.
+- Current target: unread SuperCare thread id `19e898b1ba7d2bb3` from
+  `amanadero@supercare.com`, cc `papresupply@supercare.com`. Its subject
+  contains DOB/customer-id data, so the Telegram preview and audit log must use
+  `[redacted customer-id subject]` rather than the literal subject.
+- Exact no-Gmail-web-UI steps live in [`runbook.md` "Phase 1.6 SuperCare E2E
+  proof point"](./runbook.md#phase-16-supercare-e2e-proof-point).
+- 👤 Brando: DM the Telegram bot with the Phase 1.6 SuperCare trigger from the
+  runbook.
+- 🤖 Claude: watch logs (`openclaw logs --follow`) and verify tool calls only.
+- Expected: bot DMs Brando with the `📬 [sender] subject / summary / Draft / post / edit / done / skip` format.
+- 👤 Brando: reply `post` (or `edit: <text>`) in Telegram.
 - 🤖 Claude: verify Gmail Sent folder has the message and the email got the `triaged-by-claw` label.
 - 🤖 Claude: log result in `todos.md` Status & Log.
 
