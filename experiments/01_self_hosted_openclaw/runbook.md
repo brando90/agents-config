@@ -4,6 +4,106 @@
 
 ---
 
+## Phase 1.6 SuperCare E2E proof point
+
+Use this as the first real unread admin-email test. Brando's actual triage path
+must be Telegram-only: no Gmail web UI. Shell commands below are for operator
+setup and verification only.
+
+Current target, verified 2026-06-12:
+
+- Gmail thread id: `19e898b1ba7d2bb3`
+- Human sender: `amanadero@supercare.com`
+- CC: `papresupply@supercare.com`
+- The subject contains DOB/customer-id data. Do not paste the subject verbatim
+  into Telegram previews, docs, audit logs, or status updates; render it as
+  `[redacted customer-id subject]`.
+- The request asks Brando to confirm whether the returned items are still sealed
+  so SuperCare can coordinate pickup and send the corrected replacement.
+
+Prereq smoke from the OpenClaw host:
+
+```bash
+openclaw channels status | grep -i telegram
+openclaw skills info gog
+gog -a brandojazz@gmail.com gmail list \
+  'is:unread from:amanadero@supercare.com newer_than:30d' \
+  --max 5 -p
+rg -n 'supercare|mailer-daemon' \
+  ~/agents-config/experiments/01_self_hosted_openclaw/config/admin-filter.txt
+```
+
+If that exact thread has already been handled, use the newest unread SuperCare
+admin thread instead:
+
+```bash
+gog -a brandojazz@gmail.com gmail list \
+  'is:unread from:supercare.com newer_than:60d -in:spam -in:trash' \
+  --max 10 -p
+```
+
+Start log observation before poking the bot:
+
+```bash
+openclaw logs --follow --plain \
+  | rg --line-buffered 'gog|gmail|telegram|supercare|triaged-by-claw|claw-claimed|mailer-daemon'
+```
+
+Telegram-only trigger. Brando DMs the OpenClaw bot:
+
+```text
+Phase 1.6: check unread admin email and triage the current SuperCare proof-point.
+Use the unread thread from amanadero@supercare.com if present. Do not open Gmail
+web UI. Redact DOB/customer IDs in the Telegram preview. Draft the reply but do
+not send until I reply post or edit:.
+```
+
+Expected Telegram preview shape:
+
+```text
+📬 [SuperCare] [redacted customer-id subject]
+They ask whether the return items are still sealed so they can coordinate pickup
+and replacement; they say the system now reflects the correct item going forward.
+---
+Draft:
+Hi Abigail,
+
+Yes, the mask and three cushions are still sealed. Please coordinate the return
+pickup and replacement for the correct AirTouch N20 Small. Thanks for updating
+the system so this is the item dispensed going forward.
+
+Best,
+Brando
+---
+Reply: post / edit: <new text> / done / skip
+```
+
+If the items are not sealed, Brando replies with `edit: <correct factual text>`.
+If the bot tries to reply to `mailer-daemon@googlemail.com`, reply `skip`, keep
+the message unread, and fix `config/agent-prompt.md`; delivery-status messages
+are diagnosis-only unless a valid human reply target exists.
+
+After Brando replies `post`, verify without Gmail web UI:
+
+```bash
+gog -a brandojazz@gmail.com gmail list \
+  'in:sent to:amanadero@supercare.com newer_than:1d' \
+  --max 5 -p
+gog -a brandojazz@gmail.com gmail list \
+  'label:triaged-by-claw newer_than:1d (from:amanadero@supercare.com OR from:supercare.com)' \
+  --max 10 -p
+```
+
+Expected final state:
+
+- Telegram gets one receipt: `sent reply to amanadero@supercare.com`.
+- The sent reply is in Gmail Sent.
+- The original unread thread has `triaged-by-claw`.
+- No Gmail web UI was opened.
+- No DOB/customer-id data appears in Telegram previews or audit logs.
+
+---
+
 ## When the bot doesn't reply (90-second decision tree)
 
 Three causes in order of frequency observed on Pro 2026-05-09:

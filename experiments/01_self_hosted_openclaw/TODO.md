@@ -4,13 +4,13 @@
 
 ## Phase 1 — finish Air email triage E2E (immediate critical path)
 
-- [ ] **1.1** Brando: write `config/admin-filter.txt` with 3–8 sender patterns (`*@stanford.edu`, `*financialaid*@*`, etc.) — ⏱ 2 min
+- [x] **1.1** Seed `config/admin-filter.txt` with Phase 1.6 SuperCare sender patterns (`*@supercare.com*`, `*@supercarehealth.com*`, `*amanadero@supercare.com*`, `*papresupply@supercare.com*`) plus a guarded `mailer-daemon@googlemail.com` bounce pattern — done 2026-06-12.
 - [ ] **1.2** Verify `gog` skill exposed to agent: `openclaw skills info gog` → ✓ Ready; smoke test via DM
 - [x] **1.3** **Unlock agent shell/tool execution** — *done 2026-05-09 on Pro via local node_modules patch.* Upstream codex extension registers a hook relay then loses lookup at PreToolUse time (gateway logs `native hook relay not found` on every `nativeHook.invoke`). 1-line patch to `dist/extensions/codex/harness.js` adds `{nativeHookRelay:{enabled:false}}` to the runAttempt options, which sends `features.codex_hooks: false` to codex. Codex falls back to its own sandbox/approval (already yolo+danger-full-access+never per `~/.codex/config.toml`). Patch + diff + how-to-undo + how-to-reapply-after-`npm install` documented in [`runbook.md` "Shell exec — local patch required"](./runbook.md). Install script now applies the patch automatically on every run. Verified with real `date +%s && uname -n && pwd` round-trip via Telegram. Apply on Air + mercury2 next time their gateways are touched.
 - [x] **1.3.b** **Chat-reply silent failure (`tools.profile=coding` bug)** — *fixed 2026-05-09 on Pro.* Default `coding` profile bundles `image_gen`+`web_search` which require reasoning≥low; auto-reply path runs at `minimal` → every incoming msg dies with HTTP 400 and is not relayed. Fix: `openclaw config set tools.profile messaging`. Now baked into [`scripts/install_openclaw_instance.sh`](./scripts/install_openclaw_instance.sh). Decision tree for the 3 most common "bot doesn't reply" causes is in [`runbook.md`](./runbook.md). Apply on Air + mercury2 next time their gateways are touched.
-- [ ] **1.4** Finalize `config/agent-prompt.md` — answer the 3 placeholders: home address, payment posture, 2–3 sample-tone emails. ⏱ 10 min
+- [ ] **1.4** Finalize `config/agent-prompt.md` — SuperCare/provider-admin handling was tightened 2026-06-12 (redact DOB/customer IDs in Telegram, do not reply to mailer-daemon, allow `done` for no-reply admin notices). Still open: answer the 3 placeholders: home address, payment posture, 2–3 sample-tone emails. ⏱ 10 min
 - [ ] **1.5** Brando: create private Telegram channel `openclaw-ops`, add bot as admin, send channel ID to Claude. ⏱ 2 min
-- [ ] **1.6** **THE PROOF POINT** — one real unread admin email goes through the full loop end-to-end. ⏱ 10 min
+- [ ] **1.6** **THE PROOF POINT** — triage the current unread SuperCare thread from `amanadero@supercare.com` entirely from Telegram, no Gmail web UI. Exact steps: [`runbook.md` "Phase 1.6 SuperCare E2E proof point"](./runbook.md#phase-16-supercare-e2e-proof-point). ⏱ 10 min
 
 ## Phase 1 prereqs / quick TCC + watcher hygiene (do alongside)
 
