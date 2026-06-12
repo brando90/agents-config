@@ -364,7 +364,6 @@ Use this structure when the notification trigger in `INDEX_RULES.md` Trigger Rul
 
 ```
 To: brando.science@gmail.com
-CC:
 Subject: [QA] <task or experiment name> — <PASS|FIXED|FAIL> (<key takeaway>)
 
 Hi Brando,
@@ -440,7 +439,6 @@ Do NOT send for: single-line edits, routine paper edits, default QA required by 
 
 ```
 To: brando.science@gmail.com
-CC:
 Subject: [Task] <one-line task description> — <DONE|PARTIAL|BLOCKED> (<key outcome>)
 
 Hi Brando,

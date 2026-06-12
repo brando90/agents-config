@@ -23,14 +23,14 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 1. Agent renders the email (subject + body + recipients).
 2. DMs Brando in Telegram:
 
-       📬 [test-saumya-neurips] Email to saumya <email>, cc: <3 brando addrs>
+       📬 [test-saumya-neurips] Email to saumya <email>, cc: brando.science@gmail.com
        Subject: neurips reciprocal reviewer — quick ask
        ---
        <body>
        ---
        Reply: post / edit: <new body> / tweak: <instruction> / cancel
 
-3. On `post`: agent sends via `gog gmail send --to <saumya-email> --cc <3 brando addrs> --subject "..." --body "..."`.
+3. On `post`: agent sends via `gog gmail send --to <saumya-email> --cc brando.science@gmail.com --subject "..." --body "..."`.
 4. On `edit: <new body>`: replace body, send.
 5. On `tweak: <instr>`: regenerate (e.g. *"more formal"*, *"add specific paper ID"*), loop back.
 6. On `cancel`: discard.

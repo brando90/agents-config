@@ -10,7 +10,7 @@
 # (shared with the watcher). Keep it there, not here.
 #
 # Usage:
-#   ssh-submit.sh --node <host> --job <path> [--name <str>] [--direct] [--tmux-prefix <str>] [--notify-email <addr>]
+#   ssh-submit.sh --node <host> --job <path> [--name <str>] [--direct] [--tmux-prefix <str>] [--notify-email <addr>] [--notify-cc <addr>]
 #
 # Examples:
 #   # Fire-and-forget, smart mode (default):
@@ -31,7 +31,8 @@
 #
 # Returns immediately after ssh-spawn; does NOT wait for the job.
 # No email is sent by default. Use --notify-email brando.science@gmail.com only
-# for explicitly tracked jobs.
+# for explicitly tracked jobs. --notify-cc is opt-in only; internal
+# notifications must not CC Brando aliases unless the request named them.
 #
 # For live visibility: `ssh <node> "tmux attach -t <prefix>_<name>_<stamp>"`
 # To list active jobs on a node:    `ssh <node> "tmux ls | grep <prefix>_"`
@@ -146,8 +147,17 @@ end   = rest.find("```", start + 3)
 if start < 0 or end < 0:
     sys.stderr.write("template prompt not in fenced block\n"); sys.exit(1)
 prompt = rest[start+3:end].lstrip("\n").rstrip() + "\n"
+notify_cc = os.environ["NOTIFY_CC_FILLED"].strip()
+if notify_cc:
+    notify_cc_instructions = f"   CC: {notify_cc}\n"
+else:
+    notify_cc_instructions = (
+        "   Omit the CC header entirely; do not add brandojazz@gmail.com "
+        "or brando9@stanford.edu unless the original request explicitly named them.\n"
+    )
 sub = {k: os.environ[k + "_FILLED"] for k in
        ("HOSTNAME","JOB_PATH","ORIGINAL_NAME","LOG_PATH","EXEC_CMD","NOTIFY_EMAIL","NOTIFY_CC")}
+sub["NOTIFY_CC_INSTRUCTIONS"] = notify_cc_instructions.rstrip("\n")
 for k, v in sub.items():
     prompt = prompt.replace("{{" + k + "}}", v)
 sys.stdout.write(prompt)
