@@ -63,7 +63,10 @@ experiments/<NN>_<name>/
 ├── tasks/                      ← generated task dirs (one per task)
 ├── assets/                     ← user-attached images: photos of handwritten notes, whiteboards,
 │                                  screenshots, paper figures (+ optional .md transcriptions
-│                                  with the same basename). See "Assets folder" below.
+│                                  with the same basename). Required when a
+│                                  hypothesis / experiment / prompt / issue is
+│                                  created from an attached image. See
+│                                  "Assets folder" below.
 ├── collect_scores.py           ← shared scoring script (or per-version in expt_vN/)
 ├── compute_correlations.py     ← correlation analysis
 ├── generate_plots.py           ← scatter plots + histograms
@@ -76,7 +79,7 @@ experiments/<NN>_<name>/
 
 ### Assets folder (`assets/`)
 
-When the user attaches an image in a prompt (handwritten note photo, whiteboard, screenshot, paper figure) and asks to save / transcribe / keep it in the context of a specific experiment, save it under that experiment's `assets/` folder with a descriptive snake_case filename — never leave it at the opaque `~/.claude/uploads/<uuid>/` upload path, which is ephemeral and meaningless across sessions and machines. If a transcription is requested, save a sibling `.md` with the same basename containing provenance + a `**TLDR:**`. Existing precedent: `experiments/01_toy_ebm_training/assets/{toy_ebm_notes_photo_1.jpg, ...}`. Full rule: [`INDEX_RULES.md`](../INDEX_RULES.md) Trigger Rule 28.
+When the user attaches an image in a prompt (handwritten note photo, whiteboard, screenshot, paper figure) and asks to save / transcribe / keep it, or asks to create a research hypothesis, experiment, prompt, or GitHub issue from it, save the original image under that hypothesis / experiment folder's `assets/` folder with a descriptive snake_case filename — never leave it only at an opaque `~/.claude/uploads/<uuid>/`, `/tmp/codex-remote-attachments/<uuid>/`, or similar upload path, which is ephemeral and meaningless across sessions and machines. Reference the saved `assets/...` path from the generated `pre_prompt.md`, `issue.md`, transcription, or README. If a transcription is requested, save a sibling `.md` with the same basename containing provenance + a `**TLDR:**`. Existing precedent: `experiments/01_toy_ebm_training/assets/{toy_ebm_notes_photo_1.jpg, ...}`. Full rule: [`INDEX_RULES.md`](../INDEX_RULES.md) Trigger Rule 28.
 
 ### Versioned Sub-Experiments (`expt_v1/`, `expt_v2/`, …)
 
