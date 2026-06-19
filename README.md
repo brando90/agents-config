@@ -110,6 +110,7 @@ agents-config/
 │   ├── qa-correctness.md        ← proportionate QA tiers (deterministic checks, reviewer QA, Mega QA)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
+│   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
 │   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox
 │   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
