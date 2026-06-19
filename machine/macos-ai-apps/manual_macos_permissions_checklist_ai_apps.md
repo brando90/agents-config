@@ -1,10 +1,10 @@
 # Manual macOS Permissions Checklist for AI Apps
 
-**TLDR:** Use this after the automatable setup on each Mac to grant the Privacy & Security permissions that Apple requires a human to approve. It covers the runner apps, browser apps, and desktop-control permissions needed by Codex, Claude Code, Gemini, Cursor, ChatGPT, and Manus.
+**TLDR:** Use this after the automatable setup on each Mac to grant the Privacy & Security permissions that Apple requires a human to approve. It covers the runner apps, browser apps, and desktop-control permissions needed by Codex, Claude Code, Cursor, ChatGPT, and Manus.
 
 Use this checklist on each trusted Mac after running the automatable setup.
 
-This is the part that Codex, Claude Code, Gemini, Cursor, ChatGPT, and Manus generally **cannot fully do for you** from the shell. Apple requires manual approval for many Privacy & Security permissions.
+This is the part that Codex, Claude Code, Cursor, ChatGPT, and Manus generally **cannot fully do for you** from the shell. Apple requires manual approval for many Privacy & Security permissions.
 
 ---
 
@@ -20,7 +20,6 @@ Enable these apps if you use them or if they appear in a permission pane:
 - Codex
 - Claude
 - Claude Code
-- Gemini
 - ChatGPT
 - Manus
 - Google Chrome
@@ -67,7 +66,6 @@ Turn on:
 - `node`, if shown
 - Codex, if shown
 - Claude, if shown
-- Gemini, if shown
 - ChatGPT, if shown
 - Manus, if shown
 - Google Chrome, if you want browser automation to read/write downloaded/local files
@@ -127,7 +125,6 @@ Turn on:
 - `node`, if shown
 - Codex, if shown
 - Claude, if shown
-- Gemini, if shown
 - ChatGPT, if shown
 - Manus, if shown
 - Google Chrome
@@ -156,7 +153,6 @@ Turn on:
 - Visual Studio Code
 - Codex, if shown
 - Claude, if shown
-- Gemini, if shown
 - ChatGPT, if shown
 - Manus, if shown
 - Google Chrome
@@ -195,7 +191,6 @@ Expand every relevant parent app:
 - `node`
 - Codex
 - Claude
-- Gemini
 - ChatGPT
 - Manus
 - Google Chrome
@@ -283,7 +278,6 @@ Apps to check:
 - Visual Studio Code
 - Codex
 - Claude
-- Gemini
 - ChatGPT
 - Manus
 - Google Chrome
@@ -311,7 +305,6 @@ Turn on:
 - Visual Studio Code
 - Codex
 - Claude
-- Gemini
 - ChatGPT
 - Manus
 - Google Chrome
@@ -441,7 +434,6 @@ After changing permissions, quit and reopen:
 - Visual Studio Code
 - Codex
 - Claude
-- Gemini
 - ChatGPT
 - Manus
 - Google Chrome

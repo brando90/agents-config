@@ -460,7 +460,7 @@ Finished the task you asked for: <one-sentence description>.
 
 == QA ==
 
-<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / Gemini). Link or path to QA output if substantive.>
+<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / self-review; do not use Gemini for QA). Link or path to QA output if substantive.>
 
 == NOTES == (optional — 1-3 bullets on anything surprising, partial, or needing follow-up)
 

@@ -1,4 +1,4 @@
-# AI Agent Automatable Setup: Codex, Claude Code, Gemini, Cursor, ChatGPT, Manus
+# AI Agent Automatable Setup: Codex, Claude Code, Cursor, ChatGPT, Manus
 
 **TLDR:** Use this on each Mac to let Codex or Claude Code configure the shell-automatable parts of trusted local AI-agent workflows. It sets full-trust aliases/configs and opens macOS permission panes, but intentionally leaves Apple privacy approvals as manual clicks.
 
@@ -56,8 +56,6 @@ Before editing, inspect and print:
 - codex --version || true
 - command -v claude || true
 - claude --version || true
-- command -v gemini || true
-- gemini --version || true
 - command -v cursor || true
 - command -v node || true
 - ls -lah ~/.zshrc ~/.bashrc ~/.bash_profile ~/.codex/config.toml ~/.claude/settings.json 2>/dev/null || true
@@ -70,7 +68,7 @@ Shell setup:
 - Back up every file before editing it.
 - Avoid duplicate aliases/functions.
 - Preserve Homebrew, conda/mamba, pyenv, SSH setup, PATH settings, Claude
-  aliases, Codex aliases, Gemini aliases, Cursor aliases, and any existing
+  aliases, Codex aliases, Cursor aliases, and any existing
   `clauded` command if present.
 - Put all changes inside this marked block:
   # >>> ai full-trust aliases >>>
@@ -149,10 +147,6 @@ alias codex-safe='codex --sandbox workspace-write --ask-for-approval on-request'
 alias clauded='claude --dangerously-skip-permissions'
 alias clauderoot='ai-sudo-session claude --dangerously-skip-permissions'
 
-# Gemini CLI: use sudo-session wrapper only unless its help documents an
-# official no-approval flag. Do not guess flags.
-alias geminiroot='ai-sudo-session gemini'
-
 # GUI apps should not be launched with sudo. Use macOS Privacy & Security
 # permissions instead.
 alias cursorroot='echo "Do not launch GUI Cursor as root. Grant Cursor/Terminal/node Full Disk Access, Accessibility, Screen Recording, Developer Tools, and Automation in System Settings."'
@@ -187,12 +181,6 @@ Claude Code config:
 
 - If jq is available, use jq to merge. Otherwise use a small Python script.
 - Preserve unrelated Claude settings.
-
-Gemini:
-- Run `gemini --help || true`.
-- If the help output clearly documents an official no-approval/YOLO flag,
-  add a `geminid` alias using that documented flag.
-- If the flag is not obvious, do not guess. Keep only `geminiroot`.
 
 Open macOS Privacy & Security panes:
 - Open the relevant System Settings panes for me.
@@ -249,7 +237,7 @@ After editing:
   ai-sudo-off
 - Remind me that macOS System Settings toggles still require manual clicks.
 - Remind me to quit and reopen Terminal/iTerm2/Cursor/Visual Studio Code/
-  Codex/Claude/Gemini/ChatGPT/Manus after toggling permissions.
+  Codex/Claude/ChatGPT/Manus after toggling permissions.
 ```
 
 ---
@@ -330,7 +318,6 @@ alias codex-yolo='codex --dangerously-bypass-approvals-and-sandbox'
 alias codex-safe='codex --sandbox workspace-write --ask-for-approval on-request'
 alias clauded='claude --dangerously-skip-permissions'
 alias clauderoot='ai-sudo-session claude --dangerously-skip-permissions'
-alias geminiroot='ai-sudo-session gemini'
 alias cursorroot='echo "Do not launch GUI Cursor as root. Grant macOS Privacy & Security permissions instead."'
 alias chatgptroot='echo "Do not launch GUI ChatGPT as root. Grant macOS Privacy & Security permissions instead."'
 alias manusroot='echo "Do not launch GUI Manus as root. Grant macOS Privacy & Security permissions instead."'

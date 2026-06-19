@@ -171,7 +171,7 @@ Key paths and vars set in `.bashrc`:
 
 ### npm globals — "update loop" gotcha
 
-If a globally-installed npm tool (`codex`, `claude`, `gemini`, etc.) keeps nagging "please restart / update again" *after* you run `npm install -g <pkg>`, it's almost always **two installs in different PATH positions** — npm writes to one prefix but the shell resolves a stale copy earlier in PATH.
+If a globally-installed npm tool (`codex`, `claude`, etc.) keeps nagging "please restart / update again" *after* you run `npm install -g <pkg>`, it's almost always **two installs in different PATH positions** — npm writes to one prefix but the shell resolves a stale copy earlier in PATH.
 
 Diagnose:
 ```bash

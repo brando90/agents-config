@@ -16,9 +16,9 @@ codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMP
 Never make direct LLM-provider API calls (`anthropic`, `openai`, `litellm`,
 `google.genai`, raw HTTP to `api.anthropic.com` / `api.openai.com` /
 `generativelanguage.googleapis.com`). Always route LLM-driven work through the
-locally-authenticated CLIs: `clauded -p`, `codex exec`, `gemini`. They use
+approved locally-authenticated CLIs: `clauded -p` and `codex exec`. They use
 cached subscription/OAuth credentials, self-throttle, and leave observable
-transcripts.
+transcripts. Gemini is intentionally not installed or used.
 
 - An agent may **not** author API-calling code — only Brando may.
 - Before executing any existing script that loads `~/keys/anthropic_*` /

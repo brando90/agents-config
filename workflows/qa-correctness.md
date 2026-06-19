@@ -6,9 +6,9 @@
 
 ## Hard Rule: CLI-only, no API keys
 
-**Any model QA dispatch ALWAYS runs through the locally-logged-in CLIs: `codex`, `claude` / `clauded`, `gemini`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth / `~/.gemini/settings.json`). They are what Brando has logged into and pays for.
+**Any model QA dispatch ALWAYS runs through the locally-logged-in CLIs: `codex` and `claude` / `clauded`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth). They are what Brando has approved for agent QA.
 
-**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an auth error ("set GEMINI_API_KEY", "no credentials"), treat it as a **local setup issue**: skip that stage, note the skip in the QA report, and suggest the user re-run the CLI's interactive login (`gemini`, `codex login`, `claude login`). Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
+**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an auth error, treat it as a **local setup issue**: skip that stage, note the skip in the QA report, and suggest the user re-run the CLI's interactive login (`codex login` or `claude login`). Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
 
 Fallback order when a CLI stage fails:
 1. Next CLI in the chain.
@@ -89,21 +89,18 @@ Try the primary cross-agent reviewer first. If unavailable (not installed, auth
 error, sandbox failure), fall through to the next option.
 
 ```bash
-# If you ARE Claude Code (CC) — dispatch Codex, fall back to Gemini, then self-review:
+# If you ARE Claude Code (CC) — dispatch Codex, then self-review:
 codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT" \
-  || gemini -p "$QA_PROMPT" \
   || clauded -p "$QA_PROMPT"
 
-# If you ARE Codex — dispatch CC, fall back to Gemini, then self-review:
+# If you ARE Codex — dispatch CC, then self-review:
 clauded -p "$QA_PROMPT" \
-  || gemini -p "$QA_PROMPT" \
   || codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
 ```
 
 For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"'`
 - Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
-- Gemini reviewer: `gemini -p` (uses cached credentials)
 
 If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive
@@ -165,15 +162,15 @@ code. No parallel writes, no aggregation — just a chain.
 ### Chain order
 
 The builder reviews in the **middle** (it knows the code intent best and can
-verify the first reviewer's changes). Gemini always does the **final** pass as
-clean-eyes reviewer. Default is 3 stages (one per model). If the user requests
-more rounds, cycle through the chain again (e.g., 6 rounds = chain × 2, 9
-rounds = chain × 3).
+verify the first reviewer's changes). Default is 2 stages when both Codex and
+Claude Code are available: one independent reviewer, then the builder/self
+review. If the user requests more rounds, alternate the available CLIs and use
+fresh contexts for each pass.
 
-| Builder | Chain (default 3 stages) |
+| Builder | Chain (default 2 stages) |
 |---|---|
-| CC built | Codex → **CC** → Gemini |
-| Codex built | CC → **Codex** → Gemini |
+| CC built | Codex → **CC** |
+| Codex built | CC → **Codex** |
 
 ### How to run
 
@@ -185,9 +182,6 @@ codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMP
 
 # Stage 2: CC (the builder) reviews Codex's changes — knows the intent best
 # Run the QA prompt inline (self-review with best model)
-
-# Stage 3: Gemini does final clean-eyes pass
-gemini -p "$QA_PROMPT"
 ```
 
 Each reviewer uses the same `$QA_PROMPT` from Step 1 above. Each one sees the
@@ -195,18 +189,16 @@ code as improved by the previous reviewer.
 
 ### Configuring rounds
 
-Default is **3 stages** (one per available model). The user can request more
-rounds — the chain cycles (e.g., × 2 = 6 stages, × 3 = 9 stages). Gemini
-always occupies the last stage of each cycle.
+Default is **2 stages** with Codex and Claude Code. The user can request more
+rounds; alternate Codex and Claude Code, using a fresh context each time.
 
-- If CC built: "mega QA" → Codex → CC → Gemini (3 stages, × 1)
-- If CC built: "mega QA x2" → Codex → CC → Gemini → Codex → CC → Gemini (6 stages)
-- If CC built: "mega QA x3" → (Codex → CC → Gemini) × 3 (9 stages)
-- If CC built: "mega QA 2 rounds" → Codex → Gemini (2 stages, skip builder middle pass)
+- If CC built: "mega QA" → Codex → CC (2 stages)
+- If CC built: "mega QA x2" → Codex → CC → Codex → CC (4 stages)
+- If CC built: "mega QA x3" → Codex → CC → Codex → CC → Codex → CC (6 stages)
 - If Codex built: swap CC and Codex positions in the examples above.
 
 Each stage uses the same QA prompt and the same verdict format. The **last
-reviewer's verdict** (Gemini in the default chain) is the final verdict.
+reviewer's verdict** is the final verdict.
 
 ### Per-stage fallback (coin-flip)
 
@@ -214,8 +206,7 @@ A stage can fail for many reasons: auth/credits exhausted, context-window
 overflow, backend 5xx, sandbox-blocked tools, etc. **Never bail.** When a
 stage fails, replace that stage with a working CLI:
 
-1. **Coin-flip** among the other CLIs that haven't failed yet (`codex`,
-   `clauded`, `gemini`).
+1. Use the other approved CLI if it has not failed yet (`codex` or `clauded`).
 2. **Self-dispatch** the agent currently driving the chain if no other CLI
    works (it's already authed and running, so it's guaranteed available).
 3. Always complete the planned number of stages — count substitutions toward
@@ -226,11 +217,10 @@ self-review of the same model** (e.g., CC → CC → CC). That is still useful:
 each stage is a fresh context that re-examines previous fixes with
 different attention. Cross-model is preferred but not required.
 
-Example (CC built; Gemini out of credits at stage 3):
+Example (CC built; Codex unavailable at stage 1):
 
-- Stage 1: Codex (worked) → Stage 2: CC self (worked) → Stage 3: coin-flip
-  picks Codex (worked) ⇒ chain done in 3 stages: Codex → CC → Codex.
-- If Codex also failed at stage 3: fall through to self → CC → CC → CC.
+- Stage 1: CC self-review (substitute) → Stage 2: CC self-review in a fresh
+  context ⇒ chain done in 2 stages.
 
 Single-model from the start (only CC available): chain is CC self-review × N
 out of the box; same logic, fewer choices.

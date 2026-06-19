@@ -77,7 +77,6 @@ agents-config/
 ├── LICENSE                      ← Apache 2.0
 │
 ├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
-├── setup_gemini_cli.sh          ← one-shot installer for the `gemini` CLI (OAuth on Mac, --api-key on servers)
 ├── email-signature.md           ← canonical email signature + default From/CC for outbound mail
 ├── contacts.md                  ← contact-resolution workflow; points to ultimate-utils collaborator roster
 ├── bm-agents-config.code-workspace  ← VS Code multi-root workspace for editing this repo
@@ -129,7 +128,7 @@ agents-config/
 │       └── write-blog-post.md
 │
 ├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
-│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` / `gemini` fresh
+│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` fresh
 │   ├── ssh-submit.sh            ← SSH fire-and-forget remote-job submitter
 │   ├── git-inbox-poller.sh      ← phone-dispatch poller for `jobs-inbox/`
 │   └── relink-dfs-projects.sh   ← rebuild DFS-backed project symlinks on a fresh node
@@ -368,110 +367,19 @@ codex  # sign in with ChatGPT when prompted, or set OPENAI_API_KEY
 ssh <server> -t 'tmux attach -t codex'
 ```
 
-### Gemini CLI — setup
+### Gemini CLI — intentionally not used
 
-Google's `gemini` CLI needs Node.js >= 18 and either an OAuth browser login or a `GEMINI_API_KEY`. **Which path you use depends on whether a browser is reachable from the machine running `gemini`:**
-
-| Machine                     | Browser reachable? | Use this path                       |
-|-----------------------------|--------------------|-------------------------------------|
-| Your Mac (local)            | Yes                | OAuth (interactive)                 |
-| SNAP server / headless SSH  | No                 | API key (headless)                  |
-
-> The `gemini` CLI runs where you type `gemini`. If you're SSH'd into a SNAP node and running `gemini` there, that's the **server** case — use the API-key path even if your laptop has a browser.
-
-#### On your Mac (local, OAuth)
+Do not install or use the Gemini CLI on Brando's machines. The approved
+agent-review CLIs are Codex and Claude Code only. If an old setup has Gemini
+installed, remove it:
 
 ```bash
-bash ~/agents-config/setup_gemini_cli.sh          # opens a browser tab for OAuth
-```
-
-#### On a SNAP server (headless, API key)
-
-Get a key from https://aistudio.google.com/apikey first (copy it to your clipboard from your Mac), then on the server:
-
-```bash
-bash ~/agents-config/setup_gemini_cli.sh --api-key   # prompts for the key, saves to ~/.gemini/.env (mode 600)
-```
-
-The script installs `@google/gemini-cli`, persists the key, and runs a verification prompt. That's the whole setup on a server.
-
-<details>
-<summary>Manual steps — server only (equivalent to <code>--api-key</code>, if you prefer to see what the script does)</summary>
-
-```bash
-# 1. Install (Node >= 18 required)
-npm install -g @google/gemini-cli
-
-# 2. Persist key for future shells
-mkdir -p ~/.gemini
-printf 'GEMINI_API_KEY=%s\n' '<your-key>' > ~/.gemini/.env
-chmod 600 ~/.gemini/.env
-
-# 3. Export for current shell
-while IFS= read -r line; do
-  [[ $line =~ ^[[:space:]]*# ]] && continue
-  if [[ $line =~ ^[[:space:]]*GEMINI_API_KEY[[:space:]]*=(.*)$ ]]; then
-    value=${BASH_REMATCH[1]}
-    value=${value%%#*}
-    value="${value#"${value%%[![:space:]]*}"}"
-    value="${value%"${value##*[![:space:]]}"}"
-    value=${value#\"}; value=${value%\"}
-    value=${value#\'}; value=${value%\'}
-    export GEMINI_API_KEY="$value"
-    break
-  fi
-done < ~/.gemini/.env
-
-# 4. Verify
-gemini -p "Say exactly: hello world"
-```
-</details>
-
-#### Server only — persistent sessions over SSH
-
-Run `gemini` inside `tmux` / `krbtmux` so SSH drops don't kill it (same pattern as Codex — Mac users don't need this):
-
-```bash
-tmux new -As gemini
-gemini                                              # interactive REPL
-# Reconnect later: ssh <server> -t 'tmux attach -t gemini'
-```
-
-#### Server only — SNAP multi-node: share auth via DFS
-
-So every node reads the same key (run once from any one server after `--api-key` setup; skip on Mac):
-
-```bash
-# Once, from any node (after the key is set up):
-DFS="/dfs/scratch0/<user>"
-mv ~/.gemini "${DFS}/.gemini"
-ln -sfn "${DFS}/.gemini" ~/.gemini
-
-# On every other node:
+npm uninstall -g @google/gemini-cli
 rm -rf ~/.gemini
-ln -sfn "${DFS}/.gemini" ~/.gemini
 ```
 
-Then add to `/dfs/scratch0/<user>/.bashrc` so the key is in every new shell:
-
-```bash
-# Gemini CLI API key (headless)
-if [ -f ~/.gemini/.env ]; then
-  while IFS= read -r line; do
-    [[ $line =~ ^[[:space:]]*# ]] && continue
-    if [[ $line =~ ^[[:space:]]*GEMINI_API_KEY[[:space:]]*=(.*)$ ]]; then
-      value=${BASH_REMATCH[1]}
-      value=${value%%#*}
-      value="${value#"${value%%[![:space:]]*}"}"
-      value="${value%"${value##*[![:space:]]}"}"
-      value=${value#\"}; value=${value%\"}
-      value=${value#\'}; value=${value%\'}
-      export GEMINI_API_KEY="$value"
-      break
-    fi
-  done < ~/.gemini/.env
-fi
-```
+If a task appears to require Gemini, use Codex/Claude or stop and ask for an
+explicit exception.
 
 ### Server rollout checklist
 
