@@ -46,7 +46,7 @@ For Tier 2, dispatch one independent reviewer before reporting done. The reviewe
 
 ### Tier 3 — Mega QA
 
-Use only when the user says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. Run the sequential multi-model chain in the Mega QA section.
+Use only when the user **explicitly** says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. **Mega QA never auto-triggers** — not on `git push`/merge to `main`, not from file-path heuristics, and not from a project QA-gate hook. A hook that gates pushes to `main` must default to the lightest proportionate tier (Tier 0/1 for docs/prose, Tier 2 for code/behavior/claims) and must **never** escalate to the mega chain on its own; mega is opt-in only via an explicit user request (or a user-set opt-in such as a `[mega-qa]` commit-message tag or an env flag the user sets). Run the sequential multi-model chain in the Mega QA section.
 
 ### Paper-writing rule of thumb
 
@@ -152,7 +152,10 @@ QA summary.
 ## Mega QA — Sequential Multi-Model Chain
 
 > **Trigger:** User says "mega QA", "super QA", "extra careful QA", "deep QA",
-> or similar. This is opt-in only — never runs automatically.
+> or similar. This is opt-in only — it **never runs automatically**: not on
+> `git push`/merge to `main`, not from file-path heuristics, and not from a
+> project QA-gate hook. A push-gate hook may require Tier 1/2 QA, but only an
+> explicit user request invokes the mega chain.
 
 For high-stakes moments (end of work day, before major merges, before sleep),
 run all available models **sequentially**. Each model does full QA (correctness
