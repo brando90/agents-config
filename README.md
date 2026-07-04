@@ -121,7 +121,8 @@ agents-config/
 │   ├── ml_research/             ← ML research paper writing guides and section skills
 │   │   ├── ml_research_writing.md
 │   │   ├── write-intro.md
-│   │   └── write-abstract.md
+│   │   ├── write-abstract.md
+│   │   └── write-poster.md
 │   └── blog/                    ← Brando personal blog rules, voice guide, and draft skill
 │       ├── rules.md
 │       ├── blog_writing.md
