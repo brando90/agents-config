@@ -122,7 +122,8 @@ agents-config/
 │   │   ├── ml_research_writing.md
 │   │   ├── write-intro.md
 │   │   ├── write-abstract.md
-│   │   └── write-poster.md
+│   │   ├── write-poster.md
+│   │   └── write-sail-blog-post.md
 │   └── blog/                    ← Brando personal blog rules, voice guide, and draft skill
 │       ├── rules.md
 │       ├── blog_writing.md
