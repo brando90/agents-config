@@ -25,6 +25,10 @@ Governing design philosophy from Rylan Schaeffer (the template's author), WhatsA
 3. **Word budget: ≤ ~800 words total.** Bullets over paragraphs; no paragraph longer than 3 sentences; never paste the abstract verbatim.
 4. **CS197 jargon stays in `%` comments** (`bit flip`, `vectoring`, `north star`, ...) — never in rendered poster text. Same rule as the abstract/intro skills.
 5. **Compile and LOOK at the render before delivering.** A poster that "should compile" is not a deliverable. The visual QA loop below is mandatory.
+6. **Always deliver TWO drafts** (Brando rule, 2026-07-04). Every poster job produces both variants, and both go to Brando and the paper's collaborators:
+   - **Draft A — standard** (`main.tex`): the full recipe below, ≤800 words. Text is allowed to carry nuance.
+   - **Draft B — visual-minimal** (`main_visual.tex`, same dir/template/size/colors): derived from Draft A by cutting prose, not rebuilding. Target **≤400 words**. Keep: title + authors, ONE motivation figure, the key-idea alertblock (≤2 bullets), the money figure set larger, the big-number strip, ONE results visual (figure *or* table, not both), the takeaways alertblock (≤3 short bullets), QRs. Drop: background bullets, sub-headings, secondary figures, long captions (captions ≤1 line). Figures and takeaways must carry the entire story.
+   Both variants get the full compile + visual-QA loop. Never send only one.
 
 ## Inputs (interpret from the user's message)
 
@@ -130,7 +134,8 @@ Check, fix, recompile, re-look until clean:
 
 ## Deliverable
 
-1. The poster project in `<output_dir>` (`main.tex`, `.sty` files, `figures/`, `poster.bib`) plus compiled `main.pdf` — send the PDF and the PNG preview to the user.
+1. The poster project in `<output_dir>` (`main.tex` + `main_visual.tex`, `.sty` files, `figures/`, `poster.bib`) plus BOTH compiled PDFs — send both PDFs and PNG previews to the user (Non-negotiable 6).
+1b. **Collaborator delivery: one email per poster/paper.** When posters for multiple papers ship in the same session, send a separate email per paper to that paper's author group (author sets differ even when they overlap) — never batch two papers' posters into one email. Attach that paper's Draft A + Draft B PDFs and link its PR.
 2. A summary in the reply: how the paper mapped to the six moves/blocks, which figures were reused vs. rebuilt, poster size + color used (and whether the size was venue-verified or assumed), any `[TODO: ...]` flags (QR URLs, missing numbers), and `git diff --stat` if committed.
 3. Remind the user to proof at 100% zoom before printing — colors and figure DPI on screen lie.
 4. Run QA per Hard Rule 3 (a second agent reviews `main.tex` + the rendered preview) before reporting done.
