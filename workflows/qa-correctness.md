@@ -165,15 +165,17 @@ code. No parallel writes, no aggregation — just a chain.
 ### Chain order
 
 The builder reviews in the **middle** (it knows the code intent best and can
-verify the first reviewer's changes). Default is 2 stages when both Codex and
-Claude Code are available: one independent reviewer, then the builder/self
-review. If the user requests more rounds, alternate the available CLIs and use
-fresh contexts for each pass.
+verify the first reviewer's changes). Default is 3 stages: one independent
+reviewer, then the builder/self review, then **Antigravity** (Google's agentic
+CLI, replacing the deprecated Gemini CLI) as the final clean-eyes pass. If
+Antigravity is not installed on the machine, the per-stage fallback applies
+(substitute another approved CLI, else self-dispatch in a fresh context). If
+the user requests more rounds, cycle the chain in fresh contexts.
 
-| Builder | Chain (default 2 stages) |
+| Builder | Chain (default 3 stages) |
 |---|---|
-| CC built | Codex → **CC** |
-| Codex built | CC → **Codex** |
+| CC built | Codex → **CC** → Antigravity |
+| Codex built | CC → **Codex** → Antigravity |
 
 ### How to run
 
