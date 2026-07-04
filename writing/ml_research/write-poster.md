@@ -45,7 +45,7 @@ Original `.tex` + figure files beat PDF scraping every time — always try to ge
 
 1. **arXiv link** → fetch the source tarball first, not the PDF: `curl -L https://arxiv.org/e-print/<id> -o src.tar; mkdir -p src && tar -xf src.tar -C src` (sometimes it's a single gzipped `.tex`; handle with `file src.tar`). This yields the original figure PDFs/PNGs for direct reuse. Fall back to the PDF.
 2. **Local repo/dir** → read the abstract, intro, method, and results `.tex` files plus the `figures/` dir directly.
-3. **PDF only** → Read it (paged). Extract figures with `pdfimages -all paper.pdf figs/` or rasterize a page region with `pdftoppm -png -r 300 -f <p> -l <p>` + crop (`brew install poppler`); prefer asking for source files if extraction quality is poor.
+3. **PDF only** → Read it (paged). Extract figures with `mkdir -p figs && pdfimages -all paper.pdf figs/` or rasterize a page region with `pdftoppm -png -r 300 -f <p> -l <p>` + crop (`brew install poppler`); prefer asking for source files if extraction quality is poor.
 
 Extract while reading: title; authors + affiliations; the problem/failure mode; the prior assumption being inverted; the contribution claim; the system/method and its money figure; headline numbers and the one table that carries them; the takeaway; ≤5 essential citations.
 
