@@ -9,7 +9,7 @@ Trigger when the user asks for a LinkedIn post announcing a paper. Typical invoc
 > Use the write-linkedin-post skill.
 > Paper: `<link | repo path | PDF>` · Venue/status · Links: `<arXiv, GitHub>`
 
-Siblings: [`write-tweet-thread.md`](write-tweet-thread.md) — announcements usually launch together; when the user asks for "announcements," produce both. Gold-standard example: the CoDaPO LinkedIn post (saved by Brando 2026-07-04; structure mirrored below).
+Siblings: [`write-tweet-thread.md`](write-tweet-thread.md) — announcements usually launch together; when the user asks for "announcements," produce both. Gold-standard example: [`assets/codapo_example_linkedin.md`](assets/codapo_example_linkedin.md) (structure mirrored below).
 
 ## ⚠ Non-negotiables
 

@@ -9,7 +9,7 @@ Trigger when the user asks for a tweet thread / X thread / tweprint announcing a
 > Use the write-tweet-thread skill.
 > Paper: `<link | repo path | PDF>` · Venue/status: `<accepted at ...>` · Links: `<arXiv, GitHub>`
 
-Siblings: [`write-linkedin-post.md`](write-linkedin-post.md) (announcements usually launch together — offer to produce both), [`write-sail-blog-post.md`](write-sail-blog-post.md), [`write-poster.md`](write-poster.md). Format/voice reference: [`../../workflows/tweprints.md`](../../workflows/tweprints.md). Gold-standard example: the CoDaPO thread (saved by Brando 2026-07-04; structure mirrored below).
+Siblings: [`write-linkedin-post.md`](write-linkedin-post.md) (announcements usually launch together — offer to produce both), [`write-sail-blog-post.md`](write-sail-blog-post.md), [`write-poster.md`](write-poster.md). Format/voice reference: [`../../workflows/tweprints.md`](../../workflows/tweprints.md) — where the two disagree (thread length: this skill says 6–9, tweprints says 4–8; tagging: this skill omits handles by default, tweprints tags in the final tweet), **this skill wins for paper announcements**. Gold-standard example: [`assets/codapo_example_x_thread.md`](assets/codapo_example_x_thread.md) (structure mirrored below).
 
 ## ⚠ Non-negotiables
 
