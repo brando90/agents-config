@@ -8,7 +8,7 @@ Collapse "I want to run experiment X" → "ssh to mercury2, tmux new, git checko
 
 ## When this fires
 
-- **Brando-initiated (Telegram)** — `/experiment <branch-name> [--host mercury2|mac-pro] [--model gpt-5.5] [--runner claude|codex]`.
+- **Brando-initiated (Telegram)** — `/experiment <branch-name> [--host mercury2|mac-pro] [--model gpt-5.6-sol] [--runner claude|codex]`.
 
 **Never** dispatched automatically. Each experiment requires Brando's explicit invocation.
 
@@ -32,7 +32,7 @@ Collapse "I want to run experiment X" → "ssh to mercury2, tmux new, git checko
    - Open new tmux session named `experiment-<branch-slug>`.
    - Inside tmux, launch the runner (one of):
      - **Claude (default)**: `claude --headless --prompt "$(cat <spec>)" --output-dir ~/openclaw/experiments/<branch-slug>/`
-     - **Codex CLI**: `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$(cat <spec>)"`
+     - **Codex CLI**: `codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$(cat <spec>)"`
      - Per-experiment override declared in spec frontmatter.
    - Detach.
 6. **Heartbeat**: every 15 min, post `[host] experiment-<branch-slug> RUNNING @ <ts> | tail: <last-line-of-log>` to `openclaw-ops`.

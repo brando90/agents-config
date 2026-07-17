@@ -90,16 +90,16 @@ error, sandbox failure), fall through to the next option.
 
 ```bash
 # If you ARE Claude Code (CC) — dispatch Codex, then self-review:
-codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT" \
+codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT" \
   || clauded -p "$QA_PROMPT"
 
 # If you ARE Codex — dispatch CC, then self-review:
 clauded -p "$QA_PROMPT" \
-  || codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
+  || codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
 ```
 
 For unattended review runs in a trusted isolated environment:
-- Codex reviewer: `codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"'`
+- Codex reviewer: `codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"'`
 - Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
 
 If skip-permissions mode is not appropriate for your environment, do not treat
@@ -183,7 +183,7 @@ the user requests more rounds, cycle the chain in fresh contexts.
 # Example: CC built the code
 
 # Stage 1: dispatch Codex as first independent reviewer
-codex exec --full-auto -m gpt-5.5 -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
+codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
 
 # Stage 2: CC (the builder) reviews Codex's changes — knows the intent best
 # Run the QA prompt inline (self-review with best model)

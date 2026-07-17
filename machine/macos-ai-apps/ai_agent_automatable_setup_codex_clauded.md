@@ -158,7 +158,7 @@ Codex config:
 - Create ~/.codex if needed.
 - Back up ~/.codex/config.toml if it exists.
 - Ensure ~/.codex/config.toml contains:
-  model = "gpt-5.5"
+  model = "gpt-5.6-sol"
   model_reasoning_effort = "xhigh"
   approval_policy = "never"
   sandbox_mode = "danger-full-access"
@@ -348,7 +348,7 @@ from pathlib import Path
 path = Path.home() / ".codex" / "config.toml"
 text = path.read_text() if path.exists() else ""
 keys = {
-    "model": '"gpt-5.5"',
+    "model": '"gpt-5.6-sol"',
     "model_reasoning_effort": '"xhigh"',
     "approval_policy": '"never"',
     "sandbox_mode": '"danger-full-access"',

@@ -1,5 +1,5 @@
 {
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "effortLevel": "max",
   "skipDangerousModePermissionPrompt": true,
   "hooks": {
