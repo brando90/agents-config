@@ -21,6 +21,7 @@ Every experiment **must** have:
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
 - [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
 - [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
+- [ ] **Stable `results.md` at experiment root** — latest outcome + TLDRs, updated every run, links to timestamped summaries (see § Results Storage)
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
 - [ ] **GPU cleanup** — if the run used GPUs: kill zombie processes, verify GPUs freed, report `nvidia-smi` state after completion
 
@@ -207,6 +208,7 @@ Rules:
 
 - **Results live inside the version dir:** `expt_v1/results/`, `expt_v2/results/`, etc. This keeps each iteration self-contained and reproducible.
 - **Timestamped summaries:** Every results summary file is timestamped (`YYYY-MM-DD` or `YYYY-MM-DD__HH-MM-SS`). Never overwrite — create a new file per run.
+- **Stable `results.md` at experiment root (mandatory):** every experiment dir keeps a `results.md` at its root — a stable filename Brando can always open to see the latest outcome without hunting through version dirs. Format: `**TLDR-start:**` / `**TLDR-end:**` (per Hard Rule 4, `[proj: task]` tag), headline numbers/verdict, then links to the authoritative timestamped `expt_vN/results/results_summary_<ts>.md` files. **Overwrite/update it on every run** (unlike timestamped summaries) — it is a pointer/rollup, not the archival record.
 - **Temporary results:** Unverified intermediates go in `results/temporary_results/` within the version dir. Never promoted; kept for audit trail.
 - **Verification before commit:** Always run the verification checklist (in the active version's agent prompt) and QA review before committing results to the repo.
 - **Top-level rollups (optional):** Use `results_summary/` and `expt_results/` at the experiment root only for cross-version summaries or shared aggregates. New experiment runs should keep per-run outputs in `expt_vN/results/`.
