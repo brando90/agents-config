@@ -25,3 +25,11 @@ npm install --prefix "$DFS_PREFIX" -g @anthropic-ai/claude-code@latest >/dev/nul
 
 # Update Codex CLI (installed via nvm global)
 npm install -g @openai/codex@latest >/dev/null 2>&1 || true
+
+# Update the Google Antigravity app (macOS Homebrew cask only). Note: the cask
+# updates only /Applications/Antigravity.app; the `antigravity` terminal command
+# is a shim installed separately, once, from inside the app (Command Palette ->
+# "Install 'antigravity' command in PATH") and is not touched by this upgrade.
+if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null 2>&1; then
+  brew upgrade --cask antigravity >/dev/null 2>&1 || true
+fi
