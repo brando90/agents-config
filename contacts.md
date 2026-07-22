@@ -34,6 +34,16 @@ When sending any email on Brando's behalf or to Brando, apply the routing rule f
 
 Also recognize `brando9@cs.stanford.edu`, `brando90@mit.edu`, `miranda9@illinois.edu`, `miranda9@ibm.com`, and `miranebr@amazon.com` as Brando aliases in the collaborator registry.
 
+## Submission author-profile disambiguation (OpenReview etc.)
+
+When a Cowork/submission flow adds co-authors to OpenReview (or any venue portal) and several people share a name, resolve each to their **verified** profile via the roster's `openreview` field in `~/ultimate-utils/py_src/uutils/collaborators.py` — do not guess. Match on affiliation + institutional email, prefer the profile consistent with the paper's institution and the co-author's known identity, and batch any residual ambiguity into the final pre-Submit checkpoint (never silently pick the wrong person). Cowork prompts can't read this file, so inline the relevant authors' handles into the runbook (Trigger Rule 34).
+
+Known disambiguations for Brando's frequent co-authors:
+- **Rylan Schaeffer** → `~Rylan_Schaeffer2` (Stanford CS, Koyejo lab; Google + stanford.edu emails), Brando's co-author on the mirage/elusive papers. A stale, unrelated "Rylan Schaeffer" profile also appears in author search — never pick it.
+- **Elyas Obbad** (Stanford CS) — correct spelling; "Obadd" is a typo.
+
+Record any newly-verified co-author OpenReview handle in the roster's `openreview` field (see Maintenance Rule) so the next submission resolves automatically.
+
 ## Maintenance Rule
 
 If an agent learns a durable collaborator email from Gmail or direct user instruction, update `~/ultimate-utils/py_src/uutils/collaborators.py` instead of leaving it in chat history. Then mention the update in the final response and, for non-trivial edits, run the usual repo QA/commit flow.
