@@ -8,7 +8,7 @@ Keep `~/.codex/config.toml` set with those values. When dispatching Codex from
 another CLI, pass them explicitly:
 
 ```bash
-codex exec --full-auto -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
+codex exec --approve-for-me -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
 ```
 
 ## CLI-only for all LLM work (mandatory — INDEX_RULES.md Hard Rule 9)
