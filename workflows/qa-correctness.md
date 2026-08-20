@@ -165,17 +165,18 @@ code. No parallel writes, no aggregation — just a chain.
 ### Chain order
 
 The builder reviews in the **middle** (it knows the code intent best and can
-verify the first reviewer's changes). Default is 3 stages: one independent
-reviewer, then the builder/self review, then **Antigravity** (Google's agentic
-CLI, replacing the deprecated Gemini CLI) as the final clean-eyes pass. If
-Antigravity is not installed on the machine, the per-stage fallback applies
-(substitute another approved CLI, else self-dispatch in a fresh context). If
+verify the first reviewer's changes). Default is 3 stages, **Claude + Codex
+only** (Brando 2026-08-19: Google reviewers — Gemini bot / Antigravity —
+removed from the QA protocol): one independent reviewer, then the builder/self
+review, then the non-builder CLI again **in a fresh context** as the final
+clean-eyes pass. If a CLI is unavailable, the per-stage fallback applies
+(substitute the other approved CLI, else self-dispatch in a fresh context). If
 the user requests more rounds, cycle the chain in fresh contexts.
 
 | Builder | Chain (default 3 stages) |
 |---|---|
-| CC built | Codex → **CC** → Antigravity |
-| Codex built | CC → **Codex** → Antigravity |
+| CC built | Codex → **CC** → Codex (fresh context) |
+| Codex built | CC → **Codex** → CC (fresh context) |
 
 ### How to run
 
@@ -194,12 +195,12 @@ code as improved by the previous reviewer.
 
 ### Configuring rounds
 
-Default is **2 stages** with Codex and Claude Code. The user can request more
-rounds; alternate Codex and Claude Code, using a fresh context each time.
+Default is **3 stages** with Codex and Claude Code (see Chain order above).
+The user can request more rounds ("mega QA xN"); cycle the chain, using a
+fresh context each time.
 
-- If CC built: "mega QA" → Codex → CC (2 stages)
-- If CC built: "mega QA x2" → Codex → CC → Codex → CC (4 stages)
-- If CC built: "mega QA x3" → Codex → CC → Codex → CC → Codex → CC (6 stages)
+- If CC built: "mega QA" → Codex → CC → Codex (3 stages)
+- If CC built: "mega QA x2" → the chain twice (6 stages)
 - If Codex built: swap CC and Codex positions in the examples above.
 
 Each stage uses the same QA prompt and the same verdict format. The **last
@@ -222,10 +223,11 @@ self-review of the same model** (e.g., CC → CC → CC). That is still useful:
 each stage is a fresh context that re-examines previous fixes with
 different attention. Cross-model is preferred but not required.
 
-Example (CC built; Codex unavailable at stage 1):
+Example (CC built; Codex unavailable):
 
 - Stage 1: CC self-review (substitute) → Stage 2: CC self-review in a fresh
-  context ⇒ chain done in 2 stages.
+  context → Stage 3: CC self-review in another fresh context ⇒ chain done in
+  3 stages.
 
 Single-model from the start (only CC available): chain is CC self-review × N
 out of the box; same logic, fewer choices.
