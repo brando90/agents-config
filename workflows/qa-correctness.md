@@ -1,6 +1,6 @@
 # Workflow: QA — Proportionate Review
 
-**TLDR:** QA is mandatory for non-trivial work, but model-reviewer dispatch is not. Use deterministic checks for routine prose/docs, one independent reviewer for code/behavior or claim/result risk, and Mega QA only when explicitly requested.
+**TLDR:** QA is mandatory for non-trivial work, but model-reviewer dispatch is not. Use deterministic checks for routine prose/docs, ONE opposite-agent review round for code/behavior or claim/result risk (two rounds max for the hardest changes — token budget), and Mega QA only when Brando manually requests it.
 
 > **Design: A1 builds → appropriate QA tier.** The builder picks the lightest tier that covers the risk. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
 
@@ -44,9 +44,18 @@ Use when changes affect code behavior, scripts, infra/auth, packaging/deployment
 
 For Tier 2, dispatch one independent reviewer before reporting done. The reviewer handles correctness (logic errors, edge cases, broken behavior, inconsistencies with project docs) and structural quality in a single pass. On repos with substantial source code, the reviewer also runs the structural checks defined in [`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On markdown-only or config-only repos, structural checks are skipped, but correctness and consistency review still apply.
 
-### Tier 3 — Mega QA
+**Round budget (Brando 2026-08-20 — "otherwise I run out of tokens").** The default shape is ONE
+review round and done: builder X → opposite-CLI reviewer Y → X applies the fixes → X verifies the
+fixes with deterministic checks (tests, compile, targeted grep) → done. A FAIL/FIXED verdict with
+actionable findings does NOT trigger an automatic re-review; fixing the findings and passing the
+deterministic checks closes the round. Escalate to a SECOND round (X → Y → X → Y → X → done) only
+when the change is genuinely among the hardest — eval/scoring integrity, security/auth surfaces,
+or first-round findings whose fixes are themselves risky. Never run more than two rounds unless
+Brando explicitly asks (that territory is Mega QA, which only he invokes).
 
-Use only when the user **explicitly** says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. **Mega QA never auto-triggers** — not on `git push`/merge to `main`, not from file-path heuristics, and not from a project QA-gate hook. A hook that gates pushes to `main` must default to the lightest proportionate tier (Tier 0/1 for docs/prose, Tier 2 for code/behavior/claims) and must **never** escalate to the mega chain on its own; mega is opt-in only via an explicit user request (or a user-set opt-in such as a `[mega-qa]` commit-message tag or an env flag the user sets). Run the sequential multi-model chain in the Mega QA section.
+### Tier 3 — Mega QA (manual-only, by Brando)
+
+Use only when **Brando himself** says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. **Mega QA never auto-triggers and is never agent-selected** — not on `git push`/merge to `main`, not from file-path heuristics, not from a project QA-gate hook, and not because an agent judges the moment high-stakes (end-of-day, pre-merge, pre-sleep included). A hook that gates pushes to `main` must default to the lightest proportionate tier (Tier 0/1 for docs/prose, Tier 2 single-round for code/behavior/claims) and must **never** escalate to the mega chain on its own; mega is opt-in only via Brando's explicit request (or an opt-in he himself set, such as a `[mega-qa]` commit-message tag or an env flag). Run the sequential multi-model chain in the Mega QA section.
 
 ### Paper-writing rule of thumb
 
@@ -151,16 +160,18 @@ QA summary.
 
 ## Mega QA — Sequential Multi-Model Chain
 
-> **Trigger:** User says "mega QA", "super QA", "extra careful QA", "deep QA",
-> or similar. This is opt-in only — it **never runs automatically**: not on
-> `git push`/merge to `main`, not from file-path heuristics, and not from a
-> project QA-gate hook. A push-gate hook may require Tier 1/2 QA, but only an
-> explicit user request invokes the mega chain.
+> **Trigger:** Brando himself says "mega QA", "super QA", "extra careful QA",
+> "deep QA", or similar. This is **manual-only** — it never runs automatically
+> and an agent never selects it: not on `git push`/merge to `main`, not from
+> file-path heuristics, not from a project QA-gate hook, and not from an
+> agent's own judgment that the moment is high-stakes. A push-gate hook may
+> require Tier 1/2 QA, but only Brando's explicit request invokes the mega
+> chain (token budget: multi-round chains are expensive).
 
-For high-stakes moments (end of work day, before major merges, before sleep),
-run all available models **sequentially**. Each model does full QA (correctness
-+ structural, with authority to fix), then the next model reviews the improved
-code. No parallel writes, no aggregation — just a chain.
+When Brando invokes it, run all available models **sequentially**. Each model
+does full QA (correctness + structural, with authority to fix), then the next
+model reviews the improved code. No parallel writes, no aggregation — just a
+chain.
 
 ### Chain order
 
@@ -232,7 +243,10 @@ Example (CC built; Codex unavailable):
 Single-model from the start (only CC available): chain is CC self-review × N
 out of the box; same logic, fewer choices.
 
-### When to use
+### When Brando typically invokes it
+
+These are moments **Brando** may choose to type "mega QA" — they are context for
+him, never justification for an agent to start the chain itself:
 
 - End of work day / before sleep — let it run overnight
 - Before merging to main or a shared branch
@@ -257,7 +271,9 @@ fixes.
 
 ## When Human Review is Still Needed
 
-- Reviewer returns FAIL.
+- Reviewer returns FAIL with **critical** findings the builder cannot fix (a FAIL whose findings
+  the builder CAN fix is closed by fixing them + deterministic verification — see Round budget;
+  it does not by itself demand a human or another review round).
 - Changes touch security-critical code (auth, secrets, permissions).
 - Changes modify evaluation metrics or scoring logic.
 - Merging to main or any shared branch (human makes final merge decision).
