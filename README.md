@@ -4,7 +4,7 @@
 
 A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond). Designed for scalability and context-window efficiency.
 
-As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction files (a single `CLAUDE.md` or `agents.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
+As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction files (a single `CLAUDE.md` or `AGENTS.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
 
 **Designed by [Brando Miranda](https://brando90.github.io/brandomiranda/) (Stanford CS PhD).** Inspired by [Yegor Denisov-Blanch](https://x.com/yegordb)'s insight that modular documentation is essential for multi-agent workflows at scale.
 
@@ -22,8 +22,8 @@ agent-config flow (shared env — abbreviating ~/agents-config/ as ~/ac/ for wid
 ┌──────────────┐   ┌──────────────────┐
 │ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
 │              │   │                  │   │                    │   │ ~/ac/machine/        │
-│ ~/agents.md  │──▸│ ~/ac/agents.md   │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
-│              │   │                  │   │                    │   │ ~/ac/writing/        │
+│~/.codex/     │   │                  │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
+│ AGENTS.md    │──▸│ ~/ac/AGENTS.md   │   │                    │   │ ~/ac/writing/        │
 │              │   │                  │   │                    │   └──────────────────────┘
 └──────────────┘   └──────────────────┘   └────────────────────┘
    (symlinks)       "read ~/agents-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
@@ -34,14 +34,14 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 │ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
 │                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 ├────────────────────┤
-│ ~/vb/agents.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
+│ ~/vb/AGENTS.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
 │                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
 └────────────────────┘
 
 ~/agents-config/ (~/ac/) outline:
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
 │ CLAUDE.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
-│ agents.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
+│ AGENTS.md        ← canonical Codex entry; text ref ──▸ INDEX_RULES.md                    │
 │ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/,     │
 │                  writing/                                                                  │
 │ README.md        ← repo docs (you are here)                                              │
@@ -51,7 +51,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 └──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and `agents.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. From the home directory, `~/CLAUDE.md` and `~/agents.md` are filesystem symlinks to these files, so the agent finds the same entry point regardless of where it's launched.
+**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and uppercase `AGENTS.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. Claude reads `~/CLAUDE.md`; Codex reads `~/.codex/AGENTS.md` globally and uppercase `AGENTS.md` files from the repository root toward the working directory. A legacy home-level `~/agents.md` symlink may point to the uppercase file for older launchers; the repository itself keeps only the canonical spelling so it works on case-insensitive filesystems.
 
 **Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, proportionate QA, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
@@ -73,7 +73,7 @@ agents-config/
 ├── README.md                    ← you are here
 ├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
 ├── CLAUDE.md                    ← Layer 1: Claude Code entry point
-├── agents.md                    ← Layer 1: Codex / other agents entry point
+├── AGENTS.md                    ← Layer 1: canonical Codex entry point
 ├── LICENSE                      ← Apache 2.0
 │
 ├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
@@ -158,11 +158,14 @@ agents-config/
 git clone https://github.com/brando90/agents-config.git ~/agents-config
 
 # Symlink entry points from home dir
-ln -s ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -s ~/agents-config/agents.md ~/agents.md
+ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
+mkdir -p ~/.codex
+ln -sf ~/agents-config/AGENTS.md ~/.codex/AGENTS.md
+ln -sf ~/agents-config/AGENTS.md ~/AGENTS.md       # optional compatibility
+ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibility
 
 # Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
-# Codex will automatically read agents.md → INDEX_RULES.md
+# Codex will automatically read ~/.codex/AGENTS.md → INDEX_RULES.md
 ```
 
 ---
@@ -512,14 +515,14 @@ ls /dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat
 
 ## How to Integrate with Your Project Repos
 
-Each project repo should have **two entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/agents.md` for Codex) that point to **two indexes**: the home-level `~/agents-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
+Each project repo should have **two canonical entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/AGENTS.md` for Codex) that point to **two indexes**: the home-level `~/agents-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
 
 Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
 
 ```
 ~/your-project/
 ├── CLAUDE.md                         ← points to BOTH indexes
-├── agents.md                         ← same for Codex
+├── AGENTS.md                         ← same for Codex
 ├── docs/
 │   └── agent-docs/
 │       ├── INDEX.md                  ← project-specific doc routing
@@ -566,7 +569,7 @@ my-project/
 ```
 ~/my-project/
 ├── CLAUDE.md                         ← 5-line reference to both indexes
-├── agents.md                         ← same reference for Codex
+├── AGENTS.md                         ← same reference for Codex
 └── docs/agent-docs/
     ├── INDEX.md                      ← project doc routing
     ├── overview.md                   ← project overview + key entry points
@@ -636,7 +639,7 @@ Read the project-level agent index for project-specific docs:
 - `~/my-project/docs/agent-docs/INDEX.md`
 ```
 
-Optionally create `~/my-project/agents.md` with the same content for Codex compatibility.
+Create `~/my-project/AGENTS.md` with the same references for Codex. Do not add a case-only duplicate inside the repository; it cannot be checked out reliably on case-insensitive filesystems.
 
 #### 6. Delete the backup
 

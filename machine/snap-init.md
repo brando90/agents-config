@@ -34,7 +34,9 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
    - `~/.bashrc` -> `/dfs/scratch0/brando9/.bashrc`
    - `~/agents-config` -> `/dfs/scratch0/brando9/agents-config`
    - `~/CLAUDE.md` -> `~/agents-config/CLAUDE.md`
-   - `~/agents.md` -> `~/agents-config/agents.md`
+   - `~/.codex/AGENTS.md` -> `~/agents-config/AGENTS.md` (canonical Codex global entry point)
+   - `~/AGENTS.md` -> `~/agents-config/AGENTS.md` (optional compatibility)
+   - `~/agents.md` -> `~/agents-config/AGENTS.md` (legacy home-level compatibility)
    - `~/.claude` -> `/dfs/scratch0/brando9/.claude` (shared auth across nodes)
    - `~/keys` -> `/dfs/scratch0/brando9/keys`
    - `~/dfs` -> `/dfs/scratch0/brando9` (required by DFS job queue watcher and any `~/dfs/...` path). Create with `ln -sfn /dfs/scratch0/brando9 ~/dfs` if missing.
@@ -49,7 +51,7 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 
 4. **Verify agents-config is current:**
    - `cd ~/agents-config && git pull`
-   - `cat ~/agents-config/CLAUDE.md` should show the Mandatory Response Protocol
+   - `cat ~/agents-config/CLAUDE.md` and `cat ~/agents-config/AGENTS.md` should show the Mandatory Response Protocol
    - `cat ~/agents-config/INDEX_RULES.md` should show a `## Hard Rules` section
 
 5. **Verify tools:**
@@ -82,7 +84,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 1 | Paths | `HOME=/lfs/<hostname>/0/brando9`, `DFS=/dfs/scratch0/brando9`, `AFS=/afs/cs.stanford.edu/u/brando9` |
 | 2 | Symlinks (7 + project dirs) | All point to correct DFS/agents-config targets (including `~/dfs → /dfs/scratch0/brando9`); all `~/` project dirs are symlinks to DFS |
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
-| 4 | agents-config | Up to date, CLAUDE.md has Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
+| 4 | agents-config | Up to date, CLAUDE.md and AGENTS.md have Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
 | 5 | Tools | `claude` and `codex` on PATH with latest versions; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
 | 6 | Keys | `~/keys/` has anthropic, openai, hf, wandb, github keys |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |

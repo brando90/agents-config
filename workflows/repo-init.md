@@ -2,7 +2,7 @@
 
 **TLDR:** Onboard an existing or new repo to the
 `~/agents-config/` three-layer system (global rules → workflow refs →
-per-repo `CLAUDE.md` + `agents.md`). Run this once per new repo and
+per-repo `CLAUDE.md` + uppercase `AGENTS.md`). Run this once per new repo and
 again whenever the global rules drift from what the repo expects.
 
 ---
@@ -14,7 +14,7 @@ Old pattern: each repo had a monolithic `CLAUDE.md` (or `/init` command) with al
 New pattern: global rules and machine/workflow docs live in `~/agents-config/`. Each project's `CLAUDE.md` redirects to agents-config first, then contains only project-specific instructions.
 
 There are two tiers of migration:
-- **Minimal** (recommended for most projects): Add the redirect header to `CLAUDE.md`, keep project docs inline, add `agents.md`. This is what most repos need.
+- **Minimal** (recommended for most projects): Add the redirect header to `CLAUDE.md`, keep project docs inline, and add uppercase `AGENTS.md`. This is what most repos need.
 - **Full split** (for large projects with 200+ line CLAUDE.md): Split project docs into `docs/agent-docs/` with a project-level `INDEX.md`. See `~/agents-config/README.md` § "Migrating from a Monolithic CLAUDE.md" for the full split procedure.
 
 This checklist covers the **minimal** tier.
@@ -28,18 +28,18 @@ This checklist covers the **minimal** tier.
 The **first two lines** of the project's `CLAUDE.md` must be:
 
 ```
-# Claude Code: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+# Claude Code: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 ```
 
 Line 1 ensures agents always get the latest config from GitHub (clone if missing, pull if present). Line 2 tells them what to read. If GitHub is unreachable, the local copy serves as fallback.
 
-### 2. Add `agents.md` for Codex / other agents
+### 2. Add uppercase `AGENTS.md` for Codex / other agents
 
-Create `agents.md` in the project root:
+Create `AGENTS.md` in the project root (Codex discovery is case-sensitive):
 
 ```
-# Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+# Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 # Then read `~/PROJECT/CLAUDE.md` for project-specific instructions.
 ```
@@ -68,14 +68,17 @@ The project's `CLAUDE.md` should still contain:
 
 ```bash
 # These should already exist (one-time setup):
-ls -la ~/CLAUDE.md      # → ~/agents-config/CLAUDE.md
-ls -la ~/agents.md      # → ~/agents-config/agents.md
+ls -la ~/CLAUDE.md              # → ~/agents-config/CLAUDE.md
+ls -la ~/.codex/AGENTS.md       # → ~/agents-config/AGENTS.md
 
 # If missing or stale (backs up existing non-symlink files, then force-creates symlinks):
 [ -f ~/CLAUDE.md ] && [ ! -L ~/CLAUDE.md ] && mv ~/CLAUDE.md ~/CLAUDE.md.bak
-[ -f ~/agents.md ] && [ ! -L ~/agents.md ] && mv ~/agents.md ~/agents.md.bak
+[ -f ~/.codex/AGENTS.md ] && [ ! -L ~/.codex/AGENTS.md ] && mv ~/.codex/AGENTS.md ~/.codex/AGENTS.md.bak
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -sf ~/agents-config/agents.md ~/agents.md
+mkdir -p ~/.codex
+ln -sf ~/agents-config/AGENTS.md ~/.codex/AGENTS.md
+ln -sf ~/agents-config/AGENTS.md ~/AGENTS.md       # optional compatibility
+ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibility
 ```
 
 ### 6. Test the chain
@@ -84,7 +87,7 @@ After migration, verify the full routing chain works:
 1. `~/CLAUDE.md` → redirects to `~/agents-config/INDEX_RULES.md`
 2. `~/agents-config/INDEX_RULES.md` → global rules + doc routing
 3. `~/project/CLAUDE.md` → first line is the redirect header, then project docs
-4. `~/project/agents.md` → exists and redirects to both `INDEX_RULES.md` and `CLAUDE.md`
+4. `~/project/AGENTS.md` → exists and redirects to both `INDEX_RULES.md` and `CLAUDE.md`
 5. Agent loads the right machine config for current environment
 
 ### 7. Create the `~/<project>` symlink on every node (REQUIRED)

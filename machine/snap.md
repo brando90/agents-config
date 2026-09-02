@@ -220,7 +220,10 @@ ln -sf /dfs/scratch0/<user>/.bashrc ~/.bashrc
 # 5. Symlink agent-config repo and entry points
 ln -sfn /dfs/scratch0/<user>/agents-config ~/agents-config
 ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
-ln -sf ~/agents-config/agents.md ~/agents.md
+mkdir -p ~/.codex
+ln -sf ~/agents-config/AGENTS.md ~/.codex/AGENTS.md
+ln -sf ~/agents-config/AGENTS.md ~/AGENTS.md       # optional compatibility
+ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibility
 
 # 5b. Symlink entire ~/.claude dir to DFS (shared auth + settings across all nodes)
 # Run 'claude auth login' once on any node — all nodes share the credential.

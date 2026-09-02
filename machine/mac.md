@@ -17,6 +17,13 @@ git clone git@github.com:brando90/agents-config.git ~/agents-config 2>/dev/null 
 # Symlink Claude Code settings (model=opus, effortLevel=high)
 mkdir -p ~/.claude
 ln -sf ~/agents-config/claude-code-settings.json ~/.claude/settings.json
+
+# Install the canonical Claude and Codex instruction entry points.
+ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
+mkdir -p ~/.codex
+ln -sf ~/agents-config/AGENTS.md ~/.codex/AGENTS.md
+ln -sf ~/agents-config/AGENTS.md ~/AGENTS.md       # optional compatibility
+ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibility
 ```
 
 ### Lid Never Sleeps

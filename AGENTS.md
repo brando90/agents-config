@@ -1,5 +1,19 @@
-# Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+# Codex Agent Entry Point
+
+**TLDR:** Codex must refresh and read `~/agents-config/INDEX_RULES.md`; the response-critical rules are duplicated here so TLDRs, snapshots, QA, and secret safety cannot be missed.
+
+# Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
+
+## Mandatory Response Protocol (inline — do not skip)
+
+These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are visible at session start. They are mirrored in `CLAUDE.md` for Claude Code.
+
+1. **Dual TLDR (top + end)** — Open every response with `**TLDR-start:**` and close with `**TLDR-end:**` (1–2 sentences each). Prefix both with `[proj: task]`; use `[proj]` only when there is no clear task. Write the bottom TLDR last from the actual response; do not copy the opening TLDR.
+2. **Verification snapshot** — Immediately after `TLDR-end`, append a `**Snapshot:**` block containing the smallest concrete sample of the artifacts produced (normally 5–15 lines; hard cap 25). If there is nothing tangible, say why.
+3. **Proportionate QA** — Before calling non-trivial work done, run the lightest QA tier that covers the risk. Shared rules, code/behavior, and claims/results require an independent reviewer by default.
+4. **No secrets** — Never commit secrets. Review the exact staged diff before pushing.
+5. **Fresh config** — At the start of each new task, run `git -C ~/agents-config pull --ff-only` and re-read `~/agents-config/INDEX_RULES.md`.
 
 ## Codex CLI default
 
