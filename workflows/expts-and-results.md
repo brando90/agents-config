@@ -137,6 +137,25 @@ verify it without reading the whole document.
 just to confirm "is this the right one to paste". With the TLDR, the
 verification is one screen.
 
+**Required at the BOTTOM of every agent prompt file too — `cc.md`, `agents_vN.md`,
+`PROMPT_*.md`, `coding_agent_prompt.md`, any paste-into-agent artifact
+(INDEX_RULES.md Trigger Rule 36):**
+close the prompt with a 1-2 sentence `TL;DR:` of what it does, what downstream
+models/tools it invokes, and what it produces. The two ends are deliberately
+different lengths: the top TLDR keeps the fuller 2-6 sentence form specified
+above (it must still cover (a)-(d); INDEX_RULES.md Trigger Rule 16 explicitly
+admits this longer form for prompt files); the closing one is the short skim line.
+Do not shorten the top TLDR to match the bottom. This is additive to the top TLDR above, not a duplicate of
+it — the human skimming the end of a long prompt gets the same one-screen
+verification as the human skimming the top. Do not "deduplicate" the two.
+
+**And when you hand the prompt to Brando, recommend a model + effort level in
+your reply — never inside the prompt file** (Trigger Rule 36a). State the
+rationale first, then the recommendation, chosen proportionately to the size and
+risk of what the prompt does, anchored in Hard Rule 8's defaults and its
+flagship-vs-regular-tier split. The prompt file is what the *agent* reads; the
+model/effort call is for *Brando*, so it belongs in the chat, not the artifact.
+
 ### PROTOCOL.md format — MANDATORY for any LLM-budget-spending experiment
 
 `PROTOCOL.md` freezes the experiment's contract **before** any expensive run
