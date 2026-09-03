@@ -169,6 +169,50 @@ Key paths and vars set in `.bashrc`:
 - `clauded` script: `/afs/cs.stanford.edu/u/<user>/bin/clauded` (AFS `bin/` is on PATH; runs `claude --dangerously-skip-permissions "$@"`). A duplicate exists at `/dfs/scratch0/<user>/bin/clauded`.
 - Auth: `~/.claude/` is symlinked to `/dfs/scratch0/<user>/.claude` — shared auth across all SNAP nodes. Run `claude auth login` once on any server, all nodes pick it up.
 
+#### Vals AI profile — `claude-vals` / `clauded-vals`
+
+A second Claude Code login (the Vals AI team account, `brando@vals.ai`) kept fully separate from the
+personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions.
+
+- `claude-vals` = `claude` with `CLAUDE_CONFIG_DIR=~/.claude-vals`; `clauded-vals` = same plus
+  `--dangerously-skip-permissions` (the Vals-profile equivalent of `clauded`).
+- Both are scripts installed in **both** `$AFS/bin` and `/dfs/scratch0/<user>/bin` (already on PATH),
+  same dual-homed pattern as `clauded`. They `unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
+  CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX` first — `CLAUDE_CODE_OAUTH_TOKEN`
+  is the *personal* token and would silently hijack the Vals profile — and resolve `claude` out of the
+  DFS nvm install *first* (newest by mtime) rather than trusting PATH, so they work identically under
+  `ssh host 'cmd'`, cron, and tmux `send-keys`. That ordering is deliberate: every node also carries an
+  old root-owned `/usr/local/bin/claude` (2.1.75) that wins in a minimal PATH and, on mercury, crashes
+  against the system node — see the "npm globals" gotcha below.
+- Config + credentials live once on DFS at `/dfs/scratch0/<user>/.claude-vals`, symlinked into each
+  node's `$HOME/.claude-vals`. Profile-level `settings.json` (`opus[1m]`, xhigh effort),
+  `CLAUDE.md`, and the profile's auto-memories are seeded from the mac.
+- Install / repair on a node: `bash ~/agents-config/scripts/setup_claude_vals_snap.sh`.
+- Credentials come **from the mac** (Keychain service `Claude Code-credentials-<sha256(config dir)[:8]>`),
+  pushed with `bash ~/agents-config/scripts/push_claude_vals_creds.sh` — which also runs the installer
+  on each node and smoke-tests `clauded-vals -p`. Never run an interactive `/login` on a node for this.
+- **Rotation caveat:** OAuth refresh tokens rotate on use, so the mac and the cluster sharing one
+  credential set can invalidate each other ("refresh token was already used"). Use one machine at a
+  time for the Vals profile, and re-run `push_claude_vals_creds.sh` if a node reports being logged out.
+
+### Valkyrie (Vals evaluation platform CLI)
+
+- `valkyrie` / `valk` (same tool, two names) installed via `uv tool install git+https://github.com/vals-ai/Valkyrie@prod`
+  into DFS: venv at `/dfs/scratch0/<user>/uv/tools/valkyrie`, shims in `/dfs/scratch0/<user>/bin`
+  (+ AFS `bin/` mirrors), so every node runs one shared install.
+- The tool venv **must** use a uv-managed interpreter under `/dfs/scratch0/<user>/uv/python`
+  (`UV_PYTHON_PREFERENCE=only-managed`): skampere nodes have `/usr/bin/python3.12`, but mercury nodes
+  only ship python 3.8, so a system-pinned venv is broken there.
+- Config: `~/.config/valkyrie/valkyrie.yaml` (override path with `VALKYRIE_CONFIG_PATH`), symlinked
+  from each node to `/dfs/scratch0/<user>/.config/valkyrie` so credentials are entered once.
+  Create it with `export VALKYRIE_API_KEY=<vals key> && valkyrie config init` — the key is read from
+  `VALKYRIE_API_KEY` if set, otherwise prompted for, and is *not* stored in `~/keys` by any script.
+- Repos cloned to DFS alongside it: `Valkyrie/`, `vals-public-agent-registry/`,
+  `vals-create-benchmark-service/`.
+- Install / repair on a node: `bash ~/agents-config/scripts/setup_valkyrie_snap.sh`.
+- VeriBench-specific state (agents, benchmark service, gateway secret) lives in
+  `~/veribench/experiments/71_vals_ai_eval_code/docs/04_valkyrie_setup.md`.
+
 ### npm globals — "update loop" gotcha
 
 If a globally-installed npm tool (`codex`, `claude`, etc.) keeps nagging "please restart / update again" *after* you run `npm install -g <pkg>`, it's almost always **two installs in different PATH positions** — npm writes to one prefix but the shell resolves a stale copy earlier in PATH.
@@ -233,11 +277,17 @@ ln -sfn /dfs/scratch0/<user>/.claude ~/.claude
 # 5c. Symlink ~/dfs → DFS root (required by dfs-job-watcher and any ~/dfs/... path)
 ln -sfn /dfs/scratch0/<user> ~/dfs
 
+# 5d. Vals AI Claude Code profile + Valkyrie CLI (idempotent; see the two sections above)
+bash ~/agents-config/scripts/setup_claude_vals_snap.sh
+bash ~/agents-config/scripts/setup_valkyrie_snap.sh
+# Credentials for the Vals profile are pushed FROM THE MAC (not logged into here):
+#   bash ~/agents-config/scripts/push_claude_vals_creds.sh <newhost>
+
 # 6. Create DFS project symlinks in LFS home (idempotent — re-run whenever a new DFS repo is added)
 bash ~/agents-config/scripts/relink-dfs-projects.sh
 
 # 7. Verify
-which claude && which clauded
+which claude && which clauded && which clauded-vals && which valkyrie
 ```
 
 ### Adding a new DFS repo later
