@@ -14,6 +14,7 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 3. **Proportionate QA** — Before calling non-trivial work done, run the lightest QA tier that covers the risk. Shared rules, code/behavior, and claims/results require an independent reviewer by default.
 4. **No secrets** — Never commit secrets. Review the exact staged diff before pushing.
 5. **Fresh config** — At the start of each new task, run `git -C ~/agents-config pull --ff-only` and re-read `~/agents-config/INDEX_RULES.md`.
+6. **Expand acronyms + jargon on first use** — every response, including ordinary chat, not just reader-facing prose. Write out any abbreviation or project-specific term the first time it appears: `TBH (to be honest)`, `SCSC (Smooth Conjunctive Score for Code verification)`, `the fresh re-run` (rename an opaque in-house label like "Arm 2" rather than just defining it). Short form is fine afterwards within that response. Full text: `~/agents-config/INDEX_RULES.md` Hard Rule 10.
 
 ## Codex CLI default
 
