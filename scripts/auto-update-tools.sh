@@ -59,7 +59,7 @@ else
 fi
 if [ "$LOCK_ACQUIRED" -ne 1 ]; then
   printf '[%s] another updater owns the lock (%s); leave it intact\n' "$(date -Is)" "${_owner_line:-owner record pending}"
-  exit 0
+  exit 75
 fi
 printf '# TLDR: This file identifies the process holding the shared SNAP agent-tool updater lock.\n%s %s\n' "$$" "$_lock_host" >"$LOCK_OWNER"
 release_lock() {

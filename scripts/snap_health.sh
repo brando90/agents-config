@@ -628,8 +628,12 @@ FIX_RESULTS="$RUN_TMP/controller-fixes"
 if [ "$DO_FIX" -eq 1 ]; then
   _updater="$(dirname "$SCRIPT_PATH")/auto-update-tools.sh"
   if [ -x "$_updater" ] || [ -r "$_updater" ]; then
-    if bash "$_updater" --force; then
+    bash "$_updater" --force
+    _updater_rc=$?
+    if [ "$_updater_rc" -eq 0 ]; then
       emit PASS controller fix.agent_cli_update "canonical NVM updater completed; see $DFS_ROOT/.cache/agent-cli-update.log" "-" >>"$FIX_RESULTS"
+    elif [ "$_updater_rc" -eq 75 ]; then
+      emit WARN controller fix.agent_cli_update "another process owns the canonical updater lock; no update was claimed" "rerun bash $_updater --force after the recorded owner exits" >>"$FIX_RESULTS"
     else
       emit FAIL controller fix.agent_cli_update "canonical NVM updater failed; see $DFS_ROOT/.cache/agent-cli-update.log" "bash $_updater --force" >>"$FIX_RESULTS"
     fi
