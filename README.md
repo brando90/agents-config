@@ -133,6 +133,8 @@ agents-config/
 │
 ├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
 │   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` fresh
+│   ├── snap_health.sh           ← cluster-wide preflight, drift, storage, auth, and Git audit
+│   ├── harbor_snap.sh           ← Harbor wrapper that removes the incompatible shared PYTHONPATH
 │   ├── ssh-submit.sh            ← SSH fire-and-forget remote-job submitter
 │   ├── git-inbox-poller.sh      ← phone-dispatch poller for `jobs-inbox/`
 │   └── relink-dfs-projects.sh   ← rebuild DFS-backed project symlinks on a fresh node
@@ -461,9 +463,9 @@ After setup, see [`machine/snap-init.md`](machine/snap-init.md) for a paste-into
 
 ## DFS Job Queue (Running Experiments Across SNAP Nodes)
 
-> ⚠ **SNAP Slurm migration (2026-04, in progress).** Several SNAP/Infolab GPU nodes have been moved behind `pam_slurm_adopt`: direct `ssh <host>` now requires an active Slurm job and fails otherwise (e.g. `turing3`, `hyperturing2`, most `ampere*`, `blackwell1`). **This breaks the existing "tmux watcher per node" workflow without warning if your node is migrated.** Plan to either (a) have a Slurm-aware launcher wrap the watcher in an `srun`/`sbatch` job, or (b) keep a canonical watcher pool on the non-gated nodes (`mercury1/2`, `skampere1/2/3`, `hyperturing1`, `rambo`) and drain jobs from there. Also watch for `Stale file handle` on `/dfs/...` on older Infolab nodes (`turing1/2` as of 2026-04-24) — those have a broken DFS mount and cannot run a shared-queue watcher at all. See [`machine/snap.md`](machine/snap.md) § "Slurm migration & DFS stale handles".
+> ⚠ **SNAP Slurm access (audited 2026-09-03).** `ampere*`, `hyperturing*`, `turing*`, and `blackwell1` are present but gated by `pam_slurm_adopt`: start from `ilc.stanford.edu`, confirm `showaccount` lists `infolab`, then allocate the node with `srun`/`sbatch`. Direct SSH remains available on `mercury1/2` and `skampere1/2/3`. Run `bash ~/agents-config/scripts/snap_health.sh` before dispatch. See [`machine/snap.md`](machine/snap.md) § "Slurm-gated nodes".
 
-SNAP (the non-gated portion) has no Slurm — you SSH into individual nodes. The DFS job queue lets you submit experiment scripts from **any one node** and have watchers on the other nodes automatically pick them up and run them. You don't need to SSH into each server, set up environments, or babysit processes.
+On SNAP's direct-SSH nodes, the DFS job queue lets you submit experiment scripts from **any one node** and have watchers on the other direct nodes pick them up and run them. Slurm-gated nodes require a scheduler-aware launcher and an active account association.
 
 **How it works:**
 

@@ -1,6 +1,6 @@
 # Machine: SNAP — Stanford SNAP / Infolab Cluster
 
-Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. No job scheduler — direct SSH to nodes. **Shell: bash** (`~/.bashrc`).
+Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. Older nodes use direct SSH; migrated nodes use Slurm through `ilc.stanford.edu`. **Shell: bash** (`~/.bashrc`).
 
 Cluster wiki:
 - Storage: https://ilwiki.stanford.edu/doku.php?id=hints:storefiles
@@ -13,7 +13,7 @@ Cluster wiki:
 ## Connection
 
 ```bash
-# Agents: can run one-shot remote commands (e.g., ssh ampere1.stanford.edu "nvidia-smi")
+# Agents: can run one-shot commands on a direct-SSH node (e.g., ssh skampere2.stanford.edu "nvidia-smi")
 # but cannot maintain interactive sessions. Auth via ~/.ssh/config and ~/keys/.
 ssh <user>@<hostname>.stanford.edu
 ```
@@ -22,6 +22,88 @@ ssh <user>@<hostname>.stanford.edu
 - **Port:** 22
 - **Persistent sessions:** Use `byobu` (tmux-based, human-only — agents cannot interact with tmux). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
 - **Kerberos auto-renewal:** Server-side tickets are auto-renewed every 4h by `krenew.sh` (DFS keytab + `.bashrc` background loop + cron). `krbtmux`/`reauth` are no longer needed for ticket renewal. See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for details. Fallback: `/afs/cs/software/bin/krbtmux` and `/afs/cs/software/bin/reauth` still work if auto-renewal is not set up. Ref: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
+
+---
+
+## Cluster health
+
+Run this **before dispatching any SNAP agent job**:
+
+```bash
+bash ~/agents-config/scripts/snap_health.sh
+```
+
+It audits the five direct-SSH nodes, probes the Slurm-gated nodes, inventories every command hit,
+checks local and shared disk headroom, authentication, required links, and every top-level DFS Git
+clone. It exits nonzero for actionable failures. Useful modes are `--fix` (conservative user-owned
+repairs only), `--node <host>`, `--json`, and `--smoke`. Never add `--smoke` to routine dispatch: it
+makes paid/subscription-backed one-line model calls.
+
+### Canonical command-line tool policy
+
+- `claude`, `codex`, and `node` have one canonical install under the dynamically selected
+  `/dfs/scratch0/brando9/.nvm/versions/node/<current>/`; `nvm use default` chooses `<current>`.
+  Never hardcode that version in `PATH`.
+- Shared wrappers (`clauded`, `claude-vals`, `clauded-vals`, `valkyrie`) are canonical in
+  `/dfs/scratch0/brando9/bin`. AFS copies are compatibility mirrors, not update targets.
+- `uv` and the actual Harbor environment are per-node under LFS (`~/.local`). The shared
+  `/dfs/scratch0/brando9/bin/harbor` wrapper executes the node-local Harbor with `PYTHONPATH`
+  removed; the global Mistral package path otherwise contaminates Harbor's isolated environment.
+- `/dfs/scratch0/brando9/.bash_env` selects NVM dynamically and puts the NVM and DFS bins first.
+  The marked block in `/dfs/scratch0/brando9/.bashrc` exports `BASH_ENV`, covering login shells,
+  `ssh host 'cmd'`, and inherited `bash -c` shells. Cron and service definitions must explicitly set
+  `BASH_ENV=/dfs/scratch0/brando9/.bash_env` because they do not inherit a login environment.
+- Each node's `~/.bash_profile` points to `/dfs/scratch0/brando9/.bash_profile`, which sources the
+  shared `.bashrc`; without it, an explicit `bash -l` falls back to the node-local `.profile` and
+  misses the canonical command policy.
+- Root-owned `/usr/local/bin/claude` and `/usr/local/bin/codex` are stale unsupported copies. User
+  shell resolution avoids them; only an administrator can remove them.
+- `~/agents-config/scripts/auto-update-tools.sh` updates both Node-based agents in the selected NVM
+  prefix, uses a shared lock and six-hour success stamp, and records failures in
+  `/dfs/scratch0/brando9/.cache/agent-cli-update.log` instead of swallowing them.
+
+### LFS headroom and Harbor
+
+Harbor job directories **must live on LFS**, never AFS or DFS. `snap_health.sh` warns below 10% free
+and fails below 5% free. Before a run, treat a disk failure as a scheduling failure: inspect with
+`du -x -h --max-depth=1 /lfs/<host>/0/brando9 | sort -h | tail -20`, then remove only reviewed,
+finished, regenerable data. Package caches are safe only when no installer is active. Delete an old
+Harbor job directory only after its run is finished and its result artifacts are committed; never
+remove a directory merely because its name looks old.
+
+### Slurm-gated nodes
+
+The Slurm client is on `ilc.stanford.edu`, not on the direct-SSH `skampere*` or `mercury*` nodes.
+First verify that `showaccount` lists the `infolab` account. Then run work directly under `srun`:
+
+```bash
+ssh -t ilc.stanford.edu
+showaccount
+srun --partition=il --qos=il-interactive --account=infolab \
+  --nodelist=ampere1 --gres=gpu:1 --time=00:10:00 --pty bash -l
+```
+
+For a CPU-only health/setup shell, use `--partition=il-cpu`, omit `--gres`, and request one task and
+one CPU. Once an allocation is running, direct SSH to its node is accepted by `pam_slurm_adopt`, or
+the job can remain under `srun`. If `showaccount` is empty, request the `infolab` Slurm association
+from `il-action@cs.stanford.edu`; no local command can grant it. Current syntax and limits are at
+https://ilops.stanford.edu/wiki/doku.php?id=hints%3Aslurm.
+
+### One dedicated clone per agent job
+
+Never run two agents from one working tree. Make one dedicated DFS clone per job, fetch the exact
+remote-tracking ref, and start from it. Leave shared dirty clones untouched:
+
+```bash
+git clone https://github.com/brando90/veribench.git /dfs/scratch0/brando9/<job>/veribench
+git -C /dfs/scratch0/brando9/<job>/veribench \
+  fetch origin '+refs/heads/main:refs/remotes/origin/main'
+git -C /dfs/scratch0/brando9/<job>/veribench switch -c <job> origin/main
+```
+
+A bare `git fetch origin main` updates only `FETCH_HEAD` in these clones; it does **not** reliably
+refresh `refs/remotes/origin/main`. Use the explicit refspec above before any checkout based on the
+remote-tracking branch.
 
 ---
 
@@ -37,6 +119,7 @@ ssh <user>@<hostname>.stanford.edu
 **Key rules:**
 - `$HOME` is set to `/lfs/<hostname>/0/<user>` (LFS) in `.bashrc` — fast local scratch.
 - `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/experiments/.bashrc` by `snap_setup.sh`.
+- `~/.bash_profile` is a symlink to `/dfs/scratch0/<user>/.bash_profile` — makes explicit Bash login shells source that shared `.bashrc`.
 - **Clone repos to DFS** (`/dfs/scratch0/<user>/`), then symlink from LFS home. Never clone directly to LFS — it's node-local and not backed up.
 - **LFS project paths are always symlinks to DFS.** Every project directory under `~/` (LFS) must be a symlink to its canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/<user>/veribench`. This ensures all servers see the same repo state and avoids stale or divergent copies. The `snap_setup.sh` and new-node setup scripts create these symlinks automatically.
 - **`~/dfs` must be a symlink to `/dfs/scratch0/<user>`.** Required by the DFS job queue watcher (`workflows/remote-job-dispatch.md`) and any tooling that references `~/dfs/...`. Create with `ln -sfn /dfs/scratch0/<user> ~/dfs`. `snap_setup.sh` creates this automatically.
@@ -78,31 +161,31 @@ NAME=$(basename "$REPO")
 
 ---
 
-## Slurm migration & DFS stale handles (2026-04, in progress)
+## Slurm migration and node access (audited 2026-09-03)
 
-SNAP is in the middle of migrating GPU nodes behind `pam_slurm_adopt`. Status as of **2026-04-24**:
+SNAP GPU nodes have moved behind `pam_slurm_adopt`. The live Slurm inventory on
+`ilc.stanford.edu` showed every gated target below; none of the requested audit targets is known to
+be permanently gone. Filesystem state on a gated node can be tested only from inside an allocation.
 
 | Node | ssh access | DFS mount | Watcher viable? |
 |------|------------|-----------|-----------------|
 | `mercury1`, `mercury2` | open (CS) | OK | ✅ |
 | `skampere1`, `skampere2`, `skampere3` | open (CS) | OK | ✅ |
-| `hyperturing1` | open (CS) | OK (after symlink fix) | ✅ |
 | `rambo` (ICL compute) | open (CS) | OK | ✅ (CPU-only, needs `lark`) |
-| `hyperturing2` | **Slurm-gated** | n/a | ❌ without `sbatch` |
-| `turing3` | **Slurm-gated** | n/a | ❌ without `sbatch` |
-| `ampere1`–`ampere9` | Slurm-gated (varies, `ampere8` sometimes open) | n/a | ❌ without `sbatch` |
-| `blackwell1` | **Slurm-gated** + unreachable | n/a | ❌ |
-| `turing1`, `turing2` | open | **`/dfs/scratch0/...` Stale file handle** | ❌ node-level fix needed |
+| `hyperturing1`, `hyperturing2` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
+| `ampere1`–`ampere9` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
+| `turing1`–`turing3` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
+| `blackwell1` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `trinity`, `furiosa`, `madmax2–6`, `hyperion3` | open | OK | ❌ Ubuntu 16 / Python 3.5 — too old for uutils (f-strings) |
 | `madmax1`, `madmax5`, `rambino` | unreachable | — | ❌ |
 
 **Symptoms to recognize:**
 - `Access denied by pam_slurm_adopt: you have no active jobs on this node` → the node has been migrated; you need `sbatch`/`srun` to get in.
-- `Stale file handle` on `/dfs/scratch0/...` → the DFS mount is broken on that node; reboot or file a ticket (user cannot fix).
+- `Stale file handle` on `/dfs/scratch0/...` from inside an allocation → the DFS mount is broken on that node; file a ticket (a user cannot fix it).
 - Watcher tmux session silently exits right after launch → usually the module import raises (e.g. missing `dill`, `pandas`, `lark`, or Python too old for f-strings). Use `bash -c '... 2>&1 | tee log'` inside the tmux session so the traceback survives.
 
 **Playbook when adding a new watcher:**
-1. ssh probes: `ssh <host>.stanford.edu "hostname && ls /dfs/scratch0/brando9 >/dev/null && echo DFS-OK"`. Abort if either fails.
+1. For direct-SSH nodes, probe with `ssh <host>.stanford.edu "hostname && ls /dfs/scratch0/brando9 >/dev/null && echo DFS-OK"`. For gated nodes, obtain an allocation through `ilc.stanford.edu` first. Abort if either check fails.
 2. Use `/dfs/scratch0/brando9/bin/launch_watcher_remote.sh` — it auto-detects python, bootstraps missing deps, pins `--job-dir /dfs/scratch0/brando9/job_queue`, and wraps in `tmux new-session -d … bash -c '…'` so import errors land in `logs/watcher_daemon_<host>.log` instead of vanishing.
 3. Verify the heartbeat appears in `/dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat` within ~20s.
 4. Install both cron entries so the watcher survives ticket expiry **and** node reboot:
@@ -117,7 +200,9 @@ SNAP is in the middle of migrating GPU nodes behind `pam_slurm_adopt`. Status as
 - `krenew.sh` runs `kinit -kt $KEYTAB brando9@CS.STANFORD.EDU && aklog`. The keytab acts as proof-of-password to the KDC. **No interactive prompt, no env var, no agent ever has to type or store the password itself.**
 - If you change your Stanford password, regenerate the keytab — until you do, all 7 watchers' auth will start failing within ~10h.
 
-**If you need a Slurm-gated node:** you must submit the watcher as a Slurm job (`sbatch --time=48:00:00 --wrap='…launch_watcher_remote.sh…'`). The existing workflow does not do this automatically — plan a `scripts/sbatch-watcher.sh` wrapper if this becomes the common case.
+**If you need a Slurm-gated node:** first ensure `showaccount` lists `infolab`, then submit the
+watcher through `ilc.stanford.edu` as a Slurm job. See [Slurm-gated nodes](#slurm-gated-nodes) for
+the tested interactive form. The existing workflow does not do this automatically.
 
 ---
 
@@ -142,7 +227,7 @@ nproc && free -h
 | `mercury2` | 10x RTX A4000 16 GB | ~503 GB |
 
 - **CUDA:** 12.4 (check with `nvcc --version`)
-- **OS:** Ubuntu 22.04
+- **OS:** Ubuntu 24.04 on `skampere1`–`skampere3`; Ubuntu 20.04 on `mercury1`–`mercury2` as audited 2026-09-03. Always verify at runtime.
 - **System Python:** `/usr/bin/python3` (version varies per node — check `python3 --version`)
 
 ---
@@ -156,7 +241,7 @@ Key paths and vars set in `.bashrc`:
 - `$AFS` = `/afs/cs.stanford.edu/u/<user>`
 - `$DFS` = `/dfs/scratch0/<user>`
 - `~/keys/` — API keys and tokens (loaded by `.bashrc`, never committed)
-- `/dfs/scratch0/<user>/bin/` — shared binaries on PATH (vibe, etc.). Note: `claude` resolves from NVM and `clauded` from AFS `bin/` — see [Claude Code](#claude-code) below.
+- `/dfs/scratch0/<user>/bin/` — canonical shared wrappers on PATH (`clauded`, Vals wrappers, Valkyrie, Harbor, vibe, etc.); `claude`, `codex`, and `node` resolve from NVM. See [Claude Code](#claude-code) below.
 - `/dfs/scratch0/<user>/.nvm/` — Node.js via nvm (shared on DFS via `NVM_DIR`)
 - `~/.virtualenvs/` — legacy Python venvs under LFS `$HOME` (contains `venv_for_poetry`, activated conditionally by `.bashrc`)
 - `~/uv_envs/veribench/` — uv-managed venv for VeriBench (created by `veribench_setup.sh`; activate: `source ~/uv_envs/veribench/bin/activate`)
@@ -165,8 +250,8 @@ Key paths and vars set in `.bashrc`:
 
 ### Claude Code
 
-- `claude` binary: installed via `npm` under NVM (resolves from `$NVM_DIR/versions/node/…/bin/claude`). A stale copy also exists at `/dfs/scratch0/<user>/bin/claude` but NVM takes precedence on PATH.
-- `clauded` script: `/afs/cs.stanford.edu/u/<user>/bin/clauded` (AFS `bin/` is on PATH; runs `claude --dangerously-skip-permissions "$@"`). A duplicate exists at `/dfs/scratch0/<user>/bin/clauded`.
+- `claude` binary: installed via `npm` under NVM (resolves from `$NVM_DIR/versions/node/…/bin/claude`). The old user-owned DFS-prefix duplicate was removed; the stale root-owned `/usr/local/bin/claude` remains visible later in `which -a` but must never resolve first.
+- `clauded` script: canonical at `/dfs/scratch0/<user>/bin/clauded` (runs `claude --dangerously-skip-permissions "$@"`). The AFS script is a compatibility mirror and resolves second.
 - Auth: `~/.claude/` is symlinked to `/dfs/scratch0/<user>/.claude` — shared auth across all SNAP nodes. Run `claude auth login` once on any server, all nodes pick it up.
 
 #### Vals AI profile — `claude-vals` / `clauded-vals`
@@ -176,8 +261,8 @@ personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions
 
 - `claude-vals` = `claude` with `CLAUDE_CONFIG_DIR=~/.claude-vals`; `clauded-vals` = same plus
   `--dangerously-skip-permissions` (the Vals-profile equivalent of `clauded`).
-- Both are scripts installed in **both** `$AFS/bin` and `/dfs/scratch0/<user>/bin` (already on PATH),
-  same dual-homed pattern as `clauded`. They `unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
+- Both are scripts installed canonically in `/dfs/scratch0/<user>/bin`, with `$AFS/bin` compatibility
+  mirrors later in `PATH`, the same pattern as `clauded`. They `unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
   CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX` first — `CLAUDE_CODE_OAUTH_TOKEN`
   is the *personal* token and would silently hijack the Vals profile — and resolve `claude` out of the
   DFS nvm install *first* (newest by mtime) rather than trusting PATH, so they work identically under
@@ -209,10 +294,11 @@ personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions
   `VALKYRIE_API_KEY` if set, otherwise prompted for, and is *not* stored in `~/keys` by any script.
 - Repos cloned to DFS alongside it: `Valkyrie/`, `vals-public-agent-registry/`,
   `vals-create-benchmark-service/`.
-- **Runs on skampere1/2/3 only.** Its `cryptography` dependency ships a Rust extension linked against
-  GLIBC 2.33; skampere nodes have glibc 2.39, mercury1/2 have 2.31 and die with
-  ``ImportError: ... version `GLIBC_2.33' not found`` on every invocation. The installer detects this
-  and says so. First start is slow (~1-5 min cold, ~5 s warm) because the imports come off DFS.
+- The shared wrapper dynamically selects `/dfs/scratch0/brando9/uv/tools/valkyrie` on glibc 2.34+
+  and `/dfs/scratch0/brando9/uv/tools-glibc2.31/valkyrie` on the Ubuntu 20.04 Mercury nodes. It also
+  removes the shared `PYTHONPATH`; bypassing the wrapper can still produce glibc or OpenTelemetry
+  import failures. `snap_health.sh` runs a bounded `--help` startup check, not metadata alone. First
+  start is slow (~1-5 min cold, ~5 s warm) because the imports come off DFS.
 - `valkyrie` has **no `--version` flag**; `valkyrie --help` is the smoke test.
 - Install / repair on a node: `bash ~/agents-config/scripts/setup_valkyrie_snap.sh`.
 - VeriBench-specific state (agents, benchmark service, gateway secret) lives in

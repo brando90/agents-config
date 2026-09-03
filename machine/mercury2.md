@@ -29,8 +29,8 @@ nproc && free -h
 
 ## Notes
 
-- Docker is NOT installed on mercury2. Harbor runs must go to mercury1 or skampere servers.
-- harbor 0.1.45 installed via `uv tool install harbor` at `~/.local/bin/harbor`.
+- `docker` resolves to the user-owned `~/.local/bin/docker` compatibility shim backed by Podman 5.4.1; verify workload compatibility before relying on Docker-specific behavior.
+- Harbor is installed per-node via `uv tool install harbor` at `~/.local/bin/harbor`; invoke it through `/dfs/scratch0/brando9/bin/harbor`, which removes the incompatible shared `PYTHONPATH` first.
 
 ---
 
