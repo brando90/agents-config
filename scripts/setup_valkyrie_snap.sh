@@ -22,6 +22,17 @@ FORCE=0
 log() { printf '[valkyrie] %s\n' "$*"; }
 [ -d "$DFS_ROOT" ] || { echo "[valkyrie] FATAL: $DFS_ROOT not mounted on $(hostname)" >&2; exit 1; }
 
+# The prebuilt `cryptography` wheel Valkyrie pulls in ships a Rust extension linked against
+# GLIBC 2.33. skampere1/2/3 run glibc 2.39 (fine); mercury1/2 run 2.31, where every valkyrie
+# invocation dies with "ImportError: ... version `GLIBC_2.33' not found". The install itself is
+# shared on DFS, so it still gets set up here — only running it on this node is unsupported.
+GLIBC="$(ldd --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' | tail -1)"
+GLIBC_OK=1
+if [ -n "$GLIBC" ] && [ "$(printf '%s\n2.33\n' "$GLIBC" | sort -V | head -1)" = "$GLIBC" ] && [ "$GLIBC" != "2.33" ]; then
+  GLIBC_OK=0
+  log "WARN    $(hostname) has glibc $GLIBC (< 2.33) — the Valkyrie CLI cannot run here; use a skampere node."
+fi
+
 # uv writes tool venvs + managed pythons to DFS so every node runs the same install.
 # (mercury nodes only have system python3.8; the uv-managed 3.12 on DFS is what makes valk work there.)
 export UV_TOOL_DIR="$DFS_ROOT/uv/tools"
@@ -124,9 +135,18 @@ fi
 # --- 4. report ---------------------------------------------------------------------------------
 echo
 log "=== state on $(hostname) ==="
-VER="$(timeout 90 "$DFS_BIN/valkyrie" --version 2>&1 | tail -1)"
-[ -n "$VER" ] || VER="(no answer within 90s — cold DFS import; run 'valkyrie --version' again once warm)"
-log "  valkyrie: $(command -v valkyrie || echo 'NOT on PATH (open a new shell)')  $VER"
+# `valkyrie` has no --version flag (checked against the prod CLI); --help is the smoke test.
+CHECK="$(timeout 120 "$DFS_BIN/valkyrie" --help 2>&1)"   # keep the WHOLE output: the "Usage:" banner is line 1
+if printf '%s' "$CHECK" | grep -q "Usage: valkyrie"; then
+  log "  valkyrie: OK — $(command -v valkyrie || echo "$DFS_BIN/valkyrie") [glibc $GLIBC]"
+elif printf '%s' "$CHECK" | grep -q "GLIBC_"; then
+  log "  valkyrie: UNSUPPORTED on $(hostname) — glibc $GLIBC too old for the prebuilt cryptography"
+  log "            wheel (needs >= 2.33). The install is fine; run the CLI from a skampere node."
+elif [ -z "$CHECK" ]; then
+  log "  valkyrie: no answer within 120s (cold import off DFS) — re-run 'valkyrie --help' once warm"
+else
+  log "  valkyrie: FAILED — $(printf '%s' "$CHECK" | tail -1)"
+fi
 if [ -f "$VALK_CFG/valkyrie.yaml" ]; then
   log "  config:   $VALK_CFG/valkyrie.yaml present"
 else

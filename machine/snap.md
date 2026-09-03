@@ -209,6 +209,11 @@ personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions
   `VALKYRIE_API_KEY` if set, otherwise prompted for, and is *not* stored in `~/keys` by any script.
 - Repos cloned to DFS alongside it: `Valkyrie/`, `vals-public-agent-registry/`,
   `vals-create-benchmark-service/`.
+- **Runs on skampere1/2/3 only.** Its `cryptography` dependency ships a Rust extension linked against
+  GLIBC 2.33; skampere nodes have glibc 2.39, mercury1/2 have 2.31 and die with
+  ``ImportError: ... version `GLIBC_2.33' not found`` on every invocation. The installer detects this
+  and says so. First start is slow (~1-5 min cold, ~5 s warm) because the imports come off DFS.
+- `valkyrie` has **no `--version` flag**; `valkyrie --help` is the smoke test.
 - Install / repair on a node: `bash ~/agents-config/scripts/setup_valkyrie_snap.sh`.
 - VeriBench-specific state (agents, benchmark service, gateway secret) lives in
   `~/veribench/experiments/71_vals_ai_eval_code/docs/04_valkyrie_setup.md`.
