@@ -173,7 +173,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
-- [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install)
+- [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install; § Agent board — the per-machine dashboard of every Claude/Codex/SNAP agent session and its tmux window, installed via `scripts/agent_board_install.sh`)
 - [`machine/mac-never-sleep-lid.md`](machine/mac-never-sleep-lid.md) — reusable prompt/workflow for configuring a Mac to stay awake when the lid closes; load via `machine/mac.md` when Brando asks for never-sleep lid behavior.
 - [`machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) — reusable shell-automatable trusted-agent setup for Codex, Claude Code, Cursor, ChatGPT, and Manus on macOS
 - [`machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) — reusable manual macOS Privacy & Security checklist for local AI apps

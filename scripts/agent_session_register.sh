@@ -34,7 +34,11 @@ TRANSCRIPT="$(get transcript_path)"
 
 # tmux window this session lives in -> the "_l11" part of the label
 TMUX_NAME=""
-if [ -n "${TMUX:-}" ]; then
+if [ -n "${TMUX_PANE:-}" ]; then
+  # target our own pane explicitly: without -t, display-message answers for whichever
+  # client tmux considers current, which need not be the one this session runs in
+  TMUX_NAME="$(tmux display-message -p -t "$TMUX_PANE" '#{session_name}' 2>/dev/null || true)"
+elif [ -n "${TMUX:-}" ]; then
   TMUX_NAME="$(tmux display-message -p '#{session_name}' 2>/dev/null || true)"
 fi
 

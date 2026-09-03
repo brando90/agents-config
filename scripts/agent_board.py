@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-# TLDR: Scans local Claude Code / Codex session state (transcripts, tmux panes, self-registrations)
-# plus optional SNAP node polling, and renders a self-refreshing HTML board + terminal table so you
-# can see at a glance which agent session is working on what.
+# TLDR: Scans local Claude Code / Codex session state (transcripts, Claude Code's own per-process
+# registry for the exact pid<->session<->tmux mapping, tmux panes, hook self-registrations) plus
+# optional SNAP node polling, and renders a self-refreshing HTML board + terminal table so you can
+# see at a glance which agent session is working on what, and in which tmux window.
 
 import argparse
 import calendar
@@ -181,35 +182,6 @@ def process_table():
 AGENT_RE = re.compile(r"(^|/)(claude|codex)(\s|$)|Claude Code")
 
 
-def all_agent_procs(tab, panes):
-    """[(location, pid, start_epoch)] for every running agent process, wherever it lives."""
-    out = []
-    for pid, (_ppid, start, cmd) in tab.items():
-        if AGENT_RE.search(cmd) and "agent_board" not in cmd:
-            out.append((locate(pid, tab, panes), pid, start))
-    return out
-
-
-def tmux_agent_procs(tab, panes):
-    """[(tmux_session_name, pid, start_epoch)] for every agent process under a tmux pane."""
-    kids = {}
-    for pid, (ppid, _, _) in tab.items():
-        kids.setdefault(ppid, []).append(pid)
-    found = []
-    for pane_pid, (sess, _cmd) in panes.items():
-        stack, seen, depth = [(pane_pid, 0)], set(), 0
-        while stack:
-            pid, d = stack.pop()
-            if pid in seen or d > 5:
-                continue
-            seen.add(pid)
-            info = tab.get(pid)
-            if info and AGENT_RE.search(info[2]):
-                found.append((sess, pid, info[1]))
-            stack.extend((k, d + 1) for k in kids.get(pid, []))
-    return found
-
-
 def locate(pid, tab, panes, depth=12):
     """Walk up the process tree: which tmux window, or which app, is this agent sitting in?"""
     seen = 0
@@ -219,6 +191,10 @@ def locate(pid, tab, panes, depth=12):
         cmd = tab[pid][2]
         if "Cursor Helper" in cmd or "Cursor.app" in cmd:
             return "cursor"
+        if "ChatGPT.app" in cmd:
+            return "chatgpt"
+        if "Code Helper" in cmd or "Visual Studio Code" in cmd:
+            return "vscode"
         if "iTerm" in cmd:
             return "iterm"
         if "Terminal.app" in cmd:
@@ -228,27 +204,6 @@ def locate(pid, tab, panes, depth=12):
     return "?"
 
 
-def assign_tmux(births, agents, tol=180):
-    """Greedy one-to-one match of sessions to live agent processes, closest pair first.
-
-    A tmux pane runs one agent at a time, so a process must not be claimed by two
-    sessions -- without this, an old transcript in a window steals the label from the
-    session actually running there now.
-    """
-    pairs = sorted(
-        ((abs(start - birth), sid, sess, pid)
-         for sid, birth in births.items()
-         for sess, pid, start in agents
-         if abs(start - birth) <= tol),
-        key=lambda x: x[0])
-    out, used = {}, set()
-    for _d, sid, sess, pid in pairs:
-        if sid in out or pid in used:
-            continue
-        out[sid], _ = sess, used.add(pid)
-    return out
-
-
 def load_registry():
     """Session self-registrations written by the SessionStart hook."""
     reg = {}
@@ -256,21 +211,88 @@ def load_registry():
         try:
             with open(f) as fh:
                 d = json.load(fh)
-            if d.get("session_id"):
+            if isinstance(d, dict) and isinstance(d.get("session_id"), str):
                 reg[d["session_id"]] = d
         except Exception:
             continue
     return reg
 
 
-def collect_sessions(max_age_h, show_all=False):
+def _epoch_ms(v):
+    """Claude Code's millisecond timestamps -> epoch seconds, 0 when absent or malformed."""
+    try:
+        v = float(v) / 1000
+    except (TypeError, ValueError):
+        return 0
+    return v if v > 0 else 0
+
+
+def _utc_ctime(s):
+    """'Thu Sep  3 01:59:57 2026' (Claude Code's procStart, in UTC) -> epoch, else 0."""
+    try:
+        return calendar.timegm(time.strptime(str(s), "%a %b %d %H:%M:%S %Y"))
+    except (TypeError, ValueError):
+        return 0
+
+
+def claude_registry(tab, panes):
+    """sid -> [proc, ...] from Claude Code's own per-process registry.
+
+    Every running `claude` writes <config>/sessions/<pid>.json (pid, sessionId, cwd and a
+    "tmux" field like "8:@8.%8" = session:window.pane) and refreshes it while it runs, so this
+    is the exact process<->session mapping; no start-time correlation needed. Files of exited
+    processes linger, so an entry counts only while its pid is alive, is an agent process and
+    started when the file says it did (a recycled pid fails that check). The tmux name comes
+    from the live process tree first, so a pane moved to another session since launch is
+    reported where it is now, and from the file only when the tree walk finds no pane.
+    """
+    out = {}
+    for cfg_dir in CONFIGS:
+        for f in glob.glob(os.path.join(cfg_dir, "sessions", "*.json")):
+            try:
+                with open(f) as fh:
+                    d = json.load(fh)
+            except Exception:
+                continue
+            if not isinstance(d, dict):
+                continue
+            sid, pid = d.get("sessionId"), str(d.get("pid") or "")
+            info = tab.get(pid)
+            if not isinstance(sid, str) or not sid or not info or not AGENT_RE.search(info[2]):
+                continue
+            started = _epoch_ms(d.get("startedAt")) or _utc_ctime(d.get("procStart"))
+            updated = _epoch_ms(d.get("updatedAt"))
+            if not started or abs(info[1] - started) > 120:
+                continue          # no verifiable start time, or the pid was recycled
+            loc = locate(pid, tab, panes)
+            if loc.startswith("tmux "):
+                sess = loc[5:]
+            else:
+                # tmux forbids ':' and '.' in session names, so the first field is the name
+                sess = str(d.get("tmux") or "").split(":", 1)[0] or None
+            out.setdefault(sid, []).append(
+                {"pid": pid, "tmux": sess, "app": None if sess else loc, "updated": updated})
+    for procs in out.values():
+        procs.sort(key=lambda p: p["updated"], reverse=True)
+    return out
+
+
+def tmux_cell(names):
+    """'tmux 8'; 'tmux 5,9' when two processes (e.g. two --resume) share one session."""
+    names = [str(n) for n in names]
+    if all(n.isdigit() for n in names):
+        return "tmux " + ",".join(names)
+    return ",".join(names)
+
+
+def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
     now = time.time()
     reg = load_registry()
-    tab = process_table()
-    panes = tmux_panes()
-    agents = all_agent_procs(tab, panes)
+    tab = process_table() if tab is None else tab
+    panes = tmux_panes() if panes is None else panes
+    cc = claude_registry(tab, panes)
 
-    births, paths = {}, []
+    paths = []
     for cfg_dir, tag in CONFIGS.items():
         for tpath in glob.glob(os.path.join(cfg_dir, "projects", "*", "*.jsonl")):
             try:
@@ -282,34 +304,35 @@ def collect_sessions(max_age_h, show_all=False):
             if os.path.basename(os.path.dirname(tpath)).endswith(SELF_PROJECT):
                 continue
             sid = os.path.basename(tpath)[:-6]
-            births[sid] = getattr(st, "st_birthtime", st.st_ctime)
             paths.append((cfg_dir, tag, tpath, st, sid))
-    inferred = assign_tmux(births, agents)
     rows = []
     for cfg_dir, tag, tpath, st, sid in paths:
             age = now - st.st_mtime
             proj_dir = os.path.basename(os.path.dirname(tpath))
             topic, cwd, branch, model, effort = scan_transcript(tpath)
-            r = reg.get(sid, {})
-            tmux_name, how = r.get("tmux"), "registered"
-            if not tmux_name:
-                # started before the hook existed: correlate transcript birth time with
-                # the start time of a live agent process inside a tmux pane
-                tmux_name, how = inferred.get(sid), "inferred"
-            label = tag
-            if tmux_name:
-                cell = (f"tmux {tmux_name}" if str(tmux_name).isdigit() else str(tmux_name))
-                cell += "" if how == "registered" else " ?"
+            procs = cc.get(sid, [])
+            seats = [p["tmux"] for p in procs if p["tmux"]]
+            if procs:
+                # exact: a live process, from Claude Code's own registry
+                how, app = "live", procs[0]["app"]
+                cell = tmux_cell(seats) if seats else (app if app and app != "?" else "(no tmux)")
             else:
-                cell, how = "\u2014", "unknown"
+                # no live process, so nothing to switch to. The SessionStart hook's record of
+                # the window it ran in still groups it under that seat as history.
+                how, cell = "exited", "\u2014"
+                t = reg.get(sid, {}).get("tmux")
+                seats = [str(t)] if isinstance(t, (str, int)) and str(t) else []
+            label = tag
             rows.append({
                 "sid": sid,
                 "path": tpath,
                 "short": sid[:8],
                 "tag": tag,
                 "label": label,
-                "tmux": tmux_name,
-                "alive": sid in inferred or how == "registered",
+                "tmux": seats[0] if seats else None,
+                "seats": seats,
+                "proc": bool(procs),
+                "alive": bool(procs),
                 "tmux_cell": cell,
                 "tmux_how": how,
                 "project": project_label(proj_dir),
@@ -351,20 +374,21 @@ def one_per_seat(rows, keep_stale=False):
     """A tmux window is one seat: the agent you have "on" there is the newest transcript in
     it. Older transcripts in the same window are that seat's history, not extra agents."""
     seen, out = {}, []
-    for r in sorted(rows, key=lambda r: r["last"], reverse=True):
-        if r.get("tmux"):
-            key = (r["tag"], r["tmux"])
-            if key in seen:
-                seen[key]["prior"] += 1
-                continue
-            r["prior"] = 0
-            seen[key] = r
+    # Every session with a live process is shown, whatever its window (a `claude -p` child
+    # shares its parent's pane). A transcript with no live process is history: folded into
+    # the seat holder's "+N earlier here" when its window is taken, shown only if it is free.
+    for r in sorted(rows, key=lambda r: (not r.get("proc"), -r["last"])):
+        keys = [(r["tag"], s) for s in (r.get("seats") or [])]
+        taken = [k for k in keys if k in seen]
+        if taken and not r.get("proc"):
+            seen[taken[0]]["prior"] += 1
+            continue
+        r["prior"] = 0
+        for k in keys:
+            seen.setdefault(k, r)
+        # a seatless, dead transcript is kept only while it is still moving
+        if keys or keep_stale or r.get("proc") or r["state"] != "stale":
             out.append(r)
-        else:
-            # no window to attribute it to: keep it only while it is actually moving
-            r["prior"] = 0
-            if keep_stale or r["state"] != "stale":
-                out.append(r)
     return out
 
 
@@ -391,10 +415,60 @@ def collapse_fanout(rows, threshold=3):
     return out
 
 
-def collect_codex(max_age_h, limit=8):
-    """Recent Codex threads from the local session index."""
-    idx = os.path.join(HOME, ".codex", "session_index.jsonl")
-    seen, rows = {}, []
+CODEX_DIR = os.path.join(HOME, ".codex")
+CODEX_RE = re.compile(r"(^|/)codex(\s|$)")
+
+
+def scan_rollout(path, max_lines=300):
+    """(start_epoch, cwd, originator, model, effort) from a Codex rollout transcript: the
+    session_meta line carries the start time and cwd, the first turn_context the model."""
+    start, cwd, orig, model, effort = None, "", "", "", ""
+    try:
+        with open(path, errors="ignore") as fh:
+            for i, ln in enumerate(fh):
+                if i > max_lines or (start and model):
+                    break
+                if len(ln) > 200_000 or ('"session_meta"' not in ln and '"turn_context"' not in ln):
+                    continue
+                try:
+                    d = json.loads(ln)
+                except Exception:
+                    continue
+                if not isinstance(d, dict):
+                    continue
+                p = d.get("payload") or {}
+                if not isinstance(p, dict):
+                    continue
+                if d.get("type") == "session_meta":
+                    ts = str(p.get("timestamp") or d.get("timestamp") or "")
+                    try:
+                        start = calendar.timegm(time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S"))
+                    except Exception:
+                        pass
+                    cwd, orig = str(p.get("cwd") or ""), str(p.get("originator") or "")
+                elif d.get("type") == "turn_context":
+                    model = str(p.get("model") or model)
+                    cm = p.get("collaboration_mode")
+                    cm = cm.get("settings") if isinstance(cm, dict) else None
+                    cm = cm if isinstance(cm, dict) else {}
+                    effort = str(p.get("effort") or p.get("reasoning_effort")
+                                 or cm.get("reasoning_effort") or effort)
+    except OSError:
+        pass
+    return start, cwd, orig, model, effort
+
+
+def collect_codex(max_age_h, tab, panes, limit=8):
+    """Recent Codex threads from the local session index, as board rows.
+
+    Codex keeps no pid registry, so a thread is tied to its process by the one fact both
+    record: the thread's start time (rollout session_meta) is the start of the `codex`
+    process that created it, to within a few seconds. Only interactive / exec processes
+    qualify (the ChatGPT and Cursor app-servers are not agents you sit at); each process is
+    claimed once, closest thread first, and its tmux window comes from the process tree.
+    """
+    idx = os.path.join(CODEX_DIR, "session_index.jsonl")
+    seen = {}
     try:
         with open(idx, errors="ignore") as fh:
             for ln in fh:
@@ -402,23 +476,53 @@ def collect_codex(max_age_h, limit=8):
                     d = json.loads(ln)
                 except Exception:
                     continue
-                if d.get("id"):
+                if isinstance(d, dict) and d.get("id"):
                     seen[d["id"]] = d  # later lines win
     except OSError:
-        return rows
+        return []
+    now = time.time()
+    threads = []
     for d in seen.values():
-        ts = d.get("updated_at", "")
+        ts = str(d.get("updated_at", ""))
         try:
             t = calendar.timegm(time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S"))  # index is UTC
         except Exception:
             continue
-        age = time.time() - t
-        if age > max_age_h * 3600:
-            continue
-        rows.append({"short": d["id"][:8], "name": (d.get("thread_name") or "")[:70],
-                     "last": t, "age": age})
-    rows.sort(key=lambda r: r["last"], reverse=True)
-    return rows[:limit]
+        if now - t <= max_age_h * 3600:
+            threads.append((t, d))
+    threads.sort(key=lambda x: x[0], reverse=True)
+
+    procs = [(pid, start) for pid, (_p, start, cmd) in tab.items()
+             if CODEX_RE.search(cmd) and "app-server" not in cmd and " sandbox " not in cmd]
+    rows, claimed = [], set()
+    for t, d in threads[:limit]:
+        tid = str(d["id"])
+        hits = (glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", f"rollout-*-{tid}.jsonl"))
+                if re.fullmatch(r"[0-9a-f-]{8,64}", tid) else [])
+        start, cwd, orig, model, effort = scan_rollout(hits[0]) if hits else (None, "", "", "", "")
+        cell, seats = "—", []
+        if start:
+            near = sorted((abs(s - start), pid) for pid, s in procs
+                          if pid not in claimed and abs(s - start) <= 15)
+            if near:
+                pid = near[0][1]
+                claimed.add(pid)
+                loc = locate(pid, tab, panes)
+                if loc.startswith("tmux "):
+                    seats, cell = [loc[5:]], tmux_cell([loc[5:]])
+                else:
+                    cell = loc if loc != "?" else "(no tmux)"
+        age = now - t
+        rows.append({
+            "sid": tid, "short": tid[:8], "tag": "cxd", "label": "cxd",
+            "tmux_cell": cell, "seats": seats, "proc": cell != "—", "alive": cell != "—",
+            "where": (HOSTNAME + ":" + short_path(cwd)) if cwd else HOSTNAME,
+            "branch": orig, "mdl": (model + ("+" + effort if effort else "")) if model else "?",
+            "topic": str(d.get("thread_name") or "")[:120], "next": "", "prior": 0,
+            "last": t, "age": age,
+            "state": "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale"),
+        })
+    return rows
 
 
 def poll_snap(timeout=10, max_age=600):
@@ -440,41 +544,62 @@ def _poll_snap_now(timeout=10):
             r = subprocess.run(
                 ["ssh", "-o", f"ConnectTimeout={timeout}", "-o", "BatchMode=yes",
                  f"brando9@{h}.stanford.edu",
-                 # panes (session, pane pid, activity) + the node's process table; the
+                 # panes (session, pane pid, activity, cwd) + the node's process table + the
+                 # args of my own processes (agent kind, model) + my codex defaults; the
                  # descendant walk happens locally so "running" means a real non-shell
                  # process under the pane, not whatever the pane's foreground command is
-                 "tmux list-panes -a -F '#{session_name},#{pane_pid},#{session_activity}' 2>/dev/null; "
+                 "tmux list-panes -a -F '#{session_name}\t#{pane_pid}\t#{session_activity}\t"
+                 "#{pane_current_path}' 2>/dev/null; "
                  "echo '=PS='; ps -e -o pid=,ppid=,comm= 2>/dev/null; "
+                 "echo '=ARGS='; ps -u $USER -o pid=,args= 2>/dev/null; "
+                 "echo '=CFG='; grep -E '^(model|model_reasoning_effort) *=' "
+                 "~/.codex/config.toml 2>/dev/null; "
                  "echo '=N='; pgrep -c codex 2>/dev/null || echo 0"],
                 capture_output=True, text=True, timeout=timeout + 15)
             if r.returncode != 0:
                 raise RuntimeError(f"ssh exit {r.returncode}")
             panes_txt, _, rest = r.stdout.partition("=PS=")
-            ps_txt, _, procs = rest.partition("=N=")
-            kids, comm = {}, {}
+            ps_txt, _, rest = rest.partition("=ARGS=")
+            args_txt, _, rest = rest.partition("=CFG=")
+            cfg_txt, _, procs = rest.partition("=N=")
+            kids, comm, args, default = {}, {}, {}, {}
             for ln in ps_txt.splitlines():
                 f = ln.split(None, 2)
                 if len(f) == 3:
                     kids.setdefault(f[1], []).append(f[0])
                     comm[f[0]] = os.path.basename(f[2]).strip()
+            for ln in args_txt.splitlines():
+                f = ln.split(None, 1)
+                if len(f) == 2:
+                    args[f[0]] = f[1].strip()
+            for ln in cfg_txt.splitlines():
+                k, _, v = ln.partition("=")
+                default[k.strip()] = v.strip().strip('"').strip("'")
             seen = {}
             for ln in panes_txt.splitlines():
-                name, ppid, act = (ln.strip().split(",") + ["", ""])[:3]
+                # tab-separated: a comma may legally appear in a session name or a path
+                name, ppid, act, path = (ln.rstrip("\n").split("\t", 3) + ["", "", ""])[:4]
+                name = name.strip()
                 if not name:
                     continue
                 try:
                     act = float(act)
                 except ValueError:
                     act = 0
-                # every descendant of the pane shell, depth-limited
-                stack, desc, n = list(kids.get(ppid, [])), [], 0
+                # every descendant of the pane shell, shallowest first, depth-limited
+                stack, desc, n = [(k, 1) for k in kids.get(ppid, [])], [], 0
                 while stack and n < 400:
-                    pid = stack.pop(); n += 1
-                    desc.append(comm.get(pid, ""))
-                    stack.extend(kids.get(pid, []))
-                s = seen.setdefault(name, {"name": name, "activity": act, "cmds": []})
-                s["cmds"].extend(c for c in desc if c)
+                    pid, depth = stack.pop(0); n += 1
+                    desc.append(pid)
+                    stack.extend((k, depth + 1) for k in kids.get(pid, []))
+                s = seen.setdefault(name, {"name": name, "activity": act, "cmds": [],
+                                           "args": [], "path": path})
+                s["cmds"].extend(comm[p] for p in desc if comm.get(p))
+                s["args"].extend(args[p] for p in desc if p in args)
+                s["path"] = s["path"] or path
                 s["activity"] = max(s["activity"], act)
+            for s in seen.values():
+                s["agent"], s["mdl"] = snap_agent(s.pop("args"), default)
             entry["tmux"] = list(seen.values())
             toks = procs.split()
             entry["procs"] = toks[-1] if toks else "0"
@@ -490,12 +615,47 @@ def _poll_snap_now(timeout=10):
     return out
 
 
+def snap_agent(args, default):
+    """(agent tag, model+effort) for one SNAP pane from its descendant command lines,
+    shallowest first. Only the executable decides the kind (`codex`, `node .../codex`,
+    `claude`) -- never a file name or prompt text further down the line -- and the model is
+    read from that agent's own leading options (`-m`/`--model`, `model_reasoning_effort=`),
+    else from the node's ~/.codex/config.toml defaults. An em dash means only shells run."""
+    for a in args:
+        toks = str(a).split()
+        exe = os.path.basename(toks[0]) if toks else ""
+        if exe in ("node", "nodejs") and len(toks) > 1:
+            exe, toks = os.path.basename(toks[1]), toks[1:]
+        if exe not in ("codex", "claude"):
+            continue
+        head = " ".join(toks[1:17])          # options come first; the prompt is last
+        if exe == "codex":
+            m = re.search(r"(?:^|\s)(?:-m|--model)[ =]([\w.\-]+)", head)
+            e = re.search(r"model_reasoning_effort\s*=\s*[\"']?([A-Za-z]+)", head)
+            model = m.group(1) if m else default.get("model", "")
+            effort = e.group(1) if e else default.get("model_reasoning_effort", "")
+            return "cxd", (model + ("+" + effort if effort else "")) if model else "?"
+        m = re.search(r"(?:^|\s)--model[ =]([\w.\-\[\]]+)", head)
+        return "cc", (short_model(m.group(1)) if m else "?")
+    return "—", ""
+
+
 def read_snap_cache():
+    """The cached poll, or None; only well-formed host entries survive (the file is rewritten
+    by every poll, so a torn or foreign file must not take the board down)."""
     try:
         with open(SNAP_CACHE) as fh:
-            return json.load(fh)
+            c = json.load(fh)
     except Exception:
         return None
+    if not isinstance(c, dict) or not isinstance(c.get("hosts"), list):
+        return None
+    hosts = [h for h in c["hosts"] if isinstance(h, dict) and isinstance(h.get("host"), str)]
+    try:
+        at = float(c.get("at") or 0)
+    except (TypeError, ValueError):
+        at = 0
+    return {"at": at, "hosts": hosts}
 
 
 EXP_ROOT = os.path.join(HOME, "veribench", "experiments")
@@ -576,8 +736,27 @@ def local_experiment_dirs():
     return out
 
 
+REMOTE_HOMES = [  # SNAP filesystem roots that act as a home dir -> short prefix
+    (re.compile(r"^/lfs/[^/]+/0/brando9"), "lfs:~"),
+    (re.compile(r"^/dfs/scratch0/brando9"), "dfs:~"),
+    (re.compile(r"^/afs/cs\.stanford\.edu/u/brando9"), "afs:~"),
+]
+
+
+def short_remote(path):
+    """'/dfs/scratch0/brando9/expt74/veribench' -> 'dfs:~/expt74/veribench'."""
+    path = path or ""
+    for rx, short in REMOTE_HOMES:
+        if rx.match(path):
+            return rx.sub(short, path, count=1)
+    bits = [b for b in path.split("/") if b]
+    return "/".join(bits) if len(bits) <= 3 else ".../" + "/".join(bits[-2:])
+
+
 def collect_experiments(snap):
-    """Cross SNAP tmux jobs with repo state to answer: which experiments are DONE but unlanded?"""
+    """One board row per SNAP tmux job, crossed with repo state to answer: which experiments
+    are DONE but unlanded? Same columns as the local session tables: the tmux cell is the
+    byobu/tmux session name on that node, Id the experiment number, Where host:cwd."""
     dirs = local_experiment_dirs()
     now = time.time()
     try:
@@ -590,24 +769,35 @@ def collect_experiments(snap):
 
     jobs = {}
     for h in (snap or {}).get("hosts", []):
-        for s in h.get("tmux", []):
-            name = s["name"] if isinstance(s, dict) else str(s)
-            act = s.get("activity", 0) if isinstance(s, dict) else 0
-            if name in IGNORE_TMUX:
+        if not isinstance(h, dict) or not isinstance(h.get("host"), str):
+            continue
+        for s in (h.get("tmux") or []):
+            if not isinstance(s, dict):
+                s = {"name": str(s)}
+            name = str(s.get("name") or "")
+            if not name or name in IGNORE_TMUX:
                 continue
+            try:
+                act = float(s.get("activity") or 0)
+            except (TypeError, ValueError):
+                act = 0
             num = JOB_ALIASES.get(name)
             if not num:
                 m = re.search(r"(\d+)", name)
                 num = m.group(1) if m else None
-            key = (num, name)
+            key = (num, name, h["host"])            # the same name may run on two nodes
             idle = now - act if act else None
-            cmds = s.get("cmds") if isinstance(s, dict) else None
+            cmds = s.get("cmds")
+            cmds = [str(c) for c in cmds] if isinstance(cmds, list) else None
             busy = None if cmds is None else any(c not in SHELLS for c in cmds)
             jobs[key] = {"num": num, "job": name, "host": h["host"], "idle": idle, "busy": busy,
-                         "cmds": sorted({c for c in (cmds or []) if c not in SHELLS})[:4]}
+                         "cmds": sorted({c for c in (cmds or []) if c not in SHELLS})[:4],
+                         "path": str(s.get("path") or ""), "agent": str(s.get("agent") or ""),
+                         "mdl": str(s.get("mdl") or ""), "stale": bool(h.get("error"))}
 
     rows = []
-    for (num, name), j in sorted(jobs.items(), key=lambda kv: (kv[0][0] or "zz", kv[0][1])):
+    for (num, name, _host), j in sorted(jobs.items(),
+                                        key=lambda kv: (kv[0][0] or "zz", kv[0][1], kv[0][2])):
         d = dirs.get(num)
         is_dirty, ct, subject = gstate.get(num, [False, None, ""])
         commit_age = now - ct if ct else None
@@ -631,13 +821,26 @@ def collect_experiments(snap):
         if ext and ext.get("state"):
             state = f"{ext['state']}  (reported)"
 
+        notes = []
+        if j["cmds"]:
+            notes.append("running: " + ", ".join(j["cmds"][:3]))
+        if commit_age is not None:
+            notes.append(f"landed {ago(commit_age)} ago" + (f": {subject}" if subject else ""))
+        if ext and ext.get("note"):
+            notes.append(str(ext["note"]))
+        if j["stale"]:
+            notes.append("(stale poll: showing the last successful ssh data)")
+        cls = ("idle" if state.startswith("DONE") else
+               "live" if state.startswith("RUNNING") else "stale")
         rows.append({
-            "ext": ext.get("note", "") if ext else "",
-            "num": num or "?", "job": name, "host": j["host"],
-            "idle": j["idle"], "state": state, "dirty": is_dirty,
-            "dir": os.path.basename(d) if d else "(no local dir)",
-            "cmds": ", ".join(j["cmds"][:3]),
-            "commit_age": commit_age, "subject": subject,
+            "sid": f"{j['host']}:{name}", "short": num or "?", "tag": "snap",
+            "label": j["agent"] or "—", "tmux_cell": name, "seats": [],
+            "proc": j["busy"] is True, "alive": j["busy"] is True,
+            "where": f"{j['host']}:{short_remote(j['path'])}" if j["path"] else j["host"],
+            "branch": os.path.basename(d) if d else "(no local expt dir)",
+            "mdl": j["mdl"] or "?", "topic": state, "next": "", "note": " · ".join(notes),
+            "prior": 0, "last": (now - j["idle"]) if j["idle"] is not None else 0,
+            "age": j["idle"], "state": cls, "dirty": is_dirty, "job": name, "host": j["host"],
         })
     return rows
 
@@ -806,6 +1009,8 @@ def stanford_status(cache_s=60):
 
 
 def ago(sec):
+    if sec is None:
+        return "?"
     if sec < 60:
         return f"{int(sec)}s"
     if sec < 3600:
@@ -817,7 +1022,42 @@ def ago(sec):
 
 # ---------------------------------------------------------------- renderers
 
-def render_text(sessions, codex, snap, panes, experiments=None, net=None):
+def build_sections(sessions, codex, experiments, snap):
+    """The board is one row schema everywhere; only the grouping differs. Local Claude Code
+    per config, local Codex, then the SNAP jobs (with the per-node summary as the note)."""
+    secs = [{"title": title, "sub": sub, "rows": [s for s in sessions if s["tag"] == tag]}
+            for tag, title, sub in SECTION_TITLES]
+    secs.append({"title": "Codex — local", "sub": "codex / codex exec, ~/.codex",
+                 "rows": codex})
+    note = ""
+    if snap:
+        stamp = time.strftime("%H:%M", time.localtime(snap.get("at", 0)))
+        bits = []
+        for h in snap.get("hosts", []):
+            if not isinstance(h, dict):
+                continue
+            names = [str(s.get("name", "")) if isinstance(s, dict) else str(s)
+                     for s in (h.get("tmux") or [])]
+            infra = [n for n in names if n in IGNORE_TMUX]
+            b = f"{h.get('host', '?')}: {len(names)} tmux sessions, {h.get('procs', '?')} codex procs"
+            if infra:
+                b += f" (infra: {', '.join(infra)})"
+            if h.get("error"):
+                b += f" [stale: {h['error']}]"
+            bits.append(b)
+        note = f"polled {stamp} · " + " · ".join(bits)
+    secs.append({"title": "SNAP — jobs in tmux/byobu on the cluster",
+                 "sub": "ssh brando9@<host>.stanford.edu; tmux attach -t <tmux>",
+                 "rows": experiments, "note": note})
+    return secs
+
+
+COLS_TEXT = f"  {'TMUX':<20} {'AGENT':<6} {'ID':<9} {'WHERE':<24} {'MDL+EFF':<17} {'LAST':>5}  TOPIC"
+COLS_RULE = f"  {'-' * 20} {'-' * 6} {'-' * 9} {'-' * 24} {'-' * 17} {'-' * 5}  {'-' * 34}"
+COLS_PAD = f"  {'':<20} {'':<6} {'':<9} {'':<24} {'':<17} {'':>5}  "
+
+
+def render_text(sections, net=None, panes=None):
     W = "\033[0m"
     C = {"live": "\033[32m", "idle": "\033[33m", "stale": "\033[90m"}
     if net:
@@ -825,55 +1065,40 @@ def render_text(sessions, codex, snap, panes, experiments=None, net=None):
             tick = f"kerberos until {net['expires']}" if net.get("ticket") else "NO kerberos ticket (run kinit)"
             print(f"\n  \U0001F7E2 Stanford / SNAP reachable   \033[90m{tick}\033[0m")
         else:
-            print("\n  \U0001F534 No Stanford access \u2014 connect the VPN "
+            print("\n  \U0001F534 No Stanford access — connect the VPN "
                   "\033[90m(SNAP nodes unreachable)\033[0m")
-    print(f"\n  \033[32m\u25cf\033[0m working now (<2m)   "
-          f"\033[33m\u25cf\033[0m waiting on you (2-30m)   "
-          f"\033[90m\u25cf\033[0m idle / finished (>30m)")
+    print(f"\n  \033[32m●\033[0m working now (<2m / job RUNNING)   "
+          f"\033[33m●\033[0m waiting on you (2-30m / results not landed)   "
+          f"\033[90m●\033[0m idle / finished (>30m / LANDED)")
+    rows_all = [s for sec in sections for s in sec["rows"]]
     print(f"\n  AGENT BOARD — {time.strftime('%a %d %b %H:%M:%S')}"
-          f"   ({sum(1 for s in sessions if s['state']=='live')} live,"
-          f" {len(sessions)} recent)\n")
-    for tag, title, sub in SECTION_TITLES:
-        group = [s for s in sessions if s["tag"] == tag]
-        if not group:
-            continue
-        nlive = sum(1 for s in group if s["state"] == "live")
-        print(f"  {title.upper()}  ({nlive} live / {len(group)})   {sub}")
-        print(f"  {'TMUX/APP':<9} {'CFG':<5} {'ID':<9} {'WHERE':<18} {'MDL+EFF':<12} {'AGE':>5}  TOPIC")
-        print(f"  {'-'*9} {'-'*5} {'-'*9} {'-'*18} {'-'*12} {'-'*5}  {'-'*34}")
-        for s in group:
+          f"   ({sum(1 for s in rows_all if s['state'] == 'live')} working,"
+          f" {len(rows_all)} rows)\n")
+    for sec in sections:
+        rows = sec["rows"]
+        nlive = sum(1 for s in rows if s["state"] == "live")
+        print(f"  {sec['title'].upper()}  ({nlive} live / {len(rows)})   \033[90m{sec['sub']}\033[0m")
+        if sec.get("note"):
+            print(f"  \033[90m{sec['note']}\033[0m")
+        print(COLS_TEXT)
+        print(COLS_RULE)
+        if not rows:
+            print("  (none)")
+        for s in rows:
             c = C.get(s["state"], "")
             prior = f"  \033[90m(+{s['prior']})\033[0m" if s.get("prior") else ""
-            print(f"  \033[1m{s['tmux_cell']:<9}\033[0m{c}{s['label']:<5} {s['short']:<9} "
-                  f"{s['where'][:18]:<18} {s['mdl'][:12]:<12} {ago(s['age']):>5}  "
-                  f"{s['topic'][:34]}{W}{prior}")
+            print(f"  \033[1m{s['tmux_cell'][:20]:<20}\033[0m {c}{s['label'][:6]:<6} "
+                  f"{s['short'][:9]:<9} {s['where'][:24]:<24} {s['mdl'][:17]:<17} "
+                  f"{ago(s['age']):>5}  {s['topic'][:34]}{W}{prior}")
             if s.get("next"):
-                print(f"  {'':<9}{'':<5} {'':<9} {'':<18} {'':<12} {'':>5}  "
-                      f"\033[1mnext:\033[0m {s['next'][:64]}")
+                print(f"{COLS_PAD}\033[1mnext:\033[0m {s['next'][:64]}")
+            elif s.get("note"):
+                print(f"{COLS_PAD}\033[90m{s['note'][:72]}\033[0m")
         print()
-    if codex:
-        print(f"\n  CODEX (local)")
-        for r in codex:
-            print(f"  {'cxd':<10} {r['short']:<9} {'':<12} {ago(r['age']):>6}  {r['name'][:46]}")
-    if snap:
-        stamp = time.strftime('%H:%M', time.localtime(snap["at"]))
-        print(f"\n  SNAP  (polled {stamp})")
-        for h in snap["hosts"]:
-            t = ",".join(s["name"] if isinstance(s, dict) else str(s)
-                         for s in h["tmux"]) or "-"
-            print(f"  {'+s':<10} {h['host']:<9} {'':<12} {'':>6}  tmux[{t}]  codex procs: {h['procs']}")
-    if experiments:
-        print(f"\n  EXPERIMENTS  (SNAP job x repo state)")
-        print(f"  {'STATE':<26} {'JOB':<24} {'HOST':<10} {'IDLE':>6} {'LANDED':>7}")
-        print(f"  {'-'*26} {'-'*24} {'-'*10} {'-'*6} {'-'*7}")
-        for r in experiments:
-            mark = "\033[33m" if r["state"].startswith("DONE") else (
-                   "\033[32m" if r["state"] == "RUNNING" else "\033[90m")
-            print(f"  {mark}{r['state']:<26} {r['job']:<24} {r['host']:<10} "
-                  f"{(ago(r['idle']) if r['idle'] is not None else '?'):>6} "
-                  f"{(ago(r['commit_age']) if r['commit_age'] is not None else '-'):>7}\033[0m")
-    live_panes = sum(1 for _, (_, cmd) in panes.items() if "codex" in cmd or cmd[0].isdigit())
-    print(f"\n  local tmux panes running an agent: {live_panes}\n")
+    if panes is not None:
+        live_panes = sum(1 for _, (_, cmd) in panes.items()
+                         if "codex" in cmd or cmd[:1].isdigit())
+        print(f"\n  local tmux panes running an agent: {live_panes}\n")
 
 
 CSS = """
@@ -913,7 +1138,7 @@ tr:last-child td{border-bottom:none}
 code{font-family:ui-monospace,Menlo,monospace;background:var(--line);padding:1px 5px;
      border-radius:4px;font-size:11.5px}
 .tmux{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:13px;
-      white-space:nowrap;width:78px;color:var(--accent)}
+      white-space:nowrap;min-width:78px;color:var(--accent)}
 .next{margin-top:5px;font-size:12px;color:var(--fg);border-left:2px solid var(--accent);
       padding-left:8px}
 .next b{color:var(--accent)}
@@ -933,7 +1158,7 @@ code{font-family:ui-monospace,Menlo,monospace;background:var(--line);padding:1px
 """
 
 
-def render_html(sessions, codex, snap, out_path, refresh, experiments=None, net=None):
+def render_html(sections, out_path, refresh, net=None):
     net = net or {}
     E = html.escape
 
@@ -943,22 +1168,25 @@ def render_html(sessions, codex, snap, out_path, refresh, experiments=None, net=
                  if s.get("prior") else "")
         nxt = (f'<div class="next"><b>Suggested next action:</b> {E(s["next"])}</div>'
                if s.get("next") else "")
-        return (f'<tr class="{s["state"]}">'
+        note = (f'<div class="sub2" style="margin-top:4px">{E(s["note"])}</div>'
+                if s.get("note") else "")
+        return (f'<tr class="{E(s["state"])}">'
                 f'<td class="tmux">{E(s["tmux_cell"])}</td>'
                 f'<td class="lbl"><span class="dot"></span>{E(s["label"])}</td>'
                 f'<td class="id">{E(s["short"])}</td>'
                 f'<td class="id">{E(s["where"])}{br}</td>'
                 f'<td class="id">{E(s["mdl"])}</td>'
-                f'<td class="topic">{E(s["topic"])}{prior}{nxt}</td>'
+                f'<td class="topic">{E(s["topic"])}{prior}{nxt}{note}</td>'
                 f'<td class="age">{ago(s["age"])}</td></tr>')
 
-    live = sum(1 for s in sessions if s["state"] == "live")
+    rows_all = [s for sec in sections for s in sec["rows"]]
+    live = sum(1 for s in rows_all if s["state"] == "live")
     parts = ['<title>Agent Board</title>',
              f'<meta http-equiv="refresh" content="{refresh}">',
              f'<style>{CSS}</style>', '<div class="wrap">',
              '<h1>Agent board</h1>',
              f'<div class="sub">{time.strftime("%a %d %b %Y, %H:%M:%S")} &nbsp;·&nbsp; '
-             f'{live} live &nbsp;·&nbsp; {len(sessions)} current sessions '
+             f'{live} working &nbsp;·&nbsp; {len(rows_all)} rows '
              f'&nbsp;·&nbsp; refreshes every {refresh}s</div>']
 
     # --- connectivity banner
@@ -970,87 +1198,51 @@ def render_html(sessions, codex, snap, out_path, refresh, experiments=None, net=
         parts.append('<div class="net bad">&#x1F534; <b>No Stanford access</b>'
                      '<i>connect the Stanford VPN &mdash; SNAP nodes unreachable from here</i></div>')
 
-    # --- colour key
+    # --- colour key (one meaning per colour, in every table)
     parts.append('<div class="key">'
                  '<span class="k live"><span class="dot"></span><b>working now</b>'
-                 '<i>wrote in the last 2 min</i></span>'
+                 '<i>wrote in the last 2 min &middot; SNAP job RUNNING</i></span>'
                  '<span class="k idle"><span class="dot"></span><b>waiting on you</b>'
-                 '<i>last wrote 2&ndash;30 min ago</i></span>'
+                 '<i>last wrote 2&ndash;30 min ago &middot; SNAP results not landed</i></span>'
                  '<span class="k stale"><span class="dot"></span><b>idle / finished</b>'
-                 '<i>nothing for over 30 min</i></span></div>')
+                 '<i>nothing for over 30 min &middot; SNAP job LANDED</i></span></div>')
 
-    # --- one card per config
-    HEAD = ('<tr><th>tmux / app</th><th>Cfg</th><th>Id</th><th>Where</th>'
+    # --- every section: the same seven columns
+    HEAD = ('<tr><th>tmux</th><th>Agent</th><th>Id</th><th>Where</th>'
             '<th>Model+effort</th><th>Topic</th><th>Last</th></tr>')
-    for tag, title, sub in SECTION_TITLES:
-        group = [s for s in sessions if s["tag"] == tag]
-        nlive = sum(1 for s in group if s["state"] == "live")
-        parts.append(f'<h2>{E(title)}'
+    for sec in sections:
+        rows = sec["rows"]
+        nlive = sum(1 for s in rows if s["state"] == "live")
+        note = (f'<div class="sub2" style="margin:-4px 0 8px">{E(sec["note"])}</div>'
+                if sec.get("note") else "")
+        parts.append(f'<h2>{E(sec["title"])}'
                      f'<span style="text-transform:none;letter-spacing:0;font-weight:400"> '
-                     f'&nbsp;·&nbsp; {nlive} live / {len(group)} &nbsp;·&nbsp; '
-                     f'<code>{E(sub)}</code></span></h2><div class="card"><table>{HEAD}')
-        parts.append("".join(row(s) for s in group) if group
-                     else '<tr><td colspan="7" class="empty">no current sessions</td></tr>')
-        parts.append('</table></div>')
-
-    # --- codex
-    if codex:
-        parts.append('<h2>Codex threads (local)</h2><div class="card"><table>'
-                     '<tr><th>Label</th><th>Id</th><th>Thread</th><th>Last</th></tr>')
-        for r in codex:
-            st = "live" if r["age"] < LIVE_S else ("idle" if r["age"] < IDLE_S else "stale")
-            parts.append(f'<tr class="{st}"><td class="lbl"><span class="dot"></span>cxd</td>'
-                         f'<td class="id">{E(r["short"])}</td>'
-                         f'<td class="topic">{E(r["name"])}</td>'
-                         f'<td class="age">{ago(r["age"])}</td></tr>')
-        parts.append('</table></div>')
-
-    # --- experiments
-    if experiments:
-        parts.append('<h2>Experiments &mdash; SNAP job &times; repo state</h2><div class="card"><table>'
-                     '<tr><th>State</th><th>Job</th><th>Running</th><th>Host</th>'
-                     '<th>Experiment dir</th><th>Job idle</th><th>Landed</th></tr>')
-        for r in experiments:
-            cls = ("idle" if r["state"].startswith("DONE") else
-                   "live" if r["state"].startswith("RUNNING") else "stale")
-            note = (f'<div style="color:var(--mut);font-size:11.5px">{E(r["ext"])}</div>'
-                    if r.get("ext") else "")
-            parts.append(
-                f'<tr class="{cls}"><td class="lbl"><span class="dot"></span>{E(r["state"])}{note}</td>'
-                f'<td class="id">{E(r["job"])}</td>'
-                f'<td class="id">{E(r.get("cmds", ""))}</td>'
-                f'<td class="id">{E(r["host"])}</td>'
-                f'<td>{E(r["dir"])}</td>'
-                f'<td class="age">{ago(r["idle"]) if r["idle"] is not None else "?"}</td>'
-                f'<td class="age">{ago(r["commit_age"]) if r["commit_age"] is not None else "&mdash;"}</td>'
-                f'</tr>')
-        parts.append('</table></div>')
-
-    # --- snap nodes
-    if snap:
-        stamp = time.strftime("%H:%M", time.localtime(snap["at"]))
-        parts.append(f'<h2>SNAP nodes <span style="text-transform:none;letter-spacing:0">'
-                     f'(polled {stamp})</span></h2><div class="card"><table>'
-                     '<tr><th>Host</th><th>tmux sessions</th><th>codex procs</th></tr>')
-        for h in snap["hosts"]:
-            names = ", ".join(s["name"] if isinstance(s, dict) else str(s) for s in h["tmux"]) or "&mdash;"
-            err = (f' <span style="color:var(--idle)">stale: {E(str(h["error"]))}</span>'
-                   if h.get("error") else "")
-            parts.append(f'<tr><td class="lbl">+s {E(h["host"])}</td>'
-                         f'<td>{names}{err}</td><td>{E(str(h["procs"]))}</td></tr>')
+                     f'&nbsp;·&nbsp; {nlive} live / {len(rows)} &nbsp;·&nbsp; '
+                     f'<code>{E(sec["sub"])}</code></span></h2>{note}<div class="card"><table>{HEAD}')
+        parts.append("".join(row(s) for s in rows) if rows
+                     else '<tr><td colspan="7" class="empty">none</td></tr>')
         parts.append('</table></div>')
 
     parts.append(
-        '<div class="legend" style="margin-top:26px"><b>Notation.</b> '
-        '<code>cc</code> Claude Code (personal config) &nbsp; '
-        '<code>ccv</code> Claude Code (Vals config) &nbsp; '
-        '<code>cxd</code> Codex &nbsp; '
-        '<code>tmux N</code> local tmux session N (<code>?</code> = inferred from process '
-        'start time; <code>cursor</code> = a Cursor terminal without tmux) &nbsp; '
-        '<code>+s</code> SNAP<br>'
-        'Only the newest session per tmux window is shown; <i>+N earlier here</i> counts the '
-        'older transcripts in that window. Experiment state: <b>RUNNING</b> = a process is alive '
-        'in the SNAP pane; <b>DONE?</b> = pane is idle, results not yet committed; '
+        '<div class="legend" style="margin-top:26px"><b>Columns, same in every table.</b> '
+        '<b>tmux</b>: the tmux/byobu session the agent runs in &mdash; locally '
+        '<code>tmux N</code> (from the per-process registry Claude Code itself keeps, '
+        '<code>~/.claude*/sessions/&lt;pid&gt;.json</code>; for Codex, the thread whose start '
+        'time is the process start), <code>tmux 5,9</code> = two processes on one session, '
+        '<code>cursor</code> / <code>chatgpt</code> / <code>vscode</code> = an app terminal '
+        'outside tmux, <code>&mdash;</code> = no live process (<code>claude --resume '
+        '&lt;id&gt;</code> continues it); on SNAP the session name on that node '
+        '(<code>tmux attach -t &lt;name&gt;</code> there). '
+        '<b>Agent</b>: <code>cc</code> Claude Code (personal config), <code>ccv</code> Claude '
+        'Code (Vals config), <code>cxd</code> Codex, <code>&mdash;</code> only shells in the '
+        'pane. <b>Id</b>: Claude session id / Codex thread id / experiment number. '
+        '<b>Where</b>: host:cwd, with the git branch, Codex originator or experiment dir '
+        'beneath. <b>Topic</b>: what it is doing (SNAP: job state). <b>Last</b>: time since '
+        'it last wrote (SNAP: pane idle time).<br>'
+        'Every session with a live process is shown (a <code>claude -p</code> child shares its '
+        'parent&#39;s window); older transcripts in a window fold into its holder&#39;s '
+        '<i>+N earlier here</i>. SNAP job state: <b>RUNNING</b> = a process is '
+        'alive in the pane; <b>DONE?</b> = pane idle, results not yet committed; '
         '<b>LANDED</b> = a commit touched the experiment dir after the job went quiet.'
         '</div></div>')
 
@@ -1079,26 +1271,27 @@ def main():
                     help="max sessions to summarize per invocation")
     a = ap.parse_args()
 
-    sessions = collect_sessions(a.hours, a.all)
-    codex = collect_codex(a.hours)
+    tab, panes = process_table(), tmux_panes()
+    sessions = collect_sessions(a.hours, a.all, tab, panes)
+    codex = collect_codex(a.hours, tab, panes)
     snap = poll_snap() and read_snap_cache() if a.snap else read_snap_cache()
 
     if a.summarize:
         n = summarize(sessions, limit=a.summarize_limit, verbose=not a.quiet)
         if not a.quiet:
             print(f"  summarized {n} session(s)")
-        sessions = collect_sessions(a.hours, a.all)
+        sessions = collect_sessions(a.hours, a.all, tab, panes)
 
     experiments = collect_experiments({"hosts": snap["hosts"]} if snap else None)
-
     net = stanford_status()
+    sections = build_sections(sessions, codex, experiments, snap)
 
     if a.html:
-        p = render_html(sessions, codex, snap, a.html, a.refresh, experiments, net)
+        p = render_html(sections, a.html, a.refresh, net)
         if not a.quiet:
             print(f"  wrote {p}")
     if not a.quiet:
-        render_text(sessions, codex, snap, tmux_panes(), experiments, net)
+        render_text(sections, net, panes)
     return 0
 
 

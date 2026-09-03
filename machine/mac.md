@@ -55,3 +55,13 @@ Daily driver stays Claude Code. Vibe is kept as an *experimental* tool for cert-
 - Announcement: <https://mistral.ai/news/leanstral> · Install docs: <https://docs.mistral.ai/mistral-vibe/introduction/install>
 
 **Recheck if** *(verified 2026-05-02, vibe 2.9.3)*: `vibe` major-version bump · `labs-leanstral-2603` switches from free-launch to metered · successor model ships (Leanstral-2 etc.) · Leanstral leaves the labs/preview endpoint (production name will differ).
+
+### Agent board (which agent is in which tmux window)
+
+One page listing every agent session — local Claude Code (personal `cc` and Vals `ccv` configs), local Codex (`cxd`), and the jobs running in byobu/tmux sessions on the SNAP nodes — with the **same seven columns in every table**: `tmux | Agent | Id | Where | Model+effort | Topic | Last`. Code lives in this repo; the runtime is per machine.
+
+- Install / re-install on any Mac (idempotent; SNAP nodes need nothing, the Mac polls them over ssh):
+  `bash ~/agents-config/scripts/agent_board_install.sh` — writes the two launchd jobs (`com.brando.agentboard` renders `~/.agent-board/board.html` every 20 s with `--snap`; `com.brando.agentboard.summarize` tops up one-line session summaries every 5 min via `claude -p --model claude-sonnet-5`), adds the `board` / `board-open` zsh aliases, and registers `scripts/agent_session_register.sh` as a Claude Code `SessionStart` hook in `~/.claude` and `~/.claude-vals`.
+- View: `board` (terminal, last 24 h) · `board-open` (browser, auto-refreshes) · errors in `~/.agent-board/agentboard.err`.
+- Where the tmux column comes from: Claude Code's own per-process registry `~/.claude*/sessions/<pid>.json` (`"tmux":"8:@8.%8"` = session:window.pane) — exact, no inference; Codex threads are matched to their `codex` process by start time (rollout `session_meta`); SNAP rows show the tmux session name on that node (`tmux attach -t <name>` there). `cursor` / `chatgpt` / `vscode` mark an app terminal outside tmux; `—` means no live process (`claude --resume <id>` continues it).
+- Source: `~/agents-config/scripts/agent_board.py` (`--hours`, `--all`, `--html`, `--snap`, `--summarize`).
