@@ -8,6 +8,7 @@ import argparse
 import calendar
 import glob
 import html
+import io
 import json
 import os
 import re
@@ -59,6 +60,32 @@ def short_model(m):
     m = re.sub(r"-\d{8}$", "", m)
     parts = m.split("-")
     return (parts[0] + ".".join(parts[1:])) if parts and parts[0] else ""
+
+
+TAIL_BYTES = 512_000
+
+
+def current_model(path, model="", effort="", window=TAIL_BYTES):
+    """The model and effort in force RIGHT NOW, read from the end of the transcript.
+
+    `/model` and `/effort` mid-session rewrite these fields in later lines, so the first
+    occurrence is only what the session started as: on 2026-09-04 the board still showed
+    fable5 for a session Brando had switched to opus, because the head scan stops at line 24
+    of a 4 MB file. Every column has to be trustworthy or the board misleads, so this reads
+    the tail (cheap, bounded) and takes the last value, falling back to the head's.
+    """
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as fh:
+            if size > window:
+                fh.seek(size - window)
+                fh.readline()               # drop the partial first line
+            chunk = fh.read().decode("utf-8", "ignore")
+    except OSError:
+        return model, effort
+    seen_m = MODEL_RE.findall(chunk)
+    seen_e = EFFORT_RE.findall(chunk)
+    return (seen_m[-1] if seen_m else model), (seen_e[-1] if seen_e else effort)
 
 
 def scan_transcript(path, max_lines=600, max_bytes=3_000_000):
@@ -157,24 +184,78 @@ def tmux_panes():
     return out
 
 
+UNRANKED = 1 << 30          # no terminal tab of its own: sorts after every seated row
+
+
+def tmux_client_order(tab):
+    """session name -> the position of the terminal tab it is attached to.
+
+    A terminal app spawns one shell per tab and lists tabs in the order they were opened, so
+    a tab's position is the birth of the OLDEST process on the tty its tmux client is
+    attached to. The tty *number* is not that order: ptys are recycled, so on 2026-09-04
+    session 3 held ttys022 while session 6 held ttys025 even though 6's tab was opened eight
+    minutes earlier -- which is exactly how the Vals table came out mis-ordered. Re-derived
+    every render, so opening or closing a tab reorders the board with no bookkeeping.
+    """
+    born = {}
+    for _pid, info in tab.items():
+        start, tty = info[1], (info[3] if len(info) > 3 else "")
+        if tty and tty not in ("??", "-") and (tty not in born or start < born[tty]):
+            born[tty] = start
+    order, rows = {}, []
+    try:
+        r = subprocess.run(["tmux", "list-clients", "-F", "#{client_tty}\t#{client_session}"],
+                           capture_output=True, text=True, timeout=5)
+    except Exception:
+        return order
+    for ln in r.stdout.splitlines():
+        tty, _, sess = ln.partition("\t")
+        sess = sess.strip()
+        if not sess:
+            continue
+        rows.append((born.get(tty.replace("/dev/", ""), float("inf")), sess))
+    for i, (_, sess) in enumerate(sorted(rows)):
+        order.setdefault(sess, i)       # a session on two tabs takes its earliest one
+    return order
+
+
+def seat_rank(row, order):
+    """Tab position, or UNRANKED for a row that is not sitting in a tab right now.
+
+    Only a row with a LIVE process can claim a tab: an exited session keeps its historical
+    seat from the SessionStart hook so it still groups under the window it ran in, but that
+    window now belongs to whoever is live there, so ranking the dead row by it would both
+    steal a live row's position and destroy the recency order exited rows are listed in.
+    Deliberately a one-element key: Python's sort is stable, so unranked rows keep whatever
+    order their table already had -- SNAP by experiment number, sessions by recency.
+    """
+    seats = (row.get("seats") or []) if row.get("proc") else []
+    ranks = [order[s] for s in seats if s in order]
+    return (min(ranks) if ranks else UNRANKED,)
+
+
 def process_table():
-    """One ps call -> {pid: (ppid, start_epoch, command)}."""
+    """One ps call -> {pid: (ppid, start_epoch, command, tty)}.
+
+    The tty is what ties a process to the terminal tab it runs in, which is how
+    tmux_client_order() recovers the tab order; '??' means no controlling terminal.
+    """
     tab = {}
     try:
-        r = subprocess.run(["ps", "ax", "-o", "pid=,ppid=,lstart=,command="],
+        r = subprocess.run(["ps", "ax", "-o", "pid=,ppid=,lstart=,tty=,command="],
                            capture_output=True, text=True, timeout=8)
     except Exception:
         return tab
     for ln in r.stdout.splitlines():
-        f = ln.split(None, 7)
-        if len(f) < 8:
+        f = ln.split(None, 8)
+        if len(f) < 9:
             continue
         pid, ppid = f[0], f[1]
         try:
             start = time.mktime(time.strptime(" ".join(f[2:7]), "%a %b %d %H:%M:%S %Y"))
         except Exception:
             continue
-        tab[pid] = (ppid, start, f[7])
+        tab[pid] = (ppid, start, f[8], f[7])
     return tab
 
 
@@ -311,7 +392,8 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
             age = now - st.st_mtime
             proj_dir = os.path.basename(os.path.dirname(tpath))
             topic, cwd, branch, model, effort = scan_transcript(tpath)
-            expt, expt_also = session_expt(tpath, "claude", ecache, edirs)
+            expt, expt_also, model, effort = session_expt(tpath, "claude", ecache, edirs,
+                                                          model, effort)
             procs = cc.get(sid, [])
             seats = [p["tmux"] for p in procs if p["tmux"]]
             # One row per live process. Two `claude --resume <id>` of the same session in two
@@ -403,7 +485,7 @@ def load_summaries():
 # experiments tree. "-" = the session never referenced an experiment.
 
 EXPT_CACHE = os.path.join(BOARD_DIR, "expts.json")
-EXPT_V = 2   # bump when the scan or naming rule changes, so cached values are recomputed
+EXPT_V = 3   # bump when the scan or naming rule changes, so cached values are recomputed
 EXPT_DIR_RE = re.compile(r"experiments/(\d+_[A-Za-z0-9][A-Za-z0-9._-]*)")
 EXPT_NUM_RE = re.compile(r"(?<![A-Za-z0-9])expt[_ -]?(\d{1,4})(?![0-9])", re.IGNORECASE)
 EXPT_WINDOW = 200
@@ -461,13 +543,26 @@ def _codex_own_text(d):
     return ""
 
 
-def scan_expt_mentions(path, kind):
-    """Ordered experiment mentions from a transcript: '77_iclr2027_main_table', or '#77'
-    when only a number is visible. Each line contributes each name at most once."""
+SCAN_TAIL_BYTES = 4_000_000
+
+
+def scan_expt_mentions(path, kind, window=SCAN_TAIL_BYTES):
+    """Ordered experiment mentions from a transcript, or '#77' when only a number is visible.
+
+    Only the last `window` bytes are read: pick_expt() ranks the last EXPT_WINDOW mentions, so
+    earlier ones cannot change the answer, and an active multi-megabyte transcript would
+    otherwise be re-read in full on every 20-second render. Each line contributes each name at
+    most once.
+    """
     own = _claude_own_text if kind == "claude" else _codex_own_text
     mentions = []
     try:
-        with open(path, errors="ignore") as fh:
+        with open(path, "rb") as raw:
+            size = os.fstat(raw.fileno()).st_size
+            if size > window:
+                raw.seek(size - window)
+                raw.readline()                  # drop the partial line
+            fh = io.TextIOWrapper(raw, errors="ignore")
             for ln in fh:
                 if len(ln) > 200_000:
                     continue
@@ -542,20 +637,27 @@ def save_expt_cache(cache):
         pass
 
 
-def session_expt(path, kind, cache, dirs):
-    """Cached by transcript size+mtime, so only transcripts that grew are rescanned."""
+def session_expt(path, kind, cache, dirs, model="", effort=""):
+    """Per-transcript derived facts (experiment, model, effort), cached by size+mtime.
+
+    One cache entry per transcript keyed on (size, mtime) means an unchanged transcript costs
+    a stat and nothing else -- no scan, no tail read -- in a loop that runs every 20 s. A
+    transcript that GREW is re-read, which is exactly when a `/model` switch could have
+    landed, so the model column stays true without paying for it on idle sessions.
+    """
     try:
         st = os.stat(path)
     except OSError:
-        return "-", ""
+        return "-", "", model, effort
     c = cache.get(path)
     if (isinstance(c, dict) and c.get("v") == EXPT_V and c.get("size") == st.st_size
             and abs(c.get("mtime", 0) - st.st_mtime) < 1 and c.get("expt")):
-        return c["expt"], c.get("also", "")
+        return c["expt"], c.get("also", ""), c.get("model", model), c.get("effort", effort)
     top, also = pick_expt(scan_expt_mentions(path, kind), dirs)
+    model, effort = current_model(path, model, effort)
     cache[path] = {"v": EXPT_V, "size": st.st_size, "mtime": st.st_mtime, "expt": top,
-                   "also": also, "at": time.time()}
-    return top, also
+                   "also": also, "model": model, "effort": effort, "at": time.time()}
+    return top, also, model, effort
 
 
 def one_per_seat(rows, keep_stale=False):
@@ -680,7 +782,7 @@ def collect_codex(max_age_h, tab, panes, limit=8):
             threads.append((t, d))
     threads.sort(key=lambda x: x[0], reverse=True)
 
-    procs = [(pid, start) for pid, (_p, start, cmd) in tab.items()
+    procs = [(pid, start) for pid, (_p, start, cmd, *_r) in tab.items()
              if CODEX_RE.search(cmd) and "app-server" not in cmd and " sandbox " not in cmd]
     rows, claimed = [], set()
     ecache, edirs = load_expt_cache(), local_experiment_dirs()
@@ -689,7 +791,10 @@ def collect_codex(max_age_h, tab, panes, limit=8):
         hits = (glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", f"rollout-*-{tid}.jsonl"))
                 if re.fullmatch(r"[0-9a-f-]{8,64}", tid) else [])
         start, cwd, orig, model, effort = scan_rollout(hits[0]) if hits else (None, "", "", "", "")
-        expt, expt_also = session_expt(hits[0], "codex", ecache, edirs) if hits else ("-", "")
+        # a Codex rollout carries its model in session_meta, so the cached model/effort here
+        # are unused; the call is only for the experiment column
+        expt, expt_also = (session_expt(hits[0], "codex", ecache, edirs)[:2] if hits
+                           else ("-", ""))
         cell, seats = "—", []
         if start:
             near = sorted((abs(s - start), pid) for pid, s in procs
@@ -853,7 +958,8 @@ def read_snap_cache():
 EXP_ROOT = os.path.join(HOME, "veribench", "experiments")
 IGNORE_TMUX = {"job_watcher", "snaphealth", "codex_handoff", "lean_env_prep"}
 # SNAP tmux names that carry no experiment number of their own
-JOB_ALIASES = {"gold_sorry_closure": "75", "judge_val": "73", "judge_val_A": "73"}
+JOB_ALIASES = {"gold_sorry_closure": "75", "gold_close_v2": "75",
+               "judge_val": "73", "judge_val_A": "73"}
 # Optional state pushed in by something this script cannot see itself (e.g. a scheduled
 # agent that reads completion mail sent to brando.science). Shape:
 #   {"<job or expt number>": {"state": "DONE", "note": "...", "at": <epoch>}}
@@ -923,11 +1029,19 @@ def experiment_git_state(dirs, cache_s=60):
 
 
 def local_experiment_dirs():
+    """number -> experiment directory, archived ones included.
+
+    experiments/archive/ is searched too, and a live folder wins over an archived one of the
+    same number: a job or a session that references an archived experiment should still be
+    named on the board rather than showing "no local dir" (73 was archived on 2026-09-04
+    while its SNAP job row was still on screen).
+    """
     out = {}
-    for d in sorted(glob.glob(os.path.join(EXP_ROOT, "[0-9]*_*"))):
-        m = re.match(r"(\d+)_", os.path.basename(d))
-        if m:
-            out[m.group(1)] = d
+    for root in (os.path.join(EXP_ROOT, "archive"), EXP_ROOT):   # live listed second: it wins
+        for d in sorted(glob.glob(os.path.join(root, "[0-9]*_*"))):
+            m = re.match(r"(\d+)_", os.path.basename(d))
+            if m:
+                out[m.group(1)] = d
     return out
 
 
@@ -1208,10 +1322,12 @@ def ago(sec):
 
 # ---------------------------------------------------------------- renderers
 
-def build_sections(sessions, codex, experiments, snap):
+def build_sections(sessions, codex, experiments, snap, tab=None):
     """The board is one row schema everywhere; only the grouping differs. Local Claude Code
     per config, local Codex, then the SNAP jobs (with the per-node summary as the note)."""
-    secs = [{"title": title, "sub": sub, "rows": [s for s in sessions if s["tag"] == tag]}
+    order = tmux_client_order(tab or {})
+    secs = [{"title": title, "sub": sub,
+             "rows": [s for s in sessions if s["tag"] == tag]}
             for tag, title, sub in SECTION_TITLES]
     secs.append({"title": "Codex — local", "sub": "codex / codex exec, ~/.codex",
                  "rows": codex})
@@ -1235,6 +1351,11 @@ def build_sections(sessions, codex, experiments, snap):
     secs.append({"title": "SNAP — jobs in tmux/byobu on the cluster",
                  "sub": "ssh brando9@<host>.stanford.edu; tmux attach -t <tmux>",
                  "rows": experiments, "note": note})
+    # EVERY table reads in terminal-tab order (Brando 2026-09-04). The sort is stable and the
+    # key is tab position alone, so rows with no tab of their own -- SNAP jobs, exited
+    # sessions -- hold the order their table already had rather than being reshuffled.
+    for sec in secs:
+        sec["rows"] = sorted(sec["rows"], key=lambda r: seat_rank(r, order))
     return secs
 
 
@@ -1484,7 +1605,7 @@ def main():
 
     experiments = collect_experiments({"hosts": snap["hosts"]} if snap else None)
     net = stanford_status()
-    sections = build_sections(sessions, codex, experiments, snap)
+    sections = build_sections(sessions, codex, experiments, snap, tab)
 
     if a.html:
         p = render_html(sections, a.html, a.refresh, net)
