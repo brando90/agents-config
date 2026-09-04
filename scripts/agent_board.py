@@ -39,8 +39,8 @@ BOOT_RE = re.compile(r"Claude Code v[\d.]+|^\s*[`▐▝▛█▀]")
 
 
 SECTION_TITLES = [
-    ("ccv", "Claude Code sessions — Vals", "clauded-vals / claude-vals, ~/.claude-vals"),
     ("cc",  "Claude Code sessions — personal", "clauded / claude, ~/.claude"),
+    ("ccv", "Claude Code sessions — Vals", "clauded-vals / claude-vals, ~/.claude-vals"),
 ]
 
 
@@ -105,11 +105,10 @@ def scan_transcript(path, max_lines=600, max_bytes=3_000_000):
 
 
 def short_path(cwd):
-    if not cwd:
-        return ""
-    p = cwd.replace(HOME, "~")
-    bits = p.split("/")
-    return p if len(bits) <= 3 else "~/" + "/".join(bits[-2:])
+    """The working directory, fully expanded: the /Users/<name> prefix is what tells Brando
+    which laptop a row is on (a DHCP hostname like DN5qw451345 does not), so no '~' and no
+    tail-only shortening."""
+    return cwd or ""
 
 
 def first_topic(path, max_lines=400):
@@ -278,7 +277,8 @@ def claude_registry(tab, panes):
 
 
 def tmux_cell(names):
-    """'tmux 8'; 'tmux 5,9' when two processes (e.g. two --resume) share one session."""
+    """'tmux 8'. A session with live processes in several windows is emitted as one row per
+    window by collect_sessions, so a multi-window cell only appears for other agent kinds."""
     names = [str(n) for n in names]
     if all(n.isdigit() for n in names):
         return "tmux " + ",".join(names)
@@ -306,27 +306,45 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
             sid = os.path.basename(tpath)[:-6]
             paths.append((cfg_dir, tag, tpath, st, sid))
     rows = []
+    ecache, edirs = load_expt_cache(), local_experiment_dirs()
     for cfg_dir, tag, tpath, st, sid in paths:
             age = now - st.st_mtime
             proj_dir = os.path.basename(os.path.dirname(tpath))
             topic, cwd, branch, model, effort = scan_transcript(tpath)
+            expt, expt_also = session_expt(tpath, "claude", ecache, edirs)
             procs = cc.get(sid, [])
             seats = [p["tmux"] for p in procs if p["tmux"]]
+            # One row per live process. Two `claude --resume <id>` of the same session in two
+            # windows are two seats and two forks of one transcript, so they are shown as two
+            # rows that name each other, never merged into one "tmux 5,9" cell (Brando 2026-09-04).
+            variants = []
             if procs:
-                # exact: a live process, from Claude Code's own registry
-                how, app = "live", procs[0]["app"]
-                cell = tmux_cell(seats) if seats else (app if app and app != "?" else "(no tmux)")
+                distinct = sorted(set(seats), key=lambda x: (len(str(x)), str(x)))
+                if len(distinct) > 1:
+                    for seat in distinct:
+                        others = ",".join(o for o in distinct if o != seat)
+                        pid = next((p["pid"] for p in procs if p["tmux"] == seat), "")
+                        variants.append(([seat], tmux_cell([seat]), "live",
+                                         f"same session id also running in tmux {others} "
+                                         "(resumed twice = two forks of one transcript; keep one)",
+                                         f" pid {pid}" if pid else ""))
+                else:
+                    # exact: a live process, from Claude Code's own registry
+                    how, app = "live", procs[0]["app"]
+                    cell = tmux_cell(seats) if seats else (app if app and app != "?" else "(no tmux)")
+                    variants.append((seats, cell, how, "", ""))
             else:
                 # no live process, so nothing to switch to. The SessionStart hook's record of
                 # the window it ran in still groups it under that seat as history.
-                how, cell = "exited", "\u2014"
                 t = reg.get(sid, {}).get("tmux")
                 seats = [str(t)] if isinstance(t, (str, int)) and str(t) else []
+                variants.append((seats, "\u2014", "exited", "", ""))
             label = tag
-            rows.append({
+            for seats, cell, how, note, id_suffix in variants:
+              rows.append({
                 "sid": sid,
                 "path": tpath,
-                "short": sid[:8],
+                "short": sid[:8] + id_suffix,
                 "tag": tag,
                 "label": label,
                 "tmux": seats[0] if seats else None,
@@ -335,19 +353,23 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
                 "alive": bool(procs),
                 "tmux_cell": cell,
                 "tmux_how": how,
+                "note": note,
                 "project": project_label(proj_dir),
                 "topic": topic,
                 "cwd": cwd,
-                "where": (HOSTNAME + ":" + short_path(cwd)) if cwd else HOSTNAME,
+                "where": short_path(cwd) if cwd else HOSTNAME,
                 "branch": branch,
                 "model": short_model(model),
                 "effort": effort,
                 "mdl": (short_model(model) + ("+" + effort if effort else "")) if model else "?",
+                "expt": expt,
+                "expt_also": expt_also,
                 "last": st.st_mtime,
                 "age": age,
                 "size_mb": round(st.st_size / 1e6, 1),
                 "state": "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale"),
             })
+    save_expt_cache(ecache)
     if not show_all:
         rows = one_per_seat(rows)
     summaries = load_summaries()
@@ -368,6 +390,172 @@ def load_summaries():
             return json.load(fh)
     except Exception:
         return {}
+
+
+# ---------------------------------------------------------------- Expt column
+# Which experiments/<NN_name> directory is this agent working in? Answered from the
+# session's OWN actions and prose (cwd, the user's and assistant's text, the assistant's
+# tool inputs: paths and commands), never from tool outputs -- one `cat CLAUDE.md` mentions
+# every experiment in the repo. The value is the directory referenced most often in the last
+# EXPT_WINDOW mentions, so a session that moved from expt 73 to expt 77 shows 77; a
+# runner-up with at least half as many mentions is shown beneath it. A bare number
+# (a clone named veribench_expt78, "expt 74" in prose) resolves through the local
+# experiments tree. "-" = the session never referenced an experiment.
+
+EXPT_CACHE = os.path.join(BOARD_DIR, "expts.json")
+EXPT_V = 2   # bump when the scan or naming rule changes, so cached values are recomputed
+EXPT_DIR_RE = re.compile(r"experiments/(\d+_[A-Za-z0-9][A-Za-z0-9._-]*)")
+EXPT_NUM_RE = re.compile(r"(?<![A-Za-z0-9])expt[_ -]?(\d{1,4})(?![0-9])", re.IGNORECASE)
+EXPT_WINDOW = 200
+
+
+def _blocks_text(content, kinds):
+    """The text of the given block types from a Claude / Codex message content list."""
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    return " ".join(str(b.get("text") or "") for b in content
+                    if isinstance(b, dict) and b.get("type") in kinds)
+
+
+def _tool_input_text(inp):
+    if isinstance(inp, dict):
+        return " ".join(str(v) for v in inp.values() if isinstance(v, (str, int, float)))
+    return str(inp or "")
+
+
+def _claude_own_text(d):
+    """One Claude transcript line -> the text that reflects the session's own work."""
+    t = d.get("type")
+    parts = [str(d.get("cwd") or "")]
+    msg = d.get("message") or {}
+    c = msg.get("content") if isinstance(msg, dict) else None
+    if t == "user":
+        parts.append(_blocks_text(c, ("text",)))          # tool_result blocks are skipped
+    elif t == "assistant":
+        parts.append(_blocks_text(c, ("text",)))
+        if isinstance(c, list):
+            parts.extend(_tool_input_text(b.get("input")) for b in c
+                         if isinstance(b, dict) and b.get("type") == "tool_use")
+    return " ".join(parts)
+
+
+def _codex_own_text(d):
+    """One Codex rollout line -> session cwd, messages and tool calls; never tool outputs."""
+    p = d.get("payload")
+    if not isinstance(p, dict):
+        return ""
+    t = d.get("type")
+    if t == "session_meta":
+        return str(p.get("cwd") or "")
+    if t != "response_item":
+        return ""
+    pt = p.get("type")
+    if pt == "message":
+        return _blocks_text(p.get("content"), ("input_text", "output_text", "text"))
+    if pt == "function_call":
+        return str(p.get("arguments") or "")
+    if pt == "custom_tool_call":
+        return str(p.get("input") or "")
+    return ""
+
+
+def scan_expt_mentions(path, kind):
+    """Ordered experiment mentions from a transcript: '77_iclr2027_main_table', or '#77'
+    when only a number is visible. Each line contributes each name at most once."""
+    own = _claude_own_text if kind == "claude" else _codex_own_text
+    mentions = []
+    try:
+        with open(path, errors="ignore") as fh:
+            for ln in fh:
+                if len(ln) > 200_000:
+                    continue
+                low = ln.lower()
+                if "experiments/" not in low and "expt" not in low:
+                    continue
+                try:
+                    d = json.loads(ln)
+                except Exception:
+                    continue
+                if not isinstance(d, dict):
+                    continue
+                s = own(d)
+                if not s:
+                    continue
+                seen_here = []
+                for m in EXPT_DIR_RE.findall(s) + ["#" + n for n in EXPT_NUM_RE.findall(s)]:
+                    if m not in seen_here:
+                        seen_here.append(m)
+                mentions.extend(seen_here)
+    except OSError:
+        pass
+    return mentions
+
+
+def pick_expt(mentions, dirs, window=EXPT_WINDOW):
+    """(primary, runner-up) directory names from the last `window` mentions."""
+    recent = mentions[-window:]
+    if not recent:
+        return "-", ""
+
+    local = {os.path.basename(d) for d in dirs.values()}
+
+    def name(m):
+        if not m.startswith("#"):
+            # a renumbered or foreign-repo directory is shown as referenced, plainly marked
+            return m if m in local else f"{m} (not in ~/veribench/experiments)"
+        d = dirs.get(m[1:])
+        return os.path.basename(d) if d else f"expt {m[1:]} (no local dir)"
+
+    counts, last = {}, {}
+    for i, m in enumerate(recent):
+        n = name(m)
+        counts[n] = counts.get(n, 0) + 1
+        last[n] = i
+    ranked = sorted(counts, key=lambda n: (counts[n], last[n]), reverse=True)
+    top = ranked[0]
+    also = ranked[1] if len(ranked) > 1 and counts[ranked[1]] * 2 >= counts[top] else ""
+    return top, also
+
+
+def load_expt_cache():
+    try:
+        with open(EXPT_CACHE) as fh:
+            c = json.load(fh)
+        return c if isinstance(c, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_expt_cache(cache):
+    now = time.time()
+    for k in [k for k, v in cache.items() if now - (v or {}).get("at", 0) > 7 * 86400]:
+        del cache[k]
+    try:
+        os.makedirs(BOARD_DIR, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=BOARD_DIR, suffix=".json")
+        with os.fdopen(fd, "w") as fh:
+            json.dump(cache, fh)
+        os.replace(tmp, EXPT_CACHE)
+    except Exception:
+        pass
+
+
+def session_expt(path, kind, cache, dirs):
+    """Cached by transcript size+mtime, so only transcripts that grew are rescanned."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return "-", ""
+    c = cache.get(path)
+    if (isinstance(c, dict) and c.get("v") == EXPT_V and c.get("size") == st.st_size
+            and abs(c.get("mtime", 0) - st.st_mtime) < 1 and c.get("expt")):
+        return c["expt"], c.get("also", "")
+    top, also = pick_expt(scan_expt_mentions(path, kind), dirs)
+    cache[path] = {"v": EXPT_V, "size": st.st_size, "mtime": st.st_mtime, "expt": top,
+                   "also": also, "at": time.time()}
+    return top, also
 
 
 def one_per_seat(rows, keep_stale=False):
@@ -495,11 +683,13 @@ def collect_codex(max_age_h, tab, panes, limit=8):
     procs = [(pid, start) for pid, (_p, start, cmd) in tab.items()
              if CODEX_RE.search(cmd) and "app-server" not in cmd and " sandbox " not in cmd]
     rows, claimed = [], set()
+    ecache, edirs = load_expt_cache(), local_experiment_dirs()
     for t, d in threads[:limit]:
         tid = str(d["id"])
         hits = (glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", f"rollout-*-{tid}.jsonl"))
                 if re.fullmatch(r"[0-9a-f-]{8,64}", tid) else [])
         start, cwd, orig, model, effort = scan_rollout(hits[0]) if hits else (None, "", "", "", "")
+        expt, expt_also = session_expt(hits[0], "codex", ecache, edirs) if hits else ("-", "")
         cell, seats = "—", []
         if start:
             near = sorted((abs(s - start), pid) for pid, s in procs
@@ -516,12 +706,14 @@ def collect_codex(max_age_h, tab, panes, limit=8):
         rows.append({
             "sid": tid, "short": tid[:8], "tag": "cxd", "label": "cxd",
             "tmux_cell": cell, "seats": seats, "proc": cell != "—", "alive": cell != "—",
-            "where": (HOSTNAME + ":" + short_path(cwd)) if cwd else HOSTNAME,
+            "where": short_path(cwd) if cwd else HOSTNAME,
             "branch": orig, "mdl": (model + ("+" + effort if effort else "")) if model else "?",
+            "expt": expt, "expt_also": expt_also,
             "topic": str(d.get("thread_name") or "")[:120], "next": "", "prior": 0,
             "last": t, "age": age,
             "state": "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale"),
         })
+    save_expt_cache(ecache)
     return rows
 
 
@@ -672,10 +864,13 @@ SHELLS = {"bash", "zsh", "sh", "fish", "tmux", "sleep", "tail", "less", "vim", "
 
 
 def git(*args, cwd=None):
-    """stdout on success, None on failure (so callers can tell 'no commits' from 'git broke')."""
+    """stdout on success, None on failure (so callers can tell 'no commits' from 'git broke').
+    GIT_OPTIONAL_LOCKS=0: a read-only `git status` from a 20-second loop must never take
+    .git/index.lock -- a lock left behind by an interrupted run blocks every session's pull."""
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
     try:
         r = subprocess.run(["git", *args], cwd=cwd or os.path.join(HOME, "veribench"),
-                           capture_output=True, text=True, timeout=10)
+                           capture_output=True, text=True, timeout=10, env=env)
         return r.stdout.strip() if r.returncode == 0 else None
     except Exception:
         return None
@@ -736,21 +931,10 @@ def local_experiment_dirs():
     return out
 
 
-REMOTE_HOMES = [  # SNAP filesystem roots that act as a home dir -> short prefix
-    (re.compile(r"^/lfs/[^/]+/0/brando9"), "lfs:~"),
-    (re.compile(r"^/dfs/scratch0/brando9"), "dfs:~"),
-    (re.compile(r"^/afs/cs\.stanford\.edu/u/brando9"), "afs:~"),
-]
-
-
 def short_remote(path):
-    """'/dfs/scratch0/brando9/expt74/veribench' -> 'dfs:~/expt74/veribench'."""
-    path = path or ""
-    for rx, short in REMOTE_HOMES:
-        if rx.match(path):
-            return rx.sub(short, path, count=1)
-    bits = [b for b in path.split("/") if b]
-    return "/".join(bits) if len(bits) <= 3 else ".../" + "/".join(bits[-2:])
+    """A SNAP working directory, fully expanded (Brando reads the /lfs/<node>/0/brando9 or
+    /dfs/scratch0/brando9 prefix as the filesystem it lives on)."""
+    return path or ""
 
 
 def collect_experiments(snap):
@@ -837,7 +1021,9 @@ def collect_experiments(snap):
             "label": j["agent"] or "—", "tmux_cell": name, "seats": [],
             "proc": j["busy"] is True, "alive": j["busy"] is True,
             "where": f"{j['host']}:{short_remote(j['path'])}" if j["path"] else j["host"],
-            "branch": os.path.basename(d) if d else "(no local expt dir)",
+            "branch": "",
+            "expt": os.path.basename(d) if d else (f"expt {num} (no local dir)" if num else "-"),
+            "expt_also": "",
             "mdl": j["mdl"] or "?", "topic": state, "next": "", "note": " · ".join(notes),
             "prior": 0, "last": (now - j["idle"]) if j["idle"] is not None else 0,
             "age": j["idle"], "state": cls, "dirty": is_dirty, "job": name, "host": j["host"],
@@ -1052,9 +1238,11 @@ def build_sections(sessions, codex, experiments, snap):
     return secs
 
 
-COLS_TEXT = f"  {'TMUX':<20} {'AGENT':<6} {'ID':<9} {'WHERE':<24} {'MDL+EFF':<17} {'LAST':>5}  TOPIC"
-COLS_RULE = f"  {'-' * 20} {'-' * 6} {'-' * 9} {'-' * 24} {'-' * 17} {'-' * 5}  {'-' * 34}"
-COLS_PAD = f"  {'':<20} {'':<6} {'':<9} {'':<24} {'':<17} {'':>5}  "
+COLS_TEXT = (f"  {'TMUX':<20} {'AGENT':<6} {'ID':<9} {'WHERE':<40} {'MDL+EFF':<17} "
+             f"{'EXPT':<26} {'LAST':>5}  TASK")
+COLS_RULE = (f"  {'-' * 20} {'-' * 6} {'-' * 9} {'-' * 40} {'-' * 17} {'-' * 26} {'-' * 5}  "
+             f"{'-' * 34}")
+COLS_PAD = f"  {'':<20} {'':<6} {'':<9} {'':<40} {'':<17} {'':<26} {'':>5}  "
 
 
 def render_text(sections, net=None, panes=None):
@@ -1088,7 +1276,8 @@ def render_text(sections, net=None, panes=None):
             c = C.get(s["state"], "")
             prior = f"  \033[90m(+{s['prior']})\033[0m" if s.get("prior") else ""
             print(f"  \033[1m{s['tmux_cell'][:20]:<20}\033[0m {c}{s['label'][:6]:<6} "
-                  f"{s['short'][:9]:<9} {s['where'][:24]:<24} {s['mdl'][:17]:<17} "
+                  f"{s['short'][:9]:<9} {s['where'][-40:]:<40} {s['mdl'][:17]:<17} "
+                  f"{(s.get('expt') or '-')[:26]:<26} "
                   f"{ago(s['age']):>5}  {s['topic'][:34]}{W}{prior}")
             if s.get("next"):
                 print(f"{COLS_PAD}\033[1mnext:\033[0m {s['next'][:64]}")
@@ -1127,6 +1316,8 @@ tr:last-child td{border-bottom:none}
      white-space:nowrap}
 .id{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--mut)}
 .topic{color:var(--fg);max-width:430px}
+.expt{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;max-width:200px;
+      word-break:break-word}
 .age{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap;text-align:right}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;
      vertical-align:middle}
@@ -1170,6 +1361,8 @@ def render_html(sections, out_path, refresh, net=None):
                if s.get("next") else "")
         note = (f'<div class="sub2" style="margin-top:4px">{E(s["note"])}</div>'
                 if s.get("note") else "")
+        also = (f'<div class="sub2">also {E(s["expt_also"])}</div>'
+                if s.get("expt_also") else "")
         return (f'<tr class="{E(s["state"])}">'
                 f'<td class="tmux">{E(s["tmux_cell"])}</td>'
                 f'<td class="lbl"><span class="dot"></span>{E(s["label"])}</td>'
@@ -1177,6 +1370,7 @@ def render_html(sections, out_path, refresh, net=None):
                 f'<td class="id">{E(s["where"])}{br}</td>'
                 f'<td class="id">{E(s["mdl"])}</td>'
                 f'<td class="topic">{E(s["topic"])}{prior}{nxt}{note}</td>'
+                f'<td class="expt">{E(s.get("expt") or "-")}{also}</td>'
                 f'<td class="age">{ago(s["age"])}</td></tr>')
 
     rows_all = [s for sec in sections for s in sec["rows"]]
@@ -1207,9 +1401,9 @@ def render_html(sections, out_path, refresh, net=None):
                  '<span class="k stale"><span class="dot"></span><b>idle / finished</b>'
                  '<i>nothing for over 30 min &middot; SNAP job LANDED</i></span></div>')
 
-    # --- every section: the same seven columns
+    # --- every section: the same eight columns
     HEAD = ('<tr><th>tmux</th><th>Agent</th><th>Id</th><th>Where</th>'
-            '<th>Model+effort</th><th>Topic</th><th>Last</th></tr>')
+            '<th>Model+effort</th><th>Task</th><th>Expt</th><th>Last</th></tr>')
     for sec in sections:
         rows = sec["rows"]
         nlive = sum(1 for s in rows if s["state"] == "live")
@@ -1220,7 +1414,7 @@ def render_html(sections, out_path, refresh, net=None):
                      f'&nbsp;·&nbsp; {nlive} live / {len(rows)} &nbsp;·&nbsp; '
                      f'<code>{E(sec["sub"])}</code></span></h2>{note}<div class="card"><table>{HEAD}')
         parts.append("".join(row(s) for s in rows) if rows
-                     else '<tr><td colspan="7" class="empty">none</td></tr>')
+                     else '<tr><td colspan="8" class="empty">none</td></tr>')
         parts.append('</table></div>')
 
     parts.append(
@@ -1228,7 +1422,7 @@ def render_html(sections, out_path, refresh, net=None):
         '<b>tmux</b>: the tmux/byobu session the agent runs in &mdash; locally '
         '<code>tmux N</code> (from the per-process registry Claude Code itself keeps, '
         '<code>~/.claude*/sessions/&lt;pid&gt;.json</code>; for Codex, the thread whose start '
-        'time is the process start), <code>tmux 5,9</code> = two processes on one session, '
+        'time is the process start), a session resumed in two windows appears as two rows (one per live process, each noting the other window), '
         '<code>cursor</code> / <code>chatgpt</code> / <code>vscode</code> = an app terminal '
         'outside tmux, <code>&mdash;</code> = no live process (<code>claude --resume '
         '&lt;id&gt;</code> continues it); on SNAP the session name on that node '
@@ -1236,9 +1430,15 @@ def render_html(sections, out_path, refresh, net=None):
         '<b>Agent</b>: <code>cc</code> Claude Code (personal config), <code>ccv</code> Claude '
         'Code (Vals config), <code>cxd</code> Codex, <code>&mdash;</code> only shells in the '
         'pane. <b>Id</b>: Claude session id / Codex thread id / experiment number. '
-        '<b>Where</b>: host:cwd, with the git branch, Codex originator or experiment dir '
-        'beneath. <b>Topic</b>: what it is doing (SNAP: job state). <b>Last</b>: time since '
-        'it last wrote (SNAP: pane idle time).<br>'
+        '<b>Where</b>: the working directory, fully expanded (the <code>/Users/&lt;you&gt;</code> '
+        'prefix says which laptop; SNAP rows are <code>node:/lfs/…</code>), with the git '
+        'branch or Codex originator beneath. '
+        '<b>Task</b>: what it is doing (SNAP: job state). <b>Expt</b>: the '
+        '<code>experiments/&lt;NN_name&gt;</code> directory the agent&#39;s own recent actions '
+        'and messages reference most (its last 200 mentions in cwd, prose and tool inputs; '
+        'tool outputs are ignored), a runner-up beneath when it has at least half as many; '
+        'on SNAP the job&#39;s experiment dir; <code>-</code> = never referenced one. '
+        '<b>Last</b>: time since it last wrote (SNAP: pane idle time).<br>'
         'Every session with a live process is shown (a <code>claude -p</code> child shares its '
         'parent&#39;s window); older transcripts in a window fold into its holder&#39;s '
         '<i>+N earlier here</i>. SNAP job state: <b>RUNNING</b> = a process is '
