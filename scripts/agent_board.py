@@ -1414,7 +1414,6 @@ def render_text(sections, net=None, panes=None):
 CSS = """
 :root{--bg:#fbfaf8;--fg:#1c1b19;--mut:#6b6862;--line:#e5e1da;--card:#fff;
       --live:#1a7f4b;--idle:#a8730a;--stale:#9a958d;--accent:#3b5bdb}
-:root:not([data-theme=light]) @media (prefers-color-scheme:dark){}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
   --bg:#141311;--fg:#ece9e3;--mut:#9a958d;--line:#2c2a26;--card:#1c1b19;
   --live:#4ade80;--idle:#fbbf24;--stale:#6b6862;--accent:#8ea3ff}}
@@ -1467,6 +1466,24 @@ code{font-family:ui-monospace,Menlo,monospace;background:var(--line);padding:1px
 .k b{font-weight:600}
 .k i{font-style:normal;color:var(--mut);font-size:11.5px}
 .k .dot{position:relative;top:-1px}
+.freshness{border:2px solid #d97706;padding:12px;border-radius:8px;margin:12px 0;
+  font-size:16px;font-weight:600}
+.freshness[hidden]{display:none}
+@media(max-width:700px){
+  body{padding:18px 12px 40px;font-size:16px}
+  h1{font-size:22px}h2{font-size:14px;overflow-wrap:anywhere}
+  .sub,.net,.k{font-size:14px}.net{flex-wrap:wrap}
+  .key{gap:6px}.k{flex:1 1 100%}.k i,.net i{font-size:12px}
+  table,tbody{display:block}tr{display:flex;flex-direction:column;padding:14px;
+    border-bottom:1px solid var(--line);gap:7px}
+  tr:has(th){display:none}tr:last-child{border-bottom:0}
+  td{display:block;border:0;padding:0;overflow-wrap:anywhere;min-width:0;
+    max-width:none!important;white-space:normal!important;font-size:14px!important}
+  td::before{content:attr(data-label) ": ";font-size:12px;color:var(--mut);font-weight:400}
+  td.topic{order:-2;font-size:16px!important}td.topic::before,.empty::before{content:none}
+  td.lbl{order:-1}td.age{text-align:left}.sub2{font-size:12px}
+  .legend{font-size:12px;overflow-wrap:anywhere}
+}
 """
 
 
@@ -1485,21 +1502,28 @@ def render_html(sections, out_path, refresh, net=None):
         also = (f'<div class="sub2">also {E(s["expt_also"])}</div>'
                 if s.get("expt_also") else "")
         return (f'<tr class="{E(s["state"])}">'
-                f'<td class="tmux">{E(s["tmux_cell"])}</td>'
-                f'<td class="lbl"><span class="dot"></span>{E(s["label"])}</td>'
-                f'<td class="id">{E(s["short"])}</td>'
-                f'<td class="id">{E(s["where"])}{br}</td>'
-                f'<td class="id">{E(s["mdl"])}</td>'
+                f'<td class="tmux" data-label="Terminal">{E(s["tmux_cell"])}</td>'
+                f'<td class="lbl" data-label="Agent"><span class="dot"></span>{E(s["label"])}</td>'
+                f'<td class="id" data-label="Session">{E(s["short"])}</td>'
+                f'<td class="id" data-label="Location">{E(s["where"])}{br}</td>'
+                f'<td class="id" data-label="Model">{E(s["mdl"])}</td>'
                 f'<td class="topic">{E(s["topic"])}{prior}{nxt}{note}</td>'
-                f'<td class="expt">{E(s.get("expt") or "-")}{also}</td>'
-                f'<td class="age">{ago(s["age"])}</td></tr>')
+                f'<td class="expt" data-label="Experiment">{E(s.get("expt") or "-")}{also}</td>'
+                f'<td class="age" data-label="Last activity">{ago(s["age"])}</td></tr>')
 
     rows_all = [s for sec in sections for s in sec["rows"]]
     live = sum(1 for s in rows_all if s["state"] == "live")
-    parts = ['<title>Agent Board</title>',
+    generated_at = int(time.time())
+    parts = ['<!doctype html><html lang="en"><head><meta charset="utf-8">',
+             '<title>Agent Board</title>',
+             '<meta name="viewport" content="width=device-width, initial-scale=1">',
+             '<meta name="robots" content="noindex, nofollow">',
              f'<meta http-equiv="refresh" content="{refresh}">',
-             f'<style>{CSS}</style>', '<div class="wrap">',
+             f'<style>{CSS}</style></head><body>', '<div class="wrap">',
              '<h1>Agent board</h1>',
+             f'<div id="freshness" class="freshness" data-generated="{generated_at}" '
+             'role="status" hidden>Updates paused. This is an old snapshot; '
+             'check that your Mac is awake and connected.</div>',
              f'<div class="sub">{time.strftime("%a %d %b %Y, %H:%M:%S")} &nbsp;·&nbsp; '
              f'{live} working &nbsp;·&nbsp; {len(rows_all)} rows '
              f'&nbsp;·&nbsp; refreshes every {refresh}s</div>']
@@ -1566,6 +1590,15 @@ def render_html(sections, out_path, refresh, net=None):
         'alive in the pane; <b>DONE?</b> = pane idle, results not yet committed; '
         '<b>LANDED</b> = a commit touched the experiment dir after the job went quiet.'
         '</div></div>')
+    parts.append('''<script>
+const freshness = document.getElementById('freshness');
+function checkFreshness() {
+  freshness.hidden = Date.now() / 1000 - Number(freshness.dataset.generated) < 90;
+}
+checkFreshness();
+setInterval(checkFreshness, 5000);
+document.addEventListener('visibilitychange', checkFreshness);
+</script></body></html>''')
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=os.path.dirname(out_path), suffix=".html")
