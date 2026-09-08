@@ -3,7 +3,8 @@
 # attach with `byobu attach -t <name>` or drive Claude Code from the phone via Remote Control -- running
 # `clauded` / `clauded-vals` / `codex` at a chosen model + effort on a runbook file, and only report success
 # once the agent has actually started in that session. The local counterpart of ssh-submit.sh (SNAP nodes).
-# Trigger Rule 42: every dispatched worker gets a session like this, named after project and task.
+# Trigger Rule 42: every dispatched worker gets a session like this, named after project and task; the
+# opening prompt also asks for the Rule 44 checkpoint file CKPT_<name>.md in the work dir.
 #
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
@@ -74,7 +75,7 @@ LAUNCHER=$(command -v byobu || command -v tmux) || die "neither byobu nor tmux i
 command -v tmux >/dev/null || die "tmux is not installed"
 
 # Apostrophe-free on purpose: the prompt is typed into the shell inside single quotes.
-OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol."
+OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol."
 CMD="$WRAPPER"
 if [ "$PROFILE" = codex ]; then
   [ -n "$MODEL" ] && CMD="$CMD -m '$MODEL'"
