@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
-# TLDR: deploy a Claude Code worker on THIS machine in its own detached byobu/tmux session -- attach with
-# `byobu attach -t <name>` or drive it from the phone via Remote Control -- running `clauded` / `clauded-vals`
-# at a chosen model + effort on a runbook file, and only report success once Claude Code has actually
-# registered itself in that session. The local counterpart of ssh-submit.sh (SNAP nodes).
+# TLDR: deploy a Claude Code (or Codex) worker on THIS machine in its own detached byobu/tmux session --
+# attach with `byobu attach -t <name>` or drive Claude Code from the phone via Remote Control -- running
+# `clauded` / `clauded-vals` / `codex` at a chosen model + effort on a runbook file, and only report success
+# once the agent has actually started in that session. The local counterpart of ssh-submit.sh (SNAP nodes).
+# Trigger Rule 42: every dispatched worker gets a session like this, named after project and task.
 #
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
-#                [--profile cc|ccv] [--model claude-fable-5-1] [--effort max] [--no-rc]
+#                [--profile cc|ccv|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
 #                [--wait <seconds, default 120>] [--dry-run]
+#   --profile codex types `codex -m <model> -c model_reasoning_effort="<effort>" '<prompt>'` (model and
+#   effort default to ~/.codex/config.toml when not given; efforts low|medium|high|xhigh|ultra) and
+#   counts the worker as started once the pane's foreground command is no longer the shell.
 # Example:
 #   ~/agents-config/scripts/deploy_cc.sh --name vb-fix-thms --cwd ~/veribench \
 #     --prompt-file experiments/74_hard_subset_and_versioned_releases/scripts/fix_false_reference_theorems_cc_prompt.md
@@ -28,7 +32,7 @@ die() { echo "deploy_cc.sh: $*" >&2; exit 2; }
 # a flag that takes a value: the value must exist, be non-empty and not look like another flag
 val() { [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || die "$1 needs a value (got '${2:-}')"; printf '%s' "$2"; }
 
-NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=claude-fable-5-1; EFFORT=max; RC=1; DRY=0; WAIT=120
+NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) NAME=$(val "$@"); shift 2 ;;
@@ -46,9 +50,14 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$NAME" ] && [ -n "$CWD" ] && [ -n "$PROMPT" ] || die "need --name, --cwd and --prompt-file"
 case "$NAME" in *[!A-Za-z0-9_-]*) die "--name may use letters, digits, _ and - only (it is a tmux target)" ;; esac
-# model ids are like claude-fable-5-1 or claude-fable-5[1m] (Hard Rule 8); typed inside single quotes
+case "$PROFILE" in
+  cc|ccv) MODEL=${MODEL:-claude-fable-5-1}; EFFORT=${EFFORT:-max}
+          case "$EFFORT" in low|medium|high|xhigh|max) ;; *) die "--effort must be one of low medium high xhigh max (got '$EFFORT')" ;; esac ;;
+  codex)  case "${EFFORT:-low}" in low|medium|high|xhigh|ultra) ;; *) die "--effort for codex must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
+  *) die "--profile must be cc, ccv or codex" ;;
+esac
+# model ids are like claude-fable-5-1, claude-fable-5[1m] (Hard Rule 8) or gpt-6-astra; typed inside single quotes
 case "$MODEL" in *[!A-Za-z0-9._\[\]-]*) die "--model may use letters, digits, . _ - [ ] only (got '$MODEL')" ;; esac
-case "$EFFORT" in low|medium|high|xhigh|max) ;; *) die "--effort must be one of low medium high xhigh max (got '$EFFORT')" ;; esac
 case "$WAIT" in *[!0-9]*|"") die "--wait must be a whole number of seconds" ;; esac
 CWD=$(cd "$CWD" 2>/dev/null && pwd -P) || die "--cwd is not a directory: $CWD"
 case "$PROMPT" in /*) ;; *) PROMPT="$CWD/$PROMPT" ;; esac
@@ -57,7 +66,7 @@ case "$PROMPT" in *\'*) die "the runbook path may not contain a single quote" ;;
 case "$PROFILE" in
   cc) WRAPPER=clauded; REG_DIR="$HOME/.claude/sessions" ;;              # personal config (zsh alias)
   ccv) WRAPPER=clauded-vals; REG_DIR="$HOME/.claude-vals/sessions" ;;   # Vals config (zsh function)
-  *) die "--profile must be cc or ccv" ;;
+  codex) WRAPPER=codex; REG_DIR=""; RC=0 ;;                            # no registry, no Remote Control
 esac
 WRAPPER=${DEPLOY_WRAPPER:-$WRAPPER}     # test hook: point at a missing command to exercise the failure path
 LAUNCHER=$(command -v byobu || command -v tmux) || die "neither byobu nor tmux is installed"
@@ -66,13 +75,20 @@ command -v tmux >/dev/null || die "tmux is not installed"
 # Apostrophe-free on purpose: the prompt is typed into the shell inside single quotes.
 OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol."
 CMD="$WRAPPER"
-[ "$RC" -eq 1 ] && CMD="$CMD --remote-control $NAME"
-CMD="$CMD --model '$MODEL' --effort $EFFORT '$OPEN'"
+if [ "$PROFILE" = codex ]; then
+  [ -n "$MODEL" ] && CMD="$CMD -m '$MODEL'"
+  [ -n "$EFFORT" ] && CMD="$CMD -c model_reasoning_effort=\"$EFFORT\""
+  CMD="$CMD '$OPEN'"
+else
+  [ "$RC" -eq 1 ] && CMD="$CMD --remote-control $NAME"
+  CMD="$CMD --model '$MODEL' --effort $EFFORT '$OPEN'"
+fi
 
 if [ "$DRY" -eq 1 ]; then
   echo "$LAUNCHER new-session -d -s $NAME -c $CWD /bin/zsh -il"
   echo "tmux send-keys -t =$NAME: '<cmd>' Enter"
-  echo "then poll $REG_DIR/*.json for a live pid whose tmux field starts with '$NAME:' (up to ${WAIT}s)"
+  if [ -n "$REG_DIR" ]; then echo "then poll $REG_DIR/*.json for a live pid whose tmux field starts with '$NAME:' (up to ${WAIT}s)"
+  else echo "then wait until the pane's foreground command is no longer the shell (up to ${WAIT}s)"; fi
   echo "cmd: $CMD"
   exit 0
 fi
@@ -90,6 +106,10 @@ echo "waiting up to ${WAIT}s for Claude Code to register in that session ..."
 # Claude Code writes <config>/sessions/<pid>.json with "tmux":"<session>:@w.%p" while it runs; that
 # file plus a live pid is the same evidence the agent board uses, so "deployed" means exactly that.
 registered() {
+  if [ -z "$REG_DIR" ]; then    # codex: no registry; the pane's foreground command tells
+    local fg; fg=$(tmux display-message -p -t "=$NAME:" '#{pane_current_command}' 2>/dev/null || echo "")
+    case "$fg" in ""|zsh|-zsh|bash|-bash|sh|fish|login) return 1 ;; *) echo "$fg"; return 0 ;; esac
+  fi
   python3 - "$REG_DIR" "$NAME" <<'PY'
 import glob, json, os, sys
 reg, name = sys.argv[1], sys.argv[2]
@@ -108,7 +128,8 @@ PY
 deadline=$((SECONDS + WAIT))
 while [ "$SECONDS" -lt "$deadline" ]; do
   if SID=$(registered); then
-    echo "deployed: Claude Code session $SID is live in tmux session '$NAME'"
+    if [ "$PROFILE" = codex ]; then echo "deployed: codex ($SID) is running in tmux session '$NAME'"
+    else echo "deployed: Claude Code session $SID is live in tmux session '$NAME'"; fi
     echo "  attach:  byobu attach -t $NAME        (tmux attach -t '=$NAME' also works; detach with the prefix + d)"
     [ "$RC" -eq 1 ] && echo "  phone:   Remote Control requested under the name '$NAME' -- open it from claude.ai/code"
     echo "  board:   python3 ~/agents-config/scripts/agent_board.py --hours 1   (row: tmux $NAME)"
@@ -116,7 +137,7 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   fi
   python3 -c 'import time; time.sleep(2)'
 done
-echo "deploy_cc.sh: NOT verified -- no live Claude Code process registered tmux session '$NAME' within ${WAIT}s." >&2
+echo "deploy_cc.sh: NOT verified -- the agent did not start in tmux session '$NAME' within ${WAIT}s." >&2
 echo "  last lines of the pane:" >&2
 tmux capture-pane -p -t "=$NAME:" 2>/dev/null | grep -v '^$' | tail -6 | sed 's/^/    /' >&2
 echo "  inspect: byobu attach -t $NAME      discard: tmux kill-session -t '=$NAME'" >&2
