@@ -1,24 +1,29 @@
-"""TLDR: unit tests for agent_board's one-shot detection and --resume-dead (no tmux, no real transcripts)."""
+"""TLDR: unit tests for agent_board's one-shot classification and --resume-dead (mocked tmux, synthetic transcripts)."""
 
 import io
 import json
 import os
 import tempfile
 import unittest
+from unittest import mock
 
 import agent_board as board
 
+UUID = "{}-aaaa-4bbb-8ccc-{:012d}"
 
-def _transcript(tmpdir, name, entrypoint, cwd="/Users/me/proj"):
-    path = os.path.join(tmpdir, name + ".jsonl")
-    recs = [
-        {"type": "mode", "sessionId": name, "entrypoint": entrypoint, "cwd": cwd},
+
+def _records(entrypoint, cwd="/Users/me/proj", model="claude-fable-5-1"):
+    return [
+        {"type": "mode", "entrypoint": entrypoint, "cwd": cwd},
         {"type": "user", "cwd": cwd, "gitBranch": "main", "entrypoint": entrypoint,
          "message": {"role": "user", "content": "Review the private board forwarding fix"}},
         {"type": "assistant", "entrypoint": entrypoint,
-         "message": {"role": "assistant", "model": "claude-fable-5-1",
+         "message": {"role": "assistant", "model": model,
                      "content": [{"type": "text", "text": "VERDICT: PASS"}]}},
     ]
+
+
+def _write(path, recs):
     with open(path, "w") as fh:
         # compact separators: Claude Code writes its records without spaces
         fh.write("\n".join(json.dumps(r, separators=(",", ":")) for r in recs) + "\n")
@@ -31,34 +36,73 @@ def _row(sid, tag="cc", proc=False, oneshot=False, cwd="/", age=3600.0, cell="�
             "seats": [], "state": "stale"}
 
 
-class ScanTranscriptTests(unittest.TestCase):
-    def test_entrypoint_is_read_for_print_and_interactive_runs(self):
+class TranscriptScanTests(unittest.TestCase):
+    def test_head_scan_reads_the_entrypoint(self):
         with tempfile.TemporaryDirectory() as d:
             for entry in ("sdk-cli", "cli", "claude-desktop"):
-                topic, cwd, branch, model, effort, got = board.scan_transcript(
-                    _transcript(d, entry, entry))
-                self.assertEqual(got, entry)
-                self.assertEqual(cwd, "/Users/me/proj")
-                self.assertEqual(model, "claude-fable-5-1")
+                got = board.scan_transcript(_write(os.path.join(d, entry + ".jsonl"),
+                                                   _records(entry)))
+                topic, cwd, branch, model, effort, seen = got
+                self.assertEqual(seen, entry)
+                self.assertEqual((cwd, model), ("/Users/me/proj", "claude-fable-5-1"))
                 self.assertTrue(topic.startswith("Review the private board"))
             self.assertIn("sdk-cli", board.ONESHOT_ENTRYPOINTS)
             self.assertNotIn("cli", board.ONESHOT_ENTRYPOINTS)
 
     def test_missing_entrypoint_is_empty_not_a_guess(self):
         with tempfile.TemporaryDirectory() as d:
-            path = os.path.join(d, "old.jsonl")
-            with open(path, "w") as fh:
-                fh.write(json.dumps({"type": "user", "cwd": "/x",
-                                     "message": {"role": "user", "content": "hi"}}) + "\n")
-            self.assertEqual(board.scan_transcript(path)[5], "")
+            p = _write(os.path.join(d, "old.jsonl"),
+                       [{"type": "user", "cwd": "/x", "message": {"role": "user", "content": "hi"}}])
+            self.assertEqual(board.scan_transcript(p)[5], "")
+            self.assertEqual(board.current_model(p, "m", "e", "")[2], "")
+
+    def test_tail_wins_when_a_print_run_was_continued_interactively(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = _write(os.path.join(d, "t.jsonl"), _records("sdk-cli") + _records("cli"))
+            self.assertEqual(board.scan_transcript(p)[5], "sdk-cli")           # head
+            self.assertEqual(board.current_model(p, "", "", "sdk-cli")[2], "cli")  # newest
 
 
-class OnePerSeatTests(unittest.TestCase):
+class ClassificationTests(unittest.TestCase):
+    """Rows as collect_sessions() builds them, with the process registry mocked."""
+
+    def rows_for(self, procs):
+        with tempfile.TemporaryDirectory() as cfg:
+            proj = os.path.join(cfg, "projects", "-tmp-proj")
+            os.makedirs(proj)
+            sids = {k: UUID.format(k * 8, i) for i, k in enumerate("abcd", 1)}
+            _write(os.path.join(proj, sids["a"] + ".jsonl"), _records("sdk-cli"))
+            _write(os.path.join(proj, sids["b"] + ".jsonl"), _records("sdk-cli"))
+            _write(os.path.join(proj, sids["c"] + ".jsonl"), _records("cli"))
+            _write(os.path.join(proj, sids["d"] + ".jsonl"), _records("sdk-cli") + _records("cli"))
+            reg = {sids[k]: [{"pid": "1", "tmux": "2", "app": None, "updated": 0}] for k in procs}
+            fake_expt = lambda path, kind, cache, dirs, model="", effort="", entry="": (
+                ("-", "") + board.current_model(path, model, effort, entry))
+            with mock.patch.object(board, "CONFIGS", {cfg: "cc"}), \
+                 mock.patch.object(board, "claude_registry", lambda tab, panes: reg), \
+                 mock.patch.object(board, "load_registry", lambda: {}), \
+                 mock.patch.object(board, "load_expt_cache", lambda: {}), \
+                 mock.patch.object(board, "save_expt_cache", lambda c: None), \
+                 mock.patch.object(board, "local_experiment_dirs", lambda: []), \
+                 mock.patch.object(board, "load_summaries", lambda: {}), \
+                 mock.patch.object(board, "session_expt", fake_expt):
+                rows = board.collect_sessions(1, True, tab={}, panes={}, collapse=False)
+            return sids, {r["sid"]: r for r in rows}
+
+    def test_finished_running_interactive_and_continued_print_runs(self):
+        sids, rows = self.rows_for(procs="b")
+        a, b, c, d = (rows[sids[k]] for k in "abcd")
+        self.assertEqual((a["tmux_cell"], a["tmux_how"], a["state"], a["oneshot"]),
+                         ("one-shot", "finished", "stale", True))      # exited claude -p
+        self.assertEqual((b["tmux_cell"], b["tmux_how"], b["state"], b["proc"]),
+                         ("tmux 2", "live", "live", True))             # claude -p still running
+        self.assertEqual((c["tmux_cell"], c["tmux_how"], c["oneshot"]), ("—", "exited", False))
+        self.assertEqual((d["tmux_cell"], d["oneshot"]), ("—", False))  # continued interactively
+
     def test_finished_oneshot_stays_listed_while_fresh_then_drops(self):
         fresh = _row("a" * 36, oneshot=True, age=60.0, cell="one-shot")
         old = _row("b" * 36, oneshot=True, age=board.IDLE_S + 1, cell="one-shot")
-        kept = board.one_per_seat([fresh, old])
-        self.assertEqual([r["sid"] for r in kept], [fresh["sid"]])
+        self.assertEqual([r["sid"] for r in board.one_per_seat([fresh, old])], [fresh["sid"]])
 
     def test_live_and_seated_rows_are_always_kept(self):
         live = _row("c" * 36, proc=True, age=99999.0, cell="tmux 2")
@@ -66,47 +110,86 @@ class OnePerSeatTests(unittest.TestCase):
         self.assertEqual(len(board.one_per_seat([live, seated])), 2)
 
 
+class TmuxTargetTests(unittest.TestCase):
+    @staticmethod
+    def fake_run(table):
+        def run(args, **kw):
+            r = mock.Mock()
+            out = table.get(args[1])
+            r.returncode, r.stdout, r.stderr = (1, "", "") if out is None else (0, out, "")
+            return r
+        return run
+
+    def test_first_session_by_id_even_when_names_have_spaces(self):
+        with mock.patch.object(board.subprocess, "run",
+                               self.fake_run({"ls": "$4\tresearch work\n$5\tmain\n"})), \
+             mock.patch.dict(os.environ, {"TMUX_PANE": ""}):
+            self.assertEqual(board.tmux_target(dry_run=True), ("$4", "research work"))
+
+    def test_the_callers_own_pane_wins(self):
+        with mock.patch.object(board.subprocess, "run",
+                               self.fake_run({"display-message": "$5\tmain\n", "ls": "$4\tx\n"})), \
+             mock.patch.dict(os.environ, {"TMUX_PANE": "%3"}):
+            self.assertEqual(board.tmux_target(dry_run=True), ("$5", "main"))
+
+    def test_no_server_and_no_binary(self):
+        with mock.patch.object(board.subprocess, "run", self.fake_run({})), \
+             mock.patch.dict(os.environ, {"TMUX_PANE": ""}):
+            self.assertEqual(board.tmux_target(dry_run=True), ("$recovered", "recovered"))
+
+        def boom(*a, **k):
+            raise FileNotFoundError("tmux")
+        with mock.patch.object(board.subprocess, "run", boom):
+            self.assertEqual(board.tmux_target(dry_run=True), (None, None))
+
+
 class ResumeDeadTests(unittest.TestCase):
     def setUp(self):
         self.cwd = tempfile.mkdtemp()
-        self.dead_cc = _row("11111111-aaaa-4bbb-8ccc-000000000001", cwd=self.cwd)
-        self.dead_ccv = _row("22222222-aaaa-4bbb-8ccc-000000000002", tag="ccv", cwd=self.cwd)
-        self.live = _row("33333333-aaaa-4bbb-8ccc-000000000003", proc=True, cell="tmux 2")
-        self.oneshot = _row("44444444-aaaa-4bbb-8ccc-000000000004", oneshot=True,
-                            cell="one-shot")
-        self.gone = _row("55555555-aaaa-4bbb-8ccc-000000000005", cwd="/nonexistent/dir")
+        self.dead_cc = _row(UUID.format("11111111", 1), cwd=self.cwd)
+        self.dead_ccv = _row(UUID.format("22222222", 2), tag="ccv", cwd=self.cwd)
+        self.live = _row(UUID.format("33333333", 3), proc=True, cell="tmux 2")
+        self.oneshot = _row(UUID.format("44444444", 4), oneshot=True, cell="one-shot")
+        self.gone = _row(UUID.format("55555555", 5), cwd="/nonexistent/dir")
         self.rows = [self.dead_cc, self.dead_ccv, self.live, self.oneshot, self.gone]
 
     def run_it(self, wanted, **kw):
         out = io.StringIO()
-        rc = board.resume_dead(self.rows, wanted, dry_run=True, target="9", out=out, **kw)
+        kw.setdefault("target", ("$9", "9"))
+        rc = board.resume_dead(self.rows, wanted, dry_run=True, out=out, **kw)
         return rc, out.getvalue()
 
     def test_listing_shows_only_dead_interactive_sessions(self):
         rc, text = self.run_it([])
         self.assertEqual(rc, 0)
-        self.assertIn("11111111", text)
-        self.assertIn("22222222", text)
-        self.assertIn("55555555", text)
+        for sid8 in ("11111111", "22222222", "55555555"):
+            self.assertIn(sid8, text)
         self.assertNotIn("33333333", text)   # live
         self.assertNotIn("44444444", text)   # finished one-shot
         self.assertIn("--resume-dead", text)
 
-    def test_dry_run_uses_the_wrapper_for_each_config_and_the_session_colon_target(self):
+    def test_dry_run_uses_each_configs_wrapper_and_the_session_id_target(self):
         rc, text = self.run_it(["11111111", "22222222"])
         self.assertEqual(rc, 0)
-        self.assertIn("clauded --resume 11111111-aaaa-4bbb-8ccc-000000000001", text)
-        self.assertIn("clauded-vals --resume 22222222-aaaa-4bbb-8ccc-000000000002", text)
-        self.assertIn("-t 9: -n cc-11111111 -c " + self.cwd, text)
-        self.assertIn("-t 9: -n ccv-22222222", text)
+        self.assertIn("clauded --resume " + self.dead_cc["sid"], text)
+        self.assertIn("clauded-vals --resume " + self.dead_ccv["sid"], text)
+        self.assertIn("-t '$9:' -n cc-11111111 -c " + self.cwd, text)
+        self.assertIn("-t '$9:' -n ccv-22222222", text)
         self.assertNotIn("--fork-session", text)
+        self.assertIn("2 window(s) in tmux session 9", text)
 
-    def test_fork_flag_and_all(self):
+    def test_all_with_fork_reports_the_skipped_row_and_exits_nonzero(self):
         rc, text = self.run_it(["all"], fork=True)
-        self.assertEqual(rc, 0)
-        self.assertEqual(text.count("--fork-session"), 2)   # the two resumable rows
+        self.assertEqual(rc, 1)
+        self.assertEqual(text.count("--fork-session"), 2)
         self.assertIn("55555555: skipped, cwd missing", text)
-        self.assertIn("2 window(s)", text)
+        self.assertIn("2 window(s), 1 NOT opened", text)
+
+    def test_a_session_named_twice_opens_once(self):
+        rc, text = self.run_it(["11111111", self.dead_cc["sid"]])
+        self.assertEqual(rc, 0)
+        self.assertEqual(text.count("send-keys"), 1)
+        self.assertIn("1 window(s)", text)
 
     def test_live_oneshot_ambiguous_and_unknown_ids_are_refused(self):
         for prefix, why in (("33333333", "already running"), ("44444444", "finished"),
@@ -119,13 +202,39 @@ class ResumeDeadTests(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn("ambiguous", text)
 
-    def test_only_uuid_shaped_ids_are_typed_into_a_shell(self):
-        self.rows.append(_row("66666666; rm -rf ~", cwd=self.cwd))
-        rc, text = self.run_it(["66666666"])
+    def test_only_uuids_are_typed_into_a_shell(self):
+        for bad in ("--continue", "66666666; rm -rf ~", "66666666-aaaa-4bbb-8ccc-00000000000g",
+                    "66666666aaaa4bbb8ccc000000000006"):
+            self.rows.append(_row(bad, cwd=self.cwd))
+            rc, text = self.run_it([bad[:4]])
+            self.assertEqual(rc, 1, bad)
+            self.assertIn("not a UUID", text)
+            self.assertNotIn("send-keys", text)
+            self.rows.pop()
+
+    def test_unreadable_process_table_refuses_everything(self):
+        rc, text = self.run_it(["all"], liveness=False)
         self.assertEqual(rc, 1)
-        self.assertIn("not UUID-shaped", text)
-        self.assertNotIn("rm -rf", text.split("skipped")[1].split("\n")[1] if "\n" in text.split("skipped")[1] else "")
+        self.assertIn("refusing", text)
         self.assertNotIn("send-keys", text)
+
+    def test_no_tmux_is_reported_not_raised(self):
+        rc, text = self.run_it(["11111111"], target=(None, None))
+        self.assertEqual(rc, 1)
+        self.assertIn("tmux is not available", text)
+
+    def test_real_launch_failures_are_reported_and_counted(self):
+        def run(args, **kw):
+            r = mock.Mock()
+            if args[1] == "new-window":
+                r.returncode, r.stdout, r.stderr = 1, "", "can't find session"
+            return r
+        out = io.StringIO()
+        with mock.patch.object(board.subprocess, "run", run):
+            rc = board.resume_dead(self.rows, ["11111111"], target=("$9", "9"), out=out)
+        self.assertEqual(rc, 1)
+        self.assertIn("tmux failed (can't find session); by hand: cd", out.getvalue())
+        self.assertIn("1 NOT opened", out.getvalue())
 
 
 if __name__ == "__main__":
