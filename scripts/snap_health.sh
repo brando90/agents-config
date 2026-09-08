@@ -4,6 +4,9 @@
 set -u
 
 DFS_ROOT="${SNAP_DFS_ROOT:-/dfs/scratch0/brando9}"
+# SSH login on the cluster is always brando9, whatever the local account is called (a Vals-managed
+# Mac logs in as a different user); without this the remote check fails with "Permission denied".
+SNAP_SSH_USER="${SNAP_SSH_USER:-brando9}"
 NVM_DIR="$DFS_ROOT/.nvm"
 DFS_BIN="$DFS_ROOT/bin"
 OPEN_NODES="skampere1 skampere2 skampere3 mercury1 mercury2"
@@ -412,8 +415,8 @@ smoke_test() {
   case "$_tool" in
     codex)
       _last_message="$(mktemp "${TMPDIR:-/tmp}/snap-smoke-last.XXXXXX")"
-      timeout 120 codex exec --skip-git-repo-check -s read-only -m gpt-5.6-sol \
-        --output-last-message "$_last_message" -c 'model_reasoning_effort="xhigh"' \
+      timeout 120 codex exec --skip-git-repo-check -s read-only -m gpt-6-astra \
+        --output-last-message "$_last_message" -c 'model_reasoning_effort="ultra"' \
         'Reply exactly SNAP_CODEX_OK' >"$_smoke_err" 2>&1
       _smoke_rc=$?
       _out="$(tr -d '\r' <"$_last_message")"
@@ -519,7 +522,7 @@ audit_repositories() {
 
 audit_slurm_controller() {
   _slurm_targets="${ONLY_NODE:-$GATED_NODES}"
-  _account_out="$(timeout 15 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" ilc.stanford.edu \
+  _account_out="$(timeout 15 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$SNAP_SSH_USER@ilc.stanford.edu" \
     'command -v srun >/dev/null && showaccount' 2>&1)"
   _account_rc=$?
   if [ "$_account_rc" -ne 0 ]; then
@@ -531,7 +534,7 @@ audit_slurm_controller() {
   else
     emit FAIL slurm-controller slurm.account "showaccount returned no infolab association; gated nodes cannot be allocated" "email il-action@cs.stanford.edu and request the infolab Slurm association for brando9"
   fi
-  _states="$(timeout 15 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" ilc.stanford.edu \
+  _states="$(timeout 15 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$SNAP_SSH_USER@ilc.stanford.edu" \
     "sinfo -h -N -n $(printf '%s' "$_slurm_targets" | tr ' ' ',') -o '%N=%T' | sort -u | paste -sd, -" 2>/dev/null || true)"
   _missing_nodes=""
   for _target in $_slurm_targets; do
@@ -664,7 +667,7 @@ for _node in $TARGET_NODES; do
     if [ "$_node" = "$(hostname -s)" ]; then
       bash "$SCRIPT_PATH" --_worker $([ "$DO_FIX" -eq 1 ] && printf '%s' --fix) $([ "$DO_SMOKE" -eq 1 ] && printf '%s' --smoke) >"$_out" 2>"$_err"
     else
-      timeout 420 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$_node" \
+      timeout 420 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$SNAP_SSH_USER@$_node" \
         bash -s -- --_worker $([ "$DO_FIX" -eq 1 ] && printf '%s' --fix) $([ "$DO_SMOKE" -eq 1 ] && printf '%s' --smoke) \
         <"$SCRIPT_PATH" >"$_out" 2>"$_err"
     fi

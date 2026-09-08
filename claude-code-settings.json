@@ -1,7 +1,5 @@
 {
-  "model": "claude-fable-5[1m]",
-  "effortLevel": "max",
-  "skipDangerousModePermissionPrompt": true,
+  "model": "fable",
   "hooks": {
     "SessionStart": [
       {
@@ -10,6 +8,12 @@
             "type": "command",
             "command": "bash ~/agents-config/scripts/auto-update-tools.sh",
             "timeout": 60,
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash ~/agents-config/scripts/agent_session_register.sh",
+            "timeout": 10,
             "async": true
           }
         ]
@@ -27,5 +31,18 @@
         ]
       }
     ]
-  }
+  },
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "max"
+    },
+    "claude-fable-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5": {
+      "effortLevel": "xhigh"
+    }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "inputNeededNotifEnabled": true
 }

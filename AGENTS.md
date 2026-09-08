@@ -18,12 +18,12 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 
 ## Codex CLI default
 
-Codex CLI should always default to `gpt-5.6-sol` with `model_reasoning_effort = "xhigh"`.
+Codex CLI should always default to `gpt-6-astra` (GPT-6 Astra) with `model_reasoning_effort = "ultra"` (Codex-only level above `xhigh`/`max`; updated 2026-09-08).
 Keep `~/.codex/config.toml` set with those values. When dispatching Codex from
 another CLI, pass them explicitly:
 
 ```bash
-codex exec --approve-for-me -m gpt-5.6-sol -c 'model_reasoning_effort="xhigh"' "$QA_PROMPT"
+codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
 ```
 
 ## CLI-only for all LLM work (mandatory — INDEX_RULES.md Hard Rule 9)

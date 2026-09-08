@@ -158,8 +158,8 @@ Codex config:
 - Create ~/.codex if needed.
 - Back up ~/.codex/config.toml if it exists.
 - Ensure ~/.codex/config.toml contains:
-  model = "gpt-5.6-sol"
-  model_reasoning_effort = "xhigh"
+  model = "gpt-6-astra"
+  model_reasoning_effort = "ultra"
   approval_policy = "never"
   sandbox_mode = "danger-full-access"
   web_search = "live"
@@ -348,8 +348,8 @@ from pathlib import Path
 path = Path.home() / ".codex" / "config.toml"
 text = path.read_text() if path.exists() else ""
 keys = {
-    "model": '"gpt-5.6-sol"',
-    "model_reasoning_effort": '"xhigh"',
+    "model": '"gpt-6-astra"',
+    "model_reasoning_effort": '"ultra"',
     "approval_policy": '"never"',
     "sandbox_mode": '"danger-full-access"',
     "web_search": '"live"',
