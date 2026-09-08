@@ -20,6 +20,7 @@ Three ways to run a job on a SNAP cluster node that isn't the one you're sitting
 | Live on a SNAP node, want to run on another SNAP node | **SSH fire-and-forget** | `~/agents-config/scripts/ssh-submit.sh --node skampere2 --job /tmp/eval.sh` |
 | Anywhere on the cluster, headless/batch/queued | **DFS watcher daemon** | `cp my_job.sh ~/dfs/job_queue/pending/` |
 | Phone, claude.ai web, Anthropic cloud sandbox (no SSH) | **Phone dispatch (git-inbox)** | commit `jobs-inbox/pending/<name>.sh` to `agents-config` repo |
+| Sitting on the Mac, want a worker in its own byobu session you can attach to or drive from the phone | **Local deploy** (`scripts/deploy_cc.sh`) | `~/agents-config/scripts/deploy_cc.sh --name vb-fix --cwd ~/veribench --prompt-file <runbook.md>` (defaults: `cc` profile, `claude-fable-5-1`, effort `max`, Remote Control on; `byobu attach -t vb-fix`) |
 
 ---
 
