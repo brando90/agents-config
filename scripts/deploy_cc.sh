@@ -11,7 +11,8 @@
 #                [--wait <seconds, default 120>] [--dry-run]
 #   --profile codex types `codex -m <model> -c model_reasoning_effort="<effort>" '<prompt>'` (model and
 #   effort default to ~/.codex/config.toml when not given; efforts low|medium|high|xhigh|ultra) and
-#   counts the worker as started once the pane's foreground command is no longer the shell.
+#   counts the worker as started once a `codex` process carrying the runbook path is running under
+#   the pane's shell and is still alive three seconds later.
 # Example:
 #   ~/agents-config/scripts/deploy_cc.sh --name vb-fix-thms --cwd ~/veribench \
 #     --prompt-file experiments/74_hard_subset_and_versioned_releases/scripts/fix_false_reference_theorems_cc_prompt.md
@@ -98,17 +99,53 @@ if tmux has-session -t "=$NAME" 2>/dev/null; then
 fi
 # an explicit interactive login zsh: the wrappers are defined in ~/.zshrc, whatever the server default is
 "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
-python3 -c 'import time; time.sleep(2)'    # let the shell finish its rc files before the keys arrive
+# wait for the interactive shell to be the pane's foreground command again: ~/.zshrc may run kinit
+# and friends first, and keys typed before it finishes can be eaten or misparsed
+shell_ready() {
+  case "$(tmux display-message -p -t "=$NAME:" '#{pane_current_command}' 2>/dev/null)" in
+    zsh|-zsh|bash|-bash|sh|fish) return 0 ;; *) return 1 ;;
+  esac
+}
+t0=$SECONDS
+until shell_ready || [ $((SECONDS - t0)) -ge 30 ]; do python3 -c 'import time; time.sleep(1)'; done
+shell_ready || echo "deploy_cc.sh: warning: the shell in '$NAME' was still busy after 30s; typing anyway" >&2
+python3 -c 'import time; time.sleep(1)'
 tmux send-keys -t "=$NAME:" "$CMD" Enter
 echo "typed into tmux session '$NAME' ($CWD): $CMD"
-echo "waiting up to ${WAIT}s for Claude Code to register in that session ..."
+echo "waiting up to ${WAIT}s for the $WRAPPER worker to start in that session ..."
 
 # Claude Code writes <config>/sessions/<pid>.json with "tmux":"<session>:@w.%p" while it runs; that
 # file plus a live pid is the same evidence the agent board uses, so "deployed" means exactly that.
+# codex has no registry: the evidence is a process under the pane's shell whose command line carries
+# this runbook's path (so a kinit, sleep or git from ~/.zshrc can never pass), and that is still
+# alive three seconds later (so a codex that rejects a flag and exits does not pass).
+worker_pid() {
+  local pane_pid; pane_pid=$(tmux display-message -p -t "=$NAME:" '#{pane_pid}' 2>/dev/null) || return 1
+  python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" <<'PY'
+import subprocess, sys
+root, wrapper, marker = sys.argv[1], sys.argv[2], sys.argv[3]
+kids, cmd = {}, {}
+for ln in subprocess.run(["ps", "-ax", "-o", "pid=,ppid=,command="], capture_output=True, text=True).stdout.splitlines():
+    f = ln.split(None, 2)
+    if len(f) == 3:
+        kids.setdefault(f[1], []).append(f[0]); cmd[f[0]] = f[2]
+todo = [root]
+while todo:
+    pid = todo.pop()
+    for k in kids.get(pid, []):
+        c = cmd.get(k, "")
+        if marker in c:               # the runbook path is unique to this launch; the wrapper
+            print(k); sys.exit(0)     # name may vanish when a launcher execs into a binary
+        todo.append(k)
+sys.exit(1)
+PY
+}
 registered() {
-  if [ -z "$REG_DIR" ]; then    # codex: no registry; the pane's foreground command tells
-    local fg; fg=$(tmux display-message -p -t "=$NAME:" '#{pane_current_command}' 2>/dev/null || echo "")
-    case "$fg" in ""|zsh|-zsh|bash|-bash|sh|fish|login) return 1 ;; *) echo "$fg"; return 0 ;; esac
+  if [ -z "$REG_DIR" ]; then
+    local pid; pid=$(worker_pid) || return 1
+    python3 -c 'import time; time.sleep(3)'
+    kill -0 "$pid" 2>/dev/null && { echo "pid $pid"; return 0; }
+    return 1
   fi
   python3 - "$REG_DIR" "$NAME" <<'PY'
 import glob, json, os, sys
