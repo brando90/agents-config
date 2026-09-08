@@ -12,6 +12,7 @@ import io
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -32,6 +33,10 @@ CONFIGS = {
     os.path.join(HOME, ".claude"): "cc",
     os.path.join(HOME, ".claude-vals"): "ccv",
 }
+# tag -> the shell wrapper that starts Claude Code with that config. Both live in ~/.zshrc
+# (alias / function), so they resolve when typed into an interactive shell -- which is how
+# --resume-dead uses them.
+WRAPPERS = {"cc": "clauded", "ccv": "clauded-vals"}
 SNAP_HOSTS = ["skampere1", "skampere2", "skampere3"]
 
 LIVE_S = 120      # wrote within 2 min  -> live
@@ -52,6 +57,15 @@ def project_label(projects_dirname):
 
 MODEL_RE = re.compile(r'"model":"(claude-[a-z0-9.-]+)"')
 EFFORT_RE = re.compile(r'"effort":"([a-z]+)"')
+ENTRY_RE = re.compile(r'"entrypoint":\s*"([a-z-]+)"')
+# How the process was started, stamped on every transcript record: "cli" is an interactive
+# session, "claude-desktop" the desktop app, "sdk-cli" is `claude -p` -- a one-shot job that
+# exits once its answer is written. A one-shot transcript with no process behind it is
+# FINISHED, not dead: there is nothing to resume, and it was never waiting on anyone.
+ONESHOT_ENTRYPOINTS = {"sdk-cli"}
+# A session id becomes part of a command typed into a shell (--resume-dead) and comes from a
+# file name under ~/.claude*/projects, so only UUID-shaped ids are ever typed.
+SID_RE = re.compile(r"[A-Za-z0-9-]{8,64}")
 
 
 def short_model(m):
@@ -89,14 +103,15 @@ def current_model(path, model="", effort="", window=TAIL_BYTES):
 
 
 def scan_transcript(path, max_lines=600, max_bytes=3_000_000):
-    """One pass for the fields the board shows: topic, cwd, branch, model, effort."""
-    topic, cwd, branch, model, effort = None, "", "", "", ""
+    """One pass for the fields the board shows: topic, cwd, branch, model, effort, entrypoint."""
+    topic, cwd, branch, model, effort, entry = None, "", "", "", "", ""
     read = 0
     try:
         with open(path, errors="ignore") as fh:
             for i, ln in enumerate(fh):
                 read += len(ln)
-                if i > max_lines or read > max_bytes or (topic and cwd and model and effort):
+                if i > max_lines or read > max_bytes or (topic and cwd and model and effort
+                                                          and entry):
                     break
                 if len(ln) > 200_000:                # a giant tool result, never a user message
                     continue
@@ -108,6 +123,10 @@ def scan_transcript(path, max_lines=600, max_bytes=3_000_000):
                     me = EFFORT_RE.search(ln)
                     if me:
                         effort = me.group(1)
+                if not entry:
+                    mn = ENTRY_RE.search(ln)
+                    if mn:
+                        entry = mn.group(1)
                 try:
                     d = json.loads(ln)
                 except Exception:
@@ -128,7 +147,7 @@ def scan_transcript(path, max_lines=600, max_bytes=3_000_000):
                     topic = s[:120]
     except OSError:
         pass
-    return topic or "(no user message yet)", cwd, branch, model, effort
+    return topic or "(no user message yet)", cwd, branch, model, effort, entry
 
 
 def short_path(cwd):
@@ -366,7 +385,7 @@ def tmux_cell(names):
     return ",".join(names)
 
 
-def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
+def collect_sessions(max_age_h, show_all=False, tab=None, panes=None, collapse=True):
     now = time.time()
     reg = load_registry()
     tab = process_table() if tab is None else tab
@@ -391,7 +410,8 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
     for cfg_dir, tag, tpath, st, sid in paths:
             age = now - st.st_mtime
             proj_dir = os.path.basename(os.path.dirname(tpath))
-            topic, cwd, branch, model, effort = scan_transcript(tpath)
+            topic, cwd, branch, model, effort, entry = scan_transcript(tpath)
+            oneshot = entry in ONESHOT_ENTRYPOINTS
             expt, expt_also, model, effort = session_expt(tpath, "claude", ecache, edirs,
                                                           model, effort)
             procs = cc.get(sid, [])
@@ -417,10 +437,15 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
                     variants.append((seats, cell, how, "", ""))
             else:
                 # no live process, so nothing to switch to. The SessionStart hook's record of
-                # the window it ran in still groups it under that seat as history.
+                # the window it ran in still groups it under that seat as history. A `claude -p`
+                # job that has exited is finished, not dead: it is named as such instead of
+                # getting the em dash that invites a --resume.
                 t = reg.get(sid, {}).get("tmux")
                 seats = [str(t)] if isinstance(t, (str, int)) and str(t) else []
-                variants.append((seats, "\u2014", "exited", "", ""))
+                if oneshot:
+                    variants.append((seats, "one-shot", "finished", "", ""))
+                else:
+                    variants.append((seats, "\u2014", "exited", "", ""))
             label = tag
             for seats, cell, how, note, id_suffix in variants:
               rows.append({
@@ -433,6 +458,7 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
                 "seats": seats,
                 "proc": bool(procs),
                 "alive": bool(procs),
+                "oneshot": oneshot,
                 "tmux_cell": cell,
                 "tmux_how": how,
                 "note": note,
@@ -449,7 +475,9 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
                 "last": st.st_mtime,
                 "age": age,
                 "size_mb": round(st.st_size / 1e6, 1),
-                "state": "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale"),
+                # colour by recency -- except that a finished one-shot was never "waiting on you"
+                "state": ("stale" if (oneshot and not procs) else
+                          "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale")),
             })
     save_expt_cache(ecache)
     if not show_all:
@@ -463,7 +491,7 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None):
         else:
             r["raw_topic"], r["summarized"], r["next"] = r["topic"], False, ""
     rows.sort(key=lambda r: r["last"], reverse=True)
-    return collapse_fanout(rows)
+    return collapse_fanout(rows) if collapse else rows
 
 
 def load_summaries():
@@ -676,8 +704,9 @@ def one_per_seat(rows, keep_stale=False):
         r["prior"] = 0
         for k in keys:
             seen.setdefault(k, r)
-        # a seatless, dead transcript is kept only while it is still moving
-        if keys or keep_stale or r.get("proc") or r["state"] != "stale":
+        # a seatless, dead transcript is kept only while it is still moving (by age, not by
+        # colour: a finished one-shot is grey from the start yet stays listed just as long)
+        if keys or keep_stale or r.get("proc") or r["age"] < IDLE_S:
             out.append(r)
     return out
 
@@ -703,6 +732,117 @@ def collapse_fanout(rows, threshold=3):
         else:
             out.extend(g)
     return out
+
+
+# ---------------------------------------------------------------- resume
+
+def tmux_target(dry_run=False):
+    """The tmux session new windows go to: the caller's own pane's session, else the first
+    session the server has, else a fresh detached `recovered` session (not on a dry run)."""
+    def q(args):
+        try:
+            r = subprocess.run(["tmux"] + args, capture_output=True, text=True, timeout=5)
+            return r.stdout.strip() if r.returncode == 0 else ""
+        except Exception:
+            return ""
+    pane = os.environ.get("TMUX_PANE")
+    if pane:
+        s = q(["display-message", "-p", "-t", pane, "#{session_name}"])
+        if s:
+            return s
+    names = q(["ls", "-F", "#S"]).split()
+    if names:
+        return names[0]
+    if not dry_run:
+        subprocess.run(["tmux", "new-session", "-d", "-s", "recovered"], check=True, timeout=10)
+    return "recovered"
+
+
+def resume_dead(rows, wanted, dry_run=False, fork=False, target=None, out=None):
+    """`--resume-dead`: list the interactive sessions with no process behind them, or bring
+    the chosen ones back -- one new tmux window each, opened in the session's own cwd, with
+    `clauded --resume <id>` (Vals: `clauded-vals --resume <id>`) typed into it. A killed
+    process loses nothing but itself: the conversation is the transcript on disk, and nothing
+    reaches the model until you type in the new window. `wanted` is a list of id prefixes,
+    or ["all"]; an empty list only prints the table. Returns a shell exit code.
+    """
+    out = out or sys.stdout
+    dead = sorted((r for r in rows if not r.get("proc") and not r.get("oneshot")),
+                  key=lambda r: r["last"], reverse=True)
+    if not wanted:
+        print(f"\n  DEAD SESSIONS -- interactive transcripts with no live process ({len(dead)})",
+              file=out)
+        print(f"  {'ID':<9} {'AGENT':<6} {'LAST':>5}  {'WHERE':<40} TASK", file=out)
+        for r in dead:
+            print(f"  {r['sid'][:8]:<9} {r['tag']:<6} {ago(r['age']):>5}  "
+                  f"{(r.get('cwd') or '-')[-40:]:<40} {r['topic'][:60]}", file=out)
+        print("\n  resume: python3 ~/agents-config/scripts/agent_board.py --hours 168 "
+              "--resume-dead <id> [<id> ...] | all   (--dry-run prints the tmux commands; "
+              "--fork keeps the original transcript untouched)", file=out)
+        return 0
+    if wanted == ["all"]:
+        picks = list(dead)
+    else:
+        picks = []
+        for w in wanted:
+            hits = [r for r in rows if r["sid"].startswith(w)]
+            if not hits:
+                print(f"  {w}: no transcript in the window starts with that (widen --hours?)",
+                      file=out)
+                return 1
+            if len(hits) > 1:
+                print(f"  {w}: ambiguous, matches {', '.join(h['sid'][:12] for h in hits)}",
+                      file=out)
+                return 1
+            r = hits[0]
+            if r.get("proc"):
+                print(f"  {r['sid'][:8]}: already running ({r['tmux_cell']}); nothing to resume",
+                      file=out)
+                return 1
+            if r.get("oneshot"):
+                print(f"  {r['sid'][:8]}: a finished `claude -p` job; nothing to resume",
+                      file=out)
+                return 1
+            picks.append(r)
+    if not picks:
+        print("  nothing to resume", file=out)
+        return 1
+    target = target or tmux_target(dry_run)
+    n = 0
+    for r in picks:
+        cwd = r.get("cwd") or ""
+        wrapper = WRAPPERS.get(r["tag"])
+        if not SID_RE.fullmatch(r["sid"]):
+            print(f"  {r['sid'][:8]}: skipped, id is not UUID-shaped ({r['sid'][:40]!r})", file=out)
+            continue
+        if not cwd or not os.path.isdir(cwd) or not wrapper:
+            why = "no wrapper for its config" if not wrapper else f"cwd missing ({cwd or 'unknown'})"
+            print(f"  {r['sid'][:8]}: skipped, {why}", file=out)
+            continue
+        win = f"{r['tag']}-{r['sid'][:8]}"
+        cmd = f"{wrapper} --resume {shlex.quote(r['sid'])}" + (" --fork-session" if fork else "")
+        # `-t <session>:` = that session, next free index (a bare name would be read as a
+        # window index); -P -F prints the new window's id so the keys go to exactly that
+        # window even when an earlier resume left a window of the same name behind.
+        new = ["tmux", "new-window", "-d", "-P", "-F", "#{window_id}", "-t", f"{target}:",
+               "-n", win, "-c", cwd]
+        if dry_run:
+            print("  " + " ".join(shlex.quote(x) for x in new), file=out)
+            print(f"  tmux send-keys -t <that window id> {shlex.quote(cmd)} Enter", file=out)
+        else:
+            made = subprocess.run(new, capture_output=True, text=True, timeout=10)
+            wid = made.stdout.strip()
+            if made.returncode != 0 or not wid:
+                print(f"  {r['sid'][:8]}: tmux new-window failed: {made.stderr.strip()}",
+                      file=out)
+                continue
+            subprocess.run(["tmux", "send-keys", "-t", wid, cmd, "Enter"], check=True,
+                           timeout=10)
+            print(f"  opened {target}:{win} ({wid})  {cwd}  ->  {cmd}", file=out)
+        n += 1
+    print(f"\n  {n} window(s). In each, re-run /effort if the session had an override: "
+          "it does not survive the process.", file=out)
+    return 0 if n else 1
 
 
 CODEX_DIR = os.path.join(HOME, ".codex")
@@ -1569,8 +1709,11 @@ def render_html(sections, out_path, refresh, net=None):
         '<code>~/.claude*/sessions/&lt;pid&gt;.json</code>; for Codex, the thread whose start '
         'time is the process start), a session resumed in two windows appears as two rows (one per live process, each noting the other window), '
         '<code>cursor</code> / <code>chatgpt</code> / <code>vscode</code> = an app terminal '
-        'outside tmux, <code>&mdash;</code> = no live process (<code>claude --resume '
-        '&lt;id&gt;</code> continues it); on SNAP the session name on that node '
+        'outside tmux, <code>&mdash;</code> = no live process (<code>board --hours 168 '
+        '--resume-dead &lt;id&gt;</code> brings it back in a new window; by hand, '
+        '<code>clauded --resume &lt;id&gt;</code> from its cwd), <code>one-shot</code> = a '
+        '<code>claude -p</code> job that has finished (its answer is the transcript; nothing '
+        'to resume, and it was never waiting on you); on SNAP the session name on that node '
         '(<code>tmux attach -t &lt;name&gt;</code> there). '
         '<b>Agent</b>: <code>cc</code> Claude Code (personal config), <code>ccv</code> Claude '
         'Code (Vals config), <code>cxd</code> Codex, <code>&mdash;</code> only shells in the '
@@ -1614,7 +1757,8 @@ def main():
     ap.add_argument("--html", nargs="?", const=os.path.join(BOARD_DIR, "board.html"),
                     help="write the HTML board (default ~/.agent-board/board.html)")
     ap.add_argument("--snap", action="store_true", help="poll SNAP nodes over ssh (slow)")
-    ap.add_argument("--hours", type=float, default=6, help="how far back to list (default 6)")
+    ap.add_argument("--hours", type=float, default=None,
+                    help="how far back to list (default 6; 168 with --resume-dead)")
     ap.add_argument("--all", action="store_true",
                     help="every transcript, not just the current one per tmux window")
     ap.add_argument("--refresh", type=int, default=20, help="HTML auto-refresh seconds")
@@ -1623,18 +1767,30 @@ def main():
                     help="top up AI session summaries via `claude -p` (slow; run out of band)")
     ap.add_argument("--summarize-limit", type=int, default=6,
                     help="max sessions to summarize per invocation")
+    ap.add_argument("--resume-dead", nargs="*", metavar="ID",
+                    help="bring back sessions whose process died (restart, dead tmux server): "
+                         "no ID lists them; id prefixes, or `all`, open one tmux window each "
+                         "running `clauded --resume <id>` (Vals: clauded-vals) from its cwd")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="with --resume-dead: print the tmux commands instead of running them")
+    ap.add_argument("--fork", action="store_true",
+                    help="with --resume-dead: add --fork-session (new id, transcript untouched)")
     a = ap.parse_args()
+    hours = a.hours if a.hours is not None else (168 if a.resume_dead is not None else 6)
 
     tab, panes = process_table(), tmux_panes()
-    sessions = collect_sessions(a.hours, a.all, tab, panes)
-    codex = collect_codex(a.hours, tab, panes)
+    if a.resume_dead is not None:
+        rows = collect_sessions(hours, True, tab, panes, collapse=False)
+        return resume_dead(rows, a.resume_dead, dry_run=a.dry_run, fork=a.fork)
+    sessions = collect_sessions(hours, a.all, tab, panes)
+    codex = collect_codex(hours, tab, panes)
     snap = poll_snap() and read_snap_cache() if a.snap else read_snap_cache()
 
     if a.summarize:
         n = summarize(sessions, limit=a.summarize_limit, verbose=not a.quiet)
         if not a.quiet:
             print(f"  summarized {n} session(s)")
-        sessions = collect_sessions(a.hours, a.all, tab, panes)
+        sessions = collect_sessions(hours, a.all, tab, panes)
 
     experiments = collect_experiments({"hosts": snap["hosts"]} if snap else None)
     net = stanford_status()
