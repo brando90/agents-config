@@ -193,10 +193,71 @@ flag.touch()
         self.assertIn("NOT verified", result.stderr)
         self.assertIn("discard:", result.stderr)
 
+    def test_snap_rejects_invalid_names_and_hosts_before_ssh(self):
+        for action in ["run", "tail", "log", "attach", "kill"]:
+            for name in ["qa.probe", "qa'probe", "-qa", "qa:1"]:
+                args = [action, name] + (["true"] if action == "run" else [])
+                self.assertEqual(self.run_script("snap_dispatch.sh", *args).returncode, 1)
+        self.assertEqual(self.run_script("snap_dispatch.sh", "run", "qa-probe", "true", SNAP_HOST="unknown").returncode, 1)
+        self.assertFalse((self.root / "ssh.jsonl").exists())
 
+    def test_snap_duplicate_and_remote_failure_are_not_success(self):
+        duplicate = self.run_script("snap_dispatch.sh", "run", "qa-probe", "true", TEST_DUPLICATE="0")
+        self.assertEqual(duplicate.returncode, 1)
+        self.assertIn("already running", duplicate.stderr)
+        failed = self.run_script("snap_dispatch.sh", "run", "qa-probe", "true", TEST_LAUNCH_RC="43")
+        self.assertEqual(failed.returncode, 43, failed.stderr)
+        self.assertNotIn("Safe to close", failed.stdout)
+        self.assertFalse((self.root / "remote" / "qa-probe_latest.log").exists())
 
+    def test_snap_preserves_explicit_failure_status_and_remote_log(self):
+        result = self.run_script("snap_dispatch.sh", "run", "qa-probe", "exit 7", TEST_RUNNER="1")
+        self.assertEqual(result.returncode, 0, result.stderr)  # Detached launch succeeded; job failed.
+        self.assertEqual((self.root / "job.rc").read_text(), "7")
+        log = (self.root / "remote" / "qa-probe_latest.log").read_text()
+        self.assertIn("exit=7", log)
+        self.assertIn("/lfs/skampere1/0/brando9/snap_jobs/", result.stdout)
+        self.assertFalse((self.root / "remote" / ".qa-probe.launch-lock").exists())
 
+    def test_snap_argv_and_exact_targets(self):
+        result = self.run_script("snap_dispatch.sh", "run", "qa-probe", "printf", "%s", "a b; literal", TEST_RUNNER="1")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("a b; literal", (self.root / "remote" / "qa-probe_latest.log").read_text())
+        for action in ["tail", "log", "attach", "kill"]:
+            self.assertEqual(self.run_script("snap_dispatch.sh", action, "qa-probe").returncode, 0)
+        calls = [json.loads(line) for line in (self.root / "ssh.jsonl").read_text().splitlines()]
+        self.assertTrue(all("brando9@skampere1.stanford.edu" in call for call in calls))
+        self.assertTrue(any("tmux attach -t '=qa-probe'" == call[-1] for call in calls))
+        self.assertTrue(any("tmux kill-session -t '=qa-probe'" in call[-1] for call in calls))
+        for account in ["brando9", "qa-account"]:
+            result = self.run_script("snap_dispatch.sh", "run", "qa-account-probe", "true", SNAP_SSH_USER=account)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(f"/lfs/skampere1/0/{account}/snap_jobs/", result.stdout)
+            for action in ["tail", "attach", "kill"]:
+                self.assertIn(f"SNAP_HOST=skampere1 SNAP_SSH_USER={account} {SCRIPTS / 'snap_dispatch.sh'} {action} qa-account-probe", result.stdout)
+            latest_call = json.loads((self.root / "ssh.jsonl").read_text().splitlines()[-1])
+            self.assertIn(f"{account}@skampere1.stanford.edu", latest_call)
 
+    def test_snap_remote_duplicate_race_keeps_existing_files(self):
+        # Local preflight says absent, but remote recheck sees an existing session.
+        self.command("ssh", '''import os, subprocess, sys
+from pathlib import Path
+a = sys.argv[1:]
+if a[-1] == "true" or "has-session" in a[-1]: sys.exit(0 if a[-1] == "true" else 1)
+i = a.index("bash")
+name, logdir, log, payload = a[i+3:]
+root = Path(os.environ["TEST_ROOT"]) / "remote"
+args = ["bash", "-s", "--", name, str(root), str(root / "new.log"), payload]
+sys.exit(subprocess.run(args, input=sys.stdin.read(), text=True).returncode)
+''')
+        remote = self.root / "remote"
+        remote.mkdir()
+        old = remote / "qa-probe_latest.log"
+        old.write_text("existing job log")
+        result = self.run_script("snap_dispatch.sh", "run", "qa-probe", "true", TEST_DUPLICATE="0")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(old.read_text(), "existing job log")
+        self.assertEqual([path.name for path in remote.iterdir()], [old.name])
 
 
 
