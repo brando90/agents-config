@@ -78,6 +78,9 @@ runner="$logdir/${name}_runner.sh"
   printf '%s\n' "$payload" | base64 -d
   echo ''
   echo "rc=\$?; echo \"[snap_dispatch] exit=\$rc end=\$(date -Is)\""
+  # Propagate the job's status: without this the runner exits with the status of the echo above,
+  # so a failed job looks like a clean one to tmux's remain-on-exit pane and to anything polling it.
+  echo 'exit "$rc"'
 } > "$runner"
 chmod +x "$runner"
 ln -sfn "$log" "$logdir/${name}_latest.log"
