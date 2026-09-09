@@ -9,7 +9,7 @@
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
 #                [--profile cc|ccv|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
-#                [--wait <seconds, default 120>] [--dry-run]
+#                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
 #   --profile codex types `codex -m <model> -c model_reasoning_effort="<effort>" '<prompt>'` (model and
 #   effort default to ~/.codex/config.toml when not given; efforts low|medium|high|xhigh|ultra) and
 #   counts the worker as started once a `codex` process carrying the runbook path is running under
@@ -34,7 +34,7 @@ die() { echo "deploy_cc.sh: $*" >&2; exit 2; }
 # a flag that takes a value: the value must exist, be non-empty and not look like another flag
 val() { [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || die "$1 needs a value (got '${2:-}')"; printf '%s' "$2"; }
 
-NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120
+NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120; PREFLIGHT=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) NAME=$(val "$@"); shift 2 ;;
@@ -45,6 +45,7 @@ while [ $# -gt 0 ]; do
     --effort) EFFORT=$(val "$@"); shift 2 ;;
     --wait) WAIT=$(val "$@"); shift 2 ;;
     --no-rc) RC=0; shift ;;
+    --no-preflight) PREFLIGHT=0; shift ;;
     --dry-run) DRY=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) die "unknown argument: $1" ;;
@@ -93,6 +94,25 @@ if [ "$DRY" -eq 1 ]; then
   else echo "then wait until the pane's foreground command is no longer the shell (up to ${WAIT}s)"; fi
   echo "cmd: $CMD"
   exit 0
+fi
+# Pre-flight: a model with no usage credits accepts the session, registers, and then dies on its
+# first turn -- which is how four workers were lost overnight on 2026-09-08 while their dispatcher
+# believed they were running. One cheap probe here turns that silent loss into a refusal to deploy.
+if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ]; then
+  # `|| true`: the probe failing is data, not a reason to abort under `set -e`
+  probe=$(zsh -ic "$WRAPPER --model '$MODEL' -p 'reply with exactly: PONG'" < /dev/null 2>&1 | tail -3 || true)
+  case "$probe" in
+    *PONG*) ;;
+    *"usage credits"*|*"usage limit"*|*"rate limit"*)
+      echo "deploy_cc.sh: $MODEL has no usage left right now -- not deploying '$NAME'." >&2
+      echo "  probe said: $(printf '%s' "$probe" | tr '\n' ' ' | cut -c1-140)" >&2
+      echo "  try another Claude model (--model claude-opus-5), or --profile codex, per Hard Rule 8;" >&2
+      echo "  never fall back to API keys. --no-preflight skips this check." >&2
+      exit 3 ;;
+    *)
+      echo "deploy_cc.sh: could not confirm $MODEL is usable (probe: $(printf '%s' "$probe" | tr '\n' ' ' | cut -c1-100))" >&2
+      echo "  deploying anyway; watch the session's first turn. Use --no-preflight to silence." >&2 ;;
+  esac
 fi
 if tmux has-session -t "=$NAME" 2>/dev/null; then
   echo "deploy_cc.sh: tmux session '$NAME' already exists -- pick another --name, or attach: byobu attach -t $NAME" >&2
