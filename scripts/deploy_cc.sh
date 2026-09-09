@@ -33,6 +33,8 @@ usage() { sed -n '2,24p' "$0"; }
 die() { echo "deploy_cc.sh: $*" >&2; exit 2; }
 # a flag that takes a value: the value must exist, be non-empty and not look like another flag
 val() { [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || die "$1 needs a value (got '${2:-}')"; printf '%s' "$2"; }
+# single-quote a value for a shell command line (bash 3.2 has no ${var@Q})
+shq() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
 
 NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120; PREFLIGHT=1
 while [ $# -gt 0 ]; do
@@ -95,28 +97,35 @@ if [ "$DRY" -eq 1 ]; then
   echo "cmd: $CMD"
   exit 0
 fi
-# Pre-flight: a model with no usage credits accepts the session, registers, and then dies on its
-# first turn -- which is how four workers were lost overnight on 2026-09-08 while their dispatcher
-# believed they were running. One cheap probe here turns that silent loss into a refusal to deploy.
-if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ]; then
-  # `|| true`: the probe failing is data, not a reason to abort under `set -e`
-  probe=$(zsh -ic "$WRAPPER --model '$MODEL' -p 'reply with exactly: PONG'" < /dev/null 2>&1 | tail -3 || true)
-  case "$probe" in
-    *PONG*) ;;
-    *"usage credits"*|*"usage limit"*|*"rate limit"*)
-      echo "deploy_cc.sh: $MODEL has no usage left right now -- not deploying '$NAME'." >&2
-      echo "  probe said: $(printf '%s' "$probe" | tr '\n' ' ' | cut -c1-140)" >&2
-      echo "  try another Claude model (--model claude-opus-5), or --profile codex, per Hard Rule 8;" >&2
-      echo "  never fall back to API keys. --no-preflight skips this check." >&2
-      exit 3 ;;
-    *)
-      echo "deploy_cc.sh: could not confirm $MODEL is usable (probe: $(printf '%s' "$probe" | tr '\n' ' ' | cut -c1-100))" >&2
-      echo "  deploying anyway; watch the session's first turn. Use --no-preflight to silence." >&2 ;;
-  esac
-fi
 if tmux has-session -t "=$NAME" 2>/dev/null; then
   echo "deploy_cc.sh: tmux session '$NAME' already exists -- pick another --name, or attach: byobu attach -t $NAME" >&2
   exit 1
+fi
+# Pre-flight: a model with no usage left accepts the session, registers, and then dies on its first
+# turn -- which is how four workers were lost overnight on 2026-09-08 while their dispatcher believed
+# they were running. One cheap probe here turns that silent loss into a refusal to deploy.
+# FAIL CLOSED: only an actual PONG proceeds. Claude Code words exhaustion several ways ("out of usage
+# credits", "monthly spend limit", "usage limit reached"), so matching known phrases lets tomorrow's
+# wording through; anything that is not PONG is treated as unusable and --no-preflight is the escape.
+if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ]; then
+  # bounded: a hung shell, hook or request must not wedge the dispatch (no deadline = no guard)
+  if command -v timeout >/dev/null; then RUNNER="timeout 90"
+  elif command -v gtimeout >/dev/null; then RUNNER="gtimeout 90"
+  else RUNNER=""; fi
+  # same shell the worker gets (interactive login zsh, in the worker's cwd), so the wrapper resolves
+  # the same way and a cwd-specific hook or rc file cannot make the probe and the session disagree
+  probe=$($RUNNER zsh -ilc "cd $(shq "$CWD") && $WRAPPER --model $(shq "$MODEL") -p 'reply with exactly: PONG'" \
+            < /dev/null 2>&1 | tail -3 || true)
+  case "$probe" in
+    *PONG*) ;;
+    *)
+      echo "deploy_cc.sh: $MODEL did not answer a probe -- not deploying '$NAME'." >&2
+      echo "  probe said: $(printf '%s' "$probe" | tr '\n' ' ' | cut -c1-160)" >&2
+      echo "  if that is a usage/credit limit, try another Claude model (--model claude-opus-5) or" >&2
+      echo "  --profile codex, per Hard Rule 8; never fall back to API keys. If the probe itself is" >&2
+      echo "  broken (empty answer, hung shell), re-run with --no-preflight." >&2
+      exit 3 ;;
+  esac
 fi
 # an explicit interactive login zsh: the wrappers are defined in ~/.zshrc, whatever the server default is
 "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
