@@ -14,15 +14,19 @@
 #   QUIET=1 scripts/sync_shared_checkout.sh         # only print when something happened or is wrong
 #
 # WHAT IT WILL NOT DO (each one is a real failure mode, not caution for its own sake):
-#   - never rebase or merge: fast-forward only, so a conflict is impossible and no history is rewritten under a
-#     live session;
-#   - never run while another git process holds the repo (that is what produced "fatal: Cannot autostash");
+#   - never rebase or merge across history: fast-forward only, so no history is rewritten under a live session;
 #   - never touch a checkout that is ahead of origin: those commits are somebody's unpushed work, and the fix is to
 #     branch and open a PR for them, which this script prints rather than doing;
-#   - never delete or overwrite an untracked file that an incoming commit would clobber: it names them and stops;
-#   - never stash: tracked modifications belong to whichever session is writing them, and a fast-forward that would
-#     overwrite a modified file aborts on git's own check anyway.
-# It is therefore safe to run on a timer while agents are working: the worst case is that it prints why it skipped.
+#   - never overwrite a local file that an incoming commit would land on -- untracked, ignored, or locally modified,
+#     and counting rename destinations, not just added paths: it names them and stops;
+#   - never stash and never delete: tracked modifications belong to whichever session is writing them.
+#
+# THE ONE RACE IT CANNOT CLOSE, stated plainly because a reader will otherwise assume it is safe. Git's index lock
+# does not lock ordinary file writes. Between the moment this script checks the tree and the moment the
+# fast-forward replaces files, another agent can save a file, and if that same path also changed upstream the save
+# is lost. The window is short and the checks below narrow it to paths the update actually touches, but it is real:
+# run this in the checkout that belongs to the editor, not in one where agents are actively writing (agents belong
+# in their own worktrees), and treat a report of lost work as this window until proven otherwise.
 set -u
 
 REPO="${1:-$HOME/veribench}"
@@ -49,7 +53,17 @@ fi
 cur="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 [ "$cur" = "$BRANCH" ] || { say "skip: $REPO is on '$cur', not '$BRANCH'"; exit 0; }
 
-git fetch --quiet origin "$BRANCH" || die "fetch failed in $REPO"
+# An interrupted rebase, merge, cherry-pick, bisect or a detached HEAD means somebody is mid-operation here.
+for m in rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD BISECT_LOG; do
+  [ -e ".git/$m" ] && { say "skip: $REPO has an operation in progress (.git/$m)"; exit 0; }
+done
+
+# `git fetch` writes objects and remote-tracking refs. It never touches the working tree, so it is safe here, but
+# it is a write: say so rather than letting DRY=1 imply the repository was not touched at all. --no-write-fetch-head
+# keeps FETCH_HEAD, which other tooling reads, from being clobbered by this background sync.
+git fetch --quiet --no-write-fetch-head origin "$BRANCH" 2>/dev/null \
+  || git fetch --quiet origin "$BRANCH" \
+  || die "fetch failed in $REPO"
 
 read -r ahead behind <<EOF
 $(git rev-list --left-right --count "HEAD...origin/$BRANCH" | tr '\t' ' ')
@@ -69,14 +83,50 @@ if [ "${behind:-0}" -eq 0 ]; then
   exit 0
 fi
 
-# An untracked file that an incoming commit also adds would be clobbered; git refuses, so name them first.
-clobber="$(git diff --name-only --diff-filter=A "HEAD..origin/$BRANCH" 2>/dev/null | while read -r f; do
-  [ -e "$f" ] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1 && printf '%s\n' "$f"
-done)"
-if [ -n "$clobber" ]; then
-  warn "STOP: these untracked files in $REPO would be overwritten by incoming commits:"
-  printf '%s\n' "$clobber" | sed 's/^/       /' >&2
-  warn "       Move or delete them, then re-run. Nothing was changed."
+# Which paths does the update actually write? Added paths and rename DESTINATIONS both create files, so filtering
+# on "A" alone missed a rename landing on a local file. -z keeps filenames with spaces, quotes or newlines intact,
+# and for R/C entries git emits source and destination as two extra NUL-separated fields, so the destination is
+# read explicitly rather than guessed.
+incoming="$(git diff -z --name-status --find-renames "HEAD..origin/$BRANCH" 2>/dev/null | python3 -c '
+import sys
+parts = sys.stdin.buffer.read().split(b"\0")
+i, out = 0, []
+while i < len(parts) and parts[i]:
+    st = parts[i].decode("utf-8", "surrogateescape"); i += 1
+    if st[:1] in ("R", "C"):        # status, source, destination
+        i += 1
+        if i < len(parts): out.append(parts[i].decode("utf-8", "surrogateescape")); i += 1
+    else:
+        if i < len(parts):
+            p = parts[i].decode("utf-8", "surrogateescape"); i += 1
+            if st[:1] in ("A", "M", "T"): out.append(p)
+print("\n".join(out))' 2>/dev/null)"
+
+# A local file sitting on one of those paths loses its content when the update lands. Untracked and IGNORED files
+# are both at risk -- git refuses to clobber an untracked file but will happily overwrite an ignored one -- and a
+# tracked file with local modifications is at risk too. -e misses a broken symlink, so -L is tested as well.
+clobber=""
+modified=""
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  if [ -e "$f" ] || [ -L "$f" ]; then
+    if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
+      git diff --quiet -- "$f" 2>/dev/null || modified="$modified$f
+"
+    else
+      clobber="$clobber$f
+"
+    fi
+  fi
+done <<EOF
+$incoming
+EOF
+
+if [ -n "$clobber" ] || [ -n "$modified" ]; then
+  warn "STOP: the update would write over local content in $REPO. Nothing was changed."
+  [ -n "$clobber" ]  && { warn "       untracked or ignored files on incoming paths:"; printf '%s' "$clobber" | sed 's/^/         /' >&2; }
+  [ -n "$modified" ] && { warn "       tracked files with local modifications on incoming paths:"; printf '%s' "$modified" | sed 's/^/         /' >&2; }
+  warn "       Commit, move or delete them, then re-run."
   exit 3
 fi
 
@@ -86,13 +136,19 @@ if [ "$DRY" = "1" ]; then
 fi
 
 before="$(git rev-parse --short HEAD)"
-if git merge --ff-only "origin/$BRANCH" >/dev/null 2>&1; then
+err="$(git merge --ff-only "origin/$BRANCH" 2>&1 >/dev/null)"; rc=$?
+if [ "$rc" -eq 0 ]; then
   say "fast-forwarded $REPO: $before -> $(git rev-parse --short HEAD) ($behind commit(s))"
   git log --oneline "$before..HEAD" | head -5 | sed 's/^/       /'
   [ "$behind" -gt 5 ] && say "       ... and $((behind - 5)) more"
   exit 0
 fi
 
-warn "STOP: fast-forward refused in $REPO (a tracked file is modified in the way, most likely). Nothing was changed."
-git status --short | head -8 >&2
+# Do NOT claim nothing changed: git updates ORIG_HEAD, and can update working files and the index, before it
+# updates the branch, so a failed fast-forward can leave the tree partly moved. Print git's own words and say
+# what to look at.
+warn "STOP: fast-forward failed in $REPO (git exit $rc). The tree may be partly updated -- inspect it."
+printf '%s\n' "$err" | sed 's/^/       git: /' >&2
+warn "       state now: HEAD $(git rev-parse --short HEAD 2>/dev/null), was $before"
+git status --short 2>/dev/null | head -8 | sed 's/^/       /' >&2
 exit 4
