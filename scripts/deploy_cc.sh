@@ -152,7 +152,11 @@ shell_ready() {
 }
 t0=$SECONDS
 until shell_ready || [ $((SECONDS - t0)) -ge 30 ]; do python3 -c 'import time; time.sleep(1)'; done
-shell_ready || echo "deploy_cc.sh: warning: the shell in '$NAME' was still busy after 30s; typing anyway" >&2
+if ! shell_ready; then
+  echo "deploy_cc.sh: the shell in '$NAME' was still busy after 30s; no command was typed." >&2
+  echo "  inspect: byobu attach -t $NAME" >&2
+  exit 1
+fi
 python3 -c 'import time; time.sleep(1)'
 tmux send-keys -l -t "=$NAME:" "$CMD"
 tmux send-keys -t "=$NAME:" Enter

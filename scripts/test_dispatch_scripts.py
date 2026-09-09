@@ -34,7 +34,7 @@ root = Path(os.environ["TEST_ROOT"])
 a = sys.argv[1:]
 with (root / "tmux.jsonl").open("a") as f: f.write(json.dumps(a) + "\\n")
 if a[0] == "has-session": sys.exit(int(os.environ.get("TEST_DUPLICATE", "1")))
-if a[0] == "display-message": print("900" if "pane_pid" in a[-1] else "zsh")
+if a[0] == "display-message": print("900" if "pane_pid" in a[-1] else os.environ.get("TEST_FOREGROUND", "zsh"))
 if a[0] == "capture-pane": print("worker exited")
 if a[0] == "new-session":
     rc = int(os.environ.get("TEST_LAUNCH_RC", "0"))
@@ -243,6 +243,23 @@ flag.touch()
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertIn("NOT verified", result.stderr)
         self.assertIn("discard:", result.stderr)
+
+    def test_deploy_does_not_type_into_a_busy_startup_program(self):
+        source = (SCRIPTS / "deploy_cc.sh").read_text()
+        startup = "shell_ready() {" + source.split("shell_ready() {", 1)[1].split('echo "typed into tmux', 1)[0]
+        # Advance the shell clock instead of sleeping through the 30-second startup budget.
+        script = 'set -euo pipefail\npython3() { SECONDS=$((SECONDS + 31)); }\n' + startup
+        for foreground, expected in [("kinit", 1), ("zsh", 0)]:
+            calls_path = self.root / "tmux.jsonl"
+            calls_path.unlink(missing_ok=True)
+            result = subprocess.run(["bash", "-c", script],
+                                    env=dict(self.env, NAME="qa-probe", CMD="fixture-command",
+                                             TEST_FOREGROUND=foreground),
+                                    text=True, capture_output=True, timeout=5)
+            self.assertEqual(result.returncode, expected, result.stderr)
+            calls = [json.loads(line) for line in calls_path.read_text().splitlines()]
+            sent = [call for call in calls if call[0] == "send-keys"]
+            self.assertEqual(len(sent), 0 if foreground == "kinit" else 2)
 
     def test_snap_rejects_invalid_names_and_hosts_before_ssh(self):
         for action in ["run", "tail", "log", "attach", "kill"]:
