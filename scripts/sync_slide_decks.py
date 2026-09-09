@@ -141,7 +141,7 @@ def find_decks(root: Path) -> list[Path]:
         decks.extend(Path(dirpath) / name for name in packages)
         dirnames[:] = [d for d in dirnames if d not in skip_dirs and d not in packages]
         for name in filenames:
-            if name.startswith("~$"):  # Office lock file
+            if name.startswith(("~$", ".slide-source-")):  # Office lock or private input copy
                 continue
             if Path(name).suffix.lower() in DECK_SUFFIXES:
                 decks.append(Path(dirpath) / name)
@@ -416,7 +416,8 @@ def notes_for(zf: zipfile.ZipFile, slide_part: str) -> str:
     return ""
 
 
-def pptx_to_markdown(deck: Path, digest: str) -> str:
+def pptx_to_markdown(deck: Path, digest: str, source_name: str | None = None) -> str:
+    name = source_name if source_name is not None else deck.name
     try:
         zf = zipfile.ZipFile(deck)
     except zipfile.BadZipFile as exc:
@@ -424,16 +425,16 @@ def pptx_to_markdown(deck: Path, digest: str) -> str:
     with zf:
         parts = slide_order(zf)
         out = [
-            f"# {deck.name} — slide text",
+            f"# {name} — slide text",
             "",
             "**TLDR:** Auto-generated slide-by-slide text outline of the deck next to this file,",
             "so the deck is readable, greppable and diffable inside Cursor. **Do not edit by hand**",
             "— edit the deck and re-run `~/agents-config/scripts/sync_slide_decks.py`.",
             "",
-            f"- source: `{deck.name}`",
+            f"- source: `{name}`",
             f"- {HASH_MARKER} `{digest}`",
             "- slides: %d" % len(parts),
-            f"- rendered PDF: `{deck.name}.pdf`",
+            f"- rendered PDF: `{name}.pdf`",
             f"- freshness gate: `{MANIFEST_NAME}` at the repo root (authoritative)",
             "- generator: `~/agents-config/scripts/sync_slide_decks.py`",
             "",
@@ -916,14 +917,15 @@ def main() -> int:
         return 2
 
     try:
-        with generation_lock(root):
-            return sync_decks(root, decks, args, soffice)
+        with generation_lock(root), contextlib.ExitStack() as sources:
+            return sync_decks(root, decks, args, soffice, sources)
     except (DeckError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 3
 
 
-def sync_decks(root: Path, decks: list[Path], args, soffice: str | None) -> int:
+def sync_decks(root: Path, decks: list[Path], args, soffice: str | None,
+               sources: contextlib.ExitStack) -> int:
     manifest = load_manifest(root)
     entries = manifest.setdefault("decks", {})
     failures = 0
@@ -931,7 +933,14 @@ def sync_decks(root: Path, decks: list[Path], args, soffice: str | None) -> int:
 
     for deck in decks:
         rel = as_rel(deck, root)
-        digest = sha256_of(deck)
+        # Hash and consume the same private bytes even when an editor saves or
+        # restores the original. Keep the copy beside it for relative media links;
+        # omit private copies from discovery, and always clean them up on exit.
+        snapshot = sources.enter_context(tempfile.NamedTemporaryFile(
+            prefix=".slide-source-", suffix=deck.suffix, dir=deck.parent))
+        source = Path(snapshot.name)
+        shutil.copyfile(deck, source)
+        digest = sha256_of(source)
         wanted = expected_derivatives(deck)
         entry = entries.setdefault(rel, {})
         recorded = entry.setdefault("derivatives", {})
@@ -958,10 +967,10 @@ def sync_decks(root: Path, decks: list[Path], args, soffice: str | None) -> int:
                 continue
             try:
                 if kind == "md":
-                    path.write_text(pptx_to_markdown(deck, digest), encoding="utf-8")
+                    path.write_text(pptx_to_markdown(source, digest, deck.name), encoding="utf-8")
                     detail = ""
                 else:
-                    engine = render_pdf(deck, path, soffice)
+                    engine = render_pdf(source, path, soffice)
                     detail = f" [{engine}]"
             except (DeckError, OSError, subprocess.SubprocessError) as exc:
                 # Invalidate any previous record, including after a forced render
@@ -978,6 +987,11 @@ def sync_decks(root: Path, decks: list[Path], args, soffice: str | None) -> int:
             size = path.stat().st_size
             print(f"wrote {kind} ({size / 1e6:.1f} MB){detail}: {drel}")
             did_work = True
+
+        if sha256_of(deck) != digest:
+            print(f"error: {rel}: source changed during generation; re-run the sync", file=sys.stderr)
+            recorded.clear()
+            failures += 1
 
         if did_work:
             synced += 1
