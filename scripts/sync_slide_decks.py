@@ -28,6 +28,8 @@ the `.md` header. Three reasons:
 
 Dependencies: Python 3.8+ standard library only (a .pptx is a zip of XML). Rendering
 needs LibreOffice (`soffice`, preferred) or, on macOS, Keynote via AppleScript.
+Keynote decks must use the single-file `.key` format; directory packages are rejected
+until they are exported as a single file, so they cannot silently bypass the gate.
 
 Usage:
     sync_slide_decks.py                      # sync every deck under the git repo root
@@ -128,10 +130,14 @@ def as_rel(path: Path, root: Path) -> str:
 
 
 def find_decks(root: Path) -> list[Path]:
+    if root.suffix.lower() == ".key":
+        return [root]
     decks = []
     skip_dirs = {".git", "node_modules", ".venv", "venv", "__pycache__", ".mypy_cache"}
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in skip_dirs]
+        packages = [d for d in dirnames if Path(d).suffix.lower() == ".key"]
+        decks.extend(Path(dirpath) / name for name in packages)
+        dirnames[:] = [d for d in dirnames if d not in skip_dirs and d not in packages]
         for name in filenames:
             if name.startswith("~$"):  # Office lock file
                 continue
@@ -690,11 +696,22 @@ def index_blob(root: Path, rel: str) -> bytes | None:
     return git(root, "cat-file", "blob", f":{rel}", binary=True, check=False)
 
 
+def key_package_parents(path: str) -> list[str]:
+    """Git stores package members, so detect their enclosing Keynote directory."""
+    return [parent.as_posix() for parent in Path(path).parents
+            if parent.suffix.lower() == ".key"]
+
+
 def index_decks(root: Path) -> list[str]:
     out = git(root, "ls-files", "-z")
-    return sorted(
-        p for p in out.split("\0") if p and Path(p).suffix.lower() in DECK_SUFFIXES
-    )
+    paths = [p for p in out.split("\0") if p]
+    packages = {parent for path in paths for parent in key_package_parents(path)}
+    if packages:
+        raise DeckError(
+            f"directory-format Keynote decks are unsupported: {', '.join(sorted(packages))}; "
+            "export each as a single-file .key deck before syncing"
+        )
+    return sorted(p for p in paths if Path(p).suffix.lower() in DECK_SUFFIXES)
 
 
 def check_staged(root: Path) -> tuple[list[str], bool]:
@@ -709,6 +726,7 @@ def check_staged(root: Path) -> tuple[list[str], bool]:
         return [], False
     relevant = any(
         Path(p).suffix.lower() in DECK_SUFFIXES
+        or key_package_parents(p)
         or p == MANIFEST_NAME
         or re.search(r"\.(pptx|key|ppt|odp)\.(pdf|md)$", p, re.IGNORECASE)
         for p in staged
@@ -829,6 +847,16 @@ def main() -> int:
         else:
             print(f"skip (not a deck): {target}", file=sys.stderr)
     decks = sorted(set(decks))
+
+    packages = [deck for deck in decks if deck.is_dir() and deck.suffix.lower() == ".key"]
+    if packages:
+        for package in packages:
+            print(
+                f"error: {as_rel(package, root)} is a directory-format Keynote deck; "
+                "export it as a single-file .key deck before syncing",
+                file=sys.stderr,
+            )
+        return 1 if verifying else 2
 
     if not decks and not args.check:
         print("no slide decks found")

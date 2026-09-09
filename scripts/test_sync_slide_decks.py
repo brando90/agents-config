@@ -209,6 +209,27 @@ class FreshnessTests(unittest.TestCase):
         self.assertEqual(status, "already wired")
         self.assertTrue(os.access(hook, os.X_OK))
 
+    def test_keynote_directory_packages_cannot_evade_either_gate(self):
+        package = self.root / "Packaged Talk.key"
+        (package / "Index").mkdir(parents=True)
+        (package / "Index/Document.iwa").write_bytes(b"package fixture")
+        self.git("add", "-A")
+        for args in (("--check",), ("--check", package.name), ("--check-staged",)):
+            with self.subTest(args=args):
+                result = self.cli(*args)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("single-file", result.stderr)
+
+    def test_keynote_package_change_alone_is_relevant_to_index_gate(self):
+        self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                 "commit", "-qm", "fixture")
+        package = self.root / "Packaged Talk.key"
+        package.mkdir()
+        (package / "Document.iwa").write_bytes(b"package fixture")
+        self.git("add", "-A")
+        result = self.cli("--check-staged")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("single-file", result.stderr)
 
 
 if __name__ == "__main__":
