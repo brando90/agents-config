@@ -11,6 +11,7 @@ import time
 import unittest
 
 SCRIPTS = Path(__file__).resolve().parent
+LAUNCH_MARKER = "deploy_fixture_launch"
 
 
 class DispatchTests(unittest.TestCase):
@@ -97,6 +98,7 @@ sys.exit(0)
         self.assertEqual(argv[argv.index("-c") + 1], 'model_reasoning_effort="ultra"')
         self.assertIn("CKPT_qa-probe.md", argv[-1])
         self.assertIn(str(self.runbook), argv[-1])
+        self.assertRegex(argv[-1], r"Deployment identity: deploy_[a-f0-9]{32}\. TL;DR:")
         self.assertEqual(commands[1][:3], ["tmux", "send-keys", "-l"])
         for line in result.stdout.splitlines():
             if not line.startswith("#"):
@@ -117,15 +119,15 @@ sys.exit(0)
         result = self.run_script("deploy_cc.sh", "--dry-run", "--name", "qa-probe", "--cwd", "/tmp", "--prompt-file", "/dev/null")
         self.assertEqual(result.returncode, 2)
 
-    def process_line(self, pid, parent, command, state="S", started=None):
+    def process_line(self, pid, parent, command, state="S", started=None, launch_marker=LAUNCH_MARKER):
         stamp = time.strftime("%a %b %d %H:%M:%S %Y", time.localtime(started or time.time()))
-        return f"{pid} {parent} {state} {stamp} {command}\n"
+        return f"{pid} {parent} {state} {stamp} {command} Deployment identity: {launch_marker}.\n"
 
     def identity(self, lines, registry=None):
         (self.root / "processes").write_text("".join(lines))
         source = (SCRIPTS / "deploy_cc.sh").read_text().split("<<'PYTHON'\n", 1)[1].split("\nPYTHON\n", 1)[0]
         return subprocess.run([sys.executable, "-c", source, "900", "clauded" if registry else "codex",
-                               str(self.runbook), str(registry or ""), "qa-probe"],
+                               str(self.runbook), str(registry or ""), "qa-probe", LAUNCH_MARKER],
                               text=True, capture_output=True, env=self.env, timeout=5)
 
     def test_codex_identity_rejects_unrelated_zombie_wrong_parent_and_missing_marker(self):
@@ -148,15 +150,15 @@ sys.exit(0)
         entry = {"pid": 901, "sessionId": "abcdefgh-1234", "tmux": "qa-probe:@1.%1", "startedAt": stamp * 1000}
         path = registry / "901.json"
         path.write_text(json.dumps(entry))
-        good = self.process_line("901", "900", "claude --model claude-fable-5-1", started=stamp)
+        good = self.process_line("901", "900", f"claude --model claude-fable-5-1 {self.runbook}", started=stamp)
         self.assertEqual(self.identity([good], registry).returncode, 0)
-        for line in [self.process_line("901", "1", "claude", started=stamp),
-                     self.process_line("901", "900", "sleep 100", started=stamp),
-                     self.process_line("901", "900", "claude", "Z", stamp),
-                     self.process_line("901", "900", "claude", started=stamp-300)]:
+        for line in [self.process_line("901", "1", f"claude {self.runbook}", started=stamp),
+                     self.process_line("901", "900", f"sleep 100 {self.runbook}", started=stamp),
+                     self.process_line("901", "900", f"claude {self.runbook}", "Z", stamp),
+                     self.process_line("901", "900", f"claude {self.runbook}", started=stamp-300)]:
             self.assertEqual(self.identity([line], registry).returncode, 1, line)
         for executable in ["/opt/claude.exe", "node /opt/lib/node_modules/@anthropic-ai/claude-code/cli.js"]:
-            self.assertEqual(self.identity([self.process_line("901", "900", executable, started=stamp)], registry).returncode, 0)
+            self.assertEqual(self.identity([self.process_line("901", "900", f"{executable} {self.runbook}", started=stamp)], registry).returncode, 0)
         fallback = dict(entry)
         fallback.pop("startedAt")
         fallback["procStart"] = time.strftime("%a %b %d %H:%M:%S %Y", time.gmtime(stamp))
@@ -179,11 +181,11 @@ sys.exit(0)
                         "claude -p Brando's task, the one he didn't finish",
                         "/lfs/h/0/u/bin/claude-pinned -p Brando's task"]:
             self.assertEqual(
-                self.identity([self.process_line("901", "900", command, started=stamp)],
+                self.identity([self.process_line("901", "900", f"{command} {self.runbook}", started=stamp)],
                               registry).returncode, 0, command)
         for command in ["/opt/claudette --model claude-fable-5-1", "/opt/notclaude -p x"]:
             self.assertEqual(
-                self.identity([self.process_line("901", "900", command, started=stamp)],
+                self.identity([self.process_line("901", "900", f"{command} {self.runbook}", started=stamp)],
                               registry).returncode, 1, command)
         for command in [f"/opt/codex-pinned {self.runbook}",
                         f"/opt/codex {self.runbook} finish Brando's task"]:
@@ -191,6 +193,21 @@ sys.exit(0)
                              0, command)
         self.assertEqual(self.identity(
             [self.process_line("901", "900", f"/opt/codexicon {self.runbook}")]).returncode, 1)
+
+    def test_identity_rejects_helpers_and_other_launches_with_the_same_basename(self):
+        registry = self.root / "registry"
+        registry.mkdir()
+        stamp = int(time.time())
+        (registry / "901.json").write_text(json.dumps(
+            {"pid": 901, "sessionId": "abcdefgh-1234", "tmux": "qa-probe:@1.%1",
+             "startedAt": stamp * 1000}))
+        for family, entries in [("claude", registry), ("codex", None)]:
+            for executable, marker in [(f"/opt/{family}-helper", LAUNCH_MARKER),
+                                       (f"/other/tool/{family}", "deploy_other_launch"),
+                                       (f"/opt/{family}-pinned", "deploy_other_launch")]:
+                line = self.process_line("901", "900", f"{executable} {self.runbook}",
+                                         started=stamp, launch_marker=marker)
+                self.assertEqual(self.identity([line], entries).returncode, 1, line)
 
     def test_registered_rechecks_process_identity_after_startup(self):
         source = (SCRIPTS / "deploy_cc.sh").read_text()
@@ -208,7 +225,8 @@ flag.touch()
         for stable in [True, False]:
             (self.root / "ps-read").unlink(missing_ok=True)
             (self.root / "second-processes").write_text(first if stable else second)
-            env = dict(self.env, NAME="qa-probe", WRAPPER="codex", PROMPT=str(self.runbook), REG_DIR="")
+            env = dict(self.env, NAME="qa-probe", WRAPPER="codex", PROMPT=str(self.runbook),
+                       REG_DIR="", LAUNCH_MARKER=LAUNCH_MARKER)
             result = subprocess.run(["bash", "-c", functions + "registered"], env=env,
                                     text=True, capture_output=True, timeout=8)
             self.assertEqual(result.returncode, 0 if stable else 1, result.stderr)
