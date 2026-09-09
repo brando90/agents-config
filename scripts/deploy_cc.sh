@@ -84,7 +84,7 @@ LAUNCHER=$(command -v byobu || command -v tmux) || die "neither byobu nor tmux i
 command -v tmux >/dev/null || die "tmux is not installed"
 
 # Apostrophe-free on purpose: the prompt is typed into the shell inside single quotes.
-OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol."
+OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol. TL;DR: Complete the runbook, maintain the results and checkpoint, verify the work, and report the outcome."
 CMD="$WRAPPER"
 if [ "$PROFILE" = codex ]; then
   CMD="$CMD --dangerously-bypass-approvals-and-sandbox -m '$MODEL' -c 'model_reasoning_effort=\"$EFFORT\"'"

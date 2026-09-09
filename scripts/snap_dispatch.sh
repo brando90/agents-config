@@ -180,7 +180,7 @@ REMOTE
   done
   echo
   echo "NOTE: CLAUDE_CREDS='present' only means a credentials file exists, not that the token is valid."
-  echo "      Verify liveness with:  ssh <node>.stanford.edu 'bash -lc \"claude -p PONG\"'"
+  echo "      Verify liveness with:  ssh <node>.stanford.edu 'bash -lc \"claude --model claude-fable-5-1 --effort max -p PONG\"'"
 }
 
 case "${1:-}" in
