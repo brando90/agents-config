@@ -305,6 +305,7 @@ def _binary_re(*families):
 # Also the packaged Node entrypoint (`node .../@anthropic-ai/claude-code/cli.js`), which the
 # npm install runs. Only ever a conjunct: the registry pid and start time must match too.
 AGENT_RE = re.compile(_binary_re("claude", "codex") + r"|^Claude Code(?: v[\d.]+)?$")
+CLAUDE_RE = re.compile(_binary_re("claude"))
 
 
 def locate(pid, tab, panes, depth=12):
@@ -1130,12 +1131,16 @@ def snap_agent(args, default):
     for a in args:
         toks = str(a).split()
         exe = os.path.basename(toks[0]) if toks else ""
+        kind = "codex" if CODEX_RE.search(str(a)) else "claude" if CLAUDE_RE.search(str(a)) else ""
         if exe in ("node", "nodejs") and len(toks) > 1:
             exe, toks = os.path.basename(toks[1]), toks[1:]
-        if exe not in ("codex", "claude"):
+            # npm launchers can be invoked through their bin symlink, before it resolves
+            # to the packaged script recognized above.
+            kind = kind or (exe if exe in ("codex", "claude") else "")
+        if not kind:
             continue
         head = " ".join(toks[1:17])          # options come first; the prompt is last
-        if exe == "codex":
+        if kind == "codex":
             m = re.search(r"(?:^|\s)(?:-m|--model)[ =]([\w.\-]+)", head)
             e = re.search(r"model_reasoning_effort\s*=\s*[\"']?([A-Za-z]+)", head)
             model = m.group(1) if m else default.get("model", "")

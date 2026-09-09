@@ -155,6 +155,19 @@ class AgentBinaryTests(unittest.TestCase):
                         "vim /usr/lib/node_modules/@openai/codex/bin/codex.js"]:
             self.assertFalse(board.CODEX_RE.search(command), command)
 
+    def test_remote_panes_recognize_pinned_and_packaged_agents(self):
+        for command, expected in [
+            ("/home/u/bin/claude-pinned --model claude-fable-5-1 -p review", ("cc", "fable5.1")),
+            ("/home/u/bin/codex-pinned -m gpt-6-astra -c model_reasoning_effort=ultra",
+             ("cxd", "gpt-6-astra+ultra")),
+            ("node /usr/lib/node_modules/@anthropic-ai/claude-code/cli.js --model claude-sonnet-5",
+             ("cc", "sonnet5")),
+            ("node /usr/local/bin/codex -m gpt-6-astra", ("cxd", "gpt-6-astra")),
+            ("less /tmp/claude-pinned", ("—", "")),
+        ]:
+            with self.subTest(command=command):
+                self.assertEqual(board.snap_agent([command], {}), expected)
+
 
 class ProcessTableTests(unittest.TestCase):
     def test_failed_ps_with_partial_output_refuses_resume(self):
