@@ -504,6 +504,11 @@ def render_pdf_soffice(deck: Path, dest: Path, soffice: str) -> None:
             str(deck),
         ]
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        if proc.returncode != 0:
+            raise DeckError(
+                f"LibreOffice failed (exit {proc.returncode})\n"
+                f"stdout: {proc.stdout.strip()}\nstderr: {proc.stderr.strip()}"
+            )
         produced = sorted(outdir.glob("*.pdf"))
         if not produced:
             raise DeckError(
@@ -555,6 +560,11 @@ def render_pdf_keynote(deck: Path, dest: Path) -> None:
             text=True,
             timeout=600,
         )
+        if proc.returncode != 0:
+            raise DeckError(
+                f"Keynote failed (exit {proc.returncode})\n"
+                f"stdout: {proc.stdout.strip()}\nstderr: {proc.stderr.strip()}"
+            )
         if not dest.exists():
             raise DeckError(
                 "Keynote produced no PDF (grant Automation permission?)\n"
@@ -888,9 +898,9 @@ def main() -> int:
                 else:
                     engine = render_pdf(deck, path, soffice)
                     detail = f" [{engine}]"
-            except DeckError as exc:
-                # Leave the previous manifest entry alone. A stale-but-recorded PDF next
-                # to a bumped source hash keeps --check failing, which is correct.
+            except (DeckError, OSError, subprocess.SubprocessError) as exc:
+                # Invalidate any previous record, including after a forced render
+                # times out, so a failed generation cannot leave a passing gate.
                 print(f"error: {rel}: {kind}: {exc}", file=sys.stderr)
                 recorded.pop(drel, None)
                 failures += 1
