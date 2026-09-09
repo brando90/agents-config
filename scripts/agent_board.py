@@ -271,6 +271,10 @@ def process_table():
                            capture_output=True, text=True, timeout=8)
     except Exception:
         return tab
+    if r.returncode != 0:
+        # A failed ps may still print part of its table. Treat that as unavailable,
+        # otherwise an omitted live session can be resumed a second time.
+        return tab
     for ln in r.stdout.splitlines():
         f = ln.split(None, 8)
         if len(f) < 9:

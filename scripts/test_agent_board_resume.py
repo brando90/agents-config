@@ -110,6 +110,23 @@ class ClassificationTests(unittest.TestCase):
         self.assertEqual(len(board.one_per_seat([live, seated])), 2)
 
 
+class ProcessTableTests(unittest.TestCase):
+    def test_failed_ps_with_partial_output_refuses_resume(self):
+        partial = mock.Mock(returncode=1,
+                            stdout="99999 1 Wed Sep  9 12:00:00 2026 ? /bin/bash\n")
+        row = _row(UUID.format("11111111", 1), cwd="/")
+        output = io.StringIO()
+        with mock.patch.object(board.subprocess, "run", return_value=partial) as run, \
+             mock.patch.object(board, "tmux_panes", return_value={}), \
+             mock.patch.object(board, "collect_sessions", return_value=[row]), \
+             mock.patch.object(board.sys, "argv", ["agent_board.py", "--resume-dead", "all"]), \
+             mock.patch.object(board.sys, "stdout", output):
+            self.assertEqual(board.main(), 1)
+        self.assertIn("refusing to resume anything", output.getvalue())
+        self.assertEqual(len(run.call_args_list), 1)
+        self.assertEqual(run.call_args.args[0][0], "ps")
+
+
 class TmuxTargetTests(unittest.TestCase):
     @staticmethod
     def fake_run(table):
