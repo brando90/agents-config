@@ -100,16 +100,16 @@ error, sandbox failure), fall through to the next option.
 ```bash
 # If you ARE Claude Code (CC) — dispatch Codex, then self-review:
 codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT" \
-  || clauded -p "$QA_PROMPT"
+  || clauded --model claude-fable-5-1 --effort max -p "$QA_PROMPT"
 
 # If you ARE Codex — dispatch CC, then self-review:
-clauded -p "$QA_PROMPT" \
+clauded --model claude-fable-5-1 --effort max -p "$QA_PROMPT" \
   || codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
 ```
 
 For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"'`
-- Claude Code reviewer: `clauded -p` (alias for `claude --dangerously-skip-permissions`)
+- Claude Code reviewer: `clauded --model claude-fable-5-1 --effort max -p` (alias for `claude --dangerously-skip-permissions`)
 
 If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive

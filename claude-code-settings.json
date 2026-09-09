@@ -1,5 +1,5 @@
 {
-  "model": "fable",
+  "model": "claude-fable-5-1",
   "hooks": {
     "SessionStart": [
       {
@@ -35,14 +35,9 @@
   "modelSettings": {
     "claude-fable-5-1": {
       "effortLevel": "max"
-    },
-    "claude-fable-5": {
-      "effortLevel": "xhigh"
-    },
-    "claude-opus-5": {
-      "effortLevel": "xhigh"
     }
   },
   "skipDangerousModePermissionPrompt": true,
-  "inputNeededNotifEnabled": true
+  "inputNeededNotifEnabled": true,
+  "effortLevel": "max"
 }
