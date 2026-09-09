@@ -297,6 +297,42 @@ class FreshnessTests(unittest.TestCase):
         self.assertEqual(self.cli("--md-only", "--force").returncode, 0)
         self.assertEqual(self.cli("--check").returncode, 0)
 
+    def test_source_edit_and_restore_cannot_certify_transient_content(self):
+        original = self.deck.read_bytes()
+        expected_digest = sync.sha256_bytes(original)
+
+        def renderer(source, dest, soffice):
+            self.assertEqual(source.parent, self.deck.parent)
+            write_deck(self.deck, "transient edit during rendering")
+            consumed_digest = sync.sha256_of(source)
+            self.deck.write_bytes(original)
+            dest.write_bytes(b"%PDF-1.4\n" + consumed_digest.encode() + b"\n%%EOF\n")
+            return "fixture"
+
+        with mock.patch.object(sync, "find_soffice", return_value="fixture"), \
+                mock.patch.object(sync, "render_pdf", side_effect=renderer):
+            self.assertEqual(self.run_main("--force"), 0)
+        self.assertIn(expected_digest, self.pdf.read_text())
+        self.assertTrue(self.md.read_text().startswith(f"# {self.deck.name} — slide text"))
+        self.assertEqual(list(self.root.glob(".slide-source-*")), [])
+        self.assertEqual(self.cli("--check").returncode, 0)
+        self.git("add", "-A")
+        self.assertEqual(self.cli("--check-staged").returncode, 0)
+
+    def test_source_change_during_generation_reports_failure(self):
+        def renderer(source, dest, soffice):
+            write_deck(self.deck, "saved newer source")
+            dest.write_bytes(b"%PDF-1.4\nfixture\n%%EOF\n")
+            return "fixture"
+
+        with mock.patch.object(sync, "find_soffice", return_value="fixture"), \
+                mock.patch.object(sync, "render_pdf", side_effect=renderer):
+            self.assertEqual(self.run_main("--force"), 3)
+        self.assertEqual(list(self.root.glob(".slide-source-*")), [])
+        self.assertEqual(self.cli("--check").returncode, 1)
+        self.git("add", "-A")
+        self.assertEqual(self.cli("--check-staged").returncode, 1)
+
     def test_hook_marker_after_exit_does_not_claim_wiring(self):
         hook = sync.hooks_dir(self.root) / "pre-commit"
         hook.write_text("#!/bin/sh\nexit 0\n" + sync.HOOK_DELEGATE, encoding="utf-8")
