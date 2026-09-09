@@ -143,6 +143,11 @@ class FreshnessTests(unittest.TestCase):
         result = self.cli("--check-staged", env=env)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
 
+    def test_last_recorded_source_disappearing_cannot_pass(self):
+        self.deck.unlink()
+        result = self.cli("--check")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
     def test_unreadable_index_source_cannot_be_skipped(self):
         real_blob = sync.index_blob
         with mock.patch.object(sync, "index_blob", side_effect=lambda root, rel:
