@@ -297,7 +297,8 @@ def _binary_re(*families):
     """
     packages = {"claude": "@anthropic-ai/claude-code/cli.js",
                 "codex": "@openai/codex/bin/codex.js"}
-    native = r"(?:\S*/)?(?:" + "|".join(families) + r")(?:[-_]\S*)?"
+    # The private copy's supported name is explicit; a helper/monitor is not the agent.
+    native = r"(?:\S*/)?(?:" + "|".join(families) + r")(?:-pinned|\.exe)?"
     node = (r"(?:\S*/)?node(?:js)?\s+\S*/(?:"
             + "|".join(re.escape(packages[f]) for f in families) + r")")
     return r"^(?:" + native + "|" + node + r")(?=\s|$)"

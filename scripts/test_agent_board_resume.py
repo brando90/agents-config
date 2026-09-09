@@ -132,6 +132,7 @@ class AgentBinaryTests(unittest.TestCase):
     def test_a_pinned_copy_of_the_binary_counts_as_a_live_process(self):
         for command in ["/lfs/h/0/u/bin/claude-pinned --dangerously-skip-permissions",
                         "/lfs/h/0/u/bin/claude-pinned -p reply OK",
+                        "/opt/claude.exe --model claude-fable-5-1",
                         "claude --remote-control vb-fix --model claude-fable-5-1",
                         "node /usr/lib/node_modules/@anthropic-ai/claude-code/cli.js"]:
             sid, reg = self.registry_for(command)
@@ -150,11 +151,21 @@ class AgentBinaryTests(unittest.TestCase):
 
     def test_codex_detection_matches_a_pinned_copy_too(self):
         for command in ["/home/u/bin/codex-pinned -m gpt-6-astra", "codex exec -m gpt-6-astra",
+                        "/opt/codex.exe -m gpt-6-astra",
                         "node /usr/lib/node_modules/@openai/codex/bin/codex.js exec"]:
             self.assertTrue(board.CODEX_RE.search(command), command)
         for command in ["/opt/codexicon run", "/opt/claude --model x", "less /tmp/codex-pinned",
                         "vim /usr/lib/node_modules/@openai/codex/bin/codex.js"]:
             self.assertFalse(board.CODEX_RE.search(command), command)
+
+    def test_helper_executables_cannot_claim_a_matching_registry_entry(self):
+        for command in ["/opt/claude-monitor --model claude-fable-5-1",
+                        "/opt/claude_helper -p task", "/opt/codex-helper exec -m gpt-6-astra",
+                        "/opt/codex-monitor -m gpt-6-astra"]:
+            with self.subTest(command=command):
+                sid, registry = self.registry_for(command)
+                self.assertEqual(registry, {})
+                self.assertFalse(board.CODEX_RE.search(command))
 
     def test_remote_panes_recognize_pinned_and_packaged_agents(self):
         for command, expected in [
