@@ -289,19 +289,22 @@ def process_table():
 
 
 def _binary_re(*families):
-    """The agent binary itself, or a private per-node COPY of it: Trigger Rule 46 runs a
-    worker from `claude-pinned` (`codex-pinned`) so that a rewrite of the one shared
-    memory-mapped install cannot kill it, and such a worker is live, not dead. A separator
-    is required after the family name, so `claudette` is still not Claude Code. `.` is NOT
-    a separator here: this pattern is searched against a whole command line, and a path
-    like `vim /tmp/claude.md` must not read as a running agent."""
-    return r"(^|/)(" + "|".join(families) + r")([-_]\S*)?(\s|$)"
+    """Match the executable position, including private copies and packaged Node scripts.
+
+    A command argument naming an agent (a log, source file, or prompt) is not a running
+    agent. Keep every alternative anchored, including the package path after Node.
+    """
+    packages = {"claude": "@anthropic-ai/claude-code/cli.js",
+                "codex": "@openai/codex/bin/codex.js"}
+    native = r"(?:\S*/)?(?:" + "|".join(families) + r")(?:[-_]\S*)?"
+    node = (r"(?:\S*/)?node(?:js)?\s+\S*/(?:"
+            + "|".join(re.escape(packages[f]) for f in families) + r")")
+    return r"^(?:" + native + "|" + node + r")(?=\s|$)"
 
 
 # Also the packaged Node entrypoint (`node .../@anthropic-ai/claude-code/cli.js`), which the
 # npm install runs. Only ever a conjunct: the registry pid and start time must match too.
-AGENT_RE = re.compile(_binary_re("claude", "codex")
-                      + r"|/@(anthropic-ai/claude-code|openai/codex)/|Claude Code")
+AGENT_RE = re.compile(_binary_re("claude", "codex") + r"|^Claude Code(?: v[\d.]+)?$")
 
 
 def locate(pid, tab, panes, depth=12):
@@ -912,7 +915,7 @@ def resume_dead(rows, wanted, dry_run=False, fork=False, target=None, out=None,
 
 
 CODEX_DIR = os.path.join(HOME, ".codex")
-CODEX_RE = re.compile(_binary_re("codex") + r"|/@openai/codex/")
+CODEX_RE = re.compile(_binary_re("codex"))
 
 
 def scan_rollout(path, max_lines=300):
