@@ -45,16 +45,12 @@ For full-trust local AI-agent setup on each Mac, first use [`~/agents-config/mac
 
 ### Vibe (Mistral) + Leanstral
 
-Daily driver stays Claude Code. Vibe is kept as an *experimental* tool for cert-judge benchmarks and parallel/cheap Lean proof attempts.
-
-- Binary: `~/.local/bin/vibe` (install: `uv tool install mistral-vibe`)
-- API key: `MISTRAL_API_KEY` loaded from `~/keys/mistral_api_key.txt` (exported in `~/.zshrc` next to `OPENAI_API_KEY`)
-- Lean agent enabled: `~/.vibe/config.toml` → `installed_agents = ["lean"]` (TUI equivalent: `/leanstall`)
-- Run Leanstral: `vibe --agent lean` — uses free `labs-leanstral-2603` endpoint (traffic logged by Mistral; don't paste private prompts)
-- For cert-judge experiments prefer the bundled `mistralai` Python SDK directly: `client.chat.complete(model="labs-leanstral-2603", ...)` — slots into `experiments/00_overall_cert_judge_metric_with_properties/main_overall_judge_score.py` alongside the Claude judge
-- Announcement: <https://mistral.ai/news/leanstral> · Install docs: <https://docs.mistral.ai/mistral-vibe/introduction/install>
-
-**Recheck if** *(verified 2026-05-02, vibe 2.9.3)*: `vibe` major-version bump · `labs-leanstral-2603` switches from free-launch to metered · successor model ships (Leanstral-2 etc.) · Leanstral leaves the labs/preview endpoint (production name will differ).
+Historical Vibe/Leanstral setup used Mistral provider keys and a direct Python client.
+It is not an approved agent workflow under Hard Rule 9 in
+[`~/agents-config/INDEX_RULES.md`](../INDEX_RULES.md). Route new large language model
+(LLM) experiment work through the authenticated `clauded` or `codex exec`
+command-line interfaces (CLIs), using Hard Rule 8's workload tier. Do not restore
+provider-key exports or write direct provider calls from this old setup.
 
 ### Agent board (which agent is in which tmux window)
 
