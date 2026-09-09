@@ -139,14 +139,20 @@ class AgentBinaryTests(unittest.TestCase):
 
     def test_a_merely_similar_command_is_still_not_an_agent(self):
         for command in ["/opt/claudette --model claude-fable-5-1", "vim /tmp/claude.md",
-                        "less /var/log/codex.log", "python3 claude_helper.py"]:
+                        "less /var/log/codex.log", "python3 claude_helper.py",
+                        "less /tmp/codex-pinned", "python3 /tmp/claude-helper.py",
+                        "bash -c echo Claude Code",
+                        "vim /usr/lib/node_modules/@anthropic-ai/claude-code/cli.js",
+                        "node /tmp/helper.js /usr/lib/node_modules/@openai/codex/bin/codex.js"]:
             sid, reg = self.registry_for(command)
             self.assertEqual(reg, {}, command)
 
     def test_codex_detection_matches_a_pinned_copy_too(self):
-        for command in ["/home/u/bin/codex-pinned -m gpt-6-astra", "codex exec -m gpt-6-astra"]:
+        for command in ["/home/u/bin/codex-pinned -m gpt-6-astra", "codex exec -m gpt-6-astra",
+                        "node /usr/lib/node_modules/@openai/codex/bin/codex.js exec"]:
             self.assertTrue(board.CODEX_RE.search(command), command)
-        for command in ["/opt/codexicon run", "/opt/claude --model x"]:
+        for command in ["/opt/codexicon run", "/opt/claude --model x", "less /tmp/codex-pinned",
+                        "vim /usr/lib/node_modules/@openai/codex/bin/codex.js"]:
             self.assertFalse(board.CODEX_RE.search(command), command)
 
 
