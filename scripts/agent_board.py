@@ -6,6 +6,7 @@
 
 import argparse
 import calendar
+import fcntl
 import glob
 import html
 import io
@@ -361,7 +362,7 @@ def _utc_ctime(s):
         return 0
 
 
-def claude_registry(tab, panes):
+def claude_registry(tab, panes, strict=False):
     """sid -> [proc, ...] from Claude Code's own per-process registry.
 
     Every running `claude` writes <config>/sessions/<pid>.json (pid, sessionId, cwd and a
@@ -374,13 +375,25 @@ def claude_registry(tab, panes):
     """
     out = {}
     for cfg_dir in CONFIGS:
-        for f in glob.glob(os.path.join(cfg_dir, "sessions", "*.json")):
+        directory = os.path.join(cfg_dir, "sessions")
+        try:
+            files = [os.path.join(directory, name) for name in os.listdir(directory)
+                     if name.endswith(".json")]
+        except FileNotFoundError:
+            continue
+        except OSError as e:
+            if strict:
+                raise RuntimeError(f"cannot read the process registry {directory}: {e}") from e
+            continue
+        for f in files:
             try:
                 with open(f) as fh:
                     d = json.load(fh)
-            except Exception:
-                continue
-            if not isinstance(d, dict):
+                if not isinstance(d, dict):
+                    raise ValueError("registry entry is not an object")
+            except (OSError, ValueError) as e:
+                if strict:
+                    raise RuntimeError(f"cannot read the process registry entry {f}: {e}") from e
                 continue
             sid, pid = d.get("sessionId"), str(d.get("pid") or "")
             info = tab.get(pid)
@@ -766,6 +779,89 @@ def collapse_fanout(rows, threshold=3):
 
 # ---------------------------------------------------------------- resume
 
+RECOVERY_WINDOW_FORMAT = "#{pid}:#{start_time}:#{window_id}"
+
+
+def open_recovery_window(row, new, cmd):
+    """Reserve one recovery per transcript across invocations, including worker startup.
+
+    Keep the reservation while its exact tmux server/window exists. A failed startup
+    must be inspected and its window closed before retrying; age alone proves nothing.
+    """
+    directory = os.path.join(BOARD_DIR, "recoveries")
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    path = os.path.join(directory, f"{row['tag']}-{row['sid']}.json")
+    fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o600)
+    with os.fdopen(fd, "r+") as reservation:
+        try:
+            fcntl.flock(reservation, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("another recovery attempt holds this session's lock") from None
+        tab = process_table()
+        if not tab:
+            raise RuntimeError("cannot refresh the process table; refusing recovery")
+        if claude_registry(tab, {}, strict=True).get(row["sid"]):
+            raise RuntimeError("session is already running; refusing a second recovery")
+        content = reservation.read()
+        try:
+            previous = json.loads(content) if content else {}
+            if not isinstance(previous, dict):
+                raise ValueError("invalid reservation")
+        except ValueError:
+            raise RuntimeError(f"unreadable recovery reservation: {path}; inspect before retrying") from None
+        if previous:
+            token = previous.get("window", "")
+            if (previous.get("host") != os.uname().nodename or not isinstance(token, str)
+                    or not re.fullmatch(r"\d+:\d+:@\d+", token)):
+                raise RuntimeError(f"recovery outcome is uncertain; inspect tmux on "
+                                   f"{previous.get('host', '?')}; remove {path} only after "
+                                   "confirming no recovery window or worker remains, then retry")
+            listed = subprocess.run(["tmux", "list-windows", "-a", "-F", RECOVERY_WINDOW_FORMAT],
+                                    capture_output=True, text=True, timeout=5)
+            windows = listed.stdout.splitlines()
+            if (listed.returncode != 0 or not windows
+                    or any(not re.fullmatch(r"\d+:\d+:@\d+", window) for window in windows)):
+                raise RuntimeError("cannot check the previous recovery window; refusing a duplicate")
+            if token in windows:
+                wid = token.rsplit(":", 1)[-1]
+                raise RuntimeError(f"recovery window {wid} still exists; inspect with "
+                                   f"tmux select-window -t {wid}; if startup failed, close only "
+                                   f"that window with tmux kill-window -t {wid}, then retry")
+            pid, started, _wid = token.split(":")
+            server = tab.get(pid)
+            if (not any(window.startswith(f"{pid}:{started}:") for window in windows)
+                    and server and abs(server[1] - int(started)) < 2):
+                raise RuntimeError("the previous recovery server still runs on another tmux "
+                                   "socket; inspect its recovery window before retrying")
+
+        def record(window):
+            reservation.seek(0)
+            reservation.truncate()
+            json.dump({"host": os.uname().nodename, "window": window}, reservation)
+            reservation.flush()
+            os.fsync(reservation.fileno())
+
+        # A timeout can mean tmux created the window but its answer was lost. Preserve
+        # an uncertain reservation in that case instead of blindly starting another.
+        record("")
+        made = subprocess.run(new, capture_output=True, text=True, timeout=10)
+        token = made.stdout.strip()
+        if made.returncode != 0:
+            reservation.seek(0)
+            reservation.truncate()
+            raise RuntimeError(made.stderr.strip() or "tmux new-window failed")
+        if not re.fullmatch(r"\d+:\d+:@\d+", token):
+            raise RuntimeError(f"no verifiable window identity came back; inspect {path}")
+        record(token)
+        wid = token.rsplit(":", 1)[-1]
+        sent = subprocess.run(["tmux", "send-keys", "-t", wid, cmd, "Enter"],
+                              capture_output=True, text=True, timeout=10)
+        if sent.returncode != 0:
+            raise RuntimeError(f"send-keys into {wid}: {sent.stderr.strip()}; inspect that "
+                               "recovery window before retrying")
+        return wid
+
+
 def tmux_target(dry_run=False):
     """(session id, session name) that new windows go to: the caller's own pane's session,
     else the first session the server has, else a fresh detached `recovered` session (not
@@ -886,7 +982,7 @@ def resume_dead(rows, wanted, dry_run=False, fork=False, target=None, out=None,
         # `-t <session id>:` = that session, next free index (a bare name would be read as a
         # window index); -P -F prints the new window's id so the keys go to exactly that
         # window even when an earlier resume left a window of the same name behind.
-        new = ["tmux", "new-window", "-d", "-P", "-F", "#{window_id}", "-t", f"{tid}:",
+        new = ["tmux", "new-window", "-d", "-P", "-F", RECOVERY_WINDOW_FORMAT, "-t", f"{tid}:",
                "-n", win, "-c", cwd]
         if dry_run:
             print("  " + " ".join(shlex.quote(x) for x in new), file=out)
@@ -894,17 +990,9 @@ def resume_dead(rows, wanted, dry_run=False, fork=False, target=None, out=None,
             n += 1
             continue
         try:
-            made = subprocess.run(new, capture_output=True, text=True, timeout=10)
-            wid = made.stdout.strip()
-            if made.returncode != 0 or not wid.startswith("@"):
-                raise RuntimeError(made.stderr.strip() or "no window id came back")
-            sent = subprocess.run(["tmux", "send-keys", "-t", wid, cmd, "Enter"],
-                                  capture_output=True, text=True, timeout=10)
-            if sent.returncode != 0:
-                raise RuntimeError(f"send-keys into {wid}: {sent.stderr.strip()}")
+            wid = open_recovery_window(r, new, cmd)
         except (OSError, subprocess.SubprocessError, RuntimeError) as e:
-            print(f"  {r['sid'][:8]}: tmux failed ({e}); by hand: cd {shlex.quote(cwd)} && {cmd}",
-                  file=out)
+            print(f"  {r['sid'][:8]}: recovery failed ({e})", file=out)
             failed += 1
             continue
         print(f"  opened {tname}:{win} ({wid})  {cwd}  ->  {cmd}", file=out)
