@@ -1008,6 +1008,64 @@ CODEX_DIR = os.path.join(HOME, ".codex")
 CODEX_RE = re.compile(_binary_re("codex"))
 
 
+def codex_process_identity(command):
+    """(new/resume/service, explicit session id) from leading commands and known options.
+
+    Never search prompt text for a resume command. A picker, --last, or a session name
+    has no verifiable identifier here; report that ambiguity instead of using birth time.
+    ps flattens argument boundaries, so multiword option values cannot be recovered fully.
+    """
+    matched = CODEX_RE.search(command)
+    if not matched:
+        return "service", ""
+    args = command[matched.end():].split()
+    values = {"-c", "--config", "--enable", "--disable", "--remote",
+              "--remote-auth-token-env", "-i", "--image", "-m", "--model",
+              "--local-provider", "-p", "--profile", "-s", "--sandbox", "-C", "--cd",
+              "--add-dir", "-a", "--ask-for-approval", "--thread-source", "--output-schema",
+              "-o", "--output-last-message", "--color"}
+    flags = {"--strict-config", "--oss", "--approve-for-me",
+             "--dangerously-bypass-approvals-and-sandbox", "--dangerously-bypass-hook-trust",
+             "--search", "--no-alt-screen", "--all", "--include-non-interactive",
+             "--skip-git-repo-check", "--ephemeral", "--ignore-user-config", "--ignore-rules",
+             "--json"}
+    index, last = 0, False
+
+    def positional():
+        nonlocal index, last
+        while index < len(args):
+            word = args[index]
+            index += 1
+            if word == "--last":
+                last = True
+            elif word in values:
+                index += 1
+            elif word.split("=", 1)[0] in values and "=" in word:
+                continue
+            elif len(word) > 2 and word[:2] in values:
+                continue                  # attached short-option value, e.g. -mgpt-6-astra
+            elif word in flags:
+                continue
+            elif word.startswith("-"):
+                return ""                 # unknown option/arity or explicit prompt boundary
+            else:
+                return word
+        return ""
+
+    subcommand = positional()
+    if subcommand in {"app-server", "exec-server", "sandbox", "mcp-server", "remote-control",
+                      "agents", "login", "logout", "mcp", "plugin", "completion", "update",
+                      "doctor", "debug", "apply", "queue", "archive", "delete",
+                      "migrate-rollouts", "unarchive", "cloud", "features", "help"}:
+        return "service", ""
+    if subcommand in ("exec", "e"):
+        subcommand = positional()
+    if subcommand != "resume":
+        return "new", ""
+    sid = positional()
+    return "resume", sid.lower() if not last and SID_RE.fullmatch(sid) else ""
+
+
 def scan_rollout(path, max_lines=300):
     """(start_epoch, cwd, originator, model, effort) from a Codex rollout transcript: the
     session_meta line carries the start time and cwd, the first turn_context the model."""
@@ -1050,11 +1108,10 @@ def scan_rollout(path, max_lines=300):
 def collect_codex(max_age_h, tab, panes, limit=8):
     """Recent Codex threads from the local session index, as board rows.
 
-    Codex keeps no pid registry, so a thread is tied to its process by the one fact both
-    record: the thread's start time (rollout session_meta) is the start of the `codex`
-    process that created it, to within a few seconds. Only interactive / exec processes
-    qualify (the ChatGPT and Cursor app-servers are not agents you sit at); each process is
-    claimed once, closest thread first, and its tmux window comes from the process tree.
+    An explicit `resume <id>` identifies its existing thread even though the process is
+    newer than the original rollout. Newly created threads retain the start-time match.
+    Resumes selected by name, --last, or a picker stay uncertain. Only interactive / exec
+    processes qualify; each is claimed once and its tmux window comes from the process tree.
     """
     idx = os.path.join(CODEX_DIR, "session_index.jsonl")
     seen = {}
@@ -1081,8 +1138,9 @@ def collect_codex(max_age_h, tab, panes, limit=8):
             threads.append((t, d))
     threads.sort(key=lambda x: x[0], reverse=True)
 
-    procs = [(pid, start) for pid, (_p, start, cmd, *_r) in tab.items()
-             if CODEX_RE.search(cmd) and "app-server" not in cmd and " sandbox " not in cmd]
+    procs = [(pid, start, *codex_process_identity(cmd)) for pid, (_p, start, cmd, *_r) in tab.items()
+             if CODEX_RE.search(cmd)]
+    uncertain_resume = any(mode == "resume" and not sid for _pid, _start, mode, sid in procs)
     rows, claimed = [], set()
     ecache, edirs = load_expt_cache(), local_experiment_dirs()
     for t, d in threads[:limit]:
@@ -1094,22 +1152,28 @@ def collect_codex(max_age_h, tab, panes, limit=8):
         # are unused; the call is only for the experiment column
         expt, expt_also = (session_expt(hits[0], "codex", ecache, edirs)[:2] if hits
                            else ("-", ""))
-        cell, seats = "—", []
-        if start:
-            near = sorted((abs(s - start), pid) for pid, s in procs
-                          if pid not in claimed and abs(s - start) <= 15)
-            if near:
-                pid = near[0][1]
-                claimed.add(pid)
-                loc = locate(pid, tab, panes)
-                if loc.startswith("tmux "):
-                    seats, cell = [loc[5:]], tmux_cell([loc[5:]])
-                else:
-                    cell = loc if loc != "?" else "(no tmux)"
+        cell, seats, live, note = "—", [], False, ""
+        exact = sorted(pid for pid, _s, mode, sid in procs
+                       if mode == "resume" and sid == tid.lower() and pid not in claimed)
+        near = sorted((abs(s - start), pid) for pid, s, mode, _sid in procs
+                      if start and mode == "new" and pid not in claimed and abs(s - start) <= 15)
+        pid = exact[0] if exact else near[0][1] if near else None
+        if pid:
+            claimed.add(pid)
+            live = True
+            loc = locate(pid, tab, panes)
+            if loc.startswith("tmux "):
+                seats, cell = [loc[5:]], tmux_cell([loc[5:]])
+            else:
+                cell = loc if loc != "?" else "(no tmux)"
+        elif uncertain_resume:
+            cell, live = "? (resume)", None
+            note = ("A live Codex resume uses --last, a picker, or a session name; "
+                    "its thread identity cannot be established from the process command.")
         age = now - t
         rows.append({
             "sid": tid, "short": tid[:8], "tag": "cxd", "label": "cxd",
-            "tmux_cell": cell, "seats": seats, "proc": cell != "—", "alive": cell != "—",
+            "tmux_cell": cell, "seats": seats, "proc": live, "alive": live, "note": note,
             "where": short_path(cwd) if cwd else HOSTNAME,
             "branch": orig, "mdl": (model + ("+" + effort if effort else "")) if model else "?",
             "expt": expt, "expt_also": expt_also,
@@ -1869,10 +1933,12 @@ def render_html(sections, out_path, refresh, net=None):
         '<div class="legend" style="margin-top:26px"><b>Columns, same in every table.</b> '
         '<b>tmux</b>: the tmux/byobu session the agent runs in &mdash; locally '
         '<code>tmux N</code> (from the per-process registry Claude Code itself keeps, '
-        '<code>~/.claude*/sessions/&lt;pid&gt;.json</code>; for Codex, the thread whose start '
-        'time is the process start), a session resumed in two windows appears as two rows (one per live process, each noting the other window), '
+        '<code>~/.claude*/sessions/&lt;pid&gt;.json</code>; for Codex, an explicit resume '
+        'identifier or a new thread whose start time matches the process start), '
+        'a Claude session resumed in two windows appears as two rows (one per live process, each noting the other window), '
         '<code>cursor</code> / <code>chatgpt</code> / <code>vscode</code> = an app terminal '
-        'outside tmux, <code>&mdash;</code> = no live process (<code>board --hours 168 '
+        'outside tmux, <code>? (resume)</code> = a live Codex resume cannot be tied safely '
+        'to a thread, <code>&mdash;</code> = no live process (<code>board --hours 168 '
         '--resume-dead &lt;id&gt;</code> brings it back in a new window; by hand, '
         '<code>clauded --resume &lt;id&gt;</code> from its cwd), <code>one-shot</code> = a '
         '<code>claude -p</code> job that has finished (its answer is the transcript; nothing '

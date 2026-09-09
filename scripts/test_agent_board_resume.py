@@ -5,6 +5,7 @@ import json
 import os
 import tempfile
 import threading
+import time
 import unittest
 from unittest import mock
 
@@ -213,6 +214,71 @@ class ProcessTableTests(unittest.TestCase):
         self.assertIn("refusing to resume anything", output.getvalue())
         self.assertEqual(len(run.call_args_list), 1)
         self.assertEqual(run.call_args.args[0][0], "ps")
+
+
+class CodexResumeTests(unittest.TestCase):
+    old_sid = UUID.format("aaaaaaaa", 1)
+    fresh_sid = UUID.format("bbbbbbbb", 2)
+
+    def rows_for(self, command):
+        now = int(time.time())
+        stamp = lambda epoch: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch))
+        with tempfile.TemporaryDirectory() as directory:
+            rollouts = os.path.join(directory, "sessions", "2026", "09", "09")
+            os.makedirs(rollouts)
+            entries = []
+            # Put the new thread first: a resumed process must not accidentally claim it
+            # just because this different thread was created at the same time.
+            for sid, started in [(self.fresh_sid, now), (self.old_sid, now - 86400)]:
+                entries.append({"id": sid, "updated_at": stamp(now), "thread_name": "fixture"})
+                _write(os.path.join(rollouts, f"rollout-fixture-{sid}.jsonl"), [
+                    {"type": "session_meta", "payload": {"timestamp": stamp(started), "cwd": directory}},
+                    {"type": "turn_context", "payload": {"model": "gpt-6-astra"}},
+                ])
+            _write(os.path.join(directory, "session_index.jsonl"), entries)
+            with mock.patch.object(board, "CODEX_DIR", directory), \
+                 mock.patch.object(board, "load_expt_cache", return_value={}), \
+                 mock.patch.object(board, "save_expt_cache"), \
+                 mock.patch.object(board, "local_experiment_dirs", return_value={}):
+                rows = board.collect_codex(6, {"4242": ("1", now, command, "?")},
+                                          {"4242": ("fixture", "codex")})
+            return {row["sid"]: row for row in rows}
+
+    def test_explicit_resume_claims_its_old_thread_and_never_a_same_time_new_thread(self):
+        for prefix in ["codex resume", "codex exec resume", "/tmp/codex-pinned resume",
+                       "codex --approve-for-me -c model_reasoning_effort=ultra exec --json resume -m gpt-6-astra",
+                       "node /usr/lib/node_modules/@openai/codex/bin/codex.js resume"]:
+            with self.subTest(prefix=prefix):
+                rows = self.rows_for(prefix + " " + self.old_sid)
+                self.assertTrue(rows[self.old_sid]["proc"])
+                self.assertEqual(rows[self.old_sid]["tmux_cell"], "fixture")
+                self.assertFalse(rows[self.fresh_sid]["proc"])
+
+    def test_new_thread_matching_ignores_a_resume_command_buried_in_its_prompt(self):
+        for command in ["codex exec finish the fixture",
+                        "codex exec -m gpt-6-astra explain codex resume " + self.old_sid,
+                        "codex exec Explain the app-server and sandbox setup",
+                        "codex Explain the app-server",
+                        "codex -- explain resume " + self.old_sid]:
+            with self.subTest(command=command):
+                rows = self.rows_for(command)
+                self.assertFalse(rows[self.old_sid]["proc"])
+                self.assertTrue(rows[self.fresh_sid]["proc"])
+
+    def test_actual_app_servers_and_sandbox_commands_do_not_claim_threads(self):
+        for command in ["codex app-server", "codex -m gpt-6-astra app-server",
+                        "codex sandbox linux true", "codex --strict-config mcp-server"]:
+            with self.subTest(command=command):
+                self.assertTrue(all(row["proc"] is False for row in self.rows_for(command).values()))
+
+    def test_last_picker_and_named_resumes_report_unknown_identity(self):
+        for command in ["codex resume --last", "codex exec resume --last continue",
+                        "codex resume", "codex resume my-thread-name"]:
+            with self.subTest(command=command):
+                for row in self.rows_for(command).values():
+                    self.assertIsNone(row["proc"])
+                    self.assertEqual(row["tmux_cell"], "? (resume)")
+                    self.assertIn("cannot be established", row["note"])
 
 
 class TmuxTargetTests(unittest.TestCase):
