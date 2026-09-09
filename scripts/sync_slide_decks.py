@@ -43,6 +43,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
+import fcntl
 import hashlib
 import json
 import os
@@ -219,6 +221,26 @@ def save_manifest(root: Path, manifest: dict) -> None:
         json.dumps(manifest, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+
+
+@contextlib.contextmanager
+def generation_lock(root: Path):
+    """Serialize publication of derivatives and their shared manifest per worktree.
+
+    Keep the lock inode in place: unlinking it while another process opens it would
+    let two writers lock different files. Closing the descriptor releases the lock,
+    including after a crash; Python does not inherit this descriptor in subprocesses.
+    """
+    out = git(root, "rev-parse", "--git-path", "slide-sync.lock", check=False)
+    path = Path(out.strip()) if out is not None else root / ".slide-sync.lock"
+    if not path.is_absolute():
+        path = root / path
+    with path.open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise DeckError(f"another slide synchronization is running in {root}; retry later") from exc
+        yield
 
 
 # --------------------------------------------------------------- OPC part paths
@@ -893,6 +915,15 @@ def main() -> int:
         )
         return 2
 
+    try:
+        with generation_lock(root):
+            return sync_decks(root, decks, args, soffice)
+    except (DeckError, OSError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 3
+
+
+def sync_decks(root: Path, decks: list[Path], args, soffice: str | None) -> int:
     manifest = load_manifest(root)
     entries = manifest.setdefault("decks", {})
     failures = 0

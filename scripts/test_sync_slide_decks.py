@@ -5,6 +5,7 @@ All renderer invocations are simulated; no installed presentation app is launche
 
 import contextlib
 import io
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -222,8 +223,11 @@ class FreshnessTests(unittest.TestCase):
 
     def test_failed_libreoffice_output_is_not_published_or_certified(self):
         original = self.pdf.read_bytes()
+        real_run = sync.subprocess.run
 
         def failed_renderer(cmd, **kwargs):
+            if cmd[0] == "git":
+                return real_run(cmd, **kwargs)
             outdir = Path(cmd[cmd.index("--outdir") + 1])
             (outdir / "partial.pdf").write_bytes(b"%PDF-1.4\ntruncated")
             return subprocess.CompletedProcess(cmd, 7, "", "render failed")
@@ -256,6 +260,42 @@ class FreshnessTests(unittest.TestCase):
                                   subprocess.TimeoutExpired("soffice", 600)):
             self.assertEqual(self.run_main("--force"), 3)
         self.assertEqual(self.cli("--check").returncode, 1)
+
+    def test_concurrent_generation_is_refused_and_lock_is_released(self):
+        context = multiprocessing.get_context("fork")
+        ready, release = context.Event(), context.Event()
+
+        def worker():
+            def render(deck, path, soffice):
+                ready.set()
+                if not release.wait(10):
+                    raise RuntimeError("test did not release the simulated renderer")
+                path.write_bytes(b"%PDF-1.4\nfixture\n%%EOF\n")
+                return "fixture"
+            with mock.patch.object(sync, "find_soffice", return_value="fixture"), \
+                    mock.patch.object(sync, "render_pdf", side_effect=render):
+                raise SystemExit(self.run_main("--force"))
+
+        process = context.Process(target=worker)
+        process.start()
+        try:
+            self.assertTrue(ready.wait(5), "worker did not reach its renderer")
+            before = sync.manifest_path(self.root).read_bytes()
+            result = self.cli("--md-only", "--force")
+            self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+            self.assertIn("another slide synchronization", result.stderr)
+            self.assertEqual(sync.manifest_path(self.root).read_bytes(), before)
+            # Verification stays read-only and available while generation is busy.
+            self.assertEqual(self.cli("--check").returncode, 0)
+        finally:
+            release.set()
+            process.join(5)
+            if process.is_alive():
+                process.terminate()
+                process.join(5)
+        self.assertEqual(process.exitcode, 0)
+        self.assertEqual(self.cli("--md-only", "--force").returncode, 0)
+        self.assertEqual(self.cli("--check").returncode, 0)
 
     def test_hook_marker_after_exit_does_not_claim_wiring(self):
         hook = sync.hooks_dir(self.root) / "pre-commit"
