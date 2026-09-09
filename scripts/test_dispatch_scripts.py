@@ -259,6 +259,29 @@ sys.exit(subprocess.run(args, input=sys.stdin.read(), text=True).returncode)
         self.assertEqual(old.read_text(), "existing job log")
         self.assertEqual([path.name for path in remote.iterdir()], [old.name])
 
+    def test_health_smoke_uses_current_models_without_model_calls(self):
+        for name in ["claude", "codex"]:
+            self.command(name, '''import json, os, sys
+from pathlib import Path
+root = Path(os.environ["TEST_ROOT"])
+a = sys.argv[1:]
+(root / (Path(sys.argv[0]).name + ".args")).write_text(json.dumps(a))
+if "--output-last-message" in a:
+    Path(a[a.index("--output-last-message") + 1]).write_text("SNAP_CODEX_OK")
+else: print("SNAP_CLAUDE_OK")
+''')
+        source = (SCRIPTS / "snap_health.sh").read_text()
+        smoke = source.split("smoke_test() {", 1)[1].split("\nworker_main()", 1)[0]
+        script = 'set -u\nDO_SMOKE=1\nemit() { printf "%s\\n" "$*"; }\ntool_repair() { :; }\nsmoke_test() {' + smoke + '\nsmoke_test fixture codex\nsmoke_test fixture claude\n'
+        result = subprocess.run(["bash", "-c", script], env=self.env, text=True, capture_output=True, timeout=20)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.count("PASS"), 2, result.stdout)
+        claude = json.loads((self.root / "claude.args").read_text())
+        self.assertEqual(claude[claude.index("--model")+1], "claude-fable-5-1")
+        self.assertEqual(claude[claude.index("--effort")+1], "max")
+        codex = json.loads((self.root / "codex.args").read_text())
+        self.assertEqual(codex[codex.index("-m")+1], "gpt-6-astra")
+        self.assertEqual(codex[codex.index("-c")+1], 'model_reasoning_effort="ultra"')
 
 
 if __name__ == "__main__":
