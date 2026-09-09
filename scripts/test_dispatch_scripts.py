@@ -327,8 +327,8 @@ else: print("SNAP_CLAUDE_OK")
         self.assertEqual(claude[claude.index("--model")+1], "claude-sonnet-5")
         self.assertNotIn("--effort", claude)
         codex = json.loads((self.root / "codex.args").read_text())
-        self.assertEqual(codex[codex.index("-m")+1], "gpt-6-astra")
-        self.assertEqual(codex[codex.index("-c")+1], 'model_reasoning_effort="ultra"')
+        self.assertEqual(codex[codex.index("-m")+1], "gpt-5.6-terra")
+        self.assertEqual(codex[codex.index("-c")+1], 'model_reasoning_effort="medium"')
 
 
 if __name__ == "__main__":

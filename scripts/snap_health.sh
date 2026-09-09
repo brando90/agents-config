@@ -415,8 +415,9 @@ smoke_test() {
   case "$_tool" in
     codex)
       _last_message="$(mktemp "${TMPDIR:-/tmp}/snap-smoke-last.XXXXXX")"
-      timeout 120 codex exec --skip-git-repo-check -s read-only -m gpt-6-astra \
-        --output-last-message "$_last_message" -c 'model_reasoning_effort="ultra"' \
+      # Probe the regular tier, just as for Claude below: flagship quota is not node health.
+      timeout 120 codex exec --skip-git-repo-check -s read-only -m gpt-5.6-terra \
+        --output-last-message "$_last_message" -c 'model_reasoning_effort="medium"' \
         'Reply exactly SNAP_CODEX_OK' >"$_smoke_err" 2>&1
       _smoke_rc=$?
       _out="$(tr -d '\r' <"$_last_message")"
