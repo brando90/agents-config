@@ -63,12 +63,18 @@ if a[-1] == "true": sys.exit(0)
 if "bash" in a:
     i = a.index("bash")
     args = a[i:]
+    old_dir = None
     if len(args) > 3:
         # Substitute only the node-local directory: the transmitted program is unchanged.
         name, old_dir, old_log, payload = args[3:]
         logdir = root / "remote"
         args = ["bash", "-s", "--", name, str(logdir), str(logdir / Path(old_log).name), payload]
-    sys.exit(subprocess.run(args, input=sys.stdin.read(), text=True).returncode)
+    result = subprocess.run(args, input=sys.stdin.read(), text=True, capture_output=True)
+    # The actual script returns the node-local path; map our fixture root back to it.
+    output = result.stdout.replace(str(logdir), old_dir) if old_dir else result.stdout
+    sys.stdout.write(output)
+    sys.stderr.write(result.stderr)
+    sys.exit(result.returncode)
 if "has-session" in a[-1]: sys.exit(int(os.environ.get("TEST_DUPLICATE", "1")))
 sys.exit(0)
 ''')
@@ -263,6 +269,24 @@ flag.touch()
         self.assertIn("exit=7", log)
         self.assertIn("/lfs/skampere1/0/brando9/snap_jobs/", result.stdout)
         self.assertFalse((self.root / "remote" / ".qa-probe.launch-lock").exists())
+
+    def test_snap_relaunch_in_same_second_uses_a_new_log(self):
+        # Simulate kill/removal between launches: the duplicate-session mock says absent.
+        self.command("date", 'print("2026-09-09_14-00-00")\n')
+        paths = []
+        for label in ["FIRST_JOB", "SECOND_JOB"]:
+            result = self.run_script("snap_dispatch.sh", "run", "qa-probe",
+                                     f'printf "{label}\\n"', TEST_RUNNER="1")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            paths.append((self.root / "remote" / "qa-probe_latest.log").resolve())
+            reported = next(line.split(" : ", 1)[1] for line in result.stdout.splitlines()
+                            if line.strip().startswith("log     : "))
+            self.assertEqual(Path(reported).name, paths[-1].name)
+        self.assertNotEqual(paths[0], paths[1])
+        self.assertIn("FIRST_JOB", paths[0].read_text())
+        self.assertNotIn("SECOND_JOB", paths[0].read_text())
+        self.assertIn("SECOND_JOB", paths[1].read_text())
+        self.assertNotIn("FIRST_JOB", paths[1].read_text())
 
     def test_snap_argv_and_exact_targets(self):
         result = self.run_script("snap_dispatch.sh", "run", "qa-probe", "printf", "%s", "a b; literal", TEST_RUNNER="1")

@@ -76,7 +76,7 @@ cmd_run() {
   # otherwise silently mangles $VARS and $(substitutions) inside the user's command.
   local payload; payload="$(printf '%s' "$job_cmd" | base64 | tr -d '\n')"
 
-  ssh "${SSH_OPTS[@]}" "${SNAP_SSH_USER}@${SNAP_HOST}.stanford.edu" bash -s -- \
+  log=$(ssh "${SSH_OPTS[@]}" "${SNAP_SSH_USER}@${SNAP_HOST}.stanford.edu" bash -s -- \
       "$name" "$logdir" "$log" "$payload" <<'REMOTE'
 set -euo pipefail
 name="$1"; logdir="$2"; log="$3"; payload="$4"
@@ -90,6 +90,9 @@ if tmux has-session -t "=$name" 2>/dev/null; then
   echo "job '$name' already running" >&2
   exit 1
 fi
+# A killed session can be relaunched within the same timestamp second. Reserve a
+# unique file on the node so tee cannot append the new job to an earlier job's log.
+log=$(mktemp "${log%.log}.XXXXXX.log")
 runner=$(mktemp "$logdir/${name}_runner.XXXXXX")
 {
   echo '#!/usr/bin/env bash'
@@ -112,8 +115,16 @@ chmod +x "$runner"
 tmux new-session -d -s "$name" "bash -l '$runner'" \; \
   set-option -t "=$name:" remain-on-exit on >/dev/null
 ln -sfn "$log" "$logdir/${name}_latest.log"
-echo "started tmux session '$name' on $(hostname -s)"
+echo "started tmux session '$name' on $(hostname -s)" >&2
+printf '%s\n' "$log"
 REMOTE
+  )
+  # Only the reserved node-local log path is the launch receipt on standard output.
+  case "$log" in
+    "$logdir/${name}_"*.log) ;;
+    *) die "unexpected remote log receipt: $log" ;;
+  esac
+  [[ "$log" != *$'\n'* ]] || die "unexpected multiline remote log receipt"
 
   cat <<EOF
 
