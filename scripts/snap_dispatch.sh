@@ -14,7 +14,7 @@
 #   scripts/snap_dispatch.sh log   <job-name>                # print full log path + tail
 #   scripts/snap_dispatch.sh attach <job-name>               # attach to the live tmux session
 #   scripts/snap_dispatch.sh kill  <job-name>                # stop a job
-#   scripts/snap_dispatch.sh nodes                           # node health (load/disk/gpu/auth)
+#   scripts/snap_dispatch.sh nodes                           # node health (load/cores/disk/docker/creds)
 #
 # ENV
 #   SNAP_HOST   target node (default: skampere1). Any of skampere1|skampere2|skampere3|mercury1.
@@ -180,7 +180,9 @@ REMOTE
   done
   echo
   echo "NOTE: CLAUDE_CREDS='present' only means a credentials file exists, not that the token is valid."
-  echo "      Verify liveness with:  ssh <node>.stanford.edu 'bash -lc \"claude --model claude-fable-5-1 --effort max -p PONG\"'"
+  # Regular tier (Hard Rule 8): a spent flagship allowance is not a credential problem, and probing
+  # the flagship here would report a working node as broken.
+  echo "      Verify liveness with:  ssh <node>.stanford.edu 'bash -lc \"claude --model claude-sonnet-5 -p PONG\"'"
 }
 
 case "${1:-}" in
@@ -191,5 +193,5 @@ case "${1:-}" in
   attach) shift; cmd_attach "$@" ;;
   kill)   shift; cmd_kill   "$@" ;;
   nodes)  shift; cmd_nodes  "$@" ;;
-  *) sed -n '2,30p' "$0"; exit 1 ;;
+  *) sed -n '2,/^set -/p' "$0" | sed '$d'; exit 1 ;;
 esac

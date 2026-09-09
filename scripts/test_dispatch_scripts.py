@@ -277,8 +277,10 @@ else: print("SNAP_CLAUDE_OK")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.count("PASS"), 2, result.stdout)
         claude = json.loads((self.root / "claude.args").read_text())
-        self.assertEqual(claude[claude.index("--model")+1], "claude-fable-5-1")
-        self.assertEqual(claude[claude.index("--effort")+1], "max")
+        # A liveness ping is not reasoning work, so it runs on Hard Rule 8's regular tier;
+        # pinning the flagship here fails the whole node whenever its allowance is spent.
+        self.assertEqual(claude[claude.index("--model")+1], "claude-sonnet-5")
+        self.assertNotIn("--effort", claude)
         codex = json.loads((self.root / "codex.args").read_text())
         self.assertEqual(codex[codex.index("-m")+1], "gpt-6-astra")
         self.assertEqual(codex[codex.index("-c")+1], 'model_reasoning_effort="ultra"')

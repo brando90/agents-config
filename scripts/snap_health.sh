@@ -424,7 +424,10 @@ smoke_test() {
       _marker=SNAP_CODEX_OK
       ;;
     claude)
-      _out="$(timeout 120 claude -p --model claude-fable-5-1 --effort max 'Reply exactly SNAP_CLAUDE_OK' 2>"$_smoke_err")"
+      # A liveness ping, not reasoning work: Hard Rule 8's regular tier, pinned so the probe is
+      # reproducible. Probing the flagship here would report a healthy node as broken whenever
+      # the flagship's weekly allowance is spent, which is a quota fact, not a node fact.
+      _out="$(timeout 120 claude -p --model claude-sonnet-5 'Reply exactly SNAP_CLAUDE_OK' 2>"$_smoke_err")"
       _smoke_rc=$?
       _out="$(printf '%s' "$_out" | tr -d '\r')"
       _marker=SNAP_CLAUDE_OK
@@ -433,7 +436,7 @@ smoke_test() {
   _smoke_diag="$(tail -1 "$_smoke_err" 2>/dev/null || true)"
   rm -f -- "$_smoke_err"
   if [ "$_smoke_rc" -eq 0 ] && [ "$_out" = "$_marker" ]; then
-    emit PASS "$_host" "smoke.$_tool" "model gate accepted ($_marker)" "-"
+    emit PASS "$_host" "smoke.$_tool" "model gate accepted ($_marker); flagship entitlement is not probed here" "-"
   else
     _last="$(printf '%s\n%s\n' "$_out" "$_smoke_diag" | sed '/^$/d' | tail -1)"
     emit FAIL "$_host" "smoke.$_tool" "model gate failed: $_last" "$(tool_repair "$_tool" "$_host")"
