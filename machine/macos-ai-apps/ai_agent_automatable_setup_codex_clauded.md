@@ -99,13 +99,13 @@ ai-sudo-session() {
 
   local keepalive_pid="$!"
 
-  "$@"
-  local status="$?"
+  local task_exit_code=0
+  "$@" || task_exit_code=$?
 
   kill "$keepalive_pid" >/dev/null 2>&1 || true
   sudo -k >/dev/null 2>&1 || true
 
-  return "$status"
+  return "$task_exit_code"
 }
 
 # Manual sudo keepalive toggle. Use ai-sudo-off to revoke.
@@ -240,6 +240,10 @@ After editing:
 - Remind me that macOS System Settings toggles still require manual clicks.
 - Remind me to quit and reopen Terminal/iTerm2/Cursor/Visual Studio Code/
   Codex/Claude/ChatGPT/Manus after toggling permissions.
+
+TL;DR: Configure Codex and Claude Code aliases and defaults, verify the
+session-scoped sudo helpers, and open the remaining macOS permission panes
+for manual approval while preserving unrelated settings and secrets.
 ```
 
 ---
@@ -282,11 +286,11 @@ ai-sudo-session() {
     done
   ) &
   local keepalive_pid="$!"
-  "$@"
-  local status="$?"
+  local task_exit_code=0
+  "$@" || task_exit_code=$?
   kill "$keepalive_pid" >/dev/null 2>&1 || true
   sudo -k >/dev/null 2>&1 || true
-  return "$status"
+  return "$task_exit_code"
 }
 
 ai-sudo-on() {
