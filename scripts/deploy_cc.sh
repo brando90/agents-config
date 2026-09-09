@@ -161,7 +161,7 @@ echo "waiting up to ${WAIT}s for the $WRAPPER worker to start in that session ..
 worker_identity() {
   local pane_pid; pane_pid=$(tmux display-message -p -t "=$NAME:" '#{pane_pid}' 2>/dev/null) || return 1
   python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" "$REG_DIR" "$NAME" <<'PYTHON'
-import calendar, glob, json, os, shlex, subprocess, sys, time
+import calendar, glob, json, os, re, subprocess, sys, time
 root, wrapper, marker, reg, name = sys.argv[1:]
 try:
     result = subprocess.run(
@@ -188,28 +188,36 @@ for line in result.stdout.splitlines():
     children.setdefault(parent, []).append(pid)
 
 def is_agent(command):
-    try:
-        words = shlex.split(command)
-    except ValueError:
-        return False
+    # `ps` prints argv joined by spaces and quotes nothing, so split on whitespace: running
+    # it through shlex made any agent whose own prompt contains an apostrophe ("No closing
+    # quotation") look like a non-agent, and a live worker was then reported as dead.
+    words = command.split()
     if not words:
         return False
     family = "claude" if reg else "codex"
-    expected = {wrapper, family, family + ".exe"}
+    # The wrapper, the agent itself (claude / claude.exe), and a private per-node COPY of
+    # its binary: Trigger Rule 46 tells a worker to run from one (claude-pinned) so that a
+    # rewrite of the shared install cannot kill it, and such a worker is still started.
+    # A separator is required, so `claudette` is still not Claude Code.
+    copied = re.compile(re.escape(family) + r"(?:[-_.].*)?")
+
+    def named(word):
+        base = os.path.basename(word)
+        return base == wrapper or bool(copied.fullmatch(base))
     # Native binaries, and the Node/Python/shell launchers used by packaged commands.
-    executable = os.path.basename(words[0])
-    if executable in expected:
+    launcher = os.path.basename(words[0])
+    if named(words[0]):
         return True
     if len(words) < 2:
         return False
-    if executable in {"node", "nodejs"}:
+    if launcher in {"node", "nodejs"}:
         entrypoint = words[1].replace("\\", "/")
         package_script = ("/@anthropic-ai/claude-code/cli.js" if reg
                           else "/@openai/codex/bin/codex.js")
         if entrypoint.endswith(package_script):
             return True
-    return (executable in {"node", "nodejs", "python3", "python", "bash", "sh"}
-            and os.path.basename(words[1]) in expected)
+    return (launcher in {"node", "nodejs", "python3", "python", "bash", "sh"}
+            and named(words[1]))
 
 candidates, todo, seen = {}, [root], set()
 while todo:

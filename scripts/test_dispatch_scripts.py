@@ -165,6 +165,33 @@ sys.exit(0)
         path.write_text(json.dumps(dict(entry, tmux="other:@1.%1")))
         self.assertEqual(self.identity([good], registry).returncode, 1)
 
+    def test_identity_accepts_pinned_copies_and_quoted_prompts(self):
+        """Trigger Rule 46 runs a worker from a private per-node COPY of the binary
+        (`claude-pinned`), and a prompt routinely contains an apostrophe. Neither may
+        make a live worker read as dead; a merely similar name still must not pass."""
+        registry = self.root / "registry"
+        registry.mkdir()
+        stamp = int(time.time())
+        (registry / "901.json").write_text(json.dumps(
+            {"pid": 901, "sessionId": "abcdefgh-1234", "tmux": "qa-probe:@1.%1",
+             "startedAt": stamp * 1000}))
+        for command in ["/lfs/h/0/u/bin/claude-pinned --dangerously-skip-permissions",
+                        "claude -p Brando's task, the one he didn't finish",
+                        "/lfs/h/0/u/bin/claude-pinned -p Brando's task"]:
+            self.assertEqual(
+                self.identity([self.process_line("901", "900", command, started=stamp)],
+                              registry).returncode, 0, command)
+        for command in ["/opt/claudette --model claude-fable-5-1", "/opt/notclaude -p x"]:
+            self.assertEqual(
+                self.identity([self.process_line("901", "900", command, started=stamp)],
+                              registry).returncode, 1, command)
+        for command in [f"/opt/codex-pinned {self.runbook}",
+                        f"/opt/codex {self.runbook} finish Brando's task"]:
+            self.assertEqual(self.identity([self.process_line("901", "900", command)]).returncode,
+                             0, command)
+        self.assertEqual(self.identity(
+            [self.process_line("901", "900", f"/opt/codexicon {self.runbook}")]).returncode, 1)
+
     def test_registered_rechecks_process_identity_after_startup(self):
         source = (SCRIPTS / "deploy_cc.sh").read_text()
         functions = "worker_identity() {" + source.split("worker_identity() {", 1)[1].split("deadline=$((SECONDS + WAIT))", 1)[0]
