@@ -826,7 +826,7 @@ def main() -> int:
             print(f"skip (not a deck): {target}", file=sys.stderr)
     decks = sorted(set(decks))
 
-    if not decks:
+    if not decks and not args.check:
         print("no slide decks found")
         return 0
 
