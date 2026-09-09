@@ -12,7 +12,7 @@
 #                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
 #   --profile codex types `codex --dangerously-bypass-approvals-and-sandbox -m <model> -c 'model_reasoning_effort="<effort>"' '<prompt>'` (model and
 #   effort default to gpt-6-astra and ultra; efforts low|medium|high|xhigh|ultra) and
-#   counts the worker as started once a `codex` process carrying the runbook path is running under
+#   counts the worker as started once a `codex` process carrying this launch's prompt is running under
 #   the pane's shell and is still alive three seconds later.
 # Example (a temporary brief, previewed without starting a worker):
 #   brief=$(mktemp "${TMPDIR:-/tmp}/deploy-brief.XXXXXX")
@@ -83,8 +83,11 @@ WRAPPER=${DEPLOY_WRAPPER:-$WRAPPER}     # test hook: point at a missing command 
 LAUNCHER=$(command -v byobu || command -v tmux) || die "neither byobu nor tmux is installed"
 command -v tmux >/dev/null || die "tmux is not installed"
 
+# A runbook can be reused, and a descendant can share an agent's executable name.
+# Require this unpredictable launch marker as well as the executable and process identity.
+LAUNCH_MARKER="deploy_$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
 # Apostrophe-free on purpose: the prompt is typed into the shell inside single quotes.
-OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol. TL;DR: Complete the runbook, maintain the results and checkpoint, verify the work, and report the outcome."
+OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol. Deployment identity: $LAUNCH_MARKER. TL;DR: Complete the runbook, maintain the results and checkpoint, verify the work, and report the outcome."
 CMD="$WRAPPER"
 if [ "$PROFILE" = codex ]; then
   CMD="$CMD --dangerously-bypass-approvals-and-sandbox -m '$MODEL' -c 'model_reasoning_effort=\"$EFFORT\"'"
@@ -100,7 +103,7 @@ if [ "$DRY" -eq 1 ]; then
   print_cmd "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
   print_cmd tmux send-keys -l -t "=$NAME:" "$CMD"
   print_cmd tmux send-keys -t "=$NAME:" Enter
-  echo "# Wait for the shell, then verify a non-zombie worker below the pane with stable process identity (up to ${WAIT}s)."
+  echo "# Wait for the shell, then verify a non-zombie worker carrying $LAUNCH_MARKER below the pane with stable process identity (up to ${WAIT}s)."
   if [ -n "$REG_DIR" ]; then
     printf '# Require a matching Claude registry entry in %s and process start time.\n' "$REG_DIR"
   else
@@ -160,9 +163,9 @@ echo "waiting up to ${WAIT}s for the $WRAPPER worker to start in that session ..
 # unrelated process, a recycled registry pid, or a shell mentioning the runbook is insufficient.
 worker_identity() {
   local pane_pid; pane_pid=$(tmux display-message -p -t "=$NAME:" '#{pane_pid}' 2>/dev/null) || return 1
-  python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" "$REG_DIR" "$NAME" <<'PYTHON'
-import calendar, glob, json, os, re, subprocess, sys, time
-root, wrapper, marker, reg, name = sys.argv[1:]
+  python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" "$REG_DIR" "$NAME" "$LAUNCH_MARKER" <<'PYTHON'
+import calendar, glob, json, os, subprocess, sys, time
+root, wrapper, marker, reg, name, launch_marker = sys.argv[1:]
 try:
     result = subprocess.run(
         ["ps", "-ax", "-o", "pid=,ppid=,stat=,lstart=,command="],
@@ -198,12 +201,13 @@ def is_agent(command):
     # The wrapper, the agent itself (claude / claude.exe), and a private per-node COPY of
     # its binary: Trigger Rule 46 tells a worker to run from one (claude-pinned) so that a
     # rewrite of the shared install cannot kill it, and such a worker is still started.
-    # A separator is required, so `claudette` is still not Claude Code.
-    copied = re.compile(re.escape(family) + r"(?:[-_.].*)?")
+    # Keep the supported copy name exact: `codex-helper` and `claude-monitor` are not
+    # agents. A custom name is accepted only when explicitly selected as the wrapper.
+    expected = {wrapper, family, family + ".exe", family + "-pinned"}
 
     def named(word):
         base = os.path.basename(word)
-        return base == wrapper or bool(copied.fullmatch(base))
+        return base in expected
     # Native binaries, and the Node/Python/shell launchers used by packaged commands.
     launcher = os.path.basename(words[0])
     if named(words[0]):
@@ -226,7 +230,8 @@ while todo:
         continue
     seen.add(pid)
     info = processes.get(pid)
-    if info and is_agent(info[1]) and (reg or marker in info[1]):
+    if (info and is_agent(info[1]) and marker in info[1]
+            and launch_marker + "." in info[1]):
         candidates[pid] = info
     todo.extend(children.get(pid, []))
 if not reg:
