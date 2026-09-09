@@ -4,6 +4,7 @@ import io
 import json
 import os
 import tempfile
+import threading
 import unittest
 from unittest import mock
 
@@ -170,6 +171,23 @@ class AgentBinaryTests(unittest.TestCase):
 
 
 class ProcessTableTests(unittest.TestCase):
+    def test_failed_registry_read_refuses_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            sessions = os.path.join(directory, "sessions")
+            os.mkdir(sessions)
+            with open(os.path.join(sessions, "4242.json"), "w") as fh:
+                fh.write('{"pid":4242,')  # interrupted or still-in-progress registry write
+            row = _row(UUID.format("11111111", 1), cwd=directory)
+            out = io.StringIO()
+            with mock.patch.object(board, "BOARD_DIR", directory), \
+                 mock.patch.object(board, "CONFIGS", {directory: "cc"}), \
+                 mock.patch.object(board, "process_table", return_value={"4242": ("1", 1, "claude")}), \
+                 mock.patch.object(board.subprocess, "run") as run:
+                rc = board.resume_dead([row], [row["sid"]], target=("$9", "9"), out=out)
+            self.assertEqual(rc, 1)
+            self.assertIn("cannot read the process registry entry", out.getvalue())
+            run.assert_not_called()
+
     def test_failed_ps_with_partial_output_refuses_resume(self):
         partial = mock.Mock(returncode=1,
                             stdout="99999 1 Wed Sep  9 12:00:00 2026 ? /bin/bash\n")
@@ -221,7 +239,14 @@ class TmuxTargetTests(unittest.TestCase):
 
 class ResumeDeadTests(unittest.TestCase):
     def setUp(self):
-        self.cwd = tempfile.mkdtemp()
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.cwd = temporary.name
+        for patch in [mock.patch.object(board, "BOARD_DIR", self.cwd),
+                      mock.patch.object(board, "process_table", return_value={"1": ("0", 1, "sh")}),
+                      mock.patch.object(board, "claude_registry", return_value={})]:
+            patch.start()
+            self.addCleanup(patch.stop)
         self.dead_cc = _row(UUID.format("11111111", 1), cwd=self.cwd)
         self.dead_ccv = _row(UUID.format("22222222", 2), tag="ccv", cwd=self.cwd)
         self.live = _row(UUID.format("33333333", 3), proc=True, cell="tmux 2")
@@ -309,8 +334,119 @@ class ResumeDeadTests(unittest.TestCase):
         with mock.patch.object(board.subprocess, "run", run):
             rc = board.resume_dead(self.rows, ["11111111"], target=("$9", "9"), out=out)
         self.assertEqual(rc, 1)
-        self.assertIn("tmux failed (can't find session); by hand: cd", out.getvalue())
+        self.assertIn("recovery failed (can't find session)", out.getvalue())
         self.assertIn("1 NOT opened", out.getvalue())
+
+    def recovery_runner(self):
+        windows = []
+        calls = []
+
+        def run(args, **kw):
+            calls.append(args)
+            if args[1] == "new-window":
+                token = f"11:1234:@{len(windows) + 1}"
+                windows.append(token)
+                return mock.Mock(returncode=0, stdout=token + "\n", stderr="")
+            if args[1] == "list-windows":
+                return mock.Mock(returncode=0, stdout="\n".join(["11:1234:@0"] + windows), stderr="")
+            return mock.Mock(returncode=0, stdout="", stderr="")
+
+        return run, windows, calls
+
+    def launch_one(self):
+        out = io.StringIO()
+        rc = board.resume_dead(self.rows, ["11111111"], target=("$9", "9"), out=out)
+        return rc, out.getvalue()
+
+    def test_a_second_startup_is_refused_until_its_recovery_window_is_closed(self):
+        run, windows, calls = self.recovery_runner()
+        with mock.patch.object(board.subprocess, "run", run):
+            self.assertEqual(self.launch_one()[0], 0)
+            rc, text = self.launch_one()
+            self.assertEqual(rc, 1)
+            self.assertIn("recovery window @1 still exists", text)
+            self.assertNotIn("clauded --resume", text)
+            self.assertEqual(sum(c[1] == "new-window" for c in calls), 1)
+            windows.clear()  # the user inspected and closed the failed startup window
+            self.assertEqual(self.launch_one()[0], 0)
+            self.assertEqual(sum(c[1] == "new-window" for c in calls), 2)
+
+    def test_overlapping_recoveries_cannot_both_create_a_window(self):
+        run, windows, calls = self.recovery_runner()
+        entered, release = threading.Event(), threading.Event()
+        first = []
+
+        def delayed(args, **kw):
+            if args[1] == "new-window":
+                entered.set()
+                self.assertTrue(release.wait(5))
+            return run(args, **kw)
+
+        with mock.patch.object(board.subprocess, "run", delayed):
+            thread = threading.Thread(target=lambda: first.append(self.launch_one()))
+            thread.start()
+            try:
+                self.assertTrue(entered.wait(5))
+                rc, text = self.launch_one()
+                self.assertEqual(rc, 1)
+                self.assertIn("another recovery attempt holds", text)
+            finally:
+                release.set()
+                thread.join(5)
+        self.assertEqual(first[0][0], 0)
+        self.assertEqual(len(windows), 1)
+
+    def test_fresh_liveness_and_failed_refresh_both_refuse_a_launch(self):
+        for table, registry, message in [
+            ({}, {}, "cannot refresh the process table"),
+            ({"1": ("0", 1, "sh")}, {self.dead_cc["sid"]: [{}]}, "already running"),
+        ]:
+            with mock.patch.object(board, "process_table", return_value=table), \
+                 mock.patch.object(board, "claude_registry", return_value=registry), \
+                 mock.patch.object(board.subprocess, "run") as run:
+                rc, text = self.launch_one()
+            self.assertEqual(rc, 1)
+            self.assertIn(message, text)
+            run.assert_not_called()
+
+    def test_unknown_window_state_does_not_expire_a_reservation(self):
+        run, windows, calls = self.recovery_runner()
+        with mock.patch.object(board.subprocess, "run", run):
+            self.assertEqual(self.launch_one()[0], 0)
+        with mock.patch.object(board.subprocess, "run", return_value=mock.Mock(
+                returncode=1, stdout="", stderr="tmux unavailable")):
+            rc, text = self.launch_one()
+        self.assertEqual(rc, 1)
+        self.assertIn("cannot check the previous recovery window", text)
+
+    def test_a_timed_out_launch_cannot_be_retried_without_inspection(self):
+        with mock.patch.object(board.subprocess, "run", side_effect=board.subprocess.TimeoutExpired(
+                "tmux new-window", 10)):
+            self.assertEqual(self.launch_one()[0], 1)
+        with mock.patch.object(board.subprocess, "run") as run:
+            rc, text = self.launch_one()
+        self.assertEqual(rc, 1)
+        self.assertIn("recovery outcome is uncertain", text)
+        run.assert_not_called()
+
+    def test_a_new_server_can_reuse_a_window_number_without_claiming_an_old_reservation(self):
+        run, windows, calls = self.recovery_runner()
+        with mock.patch.object(board.subprocess, "run", run):
+            self.assertEqual(self.launch_one()[0], 0)
+            windows[:] = ["22:5678:@1"]
+            self.assertEqual(self.launch_one()[0], 0)
+        self.assertEqual(sum(c[1] == "new-window" for c in calls), 2)
+
+    def test_switching_sockets_does_not_release_a_running_servers_reservation(self):
+        run, windows, calls = self.recovery_runner()
+        with mock.patch.object(board.subprocess, "run", run):
+            self.assertEqual(self.launch_one()[0], 0)
+        with mock.patch.object(board, "process_table", return_value={"11": ("1", 1234, "tmux")}), \
+             mock.patch.object(board.subprocess, "run", return_value=mock.Mock(
+                 returncode=0, stdout="22:5678:@0\n", stderr="")):
+            rc, text = self.launch_one()
+        self.assertEqual(rc, 1)
+        self.assertIn("another tmux socket", text)
 
 
 if __name__ == "__main__":
