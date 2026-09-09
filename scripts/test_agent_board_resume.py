@@ -110,6 +110,46 @@ class ClassificationTests(unittest.TestCase):
         self.assertEqual(len(board.one_per_seat([live, seated])), 2)
 
 
+class AgentBinaryTests(unittest.TestCase):
+    """Trigger Rule 46 runs a worker from a private per-node COPY of the binary
+    (`claude-pinned`). If the board does not recognise it, the live session reads as
+    having no process -- and `--resume-dead all` forks a session that is still running,
+    the exact outcome the liveness guard exists to prevent."""
+
+    def registry_for(self, command):
+        with tempfile.TemporaryDirectory() as cfg:
+            os.makedirs(os.path.join(cfg, "sessions"))
+            sid = UUID.format("11111111", 7)
+            start = 1788983319.0
+            with open(os.path.join(cfg, "sessions", "4242.json"), "w") as fh:
+                json.dump({"pid": 4242, "sessionId": sid, "tmux": "vb-fix:@1.%1",
+                           "startedAt": int(start * 1000)}, fh)
+            tab = {"4242": ("1", start, command, "??")}
+            with mock.patch.object(board, "CONFIGS", {cfg: "cc"}):
+                return sid, board.claude_registry(tab, {})
+
+    def test_a_pinned_copy_of_the_binary_counts_as_a_live_process(self):
+        for command in ["/lfs/h/0/u/bin/claude-pinned --dangerously-skip-permissions",
+                        "/lfs/h/0/u/bin/claude-pinned -p reply OK",
+                        "claude --remote-control vb-fix --model claude-fable-5-1",
+                        "node /usr/lib/node_modules/@anthropic-ai/claude-code/cli.js"]:
+            sid, reg = self.registry_for(command)
+            self.assertEqual([p["pid"] for p in reg.get(sid, [])], ["4242"], command)
+            self.assertEqual(reg[sid][0]["tmux"], "vb-fix", command)
+
+    def test_a_merely_similar_command_is_still_not_an_agent(self):
+        for command in ["/opt/claudette --model claude-fable-5-1", "vim /tmp/claude.md",
+                        "less /var/log/codex.log", "python3 claude_helper.py"]:
+            sid, reg = self.registry_for(command)
+            self.assertEqual(reg, {}, command)
+
+    def test_codex_detection_matches_a_pinned_copy_too(self):
+        for command in ["/home/u/bin/codex-pinned -m gpt-6-astra", "codex exec -m gpt-6-astra"]:
+            self.assertTrue(board.CODEX_RE.search(command), command)
+        for command in ["/opt/codexicon run", "/opt/claude --model x"]:
+            self.assertFalse(board.CODEX_RE.search(command), command)
+
+
 class ProcessTableTests(unittest.TestCase):
     def test_failed_ps_with_partial_output_refuses_resume(self):
         partial = mock.Mock(returncode=1,

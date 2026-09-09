@@ -288,7 +288,20 @@ def process_table():
     return tab
 
 
-AGENT_RE = re.compile(r"(^|/)(claude|codex)(\s|$)|Claude Code")
+def _binary_re(*families):
+    """The agent binary itself, or a private per-node COPY of it: Trigger Rule 46 runs a
+    worker from `claude-pinned` (`codex-pinned`) so that a rewrite of the one shared
+    memory-mapped install cannot kill it, and such a worker is live, not dead. A separator
+    is required after the family name, so `claudette` is still not Claude Code. `.` is NOT
+    a separator here: this pattern is searched against a whole command line, and a path
+    like `vim /tmp/claude.md` must not read as a running agent."""
+    return r"(^|/)(" + "|".join(families) + r")([-_]\S*)?(\s|$)"
+
+
+# Also the packaged Node entrypoint (`node .../@anthropic-ai/claude-code/cli.js`), which the
+# npm install runs. Only ever a conjunct: the registry pid and start time must match too.
+AGENT_RE = re.compile(_binary_re("claude", "codex")
+                      + r"|/@(anthropic-ai/claude-code|openai/codex)/|Claude Code")
 
 
 def locate(pid, tab, panes, depth=12):
@@ -899,7 +912,7 @@ def resume_dead(rows, wanted, dry_run=False, fork=False, target=None, out=None,
 
 
 CODEX_DIR = os.path.join(HOME, ".codex")
-CODEX_RE = re.compile(r"(^|/)codex(\s|$)")
+CODEX_RE = re.compile(_binary_re("codex") + r"|/@openai/codex/")
 
 
 def scan_rollout(path, max_lines=300):
