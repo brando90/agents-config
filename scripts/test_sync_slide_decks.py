@@ -85,6 +85,70 @@ class FreshnessTests(unittest.TestCase):
         self.assertEqual(self.cli("--check").returncode, 0)
         self.assertEqual(self.cli("--check-staged").returncode, 0)
 
+    def replace_parts(self, updates):
+        with zipfile.ZipFile(self.deck) as deck:
+            parts = {name: deck.read(name) for name in deck.namelist()}
+        parts.update(updates)
+        with zipfile.ZipFile(self.deck, "w") as deck:
+            for name, data in parts.items():
+                deck.writestr(name, data)
+
+    def test_unsupported_xml_roots_cannot_certify_empty_text(self):
+        original = self.deck.read_bytes()
+        for part, root in (("ppt/presentation.xml", "presentation"),
+                           ("ppt/slides/slide1.xml", "sld")):
+            with self.subTest(part=part):
+                self.deck.write_bytes(original)
+                self.replace_parts({part:
+                    f'<p:{root} xmlns:p="http://purl.oclc.org/ooxml/presentationml/main"/>'})
+                self.assertEqual(self.run_main("--md-only", "--force"), 3)
+                self.assertEqual(self.cli("--check").returncode, 1)
+
+    def test_declared_notes_cannot_be_silently_dropped(self):
+        original = self.deck.read_bytes()
+        for mode in ("missing", "external", "unsupported-root"):
+            with self.subTest(mode=mode):
+                self.deck.write_bytes(original)
+                external = ' TargetMode="External"' if mode == "external" else ""
+                parts = {"ppt/slides/_rels/slide1.xml.rels":
+                    f'<Relationships xmlns="{sync.NS["rel"]}">'
+                    f'<Relationship Id="notes" Type="{sync.NS["r"]}/notesSlide"'
+                    f' Target="../notesSlides/notesSlide1.xml"{external}/></Relationships>'}
+                if mode == "unsupported-root":
+                    parts["ppt/notesSlides/notesSlide1.xml"] = '<unsupported-notes/>'
+                self.replace_parts(parts)
+                self.assertEqual(self.run_main("--md-only", "--force"), 3)
+                self.assertEqual(self.cli("--check").returncode, 1)
+
+    def test_absolute_slide_order_and_relative_speaker_notes_are_preserved(self):
+        with zipfile.ZipFile(self.deck) as deck:
+            second_slide = deck.read("ppt/slides/slide1.xml").replace(
+                b"first version", b"second slide")
+        self.replace_parts({
+            "ppt/presentation.xml":
+                f'<p:presentation xmlns:p="{sync.NS["p"]}" xmlns:r="{sync.NS["r"]}">'
+                '<p:sldIdLst><p:sldId id="2" r:id="second"/>'
+                '<p:sldId id="1" r:id="first"/></p:sldIdLst></p:presentation>',
+            "ppt/_rels/presentation.xml.rels":
+                f'<Relationships xmlns="{sync.NS["rel"]}">'
+                '<Relationship Id="second" Target="/ppt/slides/slide2.xml"/>'
+                '<Relationship Id="first" Target="slides/slide1.xml"/></Relationships>',
+            "ppt/slides/slide2.xml": second_slide,
+            "ppt/slides/_rels/slide2.xml.rels":
+                f'<Relationships xmlns="{sync.NS["rel"]}">'
+                f'<Relationship Id="notes" Type="{sync.NS["r"]}/notesSlide"'
+                ' Target="../notesSlides/notesSlide1.xml"/></Relationships>',
+            "ppt/notesSlides/notesSlide1.xml":
+                f'<p:notes xmlns:p="{sync.NS["p"]}" xmlns:a="{sync.NS["a"]}">'
+                '<p:cSld><p:spTree><p:sp><p:nvSpPr><p:nvPr><p:ph type="body"/>'
+                '</p:nvPr></p:nvSpPr><p:txBody><a:p><a:r><a:t>Remember this note</a:t>'
+                '</a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:notes>',
+        })
+        self.assertEqual(self.run_main("--md-only", "--force"), 0)
+        text = self.md.read_text(encoding="utf-8")
+        self.assertLess(text.index("second slide"), text.index("first version"))
+        self.assertIn("> **Speaker notes:** Remember this note", text)
+
     def test_missing_or_modified_derivative_fails_both_gates(self):
         for path in (self.pdf, self.md):
             original = path.read_bytes()

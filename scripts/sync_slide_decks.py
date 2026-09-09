@@ -224,6 +224,19 @@ def save_manifest(root: Path, manifest: dict) -> None:
 # --------------------------------------------------------------- OPC part paths
 
 
+def xml_part(zf: zipfile.ZipFile, part: str, expected_root: str) -> ET.Element:
+    """Reject unsupported XML dialects instead of certifying an empty text dump."""
+    try:
+        tree = ET.fromstring(zf.read(part))
+    except ET.ParseError as exc:
+        raise DeckError(f"unparseable part {part}: {exc}") from exc
+    if tree.tag != expected_root:
+        raise DeckError(
+            f"unsupported root element in {part}: {tree.tag!r}; expected {expected_root!r}"
+        )
+    return tree
+
+
 def resolve_part(base_part: str, target: str) -> str:
     """Resolve an OPC relationship target to a zip part name.
 
@@ -246,10 +259,7 @@ def relationships(zf: zipfile.ZipFile, part: str) -> list[dict]:
     ).lstrip("/")
     if rels_name not in zf.namelist():
         return []
-    try:
-        tree = ET.fromstring(zf.read(rels_name))
-    except ET.ParseError as exc:
-        raise DeckError(f"unparseable relationships part {rels_name}: {exc}") from exc
+    tree = xml_part(zf, rels_name, "{%s}Relationships" % NS["rel"])
     return [dict(rel.attrib) for rel in tree.findall("rel:Relationship", NS)]
 
 
@@ -263,10 +273,7 @@ def slide_order(zf: zipfile.ZipFile) -> list[str]:
     names = zf.namelist()
     if "ppt/presentation.xml" not in names:
         raise DeckError("not a PowerPoint package: ppt/presentation.xml is missing")
-    try:
-        pres = ET.fromstring(zf.read("ppt/presentation.xml"))
-    except ET.ParseError as exc:
-        raise DeckError(f"unparseable ppt/presentation.xml: {exc}") from exc
+    pres = xml_part(zf, "ppt/presentation.xml", "{%s}presentation" % NS["p"])
 
     sld_ids = pres.findall("./p:sldIdLst/p:sldId", NS)
     if sld_ids:
@@ -368,14 +375,11 @@ def notes_for(zf: zipfile.ZipFile, slide_part: str) -> str:
         if not rel.get("Type", "").endswith("/notesSlide"):
             continue
         if rel.get("TargetMode") == "External":
-            return ""
+            raise DeckError(f"external speaker notes for {slide_part} are unsupported")
         part = resolve_part(slide_part, rel.get("Target", ""))
         if part not in zf.namelist():
-            return ""
-        try:
-            tree = ET.fromstring(zf.read(part))
-        except ET.ParseError as exc:
-            raise DeckError(f"unparseable notes part {part}: {exc}") from exc
+            raise DeckError(f"speaker notes for {slide_part} point at absent part {part!r}")
+        tree = xml_part(zf, part, "{%s}notes" % NS["p"])
         lines = []
         for kind, shape in _walk_shapes(tree):
             if kind != "sp":
@@ -415,12 +419,7 @@ def pptx_to_markdown(deck: Path, digest: str) -> str:
             "",
         ]
         for idx, part in enumerate(parts, start=1):
-            try:
-                tree = ET.fromstring(zf.read(part))
-            except ET.ParseError as exc:
-                # Never degrade to a placeholder: that records a fresh hash over a
-                # derivative that silently lost a slide's content.
-                raise DeckError(f"unparseable slide part {part}: {exc}") from exc
+            tree = xml_part(zf, part, "{%s}sld" % NS["p"])
 
             title = ""
             body_blocks: list[str] = []
