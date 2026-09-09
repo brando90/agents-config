@@ -675,10 +675,10 @@ def check_worktree(root: Path, decks: list[Path]) -> list[str]:
 def staged_paths(root: Path) -> set[str]:
     """Paths in the staged change set, read NUL-delimited so git never quotes or escapes
     a filename (the em-dash quoting is what let decks slip past a shell grep). Renames
-    are included -- git mv reports R, which an ACM-only filter silently ignored."""
-    out = git(root, "diff", "--cached", "-z", "--name-only", "--diff-filter=ACMRD", check=False)
-    if out is None:
-        return set()
+    are included -- git mv reports R, which an ACM-only filter silently ignored.
+    Type changes and unmerged paths also need checking; Git failures are errors,
+    never evidence that the staged change set is empty."""
+    out = git(root, "diff", "--cached", "-z", "--name-only", "--diff-filter=ACMRTDU")
     return {p for p in out.split("\0") if p}
 
 
@@ -687,9 +687,7 @@ def index_blob(root: Path, rel: str) -> bytes | None:
 
 
 def index_decks(root: Path) -> list[str]:
-    out = git(root, "ls-files", "-z", check=False)
-    if out is None:
-        return []
+    out = git(root, "ls-files", "-z")
     return sorted(
         p for p in out.split("\0") if p and Path(p).suffix.lower() in DECK_SUFFIXES
     )
@@ -726,6 +724,7 @@ def check_staged(root: Path) -> tuple[list[str], bool]:
     for rel in decks:
         blob = index_blob(root, rel)
         if blob is None:
+            problems.append(f"  {rel}: staged deck could not be read")
             continue
         entry = entries.get(rel)
         if entry is None:
@@ -796,7 +795,11 @@ def main() -> int:
             return 0
 
     if args.check_staged:
-        problems, ran = check_staged(root)
+        try:
+            problems, ran = check_staged(root)
+        except (RuntimeError, OSError) as exc:
+            print(f"error: cannot verify staged slide decks: {exc}", file=sys.stderr)
+            return 1
         if problems:
             print(
                 "stale or missing slide-deck derivatives in the commit "

@@ -127,6 +127,30 @@ class FreshnessTests(unittest.TestCase):
         self.git("mv", self.deck.name, "Renamed — deck.pptx")
         self.assertEqual(self.cli("--check-staged").returncode, 1)
 
+    def test_source_type_change_is_checked(self):
+        self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                 "commit", "-qm", "fixture")
+        self.deck.unlink()
+        self.deck.symlink_to("missing-source")
+        self.git("add", self.deck.name)
+        result = self.cli("--check-staged")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_corrupt_index_cannot_pass(self):
+        bad_index = self.root / "bad-index"
+        bad_index.write_bytes(b"not a git index")
+        env = dict(os.environ, GIT_INDEX_FILE=str(bad_index))
+        result = self.cli("--check-staged", env=env)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_unreadable_index_source_cannot_be_skipped(self):
+        real_blob = sync.index_blob
+        with mock.patch.object(sync, "index_blob", side_effect=lambda root, rel:
+                               None if rel == self.deck.name else real_blob(root, rel)):
+            problems, ran = sync.check_staged(self.root)
+        self.assertTrue(ran)
+        self.assertTrue(problems)
+
     def test_failed_libreoffice_output_is_not_published_or_certified(self):
         original = self.pdf.read_bytes()
 
