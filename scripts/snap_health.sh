@@ -424,7 +424,7 @@ smoke_test() {
       _marker=SNAP_CODEX_OK
       ;;
     claude)
-      _out="$(timeout 120 claude -p --model 'claude-fable-5[1m]' 'Reply exactly SNAP_CLAUDE_OK' 2>"$_smoke_err")"
+      _out="$(timeout 120 claude -p --model claude-fable-5-1 --effort max 'Reply exactly SNAP_CLAUDE_OK' 2>"$_smoke_err")"
       _smoke_rc=$?
       _out="$(printf '%s' "$_out" | tr -d '\r')"
       _marker=SNAP_CLAUDE_OK
