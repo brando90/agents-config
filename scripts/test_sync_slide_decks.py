@@ -193,6 +193,22 @@ class FreshnessTests(unittest.TestCase):
             self.assertEqual(self.run_main("--force"), 3)
         self.assertEqual(self.cli("--check").returncode, 1)
 
+    def test_hook_marker_after_exit_does_not_claim_wiring(self):
+        hook = sync.hooks_dir(self.root) / "pre-commit"
+        hook.write_text("#!/bin/sh\nexit 0\n" + sync.HOOK_DELEGATE, encoding="utf-8")
+        original = hook.read_bytes()
+        _, status = sync.install_hook(self.root)
+        self.assertEqual(status, "manual")
+        self.assertEqual(hook.read_bytes(), original)
+
+    def test_managed_hook_remains_executable_on_reinstall(self):
+        sync.install_hook(self.root)
+        hook = sync.hooks_dir(self.root) / "pre-commit"
+        hook.chmod(0o644)
+        _, status = sync.install_hook(self.root)
+        self.assertEqual(status, "already wired")
+        self.assertTrue(os.access(hook, os.X_OK))
+
 
 
 if __name__ == "__main__":

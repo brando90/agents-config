@@ -630,7 +630,11 @@ def install_hook(root: Path) -> tuple[Path, str]:
         return helper, "created"
 
     existing = pre_commit.read_text(encoding="utf-8", errors="replace")
-    if HOOK_HELPER_NAME in existing:
+    # Only claim an existing hook is wired when its entire body is the one we
+    # installed. A marker in a comment or after `exit 0` proves nothing about
+    # execution; custom hooks require the same manual inspection as any other.
+    if existing == "#!/bin/sh\n" + HOOK_DELEGATE:
+        pre_commit.chmod(0o755)
         return helper, "already wired"
     # Appending is unsafe: an existing hook that ends in `exit 0` (or any early exit)
     # would leave the appended check unreachable while installation reported success.
