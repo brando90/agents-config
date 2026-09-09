@@ -10,13 +10,16 @@
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
 #                [--profile cc|ccv|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
 #                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
-#   --profile codex types `codex -m <model> -c model_reasoning_effort="<effort>" '<prompt>'` (model and
-#   effort default to ~/.codex/config.toml when not given; efforts low|medium|high|xhigh|ultra) and
+#   --profile codex types `codex --dangerously-bypass-approvals-and-sandbox -m <model> -c 'model_reasoning_effort="<effort>"' '<prompt>'` (model and
+#   effort default to gpt-6-astra and ultra; efforts low|medium|high|xhigh|ultra) and
 #   counts the worker as started once a `codex` process carrying the runbook path is running under
 #   the pane's shell and is still alive three seconds later.
-# Example:
-#   ~/agents-config/scripts/deploy_cc.sh --name vb-fix-thms --cwd ~/veribench \
-#     --prompt-file experiments/74_hard_subset_and_versioned_releases/scripts/fix_false_reference_theorems_cc_prompt.md
+# Example (a temporary brief, previewed without starting a worker):
+#   brief=$(mktemp "${TMPDIR:-/tmp}/deploy-brief.XXXXXX")
+#   printf '# Inspect this repository\n**TLDR:** Summarize tracked files without changing them.\n\nTL;DR: Read the repository and report its structure.\n' > "$brief"
+#   ~/agents-config/scripts/deploy_cc.sh --name config-inspect --cwd ~/agents-config \
+#     --prompt-file "$brief" --dry-run
+#   rm "$brief"
 #
 # What it does: starts a detached session on the byobu/tmux server (`byobu new-session` when byobu is
 # installed, so a cold server gets the byobu profile) running an interactive login zsh in <cwd>, types
@@ -29,7 +32,7 @@
 # sent, so the whole brief lives in the file (Trigger Rule 36: TL;DR at both ends).
 set -euo pipefail
 
-usage() { sed -n '2,24p' "$0"; }
+usage() { sed -n '2,/^set -/p' "$0" | sed '$d'; }
 die() { echo "deploy_cc.sh: $*" >&2; exit 2; }
 # a flag that takes a value: the value must exist, be non-empty and not look like another flag
 val() { [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || die "$1 needs a value (got '${2:-}')"; printf '%s' "$2"; }
@@ -58,12 +61,15 @@ case "$NAME" in *[!A-Za-z0-9_-]*) die "--name may use letters, digits, _ and - o
 case "$PROFILE" in
   cc|ccv) MODEL=${MODEL:-claude-fable-5-1}; EFFORT=${EFFORT:-max}
           case "$EFFORT" in low|medium|high|xhigh|max) ;; *) die "--effort must be one of low medium high xhigh max (got '$EFFORT')" ;; esac ;;
-  codex)  case "${EFFORT:-low}" in low|medium|high|xhigh|ultra) ;; *) die "--effort for codex must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
+  codex)  MODEL=${MODEL:-gpt-6-astra}; EFFORT=${EFFORT:-ultra}
+          case "$EFFORT" in low|medium|high|xhigh|ultra) ;; *) die "--effort for codex must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
   *) die "--profile must be cc, ccv or codex" ;;
 esac
-# model ids are like claude-fable-5-1, claude-fable-5[1m] (Hard Rule 8) or gpt-6-astra; typed inside single quotes
+# model ids are like claude-fable-5-1, claude-fable-5-1[1m] (Hard Rule 8) or gpt-6-astra; typed inside single quotes
 case "$MODEL" in *[!A-Za-z0-9._\[\]-]*) die "--model may use letters, digits, . _ - [ ] only (got '$MODEL')" ;; esac
 case "$WAIT" in *[!0-9]*|"") die "--wait must be a whole number of seconds" ;; esac
+# Force decimal arithmetic: a valid value such as 08 must not be interpreted as octal.
+WAIT=$((10#$WAIT))
 CWD=$(cd "$CWD" 2>/dev/null && pwd -P) || die "--cwd is not a directory: $CWD"
 case "$PROMPT" in /*) ;; *) PROMPT="$CWD/$PROMPT" ;; esac
 [ -f "$PROMPT" ] || die "--prompt-file not found: $PROMPT"
@@ -81,20 +87,25 @@ command -v tmux >/dev/null || die "tmux is not installed"
 OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names before pushing, and report with the mandatory TLDR/Snapshot protocol."
 CMD="$WRAPPER"
 if [ "$PROFILE" = codex ]; then
-  [ -n "$MODEL" ] && CMD="$CMD -m '$MODEL'"
-  [ -n "$EFFORT" ] && CMD="$CMD -c model_reasoning_effort=\"$EFFORT\""
+  CMD="$CMD --dangerously-bypass-approvals-and-sandbox -m '$MODEL' -c 'model_reasoning_effort=\"$EFFORT\"'"
   CMD="$CMD '$OPEN'"
 else
   [ "$RC" -eq 1 ] && CMD="$CMD --remote-control $NAME"
   CMD="$CMD --model '$MODEL' --effort $EFFORT '$OPEN'"
 fi
 
+# Print shell-replayable arguments, including spaces and the literal command sent to zsh.
+print_cmd() { printf '%q ' "$@"; printf '\n'; }
 if [ "$DRY" -eq 1 ]; then
-  echo "$LAUNCHER new-session -d -s $NAME -c $CWD /bin/zsh -il"
-  echo "tmux send-keys -t =$NAME: '<cmd>' Enter"
-  if [ -n "$REG_DIR" ]; then echo "then poll $REG_DIR/*.json for a live pid whose tmux field starts with '$NAME:' (up to ${WAIT}s)"
-  else echo "then wait until the pane's foreground command is no longer the shell (up to ${WAIT}s)"; fi
-  echo "cmd: $CMD"
+  print_cmd "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
+  print_cmd tmux send-keys -l -t "=$NAME:" "$CMD"
+  print_cmd tmux send-keys -t "=$NAME:" Enter
+  echo "# Wait for the shell, then verify a non-zombie worker below the pane with stable process identity (up to ${WAIT}s)."
+  if [ -n "$REG_DIR" ]; then
+    printf '# Require a matching Claude registry entry in %s and process start time.\n' "$REG_DIR"
+  else
+    printf '# Require a Codex process carrying runbook %s on both checks, three seconds apart.\n' "$PROMPT"
+  fi
   exit 0
 fi
 if tmux has-session -t "=$NAME" 2>/dev/null; then
@@ -140,57 +151,114 @@ t0=$SECONDS
 until shell_ready || [ $((SECONDS - t0)) -ge 30 ]; do python3 -c 'import time; time.sleep(1)'; done
 shell_ready || echo "deploy_cc.sh: warning: the shell in '$NAME' was still busy after 30s; typing anyway" >&2
 python3 -c 'import time; time.sleep(1)'
-tmux send-keys -t "=$NAME:" "$CMD" Enter
+tmux send-keys -l -t "=$NAME:" "$CMD"
+tmux send-keys -t "=$NAME:" Enter
 echo "typed into tmux session '$NAME' ($CWD): $CMD"
 echo "waiting up to ${WAIT}s for the $WRAPPER worker to start in that session ..."
 
-# Claude Code writes <config>/sessions/<pid>.json with "tmux":"<session>:@w.%p" while it runs; that
-# file plus a live pid is the same evidence the agent board uses, so "deployed" means exactly that.
-# codex has no registry: the evidence is a process under the pane's shell whose command line carries
-# this runbook's path (so a kinit, sleep or git from ~/.zshrc can never pass), and that is still
-# alive three seconds later (so a codex that rejects a flag and exits does not pass).
-worker_pid() {
+# Both profiles must identify an actual, non-zombie agent under this pane twice. A live
+# unrelated process, a recycled registry pid, or a shell mentioning the runbook is insufficient.
+worker_identity() {
   local pane_pid; pane_pid=$(tmux display-message -p -t "=$NAME:" '#{pane_pid}' 2>/dev/null) || return 1
-  python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" <<'PY'
-import subprocess, sys
-root, wrapper, marker = sys.argv[1], sys.argv[2], sys.argv[3]
-kids, cmd = {}, {}
-for ln in subprocess.run(["ps", "-ax", "-o", "pid=,ppid=,command="], capture_output=True, text=True).stdout.splitlines():
-    f = ln.split(None, 2)
-    if len(f) == 3:
-        kids.setdefault(f[1], []).append(f[0]); cmd[f[0]] = f[2]
-todo = [root]
+  python3 - "$pane_pid" "$(basename "$WRAPPER")" "$PROMPT" "$REG_DIR" "$NAME" <<'PYTHON'
+import calendar, glob, json, os, shlex, subprocess, sys, time
+root, wrapper, marker, reg, name = sys.argv[1:]
+try:
+    result = subprocess.run(
+        ["ps", "-ax", "-o", "pid=,ppid=,stat=,lstart=,command="],
+        env=dict(os.environ, LC_ALL="C"), capture_output=True, text=True, timeout=5,
+        check=True,
+    )
+except (OSError, subprocess.SubprocessError):
+    sys.exit(1)
+processes, children = {}, {}
+for line in result.stdout.splitlines():
+    fields = line.split(None, 8)
+    if len(fields) != 9:
+        continue
+    pid, parent, state = fields[:3]
+    if state.startswith(("Z", "X")):
+        continue
+    stamp = " ".join(fields[3:8])
+    try:
+        started = time.mktime(time.strptime(stamp, "%a %b %d %H:%M:%S %Y"))
+    except ValueError:
+        continue
+    processes[pid] = (started, fields[8])
+    children.setdefault(parent, []).append(pid)
+
+def is_agent(command):
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        return False
+    if not words:
+        return False
+    family = "claude" if reg else "codex"
+    expected = {wrapper, family, family + ".exe"}
+    # Native binaries, and the Node/Python/shell launchers used by packaged commands.
+    executable = os.path.basename(words[0])
+    if executable in expected:
+        return True
+    if len(words) < 2:
+        return False
+    if executable in {"node", "nodejs"}:
+        entrypoint = words[1].replace("\\", "/")
+        package_script = ("/@anthropic-ai/claude-code/cli.js" if reg
+                          else "/@openai/codex/bin/codex.js")
+        if entrypoint.endswith(package_script):
+            return True
+    return (executable in {"node", "nodejs", "python3", "python", "bash", "sh"}
+            and os.path.basename(words[1]) in expected)
+
+candidates, todo, seen = {}, [root], set()
 while todo:
     pid = todo.pop()
-    for k in kids.get(pid, []):
-        c = cmd.get(k, "")
-        if marker in c:               # the runbook path is unique to this launch; the wrapper
-            print(k); sys.exit(0)     # name may vanish when a launcher execs into a binary
-        todo.append(k)
+    if pid in seen:
+        continue
+    seen.add(pid)
+    info = processes.get(pid)
+    if info and is_agent(info[1]) and (reg or marker in info[1]):
+        candidates[pid] = info
+    todo.extend(children.get(pid, []))
+if not reg:
+    for pid, (started, _) in candidates.items():
+        print(f"pid {pid} start {started:.0f}")
+        sys.exit(0)
+else:
+    for filename in glob.glob(os.path.join(reg, "*.json")):
+        try:
+            with open(filename) as stream:
+                entry = json.load(stream)
+            if not isinstance(entry, dict):
+                continue
+            pid = str(entry.get("pid") or "")
+            sid = entry.get("sessionId")
+            if pid not in candidates or not isinstance(sid, str) or not sid:
+                continue
+            if str(entry.get("tmux", "")).split(":", 1)[0] != name:
+                continue
+            if entry.get("startedAt"):
+                started = float(entry["startedAt"]) / 1000
+            else:
+                started = calendar.timegm(time.strptime(entry["procStart"], "%a %b %d %H:%M:%S %Y"))
+            actual_started = candidates[pid][0]
+            if abs(actual_started - started) > 120:
+                continue
+            print(f"{sid[:8]} pid {pid} start {actual_started:.0f}")
+            sys.exit(0)
+        except (OSError, KeyError, TypeError, ValueError):
+            continue
 sys.exit(1)
-PY
+PYTHON
 }
 registered() {
-  if [ -z "$REG_DIR" ]; then
-    local pid; pid=$(worker_pid) || return 1
-    python3 -c 'import time; time.sleep(3)'
-    kill -0 "$pid" 2>/dev/null && { echo "pid $pid"; return 0; }
-    return 1
-  fi
-  python3 - "$REG_DIR" "$NAME" <<'PY'
-import glob, json, os, sys
-reg, name = sys.argv[1], sys.argv[2]
-for f in glob.glob(os.path.join(reg, "*.json")):
-    try:
-        d = json.load(open(f))
-        pid = int(d.get("pid") or 0)
-        if str(d.get("tmux", "")).split(":", 1)[0] == name and pid > 0:
-            os.kill(pid, 0)
-            print(d.get("sessionId", "")[:8]); sys.exit(0)
-    except Exception:
-        continue
-sys.exit(1)
-PY
+  local before after
+  before=$(worker_identity) || return 1
+  python3 -c 'import time; time.sleep(3)'
+  after=$(worker_identity) || return 1
+  [ "$before" = "$after" ] || return 1
+  printf '%s\n' "$after"
 }
 deadline=$((SECONDS + WAIT))
 while [ "$SECONDS" -lt "$deadline" ]; do
@@ -206,6 +274,6 @@ while [ "$SECONDS" -lt "$deadline" ]; do
 done
 echo "deploy_cc.sh: NOT verified -- the agent did not start in tmux session '$NAME' within ${WAIT}s." >&2
 echo "  last lines of the pane:" >&2
-tmux capture-pane -p -t "=$NAME:" 2>/dev/null | grep -v '^$' | tail -6 | sed 's/^/    /' >&2
+tmux capture-pane -p -t "=$NAME:" 2>/dev/null | grep -v '^$' | tail -6 | sed 's/^/    /' >&2 || true
 echo "  inspect: byobu attach -t $NAME      discard: tmux kill-session -t '=$NAME'" >&2
 exit 1
