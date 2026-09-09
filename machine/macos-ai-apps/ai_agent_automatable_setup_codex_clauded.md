@@ -173,6 +173,8 @@ Claude Code config:
   settings:
 
 {
+  "model": "claude-fable-5-1",
+  "effortLevel": "max",
   "permissions": {
     "defaultMode": "bypassPermissions",
     "skipDangerousModePermissionPrompt": true
@@ -395,6 +397,8 @@ if path.exists() and path.read_text().strip():
     data = json.loads(path.read_text())
 else:
     data = {}
+data["model"] = "claude-fable-5-1"
+data["effortLevel"] = "max"
 permissions = data.setdefault("permissions", {})
 permissions["defaultMode"] = "bypassPermissions"
 permissions["skipDangerousModePermissionPrompt"] = True

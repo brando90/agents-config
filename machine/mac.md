@@ -14,7 +14,7 @@
 # Clone agents-config if not present
 git clone git@github.com:brando90/agents-config.git ~/agents-config 2>/dev/null || true
 
-# Symlink Claude Code settings (model=opus, effortLevel=high)
+# Symlink Claude Code settings (model=claude-fable-5-1, effortLevel=max)
 mkdir -p ~/.claude
 ln -sf ~/agents-config/claude-code-settings.json ~/.claude/settings.json
 
