@@ -26,12 +26,22 @@ another CLI, pass them explicitly:
 codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
 ```
 
+Claude Code reviews use `claude-fable-5-1` with effort `max`. These strongest-model
+defaults govern review and correctness-critical dispatches; experiment workloads
+use the regular thinking tier (Claude `claude-sonnet-5`, or a non-Astra Codex tier
+such as GPT-5.6 Terra), escalating when the workload demonstrably needs it or
+Brando requests it. Record the exact model.
+If one subscription is exhausted, use the other approved subscription at the same
+tier and report the substitution; if both are exhausted, stop rather than using
+provider keys. Full policy: `~/agents-config/INDEX_RULES.md` Hard Rule 8.
+
 ## CLI-only for all LLM work (mandatory — INDEX_RULES.md Hard Rule 9)
 
 Never make direct LLM-provider API calls (`anthropic`, `openai`, `litellm`,
 `google.genai`, raw HTTP to `api.anthropic.com` / `api.openai.com` /
 `generativelanguage.googleapis.com`). Always route LLM-driven work through the
-approved locally-authenticated CLIs: `clauded -p` and `codex exec`. They use
+approved locally-authenticated CLIs: `clauded -p`, `codex exec`, and `antigravity`
+for general model work. Quality assurance (QA) uses Claude Code and Codex only. They use
 cached subscription/OAuth credentials, self-throttle, and leave observable
 transcripts. Gemini is intentionally not installed or used.
 

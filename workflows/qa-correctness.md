@@ -8,12 +8,12 @@
 
 **Any model QA dispatch ALWAYS runs through the locally-logged-in CLIs: `codex` and `claude` / `clauded`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth). They are what Brando has approved for agent QA.
 
-**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an auth error, treat it as a **local setup issue**: skip that stage, note the skip in the QA report, and suggest the user re-run the CLI's interactive login (`codex login` or `claude login`). Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
+**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an authentication error, substitute a working approved CLI for that stage at Hard Rule 8's review tier and report the substitution; suggest the unavailable CLI's interactive login (`codex login` or `claude auth login`) separately. If neither approved CLI can run, stop and report the completed and outstanding stages. Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
 
 Fallback order when a CLI stage fails:
 1. Next CLI in the chain.
-2. Self-dispatch with the current CLI (repeat the stage).
-3. Never use API keys.
+2. Self-dispatch with the current CLI only if a fresh invocation succeeds (repeat the stage).
+3. If neither CLI can run, stop and report the blocker under Hard Rule 8; never use API keys.
 
 This applies to any workflow that dispatches a reviewer.
 
@@ -89,7 +89,10 @@ MAJOR_ISSUES: [count]
 FIXES_APPLIED: [count]
 STRUCTURAL: PASS | IMPROVED | SKIP
 SUMMARY: [1-2 sentences]
-If everything looks correct, use PASS with all counts 0."
+If everything looks correct, use PASS with all counts 0.
+
+TL;DR: Review correctness and structure, apply minimal necessary fixes,
+verify them deterministically, and return the verdict block above."
 ```
 
 ### Step 2: Dispatch the reviewer
@@ -219,17 +222,19 @@ reviewer's verdict** is the final verdict.
 
 ### Per-stage fallback (coin-flip)
 
-A stage can fail for many reasons: auth/credits exhausted, context-window
-overflow, backend 5xx, sandbox-blocked tools, etc. **Never bail.** When a
-stage fails, replace that stage with a working CLI:
+A stage can fail for many reasons: authentication or credits exhausted,
+context-window overflow, server errors, sandbox-blocked tools, etc. When a
+stage fails, replace that stage with a working CLI at Hard Rule 8's review tier:
 
 1. Use the other approved CLI if it has not failed yet (`codex` or `clauded`).
-2. **Self-dispatch** the agent currently driving the chain if no other CLI
-   works (it's already authed and running, so it's guaranteed available).
-3. Always complete the planned number of stages — count substitutions toward
-   the count, do not skip.
+2. **Self-dispatch** the agent currently driving the chain if its CLI can
+   still start a fresh invocation. An existing conversation does not prove
+   that a new invocation has working authentication or remaining quota.
+3. Complete the planned number of stages when a CLI is available — count
+   substitutions toward the count, do not skip. If both CLIs fail, stop and
+   report completed stages and the blocker; do not claim the chain passed.
 
-The driving agent is always available, so the worst case is **N×
+If only the driving agent's CLI remains available, use **N×
 self-review of the same model** (e.g., CC → CC → CC). That is still useful:
 each stage is a fresh context that re-examines previous fixes with
 different attention. Cross-model is preferred but not required.
@@ -276,4 +281,7 @@ fixes.
   it does not by itself demand a human or another review round).
 - Changes touch security-critical code (auth, secrets, permissions).
 - Changes modify evaluation metrics or scoring logic.
-- Merging to main or any shared branch (human makes final merge decision).
+- Merging to main or a shared branch requires existing user authorization;
+  Trigger Rule 46 supplies standing authorization for remote-worker landings
+  once its review and merge requirements pass. Follow an explicit instruction
+  to leave work unmerged or unpushed.
