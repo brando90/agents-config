@@ -55,6 +55,8 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 **Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, proportionate QA, dual TLDR [top + end], config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
+Questions about another agent follow [Trigger Rule 47](INDEX_RULES.md): distinguish current response activity, scheduled follow-ups, and verified worker/results state; an `idle` conversation alone does not establish overall task status. Both agent entry points carry the reminder.
+
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
 ### Why this exists

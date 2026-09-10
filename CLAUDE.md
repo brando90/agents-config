@@ -7,6 +7,10 @@
 - **No unnecessary drafts** — If told to "send" an email, send it. Only create a draft if explicitly asked for a draft.
 - **When external fetches fail** — If a needed external resource (video transcript, paywalled page, gated API, IP-blocked service) is unreachable: (1) log every attempt and its failure mode in a `fetch_attempts.md` next to the work, (2) capture whatever lighter metadata *is* reachable (e.g. oEmbed for YouTube), (3) build the rest of the deliverable as a clearly-marked skeleton with a populate-script, (4) ask the user to supply the missing piece. **Never fabricate the missing content.** Canonical example: `experiments/03_youtube_transcript_takeaway_loop/`.
 
+## Questions about other agents
+
+For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
+
 ## Mandatory Response Protocol (inline — do not skip)
 
 These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the highest-priority rules at session start without needing to dereference. They are mirrored in `AGENTS.md` for Codex. Hard Rules apply to EVERY response in EVERY session; triggered rules apply when their stated condition is met.

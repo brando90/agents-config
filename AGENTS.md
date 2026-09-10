@@ -16,6 +16,10 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 5. **Fresh config** — At the start of each new task, run `git -C ~/agents-config pull --ff-only` and re-read `~/agents-config/INDEX_RULES.md`.
 6. **Expand acronyms + jargon on first use** — every response, including ordinary chat, not just reader-facing prose. Write out any abbreviation or project-specific term the first time it appears: `TBH (to be honest)`, `SCSC (Smooth Conjunctive Score for Code verification)`, `the fresh re-run` (rename an opaque in-house label like "Arm 2" rather than just defining it). Short form is fine afterwards within that response. Full text: `~/agents-config/INDEX_RULES.md` Hard Rule 10.
 
+## Questions about other agents
+
+For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
+
 ## Codex CLI default
 
 Codex CLI should always default to `gpt-6-astra` (GPT-6 Astra) with `model_reasoning_effort = "ultra"` (Codex-only level above `xhigh`/`max`; updated 2026-09-08).
