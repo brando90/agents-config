@@ -59,6 +59,8 @@ Questions about another agent follow [Trigger Rule 47](INDEX_RULES.md): distingu
 
 Review selection has one [fallback and acceptance procedure](workflows/qa-correctness.md#review-fallback-and-acceptance), governed by [Hard Rule 8](INDEX_RULES.md). Ordinary changes may use a disclosed, capable smaller reviewer from the other company when its strongest model cannot run. Critical changes and requested Mega QA stages retain strongest-model acceptance; benchmark reference changes still require both families at that tier. Entry points summarize this policy instead of duplicating its decision order.
 
+Remote work follows [Trigger Rule 48](INDEX_RULES.md) and the [reliable-dispatch procedure](workflows/reliable-agent-dispatch.md): a strong master chooses proportionate workers and effort, budgets for finish/review, verifies synchronized handoff files, and prepares remote failure detection plus bounded provider recovery. Meaningful quota/switch/blocker events notify the master and Brando. Launchers do not implement automatic failover merely because the policy exists.
+
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
 ### Why this exists
@@ -374,25 +376,15 @@ Codex CLI has no `remote-control` command. Auth is via **ChatGPT login** (intera
 ```bash
 # Start a persistent Codex session
 tmux new -As codex
-codex  # sign in with ChatGPT when prompted, or set OPENAI_API_KEY
+codex  # sign in with the approved ChatGPT subscription when prompted
 
 # Reconnect later from any device
 ssh <server> -t 'tmux attach -t codex'
 ```
 
-### Gemini CLI — intentionally not used
+### Other providers and the deprecated Gemini CLI
 
-Do not install or use the Gemini CLI on Brando's machines. The approved
-agent-review CLIs are Codex and Claude Code only. If an old setup has Gemini
-installed, remove it:
-
-```bash
-npm uninstall -g @google/gemini-cli
-rm -rf ~/.gemini
-```
-
-If a task appears to require Gemini, use Codex/Claude or stop and ask for an
-explicit exception.
+Do not revive the deprecated Gemini CLI as an untested fallback. The master may select Google models through a working supported subscription client, or Cursor-hosted models, Grok and other providers, after verifying the target client, exact model/effort, tools and subscription-only billing under [Rule 48](workflows/reliable-agent-dispatch.md). Codex and Claude remain the preferred reviewers; the [acceptance policy](workflows/qa-correctness.md#review-fallback-and-acceptance) preserves mandatory families and capability. A provider name alone neither establishes access nor authorizes API keys or paid credits.
 
 ### Server rollout checklist
 
@@ -422,7 +414,7 @@ claude auth status --text
 ```
 
 - If `TOKEN` is set → it overrides OAuth login and blocks RC. Fix: `unset CLAUDE_CODE_OAUTH_TOKEN`
-- If auth status says `Auth token: CLAUDE_CODE_OAUTH_TOKEN` → same problem, token is taking priority
+- If auth status says authentication through the `CLAUDE_CODE_OAUTH_TOKEN` environment variable → same problem, token is taking priority
 - If auth status says `Claude Max Account` → auth is fine, problem is elsewhere
 
 **2. "Long-lived tokens are limited to inference-only":**

@@ -183,7 +183,7 @@ Claude Code config:
 
 - If jq is available, use jq to merge. Otherwise use a small Python script.
 - Preserve unrelated Claude settings.
-- Keep these strongest-model defaults even when one review uses a temporary
+- Keep these strongest-master defaults; select regular execution workers with explicit model/effort under Trigger Rule 48 rather than inheriting the master's maximum. Keep global settings unchanged when one review uses a temporary
   fallback. Reviewer selection follows ~/agents-config/INDEX_RULES.md Hard Rule 8
   and ~/agents-config/workflows/qa-correctness.md, "Review fallback and acceptance";
   a fallback is an explicit invocation, not a global settings change.
