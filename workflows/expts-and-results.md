@@ -36,6 +36,8 @@ Encouraged (not mandatory):
 
 ## Experiment Directory Structure
 
+When the user assigns workstream labels, name the home `experiments/<NN>_<LABEL>_<descriptive_setup>/`, for example `70_E1_harbor_evals_code`. Explain each label in the project experiment index and keep one canonical root per number. Follow exact user-specified names, including pause-marker order. Otherwise put a requested pause marker after the label, for example `73_S2_PAUSED_sol_unsolved_to_astra_ultra`; the status record still controls whether work may run. Unlabelled projects keep the existing descriptive format. A naming change does not authorize a new experiment, a restart, or altered scientific inputs. Coordinate owners, update prospective consumers and check preserved contents, while leaving frozen evidence and running private paths intact; record the old-to-new map in the archive index.
+
 Each experiment lives under `experiments/<NN>_<name>/` in the project repo. Every experiment **must** have a `README.md` at its root and at least one versioned sub-experiment directory.
 
 ```
