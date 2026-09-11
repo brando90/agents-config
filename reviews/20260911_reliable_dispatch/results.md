@@ -1,16 +1,16 @@
 # Reliable-dispatch policy review
 
-**TLDR-start:** The policy requires proportionate execution, capacity reserved for finishing, verified remote handoffs and bounded recovery across eligible providers. Independent strongest-model review passed; the minor wording finding is fixed, and publication is in progress.
+**TLDR-start:** The policy requires proportionate execution, capacity reserved for finishing, verified remote handoffs and bounded recovery across eligible providers. Independent strongest-model review passed, its minor wording finding is fixed, and the policy is merged to main and synchronized locally and on the remote cluster.
 
-**Status:** RUNNING — publication and remote synchronization
-**Last updated:** 2026-09-11 12:34 PDT
+**Status:** DONE — policy published and delivered
+**Last updated:** 2026-09-11 12:38 PDT
 
 | Phase | State | Evidence |
 |---|---|---|
 | Policy inventory and draft | DONE | Trigger Rule 48; workflows/reliable-agent-dispatch.md; synchronized entry points |
 | Deterministic documentation checks | DONE | Added relative links resolve; code fences balanced; unique Rule 48; git diff --check passes; staged secret scan passes |
 | Independent acceptance review | DONE | gpt-6-astra/ultra; PASS; 0 critical, 0 major, 1 minor wording finding fixed |
-| Main publication and remote synchronization | IN PROGRESS | Pull request https://github.com/brando90/agents-config/pull/55; preserve unrelated shared-checkout changes |
+| Main publication and remote synchronization | DONE | Pull request https://github.com/brando90/agents-config/pull/55 verified MERGED at 8506eaa24df33aa990361cfcd1e6c3e692920232; local and remote policy hashes match |
 
 ## Acceptance evidence and reconciliation
 
@@ -31,4 +31,12 @@
 - Health: shared storage had 13,882 gibibytes free. The node-local scratch threshold failed, so the owned review checkout, logs and temporary files used healthy shared storage. No graphics-processing-unit work.
 - New policy requires a tested remote recovery mechanism before future unattended dispatch. Existing scientific inputs and benchmark-reference acceptance requirements remain fixed.
 
-**TLDR-end:** Independent strongest-model acceptance is complete with the wording fix applied. Verified main publication and delivery remain separate from review, and a policy document is not an installed recovery service.
+## Verified publication and delivery
+
+- Pull request https://github.com/brando90/agents-config/pull/55 is MERGED, verified through GitHub; merged commit 8506eaa24df33aa990361cfcd1e6c3e692920232. Verified source branch head bb81533c0ea6ba565f22d3450d3b83a01181dee4 matched the merge request; policy contents equal the merged revision.
+- Local /Users/sanmikoyejo-mba-1/agents-config and remote /dfs/scratch0/brando9/agents-config safely fast-forwarded to that main revision. The unrelated local claude-code-settings.json bytes and remote deleted harbor_snap.sh / untracked health-check backup were preserved.
+- Both workflow files have SHA256 8d9d20f2a179354882902bfeab148f8a9acb6fddae641ba1ee6997fe36ad755b. Final validation: 17 changed files scanned, 35 added relative links valid, diff whitespace/fences/unique rule checks pass, staged secret scan clear.
+- Existing remote supervisor 01a08e0e-8d58-73a2-81bf-7468b328a8e9 received queued update 01a091f9-bf84-74e2-a377-b4dcb9bd61c4, including exact revision, workflow hash and adoption instructions. Queue acceptance is verified; in-memory acknowledgement and actual recovery deployment are not certified by this policy task.
+- Research-job completion is a separate ongoing responsibility. This DONE status covers the requested agents-config policy update and delivery only.
+
+**TLDR-end:** The reviewed rules are on main and their exact contents are available on the laptop and shared remote config checkout. Future dispatches must verify their own recovery mechanism; neither this document nor the queued supervisor update proves existing experiments finished.
