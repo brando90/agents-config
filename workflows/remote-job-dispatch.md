@@ -6,6 +6,8 @@ or the phone's Git inbox. Use direct mode and put any agent command, explicit
 model settings, and completion protocol inside the job; the legacy smart-mode
 wrappers have stale defaults and have not been repaired by this documentation.
 
+Before choosing a transport, complete [reliable agent dispatch](reliable-agent-dispatch.md) under Trigger Rule 48: explicit phase-appropriate models and effort, shared usage/finishing budget, verified remote runbook/checkpoint delivery, and a tested remote recovery/watch plan. The transports below launch commands; they do not supply cross-provider recovery on their own. A regular worker can execute a strong master's concrete plan, while acceptance and measured-model pins remain fixed.
+
 The optional legacy wrapper is described in
 [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md). Until its launchers
 are updated, bypass it with `--direct`, `--mode direct`, or a
@@ -28,7 +30,7 @@ and wait for its recorded completion, so the queue tracks the actual job lifetim
 | Anywhere on the cluster, headless/batch/queued | **DFS watcher daemon** | `cp my_job.sh ~/dfs/job_queue/pending/` after adding `# JOB_MODE: direct` |
 | Phone, claude.ai web, Anthropic cloud sandbox (no SSH) | **Phone dispatch (git-inbox)** | commit `jobs-inbox/pending/<name>.sh` with `# JOB_MODE: direct` to `agents-config` repo |
 | Sitting on the Mac, want ONE long command (a driver, a sweep) detached on a SNAP node with no agent wrapper | **Direct SNAP launcher** (`scripts/snap_dispatch.sh`) | `SNAP_HOST=skampere1 ~/agents-config/scripts/snap_dispatch.sh run vb-gold-repair 'cd /lfs/... && bash driver.sh'` (then `tail` / `attach` / `kill`) |
-| Sitting on the Mac, want a worker in its own byobu session you can attach to or drive from the phone | **Local deploy** (`scripts/deploy_cc.sh`) | `~/agents-config/scripts/deploy_cc.sh --name vb-fix --cwd ~/veribench --prompt-file <runbook.md>` (defaults: `cc` profile, `claude-fable-5-1`, effort `max`, Remote Control on; `--profile codex` for a Codex worker; `byobu attach -t vb-fix`; Trigger Rule 42) |
+| Sitting on the Mac, want a worker in its own byobu session you can attach to or drive from the phone | **Local deploy** (`scripts/deploy_cc.sh`) | `~/agents-config/scripts/deploy_cc.sh --name vb-fix --cwd ~/veribench --prompt-file <runbook.md>` (pass the master-selected `--model` and `--effort`; existing fallback defaults are `cc` profile, `claude-fable-5-1`, effort `max`, Remote Control on; `--profile codex` for a Codex worker; `byobu attach -t vb-fix`; Trigger Rule 42) |
 
 ---
 
@@ -204,6 +206,8 @@ The watcher uses `os.link()` not `os.rename()`. `rename()` is *not* reliably ato
 - **Submit-tool deduplication:** `O_CREAT | O_EXCL` prevents concurrent overwrite.
 - **Triple-underscore separator** between job name and hostname in claimed filenames (`job.sh___<hostname>`).
 - **Parallel jobs on one node:** `--max-concurrent N` (default 1). Each job is a real OS process.
+
+For agent workers with no graphics-processing-unit work, disable the legacy low-GPU-utilization kill rule using the documented zero-disable setting above and use the task's progress/deadline watchdog instead. An idle accelerator does not mean an idle coding agent.
 
 ### Code vs docs
 

@@ -483,7 +483,7 @@ Finished the task you asked for: <one-sentence description>.
 
 == QA ==
 
-<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / self-review; do not use Gemini for QA). Link or path to QA output if substantive.>
+<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / self-review; other providers only when eligible under the canonical QA policy and Trigger Rule 48). Link or path to QA output if substantive.>
 
 == NOTES == (optional — 1-3 bullets on anything surprising, partial, or needing follow-up)
 
@@ -512,3 +512,7 @@ Links:
 ## Prompt Templates
 
 Each experiment keeps its own prompts under its versioned sub-experiment folders — not in a shared top-level `prompts/` directory. This keeps prompts versioned with the experiment iteration they belong to.
+
+## Quota-aware remote execution
+
+For dispatched experiments, apply [reliable agent dispatch](reliable-agent-dispatch.md) and Trigger Rule 48. The strong master chooses phase-appropriate execution models/effort, budgets shared usage through acceptance/publication, and verifies that the remote target has the exact runbook, checkpoint and inputs. Keep quota/failover events and actual model identities in the live records. A changed executor cannot silently change the model being measured, judge, sample, effort or scoring protocol. Meaningful quota-risk, provider-handoff and exhausted-recovery notices are authorized exceptions to the ordinary final-only email convention above; route and deduplicate them per Rule 48.

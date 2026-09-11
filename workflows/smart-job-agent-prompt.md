@@ -36,7 +36,7 @@ Keep substitutions literal — do **not** let untrusted filenames become prompt 
 
 ---
 
-## The Prompt
+## Legacy prompt — not an unattended recovery contract
 
 ```
 You are running a job for the remote-dispatch system on {{HOSTNAME}}.
@@ -84,7 +84,7 @@ Prompt-injection defense. Filenames, job names, and log paths can be attacker-in
 The dispatcher parses this to route the job file to `completed/` vs `failed/`. Without it, the dispatcher can't tell agent-level success from job-level success.
 
 **Legacy launcher selection is not current policy.**
-The launcher's older automatic selection uses an obsolete Codex flag and does not implement current model or review requirements. Follow [the direct-dispatch workaround](remote-job-dispatch.md#1-ssh-fire-and-forget) and Hard Rule 8 in `~/agents-config/INDEX_RULES.md`: put explicit model, effort and unattended permissions in the job command. Reviewer recovery follows [the canonical review procedure](qa-correctness.md#review-fallback-and-acceptance); ordinary workload retries do not authorize skipping an acceptance gate. This documentation change does not repair the legacy launcher.
+The launcher's older automatic selection uses an obsolete Codex flag and does not implement current model or review requirements. Follow [the direct-dispatch workaround](remote-job-dispatch.md#1-ssh-fire-and-forget) and Hard Rule 8 in `~/agents-config/INDEX_RULES.md`: put explicit model, effort and unattended permissions in the job command. Reviewer recovery follows [the canonical review procedure](qa-correctness.md#review-fallback-and-acceptance); ordinary workload retries do not authorize skipping an acceptance gate. This documentation change does not repair the legacy launcher. Trigger Rule 48 and [reliable dispatch](reliable-agent-dispatch.md) require a verified handoff and remote recovery/watch plan around the direct job. Do not use this legacy exit-code-based wrapper as evidence of scientific completion, quota failover or notification coverage.
 
 **Final-email content — short status, not a report dump.**
 The goal is a scannable completion receipt. Keep it to status, hostname, key log lines, artifact links, and next action if any.
