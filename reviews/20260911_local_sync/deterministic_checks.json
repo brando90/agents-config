@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "scope": "Git flag semantics and synchronization protocol primitives; not a claim that future scheduled model turns have executed",
+  "cases": [
+    {
+      "case": "ignored incoming file appears after preflight",
+      "outcome": "PASS: merge refused; local bytes preserved"
+    },
+    {
+      "case": "remote-tracking ref moves after inspection",
+      "outcome": "PASS: only immutable inspected commit installed"
+    },
+    {
+      "case": "tracked local change",
+      "outcome": "PASS: preflight dirty check rejects update"
+    },
+    {
+      "case": "staged local change",
+      "outcome": "PASS: staged-change preflight rejects update"
+    },
+    {
+      "case": "unpublished local commit",
+      "outcome": "PASS: ancestry preflight rejects update"
+    },
+    {
+      "case": "second invocation while run lock held",
+      "outcome": "PASS: nonblocking acquisition refused"
+    },
+    {
+      "case": "nonresponsive external operation",
+      "outcome": "PASS: subprocess terminated within declared timeout"
+    },
+    {
+      "case": "parent/child file collisions",
+      "outcome": "PASS: both directions rejected"
+    }
+  ],
+  "scratch": "/var/folders/yy/4p8d8d5j0_307c2lt30hsqdr0000gn/T/sync-policy-checks-_i82lb7e"
+}
