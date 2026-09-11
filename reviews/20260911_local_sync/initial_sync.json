@@ -1,0 +1,121 @@
+{
+  "at": "2026-09-11T15:23:10.927150-07:00",
+  "editor": "/Users/sanmikoyejo-mba-1/veribench",
+  "before": "027f166b4f21d79dbdab719a02243fb84bd58359",
+  "after": "3a5eb026652c072992debc1ac6ee2ae04f43da08",
+  "status": "VERIFIED_FAST_FORWARD",
+  "incoming_changed_paths": 136,
+  "untracked_and_ignored_files_preserved": 62906,
+  "exclusive_window": "All known native writers remained OS-paused; other local tasks idle or explicitly confirmed isolated-checkout-only; coordinator locks held across preflight/merge/postcheck",
+  "paused_writers_before": [
+    [
+      "89642",
+      "TN"
+    ],
+    [
+      "90927",
+      "TN"
+    ],
+    [
+      "70806",
+      "T"
+    ],
+    [
+      "90533",
+      "T"
+    ],
+    [
+      "86110",
+      "T+"
+    ],
+    [
+      "56482",
+      "TN"
+    ],
+    [
+      "23408",
+      "T"
+    ],
+    [
+      "65500",
+      "TN"
+    ],
+    [
+      "70482",
+      "TN"
+    ],
+    [
+      "33148",
+      "T"
+    ],
+    [
+      "11382",
+      "T"
+    ],
+    [
+      "20689",
+      "T"
+    ]
+  ],
+  "paused_writers_after": [
+    [
+      "89642",
+      "TN"
+    ],
+    [
+      "90927",
+      "TN"
+    ],
+    [
+      "70806",
+      "T"
+    ],
+    [
+      "90533",
+      "T"
+    ],
+    [
+      "86110",
+      "T+"
+    ],
+    [
+      "56482",
+      "TN"
+    ],
+    [
+      "23408",
+      "T"
+    ],
+    [
+      "65500",
+      "TN"
+    ],
+    [
+      "70482",
+      "TN"
+    ],
+    [
+      "33148",
+      "T"
+    ],
+    [
+      "11382",
+      "T"
+    ],
+    [
+      "20689",
+      "T"
+    ]
+  ],
+  "experiment71": [
+    "71_vals_ai_eval_code"
+  ],
+  "command": [
+    "git",
+    "merge",
+    "--ff-only",
+    "--no-autostash",
+    "--no-overwrite-ignore",
+    "3a5eb026652c072992debc1ac6ee2ae04f43da08"
+  ]
+}

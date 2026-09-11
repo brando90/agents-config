@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "veribench-remote-progress-and-local-sync",
+  "kind": "heartbeat",
+  "name": "VeriBench remote progress and local sync",
+  "status": "ACTIVE",
+  "rrule": "FREQ=MINUTELY;INTERVAL=30",
+  "target_thread_id": "01a08dfa-efbd-71e3-b877-9245ab9c1127",
+  "created_at": 1789165535938,
+  "updated_at": 1789165535938,
+  "verified_at": "2026-09-11T15:26:44.539048-07:00",
+  "prompt_sha256": "69a584ec832ac7500cc597231a195f2fcfa2bdcd9e52acebacb8c3a83ff532a7",
+  "source_prompt_sha256": "da445a711d8f60a530792832435c7aee0505fae3811eaf8587a9ec7034250352",
+  "normalization": "App removes the single final newline; all prompt lines match exactly",
+  "initial_manual_sync_receipt": "/Users/sanmikoyejo-mba-1/.codex/task-state/vb-remote-sync/initial_sync.json",
+  "scheduled_execution_observed": false
+}
