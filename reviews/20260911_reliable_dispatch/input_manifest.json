@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-11T19:24:02.404676+00:00",
+  "source_revision": "7a88b4085792aa12e3f8d5bdabb3e0f64b558b42",
+  "files": {
+    "AGENTS.md": "f5f5c5681364fe382fcd6ace6909189436a8eef379374038f3c74038cf910966",
+    "CLAUDE.md": "fb85661dbb517ed9e61464591d5f426a476396e4260577b9a5ca4ed7b42b8539",
+    "INDEX_RULES.md": "73c6b76a9a2f9c29b19f2928b48f67832940ed400a23d28c38c4953f462b65cb",
+    "README.md": "d070c517b39fc23b7fef2f93cef032e82f1eb11d4f4bc1d0283f54de2e1c7d19",
+    "machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md": "6178e04f3c36f49122888b47775d4820a207bbe54becee81edd921c4413287d4",
+    "reviews/20260911_reliable_dispatch/CKPT_reliable_dispatch.md": "04df7a83f6bd40a2421419df309a8d661ada6dd2b9f651f6cf84a9efc73ac5df",
+    "reviews/20260911_reliable_dispatch/results.md": "86bc3d75f6150f17d9c76cbba4dc8b7f1851c61fe4503b3986e5913bfedd9e70",
+    "workflows/expts-and-results.md": "af31a37138de718a72f1d295917f2fb5e3ea6a64d174ca0eb984ec2f6adb0284",
+    "workflows/qa-correctness.md": "df3283c988d0fbee0733d7db346007efed70ba06d46c38f83155586aab5d1c80",
+    "workflows/reliable-agent-dispatch.md": "98407320d48ddcc07a4d9741965473a2a32c7531969d0479fe273b01ad709c8f",
+    "workflows/remote-job-dispatch.md": "a49cfb3b2269bf1d539d5dcfd933b1074e82f22d4b7fd5064055a5ff1da0a266",
+    "workflows/smart-job-agent-prompt.md": "caf37bbe5fda81772bace6e7c28ff3e657783bec6e6731c962b894cb7655ac3e"
+  },
+  "claude_binary_source": "/dfs/scratch0/brando9/.nvm/versions/node/v24.14.0/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe",
+  "claude_private_binary": "/dfs/scratch0/brando9/ac-reliable-dispatch-20260911/runtime/claude-pinned",
+  "expected_role": "critical shared-policy acceptance",
+  "primary_model": "claude-fable-5-1",
+  "primary_effort": "max",
+  "fallback_model": "gpt-6-astra",
+  "fallback_effort": "ultra"
+}
