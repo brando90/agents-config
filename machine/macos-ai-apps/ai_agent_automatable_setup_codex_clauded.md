@@ -183,6 +183,10 @@ Claude Code config:
 
 - If jq is available, use jq to merge. Otherwise use a small Python script.
 - Preserve unrelated Claude settings.
+- Keep these strongest-model defaults even when one review uses a temporary
+  fallback. Reviewer selection follows ~/agents-config/INDEX_RULES.md Hard Rule 8
+  and ~/agents-config/workflows/qa-correctness.md, "Review fallback and acceptance";
+  a fallback is an explicit invocation, not a global settings change.
 
 Open macOS Privacy & Security panes:
 - Open the relevant System Settings panes for me.

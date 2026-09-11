@@ -1,5 +1,9 @@
 # TODO: Make Codex QA Work on SNAP Cluster (skampere nodes)
 
+**TLDR:** Historical troubleshooting record from April 2026, retained as evidence. Its model names, removed `--full-auto` flag, and automatic shell fallback examples are superseded; do not copy them into new dispatches.
+
+For current commands and reviewer selection, use [Hard Rule 8](INDEX_RULES.md) and [Review fallback and acceptance](workflows/qa-correctness.md#review-fallback-and-acceptance); for cluster access use [the current SNAP machine guide](machine/snap.md).
+
 **GitHub Issue:** [brando90/agents-config#31](https://github.com/brando90/agents-config/issues/31)
 
 ## Problem

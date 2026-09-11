@@ -57,6 +57,8 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 Questions about another agent follow [Trigger Rule 47](INDEX_RULES.md): distinguish current response activity, scheduled follow-ups, and verified worker/results state; an `idle` conversation alone does not establish overall task status. Both agent entry points carry the reminder.
 
+Review selection has one [fallback and acceptance procedure](workflows/qa-correctness.md#review-fallback-and-acceptance), governed by [Hard Rule 8](INDEX_RULES.md). Ordinary changes may use a disclosed, capable smaller reviewer from the other company when its strongest model cannot run. Critical changes and requested Mega QA stages retain strongest-model acceptance; benchmark reference changes still require both families at that tier. Entry points summarize this policy instead of duplicating its decision order.
+
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
 
 ### Why this exists

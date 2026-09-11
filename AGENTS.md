@@ -30,14 +30,9 @@ another CLI, pass them explicitly:
 codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
 ```
 
-Claude Code reviews use `claude-fable-5-1` with effort `max`. These strongest-model
-defaults govern review and correctness-critical dispatches; experiment workloads
-use the regular thinking tier (Claude `claude-sonnet-5`, or a non-Astra Codex tier
-such as GPT-5.6 Terra), escalating when the workload demonstrably needs it or
-Brando requests it. Record the exact model.
-If one subscription is exhausted, use the other approved subscription at the same
-tier and report the substitution; if both are exhausted, stop rather than using
-provider keys. Full policy: `~/agents-config/INDEX_RULES.md` Hard Rule 8.
+Claude Code defaults to `claude-fable-5-1` / `max`. Keep strongest builder defaults. Review selection follows [Hard Rule 8](INDEX_RULES.md) and the canonical [fallback and acceptance procedure](workflows/qa-correctness.md#review-fallback-and-acceptance): prefer the other company's strongest model; ordinary changes may use one disclosed suitable smaller-model fallback before a fresh strongest-model same-company review. Critical changes and requested Mega QA stages retain strongest-model acceptance; benchmark reference data still requires both families at their strongest tier (Trigger Rule 43). Diagnose failure scope, preserve explicit model requirements, and never use provider keys. Record the actual model, effort and unmet gates.
+
+Experiment workloads use regular thinking models such as `claude-sonnet-5` or `gpt-5.6-terra`, escalating when needed or Brando requests it; record exact model identifiers. Human handoff recommendations remain proportionate (Trigger Rule 36). Global model settings are not changed by a temporary review fallback.
 
 ## CLI-only for all LLM work (mandatory — INDEX_RULES.md Hard Rule 9)
 

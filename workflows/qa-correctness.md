@@ -1,6 +1,6 @@
 # Workflow: QA — Proportionate Review
 
-**TLDR:** QA is mandatory for non-trivial work, but model-reviewer dispatch is not. Use deterministic checks for routine prose/docs, ONE opposite-agent review round for code/behavior or claim/result risk (two rounds max for the hardest changes — token budget), and Mega QA only when Brando manually requests it.
+**TLDR:** Quality assurance (QA) uses deterministic checks for routine prose and one review round for substantive changes. Prefer a capable reviewer from the other company, allow a disclosed smaller-model fallback for ordinary changes, preserve strongest-model acceptance for critical changes, and run Mega QA only when Brando requests it.
 
 > **Design: A1 builds → appropriate QA tier.** The builder picks the lightest tier that covers the risk. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
 
@@ -8,14 +8,35 @@
 
 **Any model QA dispatch ALWAYS runs through the locally-logged-in CLIs: `codex` and `claude` / `clauded`.** These CLIs authenticate via their own cached local credentials (subscription / OAuth). They are what Brando has approved for agent QA.
 
-**Never fall back to API keys.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make QA work. If a CLI returns an authentication error, substitute a working approved CLI for that stage at Hard Rule 8's review tier and report the substitution; suggest the unavailable CLI's interactive login (`codex login` or `claude auth login`) separately. If neither approved CLI can run, stop and report the completed and outstanding stages. Falling back to API-key paths silently bills pay-per-token instead of using the subscription the user already owns — that is a workflow failure.
+**Never fall back to application programming interface (API) keys or extra paid credits.** Do not set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, or similar to make review work. Use the bounded procedure below for every reviewer dispatch. Cached subscription authentication is required; an already-running conversation does not prove a fresh invocation can run. Suggest interactive login separately only when authentication is actually the problem.
 
-Fallback order when a CLI stage fails:
-1. Next CLI in the chain.
-2. Self-dispatch with the current CLI only if a fresh invocation succeeds (repeat the stage).
-3. If neither CLI can run, stop and report the blocker under Hard Rule 8; never use API keys.
+## Review fallback and acceptance
 
-This applies to any workflow that dispatches a reviewer.
+This is the canonical reviewer-selection procedure for Hard Rule 8, Tier 2 and each requested Mega QA stage. **Select the acceptance requirements before calling models.** A smaller reviewer is an explicit exception to strongest-model defaults, not a change to builder settings.
+
+| Change being reviewed | Eligible acceptance review |
+|---|---|
+| Ordinary behavior changes, routine scripts, or shared workflow guidance without the critical effects below | Prefer the strongest opposite-company model; one suitable smaller reasoning model from that company may substitute when it cannot run. |
+| Security/authentication, permissions or spending controls, evaluation/scoring integrity, substantive scientific claims/results, uncertain correctness, or shared rules controlling review, permissions, spending or publication | A strongest-model reviewer is required. A smaller critic may inform the work but cannot approve it or fill a required stage. |
+| Benchmark reference data (gold answers, labels, theorem statements, oracle outputs) | Trigger Rule 43: **both Claude and Codex at their strongest tier** must check each accepted change. A same-company fallback cannot waive this requirement. |
+
+Every explicitly requested Mega QA acceptance stage retains its strongest-model floor; use the critical fallback path even for an otherwise ordinary change.
+
+Classify by consequences, not file extension: editing a security rule in Markdown is critical. If the boundary is uncertain, use the critical requirements. Mixed ordinary and critical changes inherit the critical requirements unless their review and acceptance can actually be separated. An explicit user-required reviewer/model or other stricter project gate remains required; do not silently replace it.
+
+**Bounded decision order:**
+
+1. Start with the designated strongest model from the other company (Codex `gpt-6-astra` / `ultra`; Claude `claude-fable-5-1` / `max`). For a requested builder/self-review stage, start with the builder's strongest model instead. Read the actual response and review coverage; a successful process exit alone is not a review.
+2. On failure, record the attempted model, error and established scope. An ambiguous credit/usage error means **that attempt failed**, not that all models at the company are exhausted. Explicit shared-account exhaustion, missing authentication, or a provider outage makes a smaller-model attempt inappropriate. For a recoverable request/tool/context error, repair it without dropping review coverage or weakening security, then retry once. Do not change model merely to address a broken command or missing file. If a failed reviewer left partial edits or findings, inspect and preserve them before continuing; failure is not a clean starting point.
+3. The failing company gets **at most one additional invocation per stage**, used either for that repair/retry or for the strongest suitable remaining reasoning model on the same subscription. For ordinary changes, prefer this smaller opposite-company reviewer over returning to the builder's company. Choose from models evidenced as supported by the installed client/account; use supported reasoning effort, sufficient context and the tools needed for the whole review. A floating alias such as `opus` is not capability evidence: resolve and record its actual model identifier. Do not guess a succession of model names or treat more effort as making a smaller model equivalent. Where quota scope is ambiguous, this one actual review attempt can establish availability; do not spend a separate trivial probe plus a full review.
+4. If the ordinary review still lacks an eligible result, dispatch the strongest model from the other working approved subscription in a **fresh context**; it may be the builder's company. For critical changes, go directly to this strongest-model substitute after an unrecoverable failure, unless the required company/model itself is mandatory. Do not automatically add an advisory smaller-model call: use one only when its limited critique is useful within the same attempt budget, and mark it advisory. Never count it as critical acceptance. Maximum **three invocations per required stage** (primary, optional one retry/alternative, one strongest-model substitute), not an unbounded model ladder.
+5. Stop when an eligible review succeeds. On exhausted attempts, or an unmet mandatory company/model gate, report the completed checks and outstanding acceptance requirement. Useful editing and deterministic verification may continue, but **do not merge, publish, or claim the protected change accepted** until the required review exists. Renew attempts only after relevant new evidence (for example a quota reset or repaired login) or an explicit user request.
+
+A review that identifies defects is a valid review, not an availability failure: resolve its findings rather than searching for a model that will say PASS. Failed invocations and substitutes are attempts within the same requested review stage; only a completed eligible review fulfills it, and these attempts do not authorize extra rounds. A fresh same-company review adds a second examination but does not establish cross-company independence. Different companies can still share mistakes; none of these choices guarantees no regression.
+
+**Record the review evidence.** Alongside the existing verdict block, report the builder and actual reviewer model identifiers, reasoning efforts, role (`acceptance` or `advisory`), ordinary/critical/reference classification, reviewed commit or diff, fallback reason and known failure scope, tests/coverage limits, and any unmet gate. Report unverified model metadata as unverified; do not infer it from an alias or claim a downgraded run used the strongest model. Any model-dependent acceptance requirement remains pending if the actual reviewer model cannot be established. Compare requested and actual model/effort; evidence of an unexpected model substitution requires rechecking eligibility, not silently accepting the requested model name.
+
+**Independent critique, then reconciliation.** Give the reviewer the requirements, relevant source, exact diff/base, and test evidence before supplying the builder's defense or another reviewer's conclusions. Ask for concrete counterexamples and evidence. The builder records each material finding as fixed, rejected with evidence, or unresolved, then verifies accepted fixes against requirements and deterministic checks. Preserve the original diff/commit so speculative reviewer edits can be compared or reverted. If needed, use a brief evidence-based clarification within the existing round; do not launch a new full review or an open-ended debate. Agreement alone is not evidence, and a final PASS cannot erase an unresolved earlier finding.
 
 ---
 
@@ -97,18 +118,17 @@ verify them deterministically, and return the verdict block above."
 
 ### Step 2: Dispatch the reviewer
 
-Try the primary cross-agent reviewer first. If unavailable (not installed, auth
-error, sandbox failure), fall through to the next option.
+Choose the next eligible invocation with [Review fallback and acceptance](#review-fallback-and-acceptance); these are primary commands, **not an automatic shell fallback chain**. Inspect model errors and review findings separately.
 
 ```bash
-# If you ARE Claude Code (CC) — dispatch Codex, then self-review:
-codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT" \
-  || clauded --model claude-fable-5-1 --effort max -p "$QA_PROMPT"
+# If Claude Code built the change, start with Codex:
+codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
 
-# If you ARE Codex — dispatch CC, then self-review:
-clauded --model claude-fable-5-1 --effort max -p "$QA_PROMPT" \
-  || codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"' "$QA_PROMPT"
+# If Codex built the change, start with Claude Code:
+clauded --model claude-fable-5-1 --effort max -p "$QA_PROMPT"
 ```
+
+Pass any selected smaller model and its supported effort explicitly using the same client flags; record the actual model and why it is eligible. Do not change global configuration for a one-stage fallback.
 
 For unattended review runs in a trusted isolated environment:
 - Codex reviewer: `codex exec --approve-for-me -m gpt-6-astra -c 'model_reasoning_effort="ultra"'`
@@ -118,11 +138,11 @@ If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive
 `claude` instead.
 
-### Single-model fallback
+### Only one company is available
 
-For Tier 2, if only one model is available (e.g., only Claude Code on Anthropic's default environment, or only Codex in an OpenAI sandbox), the agent should still run QA by dispatching **itself** with the QA prompt. In unattended environments, the fallback chain handles this automatically — the last option in the `||` chain is always self-dispatch. If Claude Code must run interactively, use the same QA prompt in `claude` for the self-review round instead.
+A fresh strongest-model review from that company is allowed when the acceptance requirements permit it. Report the missing company diversity. This does not satisfy Trigger Rule 43 or an explicit required cross-company/model gate. Follow the same attempt budget; do not restart the budget by relabeling a failed run as self-review.
 
-Do not use single-model fallback to turn Tier 1 writing polish into model QA. Tier 1 already includes self-review plus deterministic checks.
+Do not turn Tier 1 writing polish into model QA; it already includes self-review and deterministic checks.
 
 ---
 
@@ -135,7 +155,7 @@ The reviewer MUST follow these principles:
 3. **Don't overcomplicate what was already committed.** Even if the original approach was suboptimal, if it's correct and simple, keep it.
 4. **Correctness over elegance.** Always.
 5. **If unsure, leave it and flag it** rather than making a speculative change.
-6. **You are empowered to fix issues.** Apply minimal fixes directly — don't just report.
+6. **You are empowered to fix issues within your assigned ownership.** Record each finding and its evidence before making a minimal fix; when assigned a read-only review, report it for the builder to fix. The builder checks the resulting diff and verifies the fix.
 
 ---
 
@@ -154,7 +174,7 @@ SUMMARY: [1-2 sentences]
 
 - **PASS** — no issues found. Code is correct and structurally healthy.
 - **FIXED** — found issues, applied minimal fixes. All fixes described in summary.
-- **FAIL** — found issues that couldn't be auto-fixed. Escalate to human.
+- **FAIL** — found unresolved issues. The builder may fix and verify them within the existing round; escalate when they cannot be resolved or an acceptance gate remains unmet.
 
 Do not omit this block, even on PASS. The caller should relay it in the final
 QA summary.
@@ -184,7 +204,7 @@ only** (Brando 2026-08-19: Google reviewers — Gemini bot / Antigravity —
 removed from the QA protocol): one independent reviewer, then the builder/self
 review, then the non-builder CLI again **in a fresh context** as the final
 clean-eyes pass. If a CLI is unavailable, the per-stage fallback applies
-(substitute the other approved CLI, else self-dispatch in a fresh context). If
+(use the canonical selection procedure and preserve required acceptance gates). If
 the user requests more rounds, cycle the chain in fresh contexts.
 
 | Builder | Chain (default 3 stages) |
@@ -217,36 +237,13 @@ fresh context each time.
 - If CC built: "mega QA x2" → the chain twice (6 stages)
 - If Codex built: swap CC and Codex positions in the examples above.
 
-Each stage uses the same QA prompt and the same verdict format. The **last
-reviewer's verdict** is the final verdict.
+Each stage uses the same QA prompt and verdict format. The final report includes
+the last reviewer's verdict, resolution of earlier material findings, and the
+state of all required acceptance gates.
 
-### Per-stage fallback (coin-flip)
+### Per-stage fallback
 
-A stage can fail for many reasons: authentication or credits exhausted,
-context-window overflow, server errors, sandbox-blocked tools, etc. When a
-stage fails, replace that stage with a working CLI at Hard Rule 8's review tier:
-
-1. Use the other approved CLI if it has not failed yet (`codex` or `clauded`).
-2. **Self-dispatch** the agent currently driving the chain if its CLI can
-   still start a fresh invocation. An existing conversation does not prove
-   that a new invocation has working authentication or remaining quota.
-3. Complete the planned number of stages when a CLI is available — count
-   substitutions toward the count, do not skip. If both CLIs fail, stop and
-   report completed stages and the blocker; do not claim the chain passed.
-
-If only the driving agent's CLI remains available, use **N×
-self-review of the same model** (e.g., CC → CC → CC). That is still useful:
-each stage is a fresh context that re-examines previous fixes with
-different attention. Cross-model is preferred but not required.
-
-Example (CC built; Codex unavailable):
-
-- Stage 1: CC self-review (substitute) → Stage 2: CC self-review in a fresh
-  context → Stage 3: CC self-review in another fresh context ⇒ chain done in
-  3 stages.
-
-Single-model from the start (only CC available): chain is CC self-review × N
-out of the box; same logic, fewer choices.
+Apply [Review fallback and acceptance](#review-fallback-and-acceptance) separately to each requested stage. A successful eligible substitute completes that stage; a failed invocation or advisory critique does not. Complete the requested number of stages only while eligible subscription reviewers can run, and report missing diversity or incomplete stages explicitly. Repeated strongest-model self-review is permitted only where the task's acceptance rules permit it; it cannot satisfy a mandatory other-company check. Do not add stages merely because a fallback occurred.
 
 ### When Brando typically invokes it
 
@@ -260,15 +257,16 @@ him, never justification for an agent to start the chain itself:
 
 ### Verdict
 
-The last reviewer in the chain produces the final verdict using the standard
-format. No aggregation needed — each reviewer builds on the previous one's
-fixes.
+The last reviewer returns the standard verdict. The builder reports acceptance
+only after all material findings are resolved, required checks pass, and the
+company/model requirements are met. A later PASS cannot overwrite an earlier
+unresolved issue or a missing mandatory review.
 
 ---
 
 ## When to Skip Review
 
-- Typo fixes, comment-only edits, single-line config changes.
+- Typo fixes, comment-only edits, and strictly nonbehavioral configuration edits may use Tier 0/1. A single line is not an exemption: behavior changes, critical controls, benchmark reference data, and explicitly required reviews retain their consequence-based review requirements. Deterministic checks still apply.
 - User explicitly says "skip review" or "no QA."
 - The task was itself a review task (don't recurse — reviewers don't dispatch reviewers).
 
