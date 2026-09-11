@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-11T19:26:36.673116+00:00",
+  "provider": "Claude",
+  "requested_model": "claude-fable-5-1",
+  "requested_effort": "max",
+  "session": "9d73a0b2-ae06-4df0-8f2b-1abc568c1654",
+  "exit_code": 1,
+  "result_is_error": true,
+  "model_usage": {},
+  "message": "You're out of usage credits. Switch to another model to continue.",
+  "scope": "Requested Fable attempt unavailable; all Claude models not proven unavailable. Smaller review is ineligible for critical acceptance.",
+  "review_produced": false,
+  "old_writer_processes": []
+}
