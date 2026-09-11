@@ -11,6 +11,8 @@
 
 For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
 
+When creating or editing saved automation, scheduled-task, or heartbeat prompts, include a descriptive title, one opening purpose summary, and one closing TLDR covering action, update destination, and the existing stopping condition (or its absence). Preserve operational instructions, target, cadence, model, notification settings, and enabled/paused state in readability-only edits. See `~/agents-config/INDEX_RULES.md` Trigger Rule 36 for summary labels and longer-header exceptions.
+
 ## Mandatory Response Protocol (inline — do not skip)
 
 These are duplicated here from `~/agents-config/INDEX_RULES.md` so you see the highest-priority rules at session start without needing to dereference. They are mirrored in `AGENTS.md` for Codex. Hard Rules apply to EVERY response in EVERY session; triggered rules apply when their stated condition is met.

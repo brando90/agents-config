@@ -20,6 +20,8 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 
 For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
 
+When creating or editing saved automation, scheduled-task, or heartbeat prompts, include a descriptive title, one opening purpose summary, and one closing TLDR covering action, update destination, and the existing stopping condition (or its absence). Preserve operational instructions, target, cadence, model, notification settings, and enabled/paused state in readability-only edits. See `~/agents-config/INDEX_RULES.md` Trigger Rule 36 for summary labels and longer-header exceptions.
+
 ## Codex CLI default
 
 Codex CLI should always default to `gpt-6-astra` (GPT-6 Astra) with `model_reasoning_effort = "ultra"` (Codex-only level above `xhigh`/`max`; updated 2026-09-08).
