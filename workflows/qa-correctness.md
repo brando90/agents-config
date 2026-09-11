@@ -22,7 +22,7 @@ This is the canonical reviewer-selection procedure for Hard Rule 8, Tier 2 and e
 
 Every explicitly requested Mega QA acceptance stage retains its strongest-model floor; use the critical fallback path even for an otherwise ordinary change.
 
-Classify by consequences, not file extension: editing a security rule in Markdown is critical. If the boundary is uncertain, use the critical requirements. Mixed ordinary and critical changes inherit the critical requirements unless their review and acceptance can actually be separated. An explicit user-required reviewer/model or other stricter project gate remains required; do not silently replace it.
+Classify by consequences, not file extension: editing a security rule in Markdown is critical. If the boundary is uncertain, use the critical requirements. Mixed ordinary and critical changes inherit the critical requirements unless their review and acceptance can actually be separated. An explicit user-required reviewer/model/effort or other stricter project gate remains required; do not silently replace it. Reassess the classification when findings or fixes change the risk. A smaller review becomes advisory for newly critical scope; obtain the required acceptance review within the remaining original attempt budget, or leave acceptance pending.
 
 **Bounded decision order:**
 
@@ -34,7 +34,7 @@ Classify by consequences, not file extension: editing a security rule in Markdow
 
 A review that identifies defects is a valid review, not an availability failure: resolve its findings rather than searching for a model that will say PASS. Failed invocations and substitutes are attempts within the same requested review stage; only a completed eligible review fulfills it, and these attempts do not authorize extra rounds. A fresh same-company review adds a second examination but does not establish cross-company independence. Different companies can still share mistakes; none of these choices guarantees no regression.
 
-**Record the review evidence.** Alongside the existing verdict block, report the builder and actual reviewer model identifiers, reasoning efforts, role (`acceptance` or `advisory`), ordinary/critical/reference classification, reviewed commit or diff, fallback reason and known failure scope, tests/coverage limits, and any unmet gate. Report unverified model metadata as unverified; do not infer it from an alias or claim a downgraded run used the strongest model. Any model-dependent acceptance requirement remains pending if the actual reviewer model cannot be established. Compare requested and actual model/effort; evidence of an unexpected model substitution requires rechecking eligibility, not silently accepting the requested model name.
+**Record the review evidence.** Alongside the existing verdict block, report the builder and actual reviewer model identifiers, reasoning efforts, role (`acceptance` or `advisory`), ordinary/critical/reference classification, reviewed commit or diff, fallback reason and known failure scope, tests/coverage limits, and any unmet gate. Report unverified model metadata as unverified; do not infer it from an alias or claim a downgraded run used the strongest model. Any required model or effort remains an unmet acceptance gate if its actual value cannot be established or does not satisfy the requirement. Compare requested and actual model/effort; evidence of an unexpected model or effort substitution requires rechecking eligibility, not silently accepting the requested settings.
 
 **Independent critique, then reconciliation.** Give the reviewer the requirements, relevant source, exact diff/base, and test evidence before supplying the builder's defense or another reviewer's conclusions. Ask for concrete counterexamples and evidence. The builder records each material finding as fixed, rejected with evidence, or unresolved, then verifies accepted fixes against requirements and deterministic checks. Preserve the original diff/commit so speculative reviewer edits can be compared or reverted. If needed, use a brief evidence-based clarification within the existing round; do not launch a new full review or an open-ended debate. Agreement alone is not evidence, and a final PASS cannot erase an unresolved earlier finding.
 
@@ -88,8 +88,13 @@ Use this section only for Tier 2 or Tier 3. Tier 1 uses deterministic checks, no
 
 ### Step 1: Define the review prompt
 
+Set `QA_BASE` to the task's original base commit and `QA_PATHS` to its explicitly owned paths before constructing the prompt. Keep that base fixed across attempts and stages, including reviews after publication; current `HEAD` or `main` may already contain the implementation.
+
 ```bash
-QA_PROMPT="Review all changes in this directory since the last commit on main.
+QA_PROMPT="Review the complete change from original base $QA_BASE to the current
+working tree within these owned paths: $QA_PATHS. Include committed and
+uncommitted changes, plus new files in scope; do not review only the latest
+commit or the diff against HEAD.
 
 CORRECTNESS: Flag and fix critical and major issues — logic errors, missing
 edge cases, incorrect behavior, inconsistencies with project agent docs
