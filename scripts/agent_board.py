@@ -1327,8 +1327,9 @@ IGNORE_TMUX = {"job_watcher", "snaphealth", "codex_handoff", "lean_env_prep"}
 # SNAP tmux names that carry no experiment number of their own
 JOB_ALIASES = {"gold_sorry_closure": "75", "gold_close_v2": "75",
                "judge_val": "73", "judge_val_A": "73",
-               "vb-astra-candidate150-20260910": "82",
-               "vb-astra-candidate150-20260910-v2": "82"}
+               "vb-astra-candidate150-20260910": "72",
+               "vb-astra-candidate150-20260910-v2": "72",
+               "vb-astra150-reset-20260911": "72"}
 # Optional state pushed in by something this script cannot see itself (e.g. a scheduled
 # agent that reads completion mail sent to brando.science). Shape:
 #   {"<job or expt number>": {"state": "DONE", "note": "...", "at": <epoch>}}
