@@ -13,9 +13,9 @@ Read end-to-end before starting, opening, or reviewing any experiment dir.
 
 ## Requirements Checklist (quick reference)
 
-Every experiment **must** have:
+Every **active experiment** must have the following; deferred proposals use the lightweight [ideas convention](#optional-research-ideas) instead:
 
-- [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name)
+- [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name), or the user-authorized `experiments/ideas/<name>/` home
 - [ ] **README.md at root** — goal, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
@@ -34,11 +34,21 @@ Encouraged (not mandatory):
 
 ---
 
+## Optional Research Ideas
+
+Use `experiments/ideas/<descriptive_setup>/` for research whose priority or paper inclusion is uncertain. Index it in `experiments/ideas/README.md`, separate from core numbered workstreams and concluded archives. Honor explicit names such as `IDEA_00_waterfall_vs_llm_judge`; otherwise use a descriptive unnumbered name without reserving an active experiment number.
+
+The idea's README needs a title and opening summary, execution status, paper-inclusion status, testable hypothesis, motivation/source links, predicted priority/reason, key uncertainty, minimal comparison and revisit condition. Hypotheses remain distinct from measured findings. A concise source summary is optional.
+
+A deferred proposal marked `DEFERRED — NOT RUN` needs no version folders, scripts, prompts, live results, checkpoints, external reports or paper draft. Recording it does not launch work or resume paused work. If the user asks to run it, keep the requested ideas path and mark execution `PLANNED`, `RUNNING`, `BLOCKED` or `DONE` independently of inclusion `UNDECIDED`, `INCLUDE` or `OMIT`. All normal execution requirements below then apply, including versioned runs, live `results.md`, resumable checkpoints, proportional review and publication. Ideas are not exempt from resource or dispatch controls. A running optional study need not be moved into a core numbered home.
+
+Check for overlap with existing workstreams before execution. If promoted to core work, coordinate the move and update indexes and prospective links while preserving provenance and scientific inputs; do not move running private checkouts or rewrite frozen evidence. Keep completed optional evidence while a live paper-inclusion decision depends on it; otherwise follow the project's archive convention. A paper draft becomes required when paper writing is commissioned, not merely because inclusion remains possible.
+
 ## Experiment Directory Structure
 
 When the user assigns workstream labels, name the home `experiments/<NN>_<LABEL>_<descriptive_setup>/`, for example `70_E1_harbor_evals_code`. Explain each label in the project experiment index and keep one canonical root per number. Follow exact user-specified names, including pause-marker order. Otherwise put a requested pause marker after the label, for example `73_S2_PAUSED_sol_unsolved_to_astra_ultra`; the status record still controls whether work may run. Unlabelled projects keep the existing descriptive format. A naming change does not authorize a new experiment, a restart, or altered scientific inputs. Coordinate owners, update prospective consumers and check preserved contents, while leaving frozen evidence and running private paths intact; record the old-to-new map in the archive index.
 
-Each experiment lives under `experiments/<NN>_<name>/` in the project repo. Every experiment **must** have a `README.md` at its root and at least one versioned sub-experiment directory.
+Each active experiment lives under `experiments/<NN>_<name>/` or its explicitly authorized ideas home in the project repo. Every experiment **must** have a `README.md` at its root and at least one versioned sub-experiment directory.
 
 ```
 experiments/<NN>_<name>/
