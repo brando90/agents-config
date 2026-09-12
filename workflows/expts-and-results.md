@@ -56,7 +56,7 @@ experiments/<NN>_<name>/
 ├── todo.md                     ← open tasks / next steps for this experiment (optional but encouraged)
 ├── writing.tex                 ← draft paper section for this experiment (MANDATORY for paper-bound expts)
 │                                  Mark as DRAFT; do not \input{} into main paper until finalized.
-│                                  Example header: % Status: DRAFT — do not include in paper_latex/ yet
+│                                  Example header: % Status: DRAFT — do not include in paper_latex_and_notes/ yet
 │
 ├── expt_v1/                    ← first iteration (self-contained)
 │   ├── cc.md                   ← agent prompt (paste into Claude Code / Codex to run this version)

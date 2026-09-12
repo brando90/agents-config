@@ -19,6 +19,11 @@ There are two tiers of migration:
 
 This checklist covers the **minimal** tier.
 
+**Layout:** onboarding is also the moment to check the repo's root against the four-bucket
+layout — `experiments/`, `paper_latex_and_notes/`, `src/`, and an optional data bucket.
+See [`research-repo-layout.md`](research-repo-layout.md) (Trigger Rule 49) for the canonical
+tree, the "where does X go?" table, and the staged migration procedure.
+
 ---
 
 ## Migration checklist

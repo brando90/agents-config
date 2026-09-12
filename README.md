@@ -122,6 +122,7 @@ agents-config/
 │   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths
 │   ├── git-worktrees.md         ← worktree isolation for parallel agents
 │   ├── repo-init.md             ← migrating projects to this pattern
+│   ├── research-repo-layout.md  ← four-bucket repo root + staged reorg procedure (Rule 49)
 │   ├── tweprints.md             ← tweet thread format
 │   └── blog-posts.md            ← SAIL-style research lab blog posts
 │
