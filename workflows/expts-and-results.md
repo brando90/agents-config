@@ -16,12 +16,14 @@ Read end-to-end before starting, opening, or reviewing any experiment dir.
 Every **active experiment** must have the following; deferred proposals use the lightweight [ideas convention](#optional-research-ideas) instead:
 
 - [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name), or the user-authorized `experiments/ideas/<name>/` home
-- [ ] **README.md at root** — goal, structure tree, method, dependencies, status table
+- [ ] **Experiment-index row** — canonical home, setup/goal and current status in the project's existing index (normally `experiments/README.md`; ideas use their own index)
+- [ ] **README.md at root** — goal/hypothesis, decision criterion, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
 - [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
 - [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
-- [ ] **Stable `results.md` at experiment root** — latest outcome + TLDRs, updated every run, links to timestamped summaries (see § Results Storage)
+- [ ] **Stable `results.md` at experiment root** — created at launch, updated as meaningful evidence arrives, latest outcome + TLDRs and links to timestamped summaries (see § Results Storage)
+- [ ] **Dated resumable checkpoint for qualifying runs** — `CKPT_<task>.md` (CKPT means checkpoint), with real creation/update timestamps and the next resume step; apply [Trigger Rule 44](../INDEX_RULES.md) for long or dispatched runs
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
 - [ ] **GPU cleanup** — if the run used GPUs: kill zombie processes, verify GPUs freed, report `nvidia-smi` state after completion
 
@@ -33,6 +35,14 @@ Encouraged (not mandatory):
 - [ ] **results/paper_table.tex** — LaTeX table ready to `\input{}` into the paper
 
 ---
+
+## Starting or Continuing an Experiment
+
+Apply these conventions automatically when starting or continuing an authorized experiment; do not wait for a documentation reminder. Read the project's experiment index and a matching recent experiment first, then reuse its filenames, version structure and templates while meeting the requirements below. Ordinary edits, short lookups and research conversations alone do not need experiment folders.
+
+For a newly authorized distinct experiment, default to a numbered setup-descriptive home directly under `experiments/`. Check existing and archived homes, reserved index entries, active branches/worktrees and known owners before choosing the next available number; coordinate overlapping work. Honor exact user numbers, labels and names, but do not silently repurpose an occupied number. Reuse the matching canonical home for a continuation, with a new version when the setup changes. Add or update its row in the existing project experiment index (normally `experiments/README.md`). Preserve the optional-ideas exception below, archival policy and frozen/running private paths under [Trigger Rule 39](../INDEX_RULES.md).
+
+State the goal/hypothesis and decision criterion concisely in the existing README/protocol, following [Trigger Rule 50](../INDEX_RULES.md): name the central uncertainty, cheapest sufficient test, evidence for continuing/redirecting/stopping and test bound before measuring. Record inputs and the protocol/runbook using the formats below. At launch create live `results.md`, then update it as meaningful evidence arrives ([Results Storage](#results-storage), Rule 37); for qualifying long or dispatched runs also maintain the dated resumable checkpoint (Rule 44). Link these records rather than duplicating their contents or adding per-step approval gates; existing resource, review and permission requirements still apply.
 
 ## Optional Research Ideas
 
@@ -107,7 +117,7 @@ Most experiments evolve through iterations — changed metrics, added agents, ne
 
 Every experiment root **must** contain a `README.md` with:
 
-1. **Goal** — one paragraph: what this experiment tests and why it matters
+1. **Goal/hypothesis and decision criterion** — one concise paragraph: what uncertainty this tests, why it matters and what evidence changes the next decision; link the protocol for detailed thresholds and bounds
 2. **Structure** — ASCII tree of the experiment directory (keep it current)
 3. **Method** — numbered steps describing the experimental procedure
 4. **Dependencies** — what prior experiments, data, or API keys this needs

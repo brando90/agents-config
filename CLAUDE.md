@@ -7,6 +7,10 @@
 - **No unnecessary drafts** — If told to "send" an email, send it. Only create a draft if explicitly asked for a draft.
 - **When external fetches fail** — If a needed external resource (video transcript, paywalled page, gated API, IP-blocked service) is unreachable: (1) log every attempt and its failure mode in a `fetch_attempts.md` next to the work, (2) capture whatever lighter metadata *is* reachable (e.g. oEmbed for YouTube), (3) build the rest of the deliverable as a clearly-marked skeleton with a populate-script, (4) ask the user to supply the missing piece. **Never fabricate the missing content.** Canonical example: `experiments/03_youtube_transcript_takeaway_loop/`.
 
+## Research and experiments
+
+For uncertain research/design work, apply [Trigger Rule 50](INDEX_RULES.md): identify the consequential uncertainty and test it cheaply enough to learn. For authorized experiments, follow [Trigger Rule 39](INDEX_RULES.md) and [the experiment workflow](workflows/expts-and-results.md#starting-or-continuing-an-experiment) automatically, including canonical homes, index entries and live records.
+
 ## Questions about other agents
 
 For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
