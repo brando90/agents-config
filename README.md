@@ -61,6 +61,8 @@ Review selection has one [fallback and acceptance procedure](workflows/qa-correc
 
 Remote work follows [Trigger Rule 48](INDEX_RULES.md) and the [reliable-dispatch procedure](workflows/reliable-agent-dispatch.md): a strong master chooses proportionate workers and effort, budgets for finish/review, verifies synchronized handoff files, and prepares remote failure detection plus bounded provider recovery. Meaningful quota/switch/blocker events notify the master and Brando. Launchers do not implement automatic failover merely because the policy exists.
 
+Uncertain research/design work follows [Trigger Rule 50](INDEX_RULES.md): choose the consequential uncertainty and the cheapest sufficient test, then update direction from evidence. Authorized experiments automatically follow [the existing documentation conventions](workflows/expts-and-results.md#starting-or-continuing-an-experiment), including checked-available numbered homes for distinct core experiments and reuse of canonical homes for continuations (Rule 39).
+
 Optional research belongs in `experiments/ideas/<descriptive_setup>/`, including user-named ideas such as `IDEA_00`. Track execution separately from paper inclusion: a proposal may stay deferred, or run there when authorized with the normal experiment requirements. See [the ideas convention](workflows/expts-and-results.md#optional-research-ideas).
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
