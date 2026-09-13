@@ -255,6 +255,20 @@ Rules:
 - **Verification before commit:** Always run the verification checklist (in the active version's agent prompt) and QA review before committing results to the repo.
 - **Top-level rollups (optional):** Use `results_summary/` and `expt_results/` at the experiment root only for cross-version summaries or shared aggregates. New experiment runs should keep per-run outputs in `expt_vN/results/`.
 
+### Streaming multi-stage metrics
+
+For an evaluation with dependent metric stages, attempt the first selected example through every authorized pipeline stage early, before a broad batch. Preserve its inputs and provenance, run every available stage, and publish its component values and combined score when complete. If a stage is genuinely blocked, promptly record the blocker and partial example instead; continue useful authorized work within the existing resource budget. As the run proceeds, prioritize completing examples through all available stages; record why a dependency or material resource-efficiency benefit warrants batching instead. A blocked stage does not excuse invisible results or require all other work to stop.
+
+As each stage finishes for an example, immediately save a durable row record: row identifier, immutable input/provenance reference, every measured component, explicit `null` plus status/reason for each missing component, and the per-row combined score only when its required components exist. Keep the experiment-root `results.md` current with links to these records, a small representative row sample, running component aggregates and their measured-row counts, each stage's `completed / selected_total` count, and the count of complete multi-stage rows. Commit and push meaningful updates under the existing verification and publication requirements; do not wait for the entire batch. Preserve partial and unverified status until the applicable acceptance checks pass.
+
+Show both the full selected population and the completed subset. A partial aggregate must identify its row population and missing stages; never present an earlier-stage aggregate as the final multi-stage metric. Missing values remain visible as `null`/incomplete, never silently zeroed or omitted to make a score look complete. Do not combine component means measured on different subsets into a purported completed-subset score: compute that score on the same fully measured rows, show its denominator, and keep the full-population score incomplete while required values are missing, unless the frozen protocol explicitly defines a different missing-data rule.
+
+Preserve the protocol's aggregation formula. The geometric mean of dataset-level component means and the mean of per-row geometric means are different quantities: label them separately and never substitute one for the other. Providing a per-row combined score does not change the dataset-level definition; if the protocol defines only an aggregate, label any added row-level diagnostic explicitly rather than inventing a new official metric.
+
+Once a blocked stage becomes available, resume only the missing stages on the preserved inputs; do not rerun valid earlier stages. If an earlier result is invalidated, record the reason and rerun only the affected stages and dependents. Preserve task selection, model and judge settings, rubric, seeds, inputs, and other frozen scientific choices. The checkpoint under Rule 44 records the exact missing stage and resume command; the live results file records measured values, denominators, and blockers.
+
+A configured dashboard, including Weights & Biases (W&B), may mirror the same partial records and aggregates. Dashboard availability or credentials must not delay or replace the durable repository record. This optional live mirror does not remove the completed-experiment W&B Report requirement below. This reporting rule does not waive compilation, provenance, correctness, reference-data, quality-assurance, acceptance, resource, permission, or spending requirements.
+
 ---
 
 ## Results Reporting
