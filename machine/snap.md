@@ -12,6 +12,8 @@ Cluster wiki:
 
 ## Connection
 
+Apply [routine authentication recovery and per-host client verification](../workflows/reliable-agent-dispatch.md#authentication-recovery) before treating a failed model login as a user task. A reachable cluster and a signed-in desktop app do not prove target CLI access. Use a single recovery owner, supported remote sign-in, protected host/job credential stores and verified continuation; preserve healthy child jobs and distinguish authentication from spending limits. Browser-dependent recovery still needs an available authorized Mac.
+
 ```bash
 # Agents: can run one-shot commands on a direct-SSH node (e.g., ssh skampere2.stanford.edu "nvidia-smi")
 # but cannot maintain interactive sessions. Auth via ~/.ssh/config and ~/keys/.
@@ -252,7 +254,7 @@ Key paths and vars set in `.bashrc`:
 
 - `claude` binary: installed via `npm` under NVM (resolves from `$NVM_DIR/versions/node/…/bin/claude`). The old user-owned DFS-prefix duplicate was removed; the stale root-owned `/usr/local/bin/claude` remains visible later in `which -a` but must never resolve first.
 - `clauded` script: canonical at `/dfs/scratch0/<user>/bin/clauded` (runs `claude --dangerously-skip-permissions "$@"`). The AFS script is a compatibility mirror and resolves second.
-- Auth: `~/.claude/` is symlinked to `/dfs/scratch0/<user>/.claude` — shared auth across all SNAP nodes. Run `claude auth login` once on any server, all nodes pick it up.
+- Existing `~/.claude/` may be symlinked to `/dfs/scratch0/<user>/.claude`; inspect actual consumers before changing this shared store. Prefer an already-authorized supported unattended Claude grant for workers (Rule 46), with account identity verified, rather than copying an interactive Mac login. One owner coordinates any grant renewal; independent supported target logins require an owned profile so other workers are not invalidated.
 
 #### Vals AI profile — `claude-vals` / `clauded-vals`
 
@@ -273,12 +275,15 @@ personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions
   node's `$HOME/.claude-vals`. Profile-level `settings.json` (`opus[1m]`, xhigh effort),
   `CLAUDE.md`, and the profile's auto-memories are seeded from the mac.
 - Install / repair on a node: `bash ~/agents-config/scripts/setup_claude_vals_snap.sh`.
-- Credentials come **from the mac** (Keychain service `Claude Code-credentials-<sha256(config dir)[:8]>`),
-  pushed with `bash ~/agents-config/scripts/push_claude_vals_creds.sh` — which also runs the installer
-  on each node and smoke-tests `clauded-vals -p`. Never run an interactive `/login` on a node for this.
-- **Rotation caveat:** OAuth refresh tokens rotate on use, so the mac and the cluster sharing one
-  credential set can invalidate each other ("refresh token was already used"). Use one machine at a
-  time for the Vals profile, and re-run `push_claude_vals_creds.sh` if a node reports being logged out.
+- **Authenticate independently; do not copy active Mac credentials.** The old `push_claude_vals_creds.sh`
+  transfer is not the approved recovery path: copied rotating refresh credentials can invalidate the
+  Mac or another node. Preserve any existing shared profile until its consumers and recovery owner
+  are known. Use an approved supported unattended grant for the intended Vals account, or complete
+  the installed client's supported login in an owned target profile through the Mac browser.
+  Match the displayed account/team before authorization and verify target access afterward.
+- A sign-in failure triggers [bounded authentication recovery](../workflows/reliable-agent-dispatch.md#authentication-recovery),
+  not another credential copy. A signed-in account with an individual/admin spending limit needs a
+  budget decision or eligible alternate; logging in repeatedly does not replenish that allowance.
 
 ### Valkyrie (Vals evaluation platform CLI)
 
