@@ -1205,7 +1205,7 @@ def collect_codex(max_age_h, tab, panes):
     return rows
 
 
-def poll_snap(timeout=10, max_age=600):
+def poll_snap(timeout=10, max_age=120):
     """Skip the ssh round-trip when the cache is still fresh."""
     cached = read_snap_cache()
     if cached and time.time() - cached.get("at", 0) < max_age:
@@ -1216,6 +1216,8 @@ def poll_snap(timeout=10, max_age=600):
 def _poll_snap_now(timeout=10):
     """SSH each SNAP node. A failed poll keeps that host's previous data, marked stale,
     instead of replacing it with an empty (falsely healthy) result."""
+    with open(os.path.join(os.path.dirname(__file__), "agent_board_remote_status.py")) as fh:
+        receipt_probe = "python3 -c " + shlex.quote(fh.read())
     prev = {h["host"]: h for h in ((read_snap_cache() or {}).get("hosts", []))}
     out = []
     for h in SNAP_HOSTS:
@@ -1234,14 +1236,22 @@ def _poll_snap_now(timeout=10):
                  "echo '=ARGS='; ps -u $USER -o pid=,args= 2>/dev/null; "
                  "echo '=CFG='; grep -E '^(model|model_reasoning_effort) *=' "
                  "~/.codex/config.toml 2>/dev/null; "
-                 "echo '=N='; pgrep -c codex 2>/dev/null || echo 0"],
+                 "echo '=N='; pgrep -c codex 2>/dev/null || echo 0; "
+                 "echo '=RECEIPTS='; " + receipt_probe],
                 capture_output=True, text=True, timeout=timeout + 15)
             if r.returncode != 0:
                 raise RuntimeError(f"ssh exit {r.returncode}")
-            panes_txt, _, rest = r.stdout.partition("=PS=")
-            ps_txt, _, rest = rest.partition("=ARGS=")
-            args_txt, _, rest = rest.partition("=CFG=")
-            cfg_txt, _, procs = rest.partition("=N=")
+            panes_txt, _, rest = r.stdout.partition("\n=PS=\n")
+            ps_txt, _, rest = rest.partition("\n=ARGS=\n")
+            args_txt, _, rest = rest.partition("\n=CFG=\n")
+            cfg_txt, _, procs = rest.partition("\n=N=\n")
+            procs, _, receipt_txt = procs.partition("\n=RECEIPTS=\n")
+            try:
+                receipts = json.loads(receipt_txt)
+                if not isinstance(receipts, dict):
+                    receipts = {}
+            except ValueError:
+                receipts = {}
             kids, comm, args, default = {}, {}, {}, {}
             for ln in ps_txt.splitlines():
                 f = ln.split(None, 2)
@@ -1280,6 +1290,9 @@ def _poll_snap_now(timeout=10):
                 s["activity"] = max(s["activity"], act)
             for s in seen.values():
                 s["agent"], s["mdl"] = snap_agent(s.pop("args"), default)
+                status = receipts.get(s["name"])
+                if isinstance(status, dict):
+                    s["status_receipt"] = status
             entry["tmux"] = list(seen.values())
             toks = procs.split()
             entry["procs"] = toks[-1] if toks else "0"
@@ -1441,6 +1454,56 @@ def short_remote(path):
     return path or ""
 
 
+def remote_experiment_number(name, dirs):
+    """Workstream labels (E4, S1) map to unique canonical directory numbers."""
+    if name in JOB_ALIASES:
+        return JOB_ALIASES[name]
+    label = re.search(r"(?:^|-)([esjt]\d+)(?:-|$)", name, re.I)
+    if label:
+        candidates = [num for num, path in dirs.items()
+                      if re.search(r"_" + re.escape(label[1]) + r"_", os.path.basename(path), re.I)]
+        return candidates[0] if len(candidates) == 1 else None
+    match = re.search(r"(\d+)", name)
+    return match[1] if match else None
+
+
+def receipt_display(receipt, stale_poll=False):
+    """Report process state separately from measured output; stale data never turns green."""
+    if not isinstance(receipt, dict):
+        return None
+    observed = receipt.get("observed_at")
+    fresh = (isinstance(observed, (int, float)) and
+             -5 <= time.time() - observed <= 300 and not stale_poll)
+    coordinator = receipt.get("coordinator_alive")
+    driver = receipt.get("driver_alive")
+    state = ("COORDINATOR ACTIVE" if coordinator is True else
+             "COORDINATOR STOPPED" if coordinator is False else "COORDINATOR UNKNOWN")
+    state += (" · DRIVER ACTIVE" if driver is True else
+              " · DRIVER STOPPED" if driver is False else " · DRIVER UNVERIFIED")
+    notes = []
+    age = receipt.get("progress_age")
+    elapsed = max(0, time.time() - observed) if isinstance(observed, (int, float)) else 0
+    age = age + elapsed if isinstance(age, (int, float)) else None
+    label = "last reported" if not isinstance(age, (int, float)) or age > 300 or not fresh else "reported"
+    binding = receipt.get("run_binding") or {}
+    if not binding.get("progress"):
+        label = "unverified runtime snapshot (run identity missing):"
+    counts = [f"{key} {receipt[key]}/{receipt['planned']}" for key in ("generated", "scored")
+              if type(receipt.get(key)) is int and type(receipt.get('planned')) is int]
+    if counts:
+        notes.append(label + " " + ", ".join(counts))
+    if isinstance(age, (int, float)):
+        notes.append("progress age " + ago(max(0, age)))
+    notes.append("phase: " + str(receipt.get('phase', 'unknown')))
+    watch_age = receipt.get('watchdog_age')
+    watch_label = "watchdog" if fresh and isinstance(watch_age, (int, float)) and watch_age + elapsed <= 300 else "last watchdog"
+    notes.append(watch_label + ": " + str(receipt.get('watchdog_status', 'unknown')))
+    if not fresh:
+        state = "STALE POLL · " + state
+    color = "live" if fresh and (coordinator is True or driver is True) else "stale"
+    return state, notes, color
+
+
 def collect_experiments(snap):
     """One board row per SNAP tmux job, crossed with repo state to answer: which experiments
     are DONE but unlanded? Same columns as the local session tables: the tmux cell is the
@@ -1469,10 +1532,7 @@ def collect_experiments(snap):
                 act = float(s.get("activity") or 0)
             except (TypeError, ValueError):
                 act = 0
-            num = JOB_ALIASES.get(name)
-            if not num:
-                m = re.search(r"(\d+)", name)
-                num = m.group(1) if m else None
+            num = remote_experiment_number(name, dirs)
             key = (num, name, h["host"])            # the same name may run on two nodes
             idle = now - act if act else None
             cmds = s.get("cmds")
@@ -1481,7 +1541,8 @@ def collect_experiments(snap):
             jobs[key] = {"num": num, "job": name, "host": h["host"], "idle": idle, "busy": busy,
                          "cmds": sorted({c for c in (cmds or []) if c not in SHELLS})[:4],
                          "path": str(s.get("path") or ""), "agent": str(s.get("agent") or ""),
-                         "mdl": str(s.get("mdl") or ""), "stale": bool(h.get("error"))}
+                         "mdl": str(s.get("mdl") or ""), "stale": bool(h.get("error")),
+                         "receipt": s.get("status_receipt")}
 
     rows = []
     for (num, name, _host), j in sorted(jobs.items(),
@@ -1520,6 +1581,12 @@ def collect_experiments(snap):
             notes.append("(stale poll: showing the last successful ssh data)")
         cls = ("idle" if state.startswith("DONE") else
                "live" if state.startswith("RUNNING") else "stale")
+        display = receipt_display(j["receipt"], j["stale"])
+        if display:
+            state, receipt_notes, cls = display
+            notes = receipt_notes + notes
+        elif j["stale"]:
+            cls = "stale"
         rows.append({
             "sid": f"{j['host']}:{name}", "short": num or "?", "tag": "snap",
             "label": j["agent"] or "—", "tmux_cell": name, "seats": [],
