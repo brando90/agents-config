@@ -1,3 +1,7 @@
+# Codex and other agent instructions
+
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/AGENTS.md>
+
 # Codex Agent Entry Point
 
 **TLDR:** Codex must refresh and read `~/agents-config/INDEX_RULES.md`; the response-critical rules are duplicated here so TLDRs, snapshots, QA, and secret safety cannot be missed.
@@ -68,3 +72,7 @@ spec, exceptions, and dispatch examples.
 ## Master and remote-worker completion policy
 
 `master agent:` is an optional explicit coordinator designation; also infer the role when already coordinating workers. The master normally keeps strongest/maximum effort, but selects suitable regular execution workers and effort from the task, checks and shared allowance. Before unattended dispatch, budget through review/publication, synchronize and verify the runbook/checkpoint/inputs on the target, and establish a tested remote watchdog with a verified provider-recovery plan. Notify the master and Brando on meaningful quota-risk/handoff/blocker events; preserve scientific model pins and mandatory acceptance. Existing launchers do not implement automatic failover merely because this rule exists. Full contract: [Trigger Rule 48](INDEX_RULES.md) and [reliable dispatch](workflows/reliable-agent-dispatch.md).
+
+## Agent-board freshness
+
+Follow `~/agents-config/INDEX_RULES.md` Trigger Rule 52 for every board-visible job: publish timestamped, run-bound status receipts through ordinary code; verify the canonical board row; separate coordinator activity from execution/results; mark stale or unavailable evidence explicitly. Use no model calls for routine polling and bounded reasoning for failures or meaningful changes.

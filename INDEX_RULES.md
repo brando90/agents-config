@@ -199,6 +199,14 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 
 ---
 
+52. **Agent-board freshness is part of running a job.** _Trigger: any agent starts, resumes, supervises or reports a task shown on the agent board._ Applies to Claude Code, Codex and other agents. The execution owner provides small, atomically written status receipts after meaningful changes and a non-model liveness update about every 120 seconds. Include a stable experiment run identifier shared by acknowledgement/progress/driver/watchdog receipts, the canonical experiment path, observation time, current coordinator and driver identities (process identifier, start time and boot identity), phase, completed/missing counts and explicit blockers. Preserve the run identifier across coordinator restarts; create a new one for a distinct experiment run. Never include credentials or full prompts.
+    - The board uses deterministic polling, normally every 120 seconds while the host/app is available; local display rendering can remain every 20 seconds. No model call is required for each poll. Use a bounded reasoning check only for an ambiguous state, failure, recovery or meaningful milestone; respect the user's current model/effort and budget instructions.
+    - Verify that the actual board row names the canonical experiment and reflects a real receipt/process after launch or a status change. A green coordinator is not proof of generation, scoring or completion. Show coordinator activity, worker/driver activity and result progress separately; never label a workstream such as E4 as experiment 4 by extracting its digits.
+    - Surface failed polls, missing identities, old receipts and disconnected hosts as stale or unverified, with timestamps. Cached evidence never proves current activity. Keep last known counts visible but clearly qualified; do not fabricate zeros, freshness or completion. A sleeping Mac cannot promise continuous local updates.
+    - Use the shared board collector, not a second competing renderer or one language-model call per update. Existing workers without compatible receipts remain explicitly unverified until their execution owner adds them. Share the rule through the Claude/Codex entry points and the dispatch instructions; record which live agents/hosts acknowledged it instead of claiming every running context automatically reread the file. See [the board implementation contract](machine/mac.md#agent-board-which-agent-is-in-which-tmux-window).
+
+---
+
 ## Abbreviations
 
 - **ac** = agents-config (this repo, `~/agents-config/`). When the user says "ac", they almost certainly mean agents-config.
