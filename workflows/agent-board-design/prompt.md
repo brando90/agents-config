@@ -1,6 +1,6 @@
 # Unified agent board design review
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/codex/agent-board-design-20260914/workflows/agent-board-design/prompt.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/agent-board-design/prompt.md>
 
 **TLDR:** Design an extension of the existing agents-config agent board for all active and recently finished agent work across companies, personal and Vals accounts, both Macs and Stanford nodes. Produce a concrete, phased recommendation with evidence-backed status semantics and one week of finished work at the bottom; do not implement, start jobs, or change access.
 
