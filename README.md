@@ -1,5 +1,7 @@
 # Agent-Config: Modular Documentation Architecture for Multi-Agent Coding Workflows
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/README.md>
+
 **TLDR:** This repo is the shared, modular instruction layer for Brando's AI coding agents. Start at `~/agents-config/INDEX_RULES.md`, then load only the machine, workflow, or writing docs relevant to the current task.
 
 A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond). Designed for scalability and context-window efficiency.
@@ -54,6 +56,8 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and uppercase `AGENTS.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. Claude reads `~/CLAUDE.md`; Codex reads `~/.codex/AGENTS.md` globally and uppercase `AGENTS.md` files from the repository root toward the working directory. A legacy home-level `~/agents.md` symlink may point to the uppercase file for older launchers; the repository itself keeps only the canonical spelling so it works on case-insensitive filesystems.
 
 **Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, proportionate QA, closing TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+
+Repository-hosted Markdown documents use the header format in [Trigger Rule 16](INDEX_RULES.md): title, `**Doc link:**` with the full clickable document address, then the summary. Keep the address visible so readers can identify the path and copy it into notes.
 
 Questions about another agent follow [Trigger Rule 47](INDEX_RULES.md): distinguish current response activity, scheduled follow-ups, and verified worker/results state; an `idle` conversation alone does not establish overall task status. Both agent entry points carry the reminder.
 
