@@ -1005,7 +1005,7 @@ Agents picking this experiment up cold should re-read `~/agents-config/INDEX_RUL
 - **Never commit secrets.** Tokens live in `~/keys/`, mode 600 (Hard Rule #1).
 - **Run QA** before reporting any non-trivial milestone done (Hard Rule #3).
 - **Email Brando** at `brando.science@gmail.com` with no CC only when Brando explicitly requested email/notification/tracking for that phase per Trigger Rules 14 and 26. Routine phase/checkpoint updates should stay in chat/Telegram.
-- **Dual TLDR** on every response (Hard Rule #4).
+- **Closing TLDR** on every response (Hard Rule #4).
 - **Q&A leads with `**A (TLDR):**`** before detail (Trigger Rule 27).
 - **Just-do-it** (Guideline #14) — but for OpenClaw, **stop and ask** before any of these:
   - Sending a reply from Gmail before the approval flow is verified end-to-end on **all** instances.
