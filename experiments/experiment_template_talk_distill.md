@@ -1,7 +1,7 @@
 # Experiment NN — [Speaker / Talk Title] → Repo Takeaways
 
 **Status:** [Skeleton / Transcript Captured / Takeaways Drafted / Patches Merged]
-**Started:** YYYY-MM-DD
+**Started:** MM-DD-YYYY
 **Branch:** `claude/<slug>`
 **Source:** [video / paper / podcast URL]
 **Title / Author:** [from oEmbed or manual]

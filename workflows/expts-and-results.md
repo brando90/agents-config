@@ -21,7 +21,7 @@ Every **active experiment** must have the following; deferred proposals use the 
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
 - [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
-- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
+- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
 - [ ] **Stable `results.md` at experiment root** — created at launch, updated as meaningful evidence arrives, latest outcome + TLDRs and links to timestamped summaries (see § Results Storage)
 - [ ] **Dated resumable checkpoint for qualifying runs** — `CKPT_<task>.md` (CKPT means checkpoint), with real creation/update timestamps and the next resume step; apply [Trigger Rule 44](../INDEX_RULES.md) for long or dispatched runs
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
@@ -72,7 +72,7 @@ experiments/<NN>_<name>/
 │   ├── cc.md                   ← agent prompt (paste into Claude Code / Codex to run this version)
 │   ├── run_*.sh / run_*.py     ← execution scripts
 │   ├── push_to_wandb.py        ← W&B logging for this version
-│   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<YYYY-MM-DD__HH-MM-SS>.md
+│   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<MM-DD-YYYY__HH-MM-SS>.md
 │
 ├── expt_v2/                    ← next iteration (e.g., changed metric, added agents, new split)
 │   ├── agents_v2.md            ← updated agent prompt
@@ -95,7 +95,7 @@ experiments/<NN>_<name>/
 ├── generate_plots.py           ← scatter plots + histograms
 ├── push_to_wandb.py            ← optional shared W&B logging helper used by one or more versions
 ├── results_summary/            ← optional top-level rollup summaries across versions (or legacy location)
-│   ├── results_summary_YYYY-MM-DD__HH-MM-SS.md
+│   ├── results_summary_MM-DD-YYYY__HH-MM-SS.md
 │   └── temporary_results/      ← unverified intermediates
 └── expt_results/               ← optional shared/aggregated CSVs, JSONs, plots across versions
 ```
@@ -122,6 +122,8 @@ Every experiment root **must** contain a `README.md` with:
 3. **Method** — numbered steps describing the experimental procedure
 4. **Dependencies** — what prior experiments, data, or API keys this needs
 5. **Status table** — per-step status (`Done`, `TODO`, `In Progress`, `Blocked`)
+
+Dates written in the README (started, updated, per-step notes, decisions) use month-day-year, `MM-DD-YYYY` ([Trigger Rule 53](../INDEX_RULES.md)); existing year-first dates and filenames stay as they are.
 
 Example status table:
 ```markdown
@@ -248,7 +250,7 @@ Rules:
 ## Results Storage
 
 - **Results live inside the version dir:** `expt_v1/results/`, `expt_v2/results/`, etc. This keeps each iteration self-contained and reproducible.
-- **Timestamped summaries:** Every results summary file is timestamped (`YYYY-MM-DD` or `YYYY-MM-DD__HH-MM-SS`). Never overwrite — create a new file per run.
+- **Timestamped summaries:** Every results summary file is timestamped (`MM-DD-YYYY` or `MM-DD-YYYY__HH-MM-SS`). Never overwrite — create a new file per run.
 - **Stable `results.md` at experiment root (mandatory):** every experiment dir keeps a `results.md` at its root — a stable filename Brando can always open to see the latest outcome without hunting through version dirs. Format: `**TLDR-start:**` / `**TLDR-end:**` (with Hard Rule 4's `[proj: task]` tag), headline numbers/verdict, then links to the authoritative timestamped `expt_vN/results/results_summary_<ts>.md` files. **Overwrite/update it on every run** (unlike timestamped summaries) — it is a pointer/rollup, not the archival record.
 - **`results.md` is a LIVE document, not an end-of-run deliverable (mandatory):** create it the moment the run starts, with a `**Status:** RUNNING (started <ts>)` line, and **update it whenever a meaningful result lands** — a phase completing, a gate producing counts, a table of tiers, a score — not only when everything finishes. Each update carries a `**Last updated:** <ts>` line and, for a long run, a phase table with one row per phase (`DONE` / `IN PROGRESS` / `PENDING`) plus the numbers obtained so far. **Commit and push each meaningful update**, because an experiment whose only progress record lives on a cluster node (a `PROGRESS.md` under `/dfs/...`) is invisible to the person who asked for it: they cannot answer "what is the state of this?" without an ssh session. A long run that has produced real numbers and shows nothing in the repo is a reporting failure, however good the eventual report is.
 - **Temporary results:** Unverified intermediates go in `results/temporary_results/` within the version dir. Never promoted; kept for audit trail.
@@ -334,7 +336,7 @@ The local report must include:
 - **Plots** — saved as PNGs in `results/plots/`, referenced via relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
 - **W&B link** — Report URL if available, otherwise "N/A (offline or no API key)"
 
-File naming: `expt_vN/results/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<YYYY-MM-DD__HH-MM-SS>.md` for experiment-level rollups.
+File naming: `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for experiment-level rollups.
 
 Markdown with relative-path PNGs works in GitHub, VS Code, and most editors — no localhost server needed.
 
