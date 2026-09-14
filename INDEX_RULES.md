@@ -196,7 +196,11 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 ## Abbreviations
 
 - **ac** = agents-config (this repo, `~/agents-config/`). When the user says "ac", they almost certainly mean agents-config.
-- **CC** = Claude Code
+- **CC / cc** = Claude Code; locally, bare `cc` commonly denotes the personal profile. Use `ccp` or `ccv` when the account matters.
+- **ccp** = Claude Code personal account/subscription (`claude` / `clauded`).
+- **ccv** = Claude Code Vals AI account/team allowance (`claude-vals` / `clauded-vals`); separate from Valkyrie experiment funding.
+- **codexp** = Codex personal account/credits; **cxd** is the existing Codex agent-board label, not proof of a billing account.
+- These are account/profile shorthand, not guaranteed executable commands or independent budgets; verify the actual signed-in account and available allowance before dispatch.
 - **QA** = quality assurance review (see Hard Rule 3)
 - **mega qa** / **mega QA** = run the Mega QA chain (Trigger Rule 10). "mega" is very rarely a git remote (typical remotes are `origin`/`upstream`). Default reading: `git push mega qa` → `git push` then run mega QA — two separate actions.
 
