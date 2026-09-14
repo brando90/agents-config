@@ -1,5 +1,7 @@
 # Machine: SNAP — Stanford SNAP / Infolab Cluster
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/snap.md>
+
 Multi-node GPU cluster. Shared DFS/AFS filesystems, per-node LFS local scratch. Older nodes use direct SSH; migrated nodes use Slurm through `ilc.stanford.edu`. **Shell: bash** (`~/.bashrc`).
 
 Cluster wiki:
@@ -258,32 +260,43 @@ Key paths and vars set in `.bashrc`:
 
 #### Vals AI profile — `claude-vals` / `clauded-vals`
 
-A second Claude Code login (the Vals AI team account, `brando@vals.ai`) kept fully separate from the
-personal one, mirroring the mac's `claude-vals` / `clauded-vals` shell functions.
+These commands use the separate Vals AI team account, `brando@vals.ai`.
+`clauded-vals` adds permission bypass for authorized unattended work; `claude-vals`
+keeps normal permission prompts. The personal `claude` and `clauded` commands are separate.
 
-- `claude-vals` = `claude` with `CLAUDE_CONFIG_DIR=~/.claude-vals`; `clauded-vals` = same plus
-  `--dangerously-skip-permissions` (the Vals-profile equivalent of `clauded`).
-- Both are scripts installed canonically in `/dfs/scratch0/<user>/bin`, with `$AFS/bin` compatibility
-  mirrors later in `PATH`, the same pattern as `clauded`. They `unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
-  CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX` first — `CLAUDE_CODE_OAUTH_TOKEN`
-  is the *personal* token and would silently hijack the Vals profile — and resolve `claude` out of the
-  DFS nvm install *first* (newest by mtime) rather than trusting PATH, so they work identically under
-  `ssh host 'cmd'`, cron, and tmux `send-keys`. That ordering is deliberate: every node also carries an
-  old root-owned `/usr/local/bin/claude` (2.1.75) that wins in a minimal PATH and, on mercury, crashes
-  against the system node — see the "npm globals" gotcha below.
-- Config + credentials live once on DFS at `/dfs/scratch0/<user>/.claude-vals`, symlinked into each
-  node's `$HOME/.claude-vals`. Profile-level `settings.json` (`opus[1m]`, xhigh effort),
-  `CLAUDE.md`, and the profile's auto-memories are seeded from the mac.
-- Install / repair on a node: `bash ~/agents-config/scripts/setup_claude_vals_snap.sh`.
-- **Authenticate independently; do not copy active Mac credentials.** The old `push_claude_vals_creds.sh`
-  transfer is not the approved recovery path: copied rotating refresh credentials can invalidate the
-  Mac or another node. Preserve any existing shared profile until its consumers and recovery owner
-  are known. Use an approved supported unattended grant for the intended Vals account, or complete
-  the installed client's supported login in an owned target profile through the Mac browser.
-  Match the displayed account/team before authorization and verify target access afterward.
-- A sign-in failure triggers [bounded authentication recovery](../workflows/reliable-agent-dispatch.md#authentication-recovery),
-  not another credential copy. A signed-in account with an individual/admin spending limit needs a
-  budget decision or eligible alternate; logging in repeatedly does not replenish that allowance.
+The September 14 setup uses an explicitly authorized, inference-only, one-year
+`claude setup-token` grant. It does **not** copy the Mac's rotating interactive credentials.
+The protected grant lives outside git at
+`/dfs/scratch0/brando9/.claude-vals-remote/oauth-token` (owner-only directory and file).
+Never print it or put it in a command argument, repository, log, or message.
+
+- Canonical entry points: `/dfs/scratch0/brando9/bin/claude-vals` and `clauded-vals`,
+  with compatibility mirrors under the user's Andrew File System (AFS) bin directory.
+- Per-node commands: `/lfs/<node>/0/brando9/.local/bin/claude-vals` and `clauded-vals`.
+- Executable: `/lfs/<node>/0/brando9/.local/share/claude-vals-runtime/<content-hash>/claude`.
+  Installation copies and checks the already-installed official Linux binary. Updates create a new
+  content-addressed copy; existing running binaries are not rewritten. Auto-update is disabled for
+  this pinned runtime. Re-run the installer deliberately after updating the canonical source.
+- Active profile and session files: `/lfs/<node>/0/brando9/.claude-vals-node`.
+  The old shared `.claude-vals` profile remains preserved, so historical conversations are not
+  silently migrated. New profiles match the Mac's `opus` / Opus 5 extra-high effort settings.
+- Install on a reachable, health-checked node with the existing protected grant:
+  `bash ~/agents-config/scripts/install_vals_node.sh`. The installer is specific to `brando9`.
+  It refuses missing/insecure grants, linked or writable-by-others runtime/profile directories,
+  and unexpected source binaries. Shell arguments are forwarded unchanged.
+- Do not use the legacy `push_claude_vals_creds.sh` or `setup_claude_vals_snap.sh` for this setup;
+  they implement the superseded shared-profile layout and can replace the current wrappers.
+- Sonnet 5 passed both interactive and one-shot dispatch. Fable 5.1 displayed a separate
+  purchased-credit requirement and returned an individual spending-limit error. Do not interpret
+  that as all Vals models being exhausted or change spending limits to make it run.
+- Fresh per-node test results and access restrictions are in
+  [the setup report](../reports/vals-snap-20260914/results.md). Installation on one node does not
+  prove another node's access or budget. Use full `.stanford.edu` hostnames from the Mac.
+
+Example bounded one-shot check: `clauded-vals --model claude-sonnet-5 --effort low -p "Reply OK"`.
+Long jobs still require a private checkout, named persistent terminal session, resource/budget
+checks, and a recovery plan under [reliable dispatch](../workflows/reliable-agent-dispatch.md).
+This installer provides a working client, not automatic renewal or provider failover.
 
 ### Valkyrie (Vals evaluation platform CLI)
 
@@ -374,10 +387,9 @@ ln -sfn /dfs/scratch0/<user>/.claude ~/.claude
 ln -sfn /dfs/scratch0/<user> ~/dfs
 
 # 5d. Vals AI Claude Code profile + Valkyrie CLI (idempotent; see the two sections above)
-bash ~/agents-config/scripts/setup_claude_vals_snap.sh
+bash ~/agents-config/scripts/install_vals_node.sh
 bash ~/agents-config/scripts/setup_valkyrie_snap.sh
-# Credentials for the Vals profile are pushed FROM THE MAC (not logged into here):
-#   bash ~/agents-config/scripts/push_claude_vals_creds.sh <newhost>
+# Vals requires the separately authorized protected remote grant; never copy Mac refresh credentials.
 
 # 6. Create DFS project symlinks in LFS home (idempotent — re-run whenever a new DFS repo is added)
 bash ~/agents-config/scripts/relink-dfs-projects.sh
