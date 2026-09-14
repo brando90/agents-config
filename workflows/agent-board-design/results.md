@@ -5,14 +5,14 @@
 **TLDR:** The Vals Claude Opus 5/max design pass completed and was reconciled against the source. Implementation remains pending.
 
 **Status:** DONE — design reviewed; implementation pending
-**Last updated:** 2026-09-14 13:46 PDT
+**Last updated:** 2026-09-14 13:47 PDT
 
 | Phase | State |
 |---|---|
 | Inspect existing board and private link | DONE |
 | Restore existing deterministic renderer | DONE |
 | Vals Opus 5 maximum-effort design | DONE; native model/effort verified |
-| Reconcile and publish design | Reconciled; publication pending |
+| Reconcile and publish design | DONE — [pull request 61](https://github.com/brando90/agents-config/pull/61), merge `5dbaeb9` |
 
 First Opus attempt returned simulated tool output instead of a design and was rejected. One corrected attempt used the same exact model/effort with an explicit tool-free design system prompt. No simulated output is treated as evidence.
 
