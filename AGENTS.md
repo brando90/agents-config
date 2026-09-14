@@ -5,6 +5,10 @@
 # Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 
+## SNAP full-access pre-approval (Brando, 2026-09-14)
+
+Every agent working on SNAP runs with full access (`clauded`/ccdp, `clauded-vals`/ccdv, `codexd`/codexdp or `codex exec --dangerously-bypass-approvals-and-sandbox`) and never stops to ask permission; Brando pre-approves all task work there. Every SNAP dispatch prompt carries the pre-approval line verbatim; stalled or restricted agents are unblocked or relaunched at once. Budgets, secrets and shared-node safety still apply. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 51.
+
 ## Mandatory Response Protocol (inline — do not skip)
 
 These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are visible at session start. They are mirrored in `CLAUDE.md` for Claude Code.

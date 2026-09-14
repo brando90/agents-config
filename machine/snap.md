@@ -263,6 +263,7 @@ Key paths and vars set in `.bashrc`:
 These commands use the separate Vals AI team account, `brando@vals.ai`.
 `clauded-vals` adds permission bypass for authorized unattended work; `claude-vals`
 keeps normal permission prompts. The personal `claude` and `clauded` commands are separate.
+On SNAP, always launch the full-access variants (`clauded`, `clauded-vals`, `codexd`); Trigger Rule 51 pre-approves all task work there.
 
 The September 14 setup uses an explicitly authorized, inference-only, one-year
 `claude setup-token` grant. It does **not** copy the Mac's rotating interactive credentials.

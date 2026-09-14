@@ -4,6 +4,8 @@
 
 This is the operational procedure for `~/agents-config/INDEX_RULES.md` Trigger Rule 48, requested by Brando on September 11, 2026. It applies to every provider and to long local jobs as well as Stanford Network Analysis Project (SNAP) jobs. It improves the chance of completion; finite subscriptions and unavailable required reviewers cannot be made unlimited by a prompt.
 
+**SNAP full access (Trigger Rule 51, September 14).** Every SNAP worker runs in full-access mode (`clauded`, `clauded-vals`, `codexd`, or `codex exec --dangerously-bypass-approvals-and-sandbox`) and its brief carries the Rule 51 pre-approval line verbatim; never leave a SNAP agent waiting at a permission prompt.
+
 ## 1. Name the master and divide the work
 
 The **master** owns the objective, decomposition, model selection, recovery and final verification. `master agent:` is an optional user designation; accept it immediately and record it in the master checkpoint. Infer the role when already coordinating workers under Rule 45; do not ask merely to obtain that label. There is one recovery owner per job, even when several masters coordinate a project. Transfer that ownership explicitly.
