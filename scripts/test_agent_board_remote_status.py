@@ -10,6 +10,36 @@ import agent_board_remote_status as remote
 
 
 class StatusTests(unittest.TestCase):
+    def test_desktop_activity_uses_envelope_not_index_or_message_text(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)/'rollout.jsonl'
+            p.write_text(json.dumps({'type': 'response_item', 'timestamp': '2026-09-14T21:13:00Z',
+                                    'payload': {'text': '2030-01-01T00:00:00Z'}})+'\n')
+            with patch.object(board.time, 'time', return_value=1789419600):
+                self.assertEqual(board.recent_codex_activity(str(p), 1), 1)
+            with patch.object(board.time, 'time', return_value=1789420500):
+                self.assertEqual(board.recent_codex_activity(str(p), 1), 1789420380)
+            p.write_text('malformed\n')
+            self.assertEqual(board.recent_codex_activity(str(p), 123), 123)
+
+    def test_desktop_collection_includes_active_session_with_old_index(self):
+        with tempfile.TemporaryDirectory() as d:
+            tid = '01a0a15a-6a50-7eb3-abbb-4eeef8fc4d6e'
+            Path(d, 'session_index.jsonl').write_text(json.dumps({'id': tid, 'updated_at': '2020-01-01T00:00:00Z'})+'\n')
+            folder = Path(d, 'sessions/2026/09/14');folder.mkdir(parents=True)
+            p = folder/f'rollout-2026-{tid}.jsonl'
+            p.write_text(json.dumps({'type': 'response_item', 'timestamp': '2026-09-14T21:13:00Z'})+'\n')
+            with patch.object(board, 'CODEX_DIR', d), patch.object(board.time, 'time', return_value=1789420400), \
+                 patch.object(board, 'load_expt_cache', return_value={}), patch.object(board, 'save_expt_cache'), \
+                 patch.object(board, 'local_experiment_dirs', return_value={}):
+                rows = board.collect_codex(1, {}, {})
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]['state'], 'live')
+            self.assertEqual(rows[0]['age'], 20)
+            p.write_text(json.dumps({'type': 'response_item', 'timestamp': '2026-09-14T21:13:00garbageZ'})+'\n')
+            self.assertEqual(board.recent_codex_activity(str(p), 123), 123)
+            self.assertEqual(board.recent_codex_activity(str(p), time.time()+100000), 0)
+
     def test_label_is_not_experiment_number(self):
         dirs = {'85': '/repo/experiments/85_E4_full', '4': '/repo/experiments/4_old'}
         self.assertEqual(board.remote_experiment_number('vb-e4-full896-20260914', dirs), '85')

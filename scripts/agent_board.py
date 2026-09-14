@@ -6,6 +6,7 @@
 
 import argparse
 import calendar
+import datetime
 import fcntl
 import glob
 import html
@@ -1106,6 +1107,34 @@ def scan_rollout(path, max_lines=300):
     return start, cwd, orig, model, effort
 
 
+def recent_codex_activity(path, fallback):
+    """Use real event timestamps, not the desktop's infrequently updated session index."""
+    latest = fallback if fallback <= time.time() + 5 else 0
+    try:
+        with open(path, "rb") as stream:
+            size = os.fstat(stream.fileno()).st_size
+            if size > 512000:
+                stream.seek(size - 512000)
+                stream.readline()
+            for line in stream:
+                try:
+                    event = json.loads(line)
+                    if not isinstance(event, dict) or event.get('type') not in {'response_item', 'event_msg', 'turn_context'}:
+                        continue
+                    stamp = event.get('timestamp', '')
+                    # Codex's event envelope uses UTC; do not read timestamps inside message text.
+                    if not isinstance(stamp, str) or not stamp.endswith('Z'):
+                        continue
+                    at = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).timestamp()
+                    if at <= time.time() + 5:
+                        latest = max(latest, at)
+                except (ValueError, TypeError, OverflowError):
+                    continue
+    except OSError:
+        pass
+    return latest
+
+
 def collect_codex(max_age_h, tab, panes):
     """Recent Codex threads from the local session index, as board rows.
 
@@ -1128,6 +1157,11 @@ def collect_codex(max_age_h, tab, panes):
     except OSError:
         return []
     now = time.time()
+    rollout_paths = {}
+    for path in glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", "rollout-*.jsonl")):
+        match = re.search(r"([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})\.jsonl$", path)
+        if match:
+            rollout_paths[match[1]] = path
     threads = []
     for d in seen.values():
         ts = str(d.get("updated_at", ""))
@@ -1135,6 +1169,13 @@ def collect_codex(max_age_h, tab, panes):
             t = calendar.timegm(time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S"))  # index is UTC
         except Exception:
             continue
+        path = rollout_paths.get(str(d['id']))
+        if path:
+            try:
+                if now - max(t, os.path.getmtime(path)) <= max_age_h * 3600:
+                    t = recent_codex_activity(path, t)
+            except OSError:
+                pass
         threads.append((t, d))
     threads.sort(key=lambda x: x[0], reverse=True)
 
@@ -1151,8 +1192,7 @@ def collect_codex(max_age_h, tab, panes):
         if old and tid.lower() not in resume_ids and not any(
                 t >= process_start - 15 for process_start in new_starts):
             continue
-        hits = (glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", f"rollout-*-{tid}.jsonl"))
-                if re.fullmatch(r"[0-9a-f-]{8,64}", tid) else [])
+        hits = [rollout_paths[tid]] if tid in rollout_paths else []
         start, cwd, orig, model, effort = scan_rollout(hits[0]) if hits else (None, "", "", "", "")
         # a Codex rollout carries its model in session_meta, so the cached model/effort here
         # are unused; the call is only for the experiment column
