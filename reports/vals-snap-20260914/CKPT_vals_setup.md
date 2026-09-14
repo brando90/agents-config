@@ -5,7 +5,7 @@
 **TLDR:** Four nodes are verified ready; retain the protected grant and restore access to the remaining three before continuing setup.
 
 Created: 2026-09-14 13:21 PDT
-Last updated: 2026-09-14 13:44 PDT
+Last updated: 2026-09-14 13:49 PDT
 
 - Owner: Codex task 01a0a18c-93b6-7b23-a940-b9804f6318d6 on Sanmi MacBook Air.
 - Branch: snap-vals-access-20260914; original base 3fedd59c0031c31c082bd490633d9824cc7f9b46.
@@ -16,4 +16,6 @@ Last updated: 2026-09-14 13:44 PDT
 - Secret path: /dfs/scratch0/brando9/.claude-vals-remote/oauth-token. Never print or commit. Previous canonical wrappers are preserved under previous-wrappers-20260914 in that protected directory.
 - Resume after skampere3 access repair or hyperturing scheduler association: health-check that node, then run bash /dfs/scratch0/brando9/.claude-vals-remote/install_vals_node.sh and a bounded real tool-use check.
 - No active campaign workers or automatic retries; all setup smoke sessions completed. Other agent-board task was told exact client paths/model evidence; it owns no login changes.
-- Main publication and completion notification are being finalized; see results.md for scope and evidence.
+- LANDED cff25f46a6817e16f23d4ba8ea779b49199ca5a2 https://github.com/brando90/agents-config/pull/60 2026-09-14 13:49 PDT
+- Completion/partial-status receipt sent successfully to brando.science@gmail.com with no copied recipients.
+- No active retry: resume only after the recorded cluster-access blockers change; the setup remains PARTIAL for the seven-node request.

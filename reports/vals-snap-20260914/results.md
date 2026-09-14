@@ -5,7 +5,7 @@
 **TLDR-start:** [snap: vals-login] Vals Claude Code now works on four reachable nodes with a separate protected grant, fast local executable/session storage, and tested job dispatch. Three requested nodes remain blocked by host or scheduler access.
 
 **Status:** PARTIAL — four nodes verified; three access blockers
-**Last updated:** 2026-09-14 13:44 PDT
+**Last updated:** 2026-09-14 13:49 PDT
 
 | Node | State | Verified evidence |
 |---|---|---|
@@ -39,6 +39,10 @@ Client total_cost_usd fields are list-price accounting, not evidence of a new pu
 
 Authentication-critical review: strongest Claude Fable attempt was blocked; fresh Codex gpt-6-astra/ultra reviewed the scripts and returned PASS with zero critical/major issues. Its actual model and effort were verified in its session record. Existing Codex credits were used with automatic reload verified off. The initially planned eight-minute review was extended once to fifteen minutes while it verified concrete repairs; no further reviewer was launched.
 Builder repaired masked token-read failures, unsafe existing directories/links, and empty-array portability. The reviewer passed twelve mocked wrapper/routing cases and nine mocked installer cases. The builder's five portable regression checks and live node installs/dispatches passed. See review.md and per-node structured result files.
+
+## Publication
+
+[Pull request #60](https://github.com/brando90/agents-config/pull/60) merged as `cff25f46a6817e16f23d4ba8ea779b49199ca5a2`. The completion/partial-status email was sent successfully to brando.science@gmail.com with no copied recipients.
 
 ## Scope and remaining limits
 
