@@ -281,7 +281,7 @@ Never print it or put it in a command argument, repository, log, or message.
   The old shared `.claude-vals` profile remains preserved, so historical conversations are not
   silently migrated. New profiles match the Mac's `opus` / Opus 5 extra-high effort settings.
 - Install on a reachable, health-checked node with the existing protected grant:
-  `bash ~/agents-config/scripts/install_vals_node.sh`. The installer is specific to `brando9`.
+  `bash /dfs/scratch0/brando9/.claude-vals-remote/install_vals_node.sh`. The installer is specific to `brando9`; its reviewed source is `scripts/install_vals_node.sh` in this repository.
   It refuses missing/insecure grants, linked or writable-by-others runtime/profile directories,
   and unexpected source binaries. Shell arguments are forwarded unchanged.
 - Do not use the legacy `push_claude_vals_creds.sh` or `setup_claude_vals_snap.sh` for this setup;
