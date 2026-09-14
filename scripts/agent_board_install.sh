@@ -73,7 +73,7 @@ else
 # >>> agent board >>>
 # Terminal view of every live Claude/Codex session; the HTML board is regenerated every
 # 20s by the launchd job com.brando.agentboard and lives at ~/.agent-board/board.html
-alias board="python3 ~/agents-config/scripts/agent_board.py --hours 24"
+alias board="python3 ~/agents-config/scripts/agent_board.py --hours 168"
 alias board-open="open file://$HOME/.agent-board/board.html"
 # <<< agent board <<<
 EOF

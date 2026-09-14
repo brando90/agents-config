@@ -68,7 +68,7 @@ class TranscriptScanTests(unittest.TestCase):
 class ClassificationTests(unittest.TestCase):
     """Rows as collect_sessions() builds them, with the process registry mocked."""
 
-    def rows_for(self, procs):
+    def rows_for(self, procs, age_hours=0):
         with tempfile.TemporaryDirectory() as cfg:
             proj = os.path.join(cfg, "projects", "-tmp-proj")
             os.makedirs(proj)
@@ -77,6 +77,9 @@ class ClassificationTests(unittest.TestCase):
             _write(os.path.join(proj, sids["b"] + ".jsonl"), _records("sdk-cli"))
             _write(os.path.join(proj, sids["c"] + ".jsonl"), _records("cli"))
             _write(os.path.join(proj, sids["d"] + ".jsonl"), _records("sdk-cli") + _records("cli"))
+            for sid in sids.values():
+                stamp = time.time() - age_hours * 3600
+                os.utime(os.path.join(proj, sid + ".jsonl"), (stamp, stamp))
             reg = {sids[k]: [{"pid": "1", "tmux": "2", "app": None, "updated": 0}] for k in procs}
             fake_expt = lambda path, kind, cache, dirs, model="", effort="", entry="": (
                 ("-", "") + board.current_model(path, model, effort, entry))
@@ -100,6 +103,11 @@ class ClassificationTests(unittest.TestCase):
                          ("tmux 2", "live", "live", True))             # claude -p still running
         self.assertEqual((c["tmux_cell"], c["tmux_how"], c["oneshot"]), ("—", "exited", False))
         self.assertEqual((d["tmux_cell"], d["oneshot"]), ("—", False))  # continued interactively
+
+    def test_old_running_claude_survives_history_window(self):
+        sids, rows = self.rows_for(procs="b", age_hours=200)
+        self.assertEqual(set(rows), {sids["b"]})
+        self.assertTrue(rows[sids["b"]]["alive"])
 
     def test_finished_oneshot_stays_listed_while_fresh_then_drops(self):
         fresh = _row("a" * 36, oneshot=True, age=60.0, cell="one-shot")
@@ -220,8 +228,9 @@ class CodexResumeTests(unittest.TestCase):
     old_sid = UUID.format("aaaaaaaa", 1)
     fresh_sid = UUID.format("bbbbbbbb", 2)
 
-    def rows_for(self, command):
+    def rows_for(self, command, index_age_hours=0):
         now = int(time.time())
+        process_start = now - index_age_hours * 3600
         stamp = lambda epoch: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch))
         with tempfile.TemporaryDirectory() as directory:
             rollouts = os.path.join(directory, "sessions", "2026", "09", "09")
@@ -229,8 +238,8 @@ class CodexResumeTests(unittest.TestCase):
             entries = []
             # Put the new thread first: a resumed process must not accidentally claim it
             # just because this different thread was created at the same time.
-            for sid, started in [(self.fresh_sid, now), (self.old_sid, now - 86400)]:
-                entries.append({"id": sid, "updated_at": stamp(now), "thread_name": "fixture"})
+            for sid, started in [(self.fresh_sid, process_start), (self.old_sid, process_start - 86400)]:
+                entries.append({"id": sid, "updated_at": stamp(now - index_age_hours * 3600), "thread_name": "fixture"})
                 _write(os.path.join(rollouts, f"rollout-fixture-{sid}.jsonl"), [
                     {"type": "session_meta", "payload": {"timestamp": stamp(started), "cwd": directory}},
                     {"type": "turn_context", "payload": {"model": "gpt-6-astra"}},
@@ -240,9 +249,42 @@ class CodexResumeTests(unittest.TestCase):
                  mock.patch.object(board, "load_expt_cache", return_value={}), \
                  mock.patch.object(board, "save_expt_cache"), \
                  mock.patch.object(board, "local_experiment_dirs", return_value={}):
-                rows = board.collect_codex(6, {"4242": ("1", now, command, "?")},
+                rows = board.collect_codex(6, {"4242": ("1", process_start, command, "?")},
                                           {"4242": ("fixture", "codex")})
             return {row["sid"]: row for row in rows}
+
+    def test_old_explicit_resume_survives_history_window(self):
+        rows = self.rows_for("codex resume " + self.old_sid, index_age_hours=200)
+        self.assertEqual(set(rows), {self.old_sid})
+        self.assertTrue(rows[self.old_sid]["proc"])
+
+    def test_old_new_process_match_survives_history_window(self):
+        rows = self.rows_for("codex exec fixture", index_age_hours=200)
+        self.assertEqual(set(rows), {self.fresh_sid})
+        self.assertTrue(rows[self.fresh_sid]["proc"])
+
+    def test_old_history_without_live_identity_expires(self):
+        self.assertEqual(self.rows_for("codex app-server", index_age_hours=200), {})
+
+    def test_unknown_old_resume_is_not_treated_as_finished(self):
+        rows = self.rows_for("codex resume --last", index_age_hours=200)
+        self.assertEqual(len(rows), 1)
+        row = next(iter(rows.values()))
+        self.assertTrue(row["proc"])
+        self.assertIn("task identity unknown", row["topic"])
+
+    def test_more_than_eight_recent_codex_tasks_are_all_visible(self):
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        with tempfile.TemporaryDirectory() as directory:
+            entries = [{"id": UUID.format("cccccccc", i), "updated_at": now,
+                        "thread_name": "task " + str(i)} for i in range(25)]
+            _write(os.path.join(directory, "session_index.jsonl"), entries)
+            with mock.patch.object(board, "CODEX_DIR", directory), \
+                 mock.patch.object(board, "load_expt_cache", return_value={}), \
+                 mock.patch.object(board, "save_expt_cache"), \
+                 mock.patch.object(board, "local_experiment_dirs", return_value={}):
+                rows = board.collect_codex(168, {}, {})
+            self.assertEqual({r["sid"] for r in rows}, {e["id"] for e in entries})
 
     def test_explicit_resume_claims_its_old_thread_and_never_a_same_time_new_thread(self):
         for prefix in ["codex resume", "codex exec resume", "/tmp/codex-pinned resume",
@@ -275,10 +317,13 @@ class CodexResumeTests(unittest.TestCase):
         for command in ["codex resume --last", "codex exec resume --last continue",
                         "codex resume", "codex resume my-thread-name"]:
             with self.subTest(command=command):
-                for row in self.rows_for(command).values():
-                    self.assertIsNone(row["proc"])
-                    self.assertEqual(row["tmux_cell"], "? (resume)")
-                    self.assertIn("cannot be established", row["note"])
+                rows = self.rows_for(command)
+                self.assertFalse(rows[self.old_sid]["proc"])
+                self.assertFalse(rows[self.fresh_sid]["proc"])
+                unresolved = [r for r in rows.values() if r["sid"].startswith("codex-process:")]
+                self.assertEqual(len(unresolved), 1)
+                self.assertTrue(unresolved[0]["proc"])
+                self.assertIn("cannot be established", unresolved[0]["note"])
 
 
 class TmuxTargetTests(unittest.TestCase):

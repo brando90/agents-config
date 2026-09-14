@@ -440,11 +440,12 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None, collapse=T
                 st = os.stat(tpath)
             except OSError:
                 continue
-            if now - st.st_mtime > max_age_h * 3600:
+            sid = os.path.basename(tpath)[:-6]
+            # History age never hides a registry-verified running session.
+            if now - st.st_mtime > max_age_h * 3600 and not cc.get(sid):
                 continue
             if os.path.basename(os.path.dirname(tpath)).endswith(SELF_PROJECT):
                 continue
-            sid = os.path.basename(tpath)[:-6]
             paths.append((cfg_dir, tag, tpath, st, sid))
     rows = []
     ecache, edirs = load_expt_cache(), local_experiment_dirs()
@@ -518,7 +519,7 @@ def collect_sessions(max_age_h, show_all=False, tab=None, panes=None, collapse=T
                 "size_mb": round(st.st_size / 1e6, 1),
                 # colour by recency -- except that a finished one-shot was never "waiting on you"
                 "state": ("stale" if (oneshot and not procs) else
-                          "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale")),
+                          "live" if age < LIVE_S else ("idle" if procs or age < IDLE_S else "stale")),
             })
     save_expt_cache(ecache)
     if not show_all:
@@ -1105,7 +1106,7 @@ def scan_rollout(path, max_lines=300):
     return start, cwd, orig, model, effort
 
 
-def collect_codex(max_age_h, tab, panes, limit=8):
+def collect_codex(max_age_h, tab, panes):
     """Recent Codex threads from the local session index, as board rows.
 
     An explicit `resume <id>` identifies its existing thread even though the process is
@@ -1134,24 +1135,27 @@ def collect_codex(max_age_h, tab, panes, limit=8):
             t = calendar.timegm(time.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S"))  # index is UTC
         except Exception:
             continue
-        if now - t <= max_age_h * 3600:
-            threads.append((t, d))
+        threads.append((t, d))
     threads.sort(key=lambda x: x[0], reverse=True)
 
     procs = [(pid, start, *codex_process_identity(cmd)) for pid, (_p, start, cmd, *_r) in tab.items()
              if CODEX_RE.search(cmd)]
-    uncertain_resume = any(mode == "resume" and not sid for _pid, _start, mode, sid in procs)
+    resume_ids = {sid for _pid, _start, mode, sid in procs if mode == "resume" and sid}
+    new_starts = [start for _pid, start, mode, _sid in procs if mode == "new"]
     rows, claimed = [], set()
     ecache, edirs = load_expt_cache(), local_experiment_dirs()
-    for t, d in threads[:limit]:
+    for t, d in threads:
         tid = str(d["id"])
+        old = now - t > max_age_h * 3600
+        # Old history needs inspecting only if a live process could own it.
+        if old and tid.lower() not in resume_ids and not any(
+                t >= process_start - 15 for process_start in new_starts):
+            continue
         hits = (glob.glob(os.path.join(CODEX_DIR, "sessions", "*", "*", "*", f"rollout-*-{tid}.jsonl"))
                 if re.fullmatch(r"[0-9a-f-]{8,64}", tid) else [])
         start, cwd, orig, model, effort = scan_rollout(hits[0]) if hits else (None, "", "", "", "")
         # a Codex rollout carries its model in session_meta, so the cached model/effort here
         # are unused; the call is only for the experiment column
-        expt, expt_also = (session_expt(hits[0], "codex", ecache, edirs)[:2] if hits
-                           else ("-", ""))
         cell, seats, live, note = "—", [], False, ""
         exact = sorted(pid for pid, _s, mode, sid in procs
                        if mode == "resume" and sid == tid.lower() and pid not in claimed)
@@ -1166,10 +1170,10 @@ def collect_codex(max_age_h, tab, panes, limit=8):
                 seats, cell = [loc[5:]], tmux_cell([loc[5:]])
             else:
                 cell = loc if loc != "?" else "(no tmux)"
-        elif uncertain_resume:
-            cell, live = "? (resume)", None
-            note = ("A live Codex resume uses --last, a picker, or a session name; "
-                    "its thread identity cannot be established from the process command.")
+        if old and live is False:
+            continue
+        expt, expt_also = (session_expt(hits[0], "codex", ecache, edirs)[:2] if hits
+                           else ("-", ""))
         age = now - t
         rows.append({
             "sid": tid, "short": tid[:8], "tag": "cxd", "label": "cxd",
@@ -1179,7 +1183,23 @@ def collect_codex(max_age_h, tab, panes, limit=8):
             "expt": expt, "expt_also": expt_also,
             "topic": str(d.get("thread_name") or "")[:120], "next": "", "prior": 0,
             "last": t, "age": age,
-            "state": "live" if age < LIVE_S else ("idle" if age < IDLE_S else "stale"),
+            "state": "live" if age < LIVE_S else ("idle" if live or age < IDLE_S else "stale"),
+        })
+    # Show each unresolved live resume once, without assigning it to every old
+    # transcript or imposing an arbitrary candidate/task cap.
+    for pid, started, mode, sid in procs:
+        if mode != "resume" or sid:
+            continue
+        loc = locate(pid, tab, panes)
+        seats = [loc[5:]] if loc.startswith("tmux ") else []
+        rows.append({
+            "sid": f"codex-process:{pid}:{started}", "short": f"pid {pid}",
+            "tag": "cxd", "label": "cxd", "tmux_cell": tmux_cell(seats) if seats else loc,
+            "seats": seats, "proc": True, "alive": True,
+            "note": "Live Codex resume; its thread identity cannot be established from the process command.",
+            "where": HOSTNAME, "branch": "", "mdl": "?", "expt": "-", "expt_also": "",
+            "topic": "Running Codex — task identity unknown", "next": "", "prior": 0,
+            "last": started, "age": max(0, now - started), "state": "idle",
         })
     save_expt_cache(ecache)
     return rows
@@ -1721,11 +1741,10 @@ def build_sections(sessions, codex, experiments, snap, tab=None):
     secs.append({"title": "SNAP — jobs in tmux/byobu on the cluster",
                  "sub": "ssh brando9@<host>.stanford.edu; tmux attach -t <tmux>",
                  "rows": experiments, "note": note})
-    # EVERY table reads in terminal-tab order (Brando 2026-09-04). The sort is stable and the
-    # key is tab position alone, so rows with no tab of their own -- SNAP jobs, exited
-    # sessions -- hold the order their table already had rather than being reshuffled.
+    # Verified running rows lead each table; preserve terminal-tab order within
+    # running/history groups and stable source order for rows without a tab.
     for sec in secs:
-        sec["rows"] = sorted(sec["rows"], key=lambda r: seat_rank(r, order))
+        sec["rows"] = sorted(sec["rows"], key=lambda r: (not r.get("alive"), seat_rank(r, order)))
     return secs
 
 
@@ -1990,7 +2009,7 @@ def main():
                     help="write the HTML board (default ~/.agent-board/board.html)")
     ap.add_argument("--snap", action="store_true", help="poll SNAP nodes over ssh (slow)")
     ap.add_argument("--hours", type=float, default=None,
-                    help="how far back to list (default 6; 168 with --resume-dead)")
+                    help="history window in hours (default 168); verified running sessions remain visible")
     ap.add_argument("--all", action="store_true",
                     help="every transcript, not just the current one per tmux window")
     ap.add_argument("--refresh", type=int, default=20, help="HTML auto-refresh seconds")
@@ -2008,7 +2027,7 @@ def main():
     ap.add_argument("--fork", action="store_true",
                     help="with --resume-dead: add --fork-session (new id, transcript untouched)")
     a = ap.parse_args()
-    hours = a.hours if a.hours is not None else (168 if a.resume_dead is not None else 6)
+    hours = a.hours if a.hours is not None else 168
 
     tab, panes = process_table(), tmux_panes()
     if a.resume_dead is not None:
