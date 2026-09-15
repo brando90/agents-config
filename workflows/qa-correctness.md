@@ -1,8 +1,8 @@
 # Workflow: QA — Proportionate Review
 
-**TLDR:** Quality assurance (QA) uses deterministic checks for routine prose and one review round for substantive changes. Prefer a capable reviewer from the other company, allow a disclosed smaller-model fallback for ordinary changes, preserve strongest-model acceptance for critical changes, and run Mega QA only when Brando requests it.
+**TLDR:** Quality assurance (QA) runs only when Brando explicitly asks ("do QA" / "light QA" = one review round, "mega QA" = the chain); otherwise agents verify deterministically and say no QA was run. Prefer a capable reviewer from the other company, allow a disclosed smaller-model fallback for ordinary changes, preserve strongest-model acceptance for critical changes, and run Mega QA only when Brando requests it.
 
-> **Design: A1 builds → appropriate QA tier.** The builder picks the lightest tier that covers the risk. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
+> **Design: QA is explicit opt-in (Hard Rule 3, Brando 09-14-2026).** No agent, hook or project file starts a reviewer on its own; Tier 1 deterministic checks are the default verification for every change, and Tier 2/3 run only on Brando's request. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
 
 ## Hard Rule: CLI-only, no API keys
 
@@ -12,7 +12,7 @@
 
 ## Review fallback and acceptance
 
-This is the canonical reviewer-selection procedure for Hard Rule 8, Tier 2 and each requested Mega QA stage. **Select the acceptance requirements before calling models.** A smaller reviewer is an explicit exception to strongest-model acceptance defaults, not a change to global master settings. Routine execution-worker selection and quota recovery follow [reliable dispatch](reliable-agent-dispatch.md); they cannot waive this procedure, reset its attempt budget, change a measured model, or satisfy a mandatory missing reviewer.
+This is the canonical reviewer-selection procedure for Hard Rule 8, a requested Tier 2 and each requested Mega QA stage. It applies only once a review is actually running -- because Brando requested QA (Hard Rule 3) or a separate acceptance gate such as Trigger Rule 43 applies; the table says which reviewer is eligible, not that a review must be started. **Select the acceptance requirements before calling models.** A smaller reviewer is an explicit exception to strongest-model acceptance defaults, not a change to global master settings. Routine execution-worker selection and quota recovery follow [reliable dispatch](reliable-agent-dispatch.md); they cannot waive this procedure, reset its attempt budget, change a measured model, or satisfy a mandatory missing reviewer.
 
 | Change being reviewed | Eligible acceptance review |
 |---|---|
@@ -42,7 +42,7 @@ A review that identifies defects is a valid review, not an availability failure:
 
 ## QA Tiers
 
-**Pick the QA tier before reporting done.** The goal is enough verification, not maximum agent traffic.
+**Tier 0/1 are ordinary verification and apply to every change. Tier 2 ("do QA" / "light QA") and Tier 3 ("mega QA") run only when Brando explicitly requests them.** The lists below say what each tier is suited for, so an agent can mention in its reply that QA may be worth requesting -- never a license to start it.
 
 ### Tier 0 — trivial
 
@@ -63,7 +63,7 @@ Do not dispatch a fallback model reviewer for Tier 1 just because another review
 
 Use when changes affect code behavior, scripts, infra/auth, packaging/deployment, data/results, experiments, generated artifacts, nontrivial shared workflows/rules, or paper claims/numbers/tables/citations/experimental conclusions. Also use Tier 2 when the agent is uncertain about scientific or behavioral correctness.
 
-For Tier 2, dispatch one independent reviewer before reporting done. The reviewer handles correctness (logic errors, edge cases, broken behavior, inconsistencies with project docs) and structural quality in a single pass. On repos with substantial source code, the reviewer also runs the structural checks defined in [`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On markdown-only or config-only repos, structural checks are skipped, but correctness and consistency review still apply.
+When Brando requests Tier 2, dispatch one independent reviewer before reporting done. The reviewer handles correctness (logic errors, edge cases, broken behavior, inconsistencies with project docs) and structural quality in a single pass. On repos with substantial source code, the reviewer also runs the structural checks defined in [`~/agents-config/workflows/qa-structural.md`](qa-structural.md). On markdown-only or config-only repos, structural checks are skipped, but correctness and consistency review still apply.
 
 **Round budget (Brando 2026-08-20 — "otherwise I run out of tokens").** The default shape is ONE
 review round and done: builder X → opposite-CLI reviewer Y → X applies the fixes → X verifies the
@@ -76,7 +76,7 @@ Brando explicitly asks (that territory is Mega QA, which only he invokes).
 
 ### Tier 3 — Mega QA (manual-only, by Brando)
 
-Use only when **Brando himself** says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. **Mega QA never auto-triggers and is never agent-selected** — not on `git push`/merge to `main`, not from file-path heuristics, not from a project QA-gate hook, and not because an agent judges the moment high-stakes (end-of-day, pre-merge, pre-sleep included). A hook that gates pushes to `main` must default to the lightest proportionate tier (Tier 0/1 for docs/prose, Tier 2 single-round for code/behavior/claims) and must **never** escalate to the mega chain on its own; mega is opt-in only via Brando's explicit request (or an opt-in he himself set, such as a `[mega-qa]` commit-message tag or an env flag). Run the sequential multi-model chain in the Mega QA section.
+Use only when **Brando himself** says "mega QA", "super QA", "extra careful QA", "deep QA", "final QA", "pre-arXiv QA", "pre-submission QA", or similar. **Mega QA never auto-triggers and is never agent-selected** — not on `git push`/merge to `main`, not from file-path heuristics, not from a project QA-gate hook, and not because an agent judges the moment high-stakes (end-of-day, pre-merge, pre-sleep included). A hook that gates pushes to `main` must never start any model-reviewer tier on its own (Hard Rule 3); mega is opt-in only via Brando's explicit request (or an opt-in he himself set, such as a `[mega-qa]` commit-message tag or an env flag). Run the sequential multi-model chain in the Mega QA section.
 
 ### Paper-writing rule of thumb
 
@@ -269,7 +269,9 @@ unresolved issue or a missing mandatory review.
 
 ## When to Skip Review
 
-- Typo fixes, comment-only edits, and strictly nonbehavioral configuration edits may use Tier 0/1. A single line is not an exemption: behavior changes, critical controls, benchmark reference data, and explicitly required reviews retain their consequence-based review requirements. Deterministic checks still apply.
+- By default: no model review runs unless Brando requests QA (Hard Rule 3). Deterministic checks still apply to every change.
+- Even when QA was requested for a batch of work, typo fixes, comment-only edits and strictly nonbehavioral configuration edits may stay at Tier 0/1.
+- Benchmark reference (gold) data keeps its separate both-family acceptance (Trigger Rule 43) regardless.
 - User explicitly says "skip review" or "no QA."
 - The task was itself a review task (don't recurse — reviewers don't dispatch reviewers).
 
