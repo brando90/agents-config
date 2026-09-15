@@ -55,7 +55,7 @@ Project repo flow (e.g., ~/vb/ — layers span two repos):
 
 **Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and uppercase `AGENTS.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. Claude reads `~/CLAUDE.md`; Codex reads `~/.codex/AGENTS.md` globally and uppercase `AGENTS.md` files from the repository root toward the working directory. A legacy home-level `~/agents.md` symlink may point to the uppercase file for older launchers; the repository itself keeps only the canonical spelling so it works on case-insensitive filesystems.
 
-**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, proportionate QA, closing TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
+**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, explicit opt-in QA, closing TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
 
 Repository-hosted Markdown documents use the header format in [Trigger Rule 16](INDEX_RULES.md): title, `**Doc link:**` with the full clickable document address, then the summary. Keep the address visible so readers can identify the path and copy it into notes.
 
@@ -120,7 +120,7 @@ agents-config/
 │   └── marlowe.md               ← Stanford Marlowe cluster
 │
 ├── workflows/                   ← Layer 3: reusable workflows (loaded on demand)
-│   ├── qa-correctness.md        ← proportionate QA tiers (deterministic checks, reviewer QA, Mega QA)
+│   ├── qa-correctness.md        ← QA tiers, explicit opt-in (deterministic checks, reviewer QA, Mega QA)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
@@ -601,7 +601,7 @@ Read through your old CLAUDE.md and sort each section into one of these buckets:
 | Bucket | Where it goes | Examples |
 |:-------|:-------------|:---------|
 | **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
-| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (proportionate QA, worktrees), global rules (no secrets, verify before push) |
+| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (explicit opt-in QA, worktrees), global rules (no secrets, verify before push) |
 | **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
 | **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
 

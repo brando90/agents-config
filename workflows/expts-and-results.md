@@ -499,7 +499,7 @@ Send the email only if any of these apply:
 - Brando explicitly asked for email/notification/tracking on completion.
 - The task was a user-triggered "mega QA", "deep QA", "big QA", or similar substantial review pass.
 
-Do NOT send for: single-line edits, routine paper edits, default QA required by the config, read-only questions, exploratory searches, ordinary refactors, or agent-judged "significant" work that Brando did not explicitly ask to track by email.
+Do NOT send for: single-line edits, routine paper edits, a light QA round Brando asked for in passing, read-only questions, exploratory searches, ordinary refactors, or agent-judged "significant" work that Brando did not explicitly ask to track by email.
 
 **When in doubt, do not email.** Summarize in chat/Telegram instead.
 
