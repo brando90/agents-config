@@ -1,5 +1,7 @@
 # Workflow: Experiments & Results
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/expts-and-results.md>
+
 **TLDR:** The canonical experiment-folder convention for this account:
 `experiments/<NN>_<name>/` with mandatory `README.md`, versioned
 sub-experiments, results storage, W&B reporting, GPU rules, and narrowly
@@ -248,6 +250,8 @@ Rules:
 ---
 
 ## Results Storage
+
+Report measured numerical results alongside verdicts under [Hard Rule 11](../INDEX_RULES.md#hard-rules-every-response-never-skip), including counts, split/phase, uncertainty, separate correlations and clearly distinguished raw-score variability versus aggregated-score repeatability. Label missing measurements and threshold sources; reporting does not change the locked protocol.
 
 - **Results live inside the version dir:** `expt_v1/results/`, `expt_v2/results/`, etc. This keeps each iteration self-contained and reproducible.
 - **Timestamped summaries:** Every results summary file is timestamped (`MM-DD-YYYY` or `MM-DD-YYYY__HH-MM-SS`). Never overwrite — create a new file per run.
