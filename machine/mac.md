@@ -74,3 +74,13 @@ One page listing every agent session — local Claude Code (personal `cc` and Va
 Trigger Rule 52 applies to all agent families. `scripts/agent_board_remote_status.py` is sent over the existing secure-shell connection and reads bounded, allowlisted fields from `acknowledgement.json`, `progress.json`, `driver_identity.json` and `watchdog.json` beside the worker's `repo/` directory. The acknowledgement must match the terminal session and checkout. A nonempty identical `run_id` binds the other receipts to that scientific run; without it, counts are labelled an unverified runtime snapshot and driver/watchdog evidence is not attributed to the run. Record process identifiers with start ticks and boot identity to reject reused identifiers. Writes belong to the execution owner, not the board observer.
 
 Remote polling is cached for 120 seconds; normal local rendering remains 20 seconds. This path invokes no language model. The separate optional prose summarizer is a different feature and may consume subscription tokens. On failed polling or evidence older than five minutes, the board marks stale/unverified status; coordinator activity and driver activity remain distinct. The local Mac/app and remote connectivity must be available. Receipt support currently covers this runtime layout; it does not imply every historical worker has adopted it.
+
+## Paper PDFs refresh themselves (paper_watch, 09-16-2026)
+
+`~/agents-config/scripts/paper_watch.py` runs as the launchd user agent `com.brando.paper-watch` (installed with
+`bash ~/agents-config/scripts/install_paper_watch.sh ~/veribench`; add more repo paths as arguments; `--uninstall` removes it).
+It polls every `paper_latex*/<VENUE>/` in the watched repos every 2 s and recompiles through the repo's
+`.claude/hooks/compile_paper_on_edit.sh` whenever any `.tex`, `.bib`, style, or figure file changes, whoever changed it
+(Cursor save, agent shell edit, Codex, `git pull`). Every `00_main_*.pdf` beside the sources is therefore always the latest
+build; open it in Cursor and it reloads. Log `~/Library/Logs/paper_watch.log`; status `launchctl print gui/$(id -u)/com.brando.paper-watch`.
+Dirs with a `.no-autocompile` marker are skipped. Trigger Rule 35 in `INDEX_RULES.md` records the policy.
