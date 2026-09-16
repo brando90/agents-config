@@ -1,6 +1,6 @@
 # Workflow: QA — Proportionate Review
 
-**TLDR:** Quality assurance (QA) runs only when Brando explicitly asks ("do QA" / "light QA" = one review round, "mega QA" = the chain); otherwise agents verify deterministically and say no QA was run. Prefer a capable reviewer from the other company, allow a disclosed smaller-model fallback for ordinary changes, preserve strongest-model acceptance for critical changes, and run Mega QA only when Brando requests it.
+**TLDR:** Quality assurance (QA) runs only when Brando explicitly asks ("do QA" / "light QA" = one review round, "mega QA" = the chain); otherwise agents verify deterministically and do not mention QA at all. Prefer a capable reviewer from the other company, allow a disclosed smaller-model fallback for ordinary changes, preserve strongest-model acceptance for critical changes, and run Mega QA only when Brando requests it.
 
 > **Design: QA is explicit opt-in (Hard Rule 3, Brando 09-14-2026).** No agent, hook or project file starts a reviewer on its own; Tier 1 deterministic checks are the default verification for every change, and Tier 2/3 run only on Brando's request. When a reviewer is dispatched, that reviewer finds AND fixes issues; when the task is routine writing/docs, deterministic checks plus self-review are the intended QA.
 
@@ -42,7 +42,7 @@ A review that identifies defects is a valid review, not an availability failure:
 
 ## QA Tiers
 
-**Tier 0/1 are ordinary verification and apply to every change. Tier 2 ("do QA" / "light QA") and Tier 3 ("mega QA") run only when Brando explicitly requests them.** The lists below say what each tier is suited for, so an agent can mention in its reply that QA may be worth requesting -- never a license to start it.
+**Tier 0/1 are ordinary verification and apply to every change. Tier 2 ("do QA" / "light QA") and Tier 3 ("mega QA") run only when Brando explicitly requests them.** The lists below say what each tier is suited for, so an agent knows what to run when Brando asks -- never a license to start it, and not a prompt to suggest or mention QA when he has not asked (Brando, 09-16-2026).
 
 ### Tier 0 — trivial
 
