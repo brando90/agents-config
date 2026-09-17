@@ -76,6 +76,11 @@ for h in "${HOSTS[@]}"; do
         "umask 077 && mkdir -p '$SU_REMOTE' && chmod 700 '$SU_REMOTE' && cat > '$SU_REMOTE/oauth-token' && chmod 600 '$SU_REMOTE/oauth-token' && ls -l '$SU_REMOTE/oauth-token'" \
         2>&1 | sed "s/^/  [$h] grant: /"; then
       GRANT_DONE=1
+      # Second copy under the shared keys dir: SNAP job runners (e.g. expt-89 Phase B on skampere2)
+      # watch ~/keys/claude_su_oauth_token.txt, not the wrapper's protected grant path.
+      printf '%s' "$TOKEN" | ssh "${SSH_OPTS[@]}" "$h.$DOMAIN" \
+        "umask 077 && mkdir -p '$DFS_ROOT/keys' && cat > '$DFS_ROOT/keys/claude_su_oauth_token.txt' && chmod 600 '$DFS_ROOT/keys/claude_su_oauth_token.txt' && ls -l '$DFS_ROOT/keys/claude_su_oauth_token.txt'" \
+        2>&1 | sed "s/^/  [$h] keys-copy: /" || log "$h: keys-dir copy failed (wrapper grant still written)"
     else
       log "$h: writing the DFS grant FAILED — skipping"; BAD_HOSTS+=("$h"); continue
     fi
