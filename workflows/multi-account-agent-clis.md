@@ -147,6 +147,35 @@ and `python3 scripts/test_dispatch_scripts.py` cover both mappings.
 5. **Runtime binaries are content-addressed and never overwritten in place** — a new CLI version
    lands in a new directory.
 
+## Verification — what was actually probed (09-16-2026, from the mac orchestrator)
+
+| Probe | Where | Result |
+|---|---|---|
+| `python3 scripts/test_su_wrappers.py` | mac | 5/5 PASS — argument forwarding, insecure-grant rejected, failed/empty/missing grant rejected |
+| `codexd-su exec --skip-git-repo-check -c model_reasoning_effort="low" 'Reply with exactly: PONG-SU-LOCAL'` | mac, codex-cli 0.154.0 | `PONG-SU-LOCAL`, 3,693 tokens, rc 0 |
+| same probe, `PONG-SU-SNAP` | skampere1 (DFS entry -> node-local runtime) | `PONG-SU-SNAP`, 7,706 tokens, rc 0, session `01a0ad46-32ff-7012-99bc-356addb5571c` |
+| `clauded-su -p 'Reply with exactly: PONG-SU-CLAUDE'` | skampere1 | `PONG-SU-CLAUDE`, rc 0 |
+
+**The `d` in `codexd-su` does not survive the Stanford enterprise policy.** Every SU Codex run, on the mac and on
+SNAP, prints enterprise-managed fallbacks before it answers: `approval_policy` `Never` -> `OnRequest`; `sandbox_mode`
+`DangerFullAccess` -> a managed profile whose filesystem is `Restricted` (root read-only) and whose network is
+`Restricted`; `web_search` `Live` -> `Cached` (source: `enterprise-managed requirements Baseline
+(regulated-workspace-default-fallback)`). So the Stanford Codex profile is in practice a read-only, network-restricted
+agent that can still stop and ask for approval. **Do not dispatch an unattended full-permission SNAP worker on it**
+(Rule 51/55 workers stay on `codexd` personal, `clauded`, or `clauded-vals`); it is well suited to one-shot `exec`
+reviews, reading and analysis. On SNAP it additionally warns that Codex's Linux sandbox needs bubblewrap user
+namespaces, and that `[features].use_legacy_landlock` is deprecated.
+
+**Gotcha: on the mac these are zsh functions, not scripts on `PATH`.** A non-interactive `bash -c 'codexd-su ...'`
+fails with `No such file or directory`. Call them through `zsh -ic '...'`, or inline the environment
+(`env -u OPENAI_API_KEY CODEX_HOME=$HOME/.codex-su codex ...`). On SNAP they are real scripts in
+`/dfs/scratch0/brando9/bin`, so a plain `ssh <host> 'codexd-su ...'` works once that node has its profile.
+
+**Rollout state at 19:50 PDT 09-16-2026 (in progress, another session owns the push):** skampere1 has
+`~/.codex-su/{auth.json,config.toml}` and the node-local runtime in `~/.local/bin/` — verified live above. mercury1
+has the wrappers but no `~/.codex-su` profile yet, so it was not probed. Re-run the two live probes on each node after
+`push_codex_su_snap.sh` reaches it; a wrapper on `PATH` is not evidence that the profile is installed.
+
 ## Troubleshooting
 
 | Symptom | Cause |
