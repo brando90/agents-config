@@ -49,6 +49,11 @@ Every agent working on SNAP runs with full access (`clauded`/ccdp, `clauded-vals
 
 Follow `~/agents-config/INDEX_RULES.md` Trigger Rule 52 for every board-visible job: publish timestamped, run-bound status receipts through ordinary code; verify the canonical board row; separate coordinator activity from execution/results; mark stale or unavailable evidence explicitly. Use no model calls for routine polling and bounded reasoning for failures or meaningful changes.
 
+## Never stall: decide, and finish with whatever agent is available (Trigger Rules 57 and 58, Brando 09-16-2026)
+
+- **Decide it yourself and proceed (Rule 57).** About to ask a gating question, show an approval menu, or escalate a routing / configuration / scope choice back to your dispatcher? Make the call instead: pick what you would have marked (Recommended), say in one or two lines what you chose and why, keep going, and write the decision where the work lives (experiment ledger, `CKPT_<task>.md`, commit message, the worker's shared state) so it stays visible and reversible. Spin a subagent for a judgement call you genuinely lack.
+- **Never stall on your own limits (Rule 58).** A quota or usage limit, a rate limit, a model refusal, a skill gap, or work too slow to do serially is *your* blocker, not the task's. Delegate and parallelise across every installed agent (`codex` / `codexd` GPT-6 Astra, `clauded`, `clauded-vals`, `clauded-su`, `antigravity`, Cursor, Mistral, Grok, your own subagents) instead of reporting back empty. Hand the remaining work over with its runbook, ledger and checkpoint; never leave a task parked on your own exhausted credential.
+
 ## Dates: month-day-year
 
 Names that carry a date (tmux sessions, files, branches) and dates written for Brando (experiment READMEs, `results.md`, `CKPT_<task>.md` stamps, results summaries) use `MM-DD-YYYY`, never year-first; prefer no date in a name when none is needed. Tool-parsed formats (Jekyll posts, ISO 8601 in JSON/logs) and existing names stay unchanged. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 53.
