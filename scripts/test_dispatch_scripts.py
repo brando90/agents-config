@@ -114,7 +114,7 @@ sys.exit(0)
         self.assertEqual(actual[2], ["send-keys", "-t", "=qa-probe:", "Enter"])
 
     def test_deploy_profiles_and_invalid_flags(self):
-        for profile, wrapper in [("cc", "clauded"), ("ccv", "clauded-vals")]:
+        for profile, wrapper in [("cc", "clauded"), ("ccv", "clauded-vals"), ("ccs", "clauded-su")]:
             result = self.deploy("--profile", profile, "--no-rc", "--model", "claude-fable-5-1[1m]", "--effort", "max", "--dry-run")
             self.assertEqual(result.returncode, 0, result.stderr)
             typed = shlex.split(result.stdout.splitlines()[1])[-1]

@@ -222,7 +222,8 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 - **CC / cc** = Claude Code; locally, bare `cc` commonly denotes the personal profile. Use `ccp` or `ccv` when the account matters.
 - **ccp** = Claude Code personal account/subscription (`claude` / `clauded`).
 - **ccv** = Claude Code Vals AI account/team allowance (`claude-vals` / `clauded-vals`); separate from Valkyrie experiment funding.
-- **ccdp / ccdv / codexdp** = the full-access launchers `clauded`, `clauded-vals` and `codexd` (Trigger Rule 51: mandatory for SNAP work).
+- **ccs** = Claude Code Stanford University enterprise account (`claude-su` / `clauded-su`, profile `~/.claude-su`); recipe in `workflows/multi-account-agent-clis.md`.
+- **ccdp / ccdv / ccds / codexdp** = the full-access launchers `clauded`, `clauded-vals`, `clauded-su` and `codexd` (Trigger Rule 51: mandatory for SNAP work).
 - **codexp** = Codex personal account/credits; **cxd** is the existing Codex agent-board label, not proof of a billing account.
 - These are account/profile shorthand, not guaranteed executable commands or independent budgets; verify the actual signed-in account and available allowance before dispatch.
 - **QA** = quality assurance review, explicit opt-in only (see Hard Rule 3)

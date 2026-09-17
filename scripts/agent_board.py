@@ -34,11 +34,12 @@ HOSTNAME = os.uname().nodename.split(".")[0].replace("Sanmis-MacBook-Air-2", "ai
 CONFIGS = {
     os.path.join(HOME, ".claude"): "cc",
     os.path.join(HOME, ".claude-vals"): "ccv",
+    os.path.join(HOME, ".claude-su"): "ccs",
 }
 # tag -> the shell wrapper that starts Claude Code with that config. Both live in ~/.zshrc
 # (alias / function), so they resolve when typed into an interactive shell -- which is how
 # --resume-dead uses them.
-WRAPPERS = {"cc": "clauded", "ccv": "clauded-vals"}
+WRAPPERS = {"cc": "clauded", "ccv": "clauded-vals", "ccs": "clauded-su"}
 SNAP_HOSTS = ["skampere1", "skampere2", "skampere3"]
 
 LIVE_S = 120      # wrote within 2 min  -> live
@@ -49,6 +50,7 @@ BOOT_RE = re.compile(r"Claude Code v[\d.]+|^\s*[`▐▝▛█▀]")
 SECTION_TITLES = [
     ("cc",  "Claude Code sessions — personal", "clauded / claude, ~/.claude"),
     ("ccv", "Claude Code sessions — Vals", "clauded-vals / claude-vals, ~/.claude-vals"),
+    ("ccs", "Claude Code sessions — Stanford", "clauded-su / claude-su, ~/.claude-su"),
 ]
 
 
@@ -2074,7 +2076,7 @@ def render_html(sections, out_path, refresh, net=None):
         'to resume, and it was never waiting on you); on SNAP the session name on that node '
         '(<code>tmux attach -t &lt;name&gt;</code> there). '
         '<b>Agent</b>: <code>cc</code> Claude Code (personal config), <code>ccv</code> Claude '
-        'Code (Vals config), <code>cxd</code> Codex, <code>&mdash;</code> only shells in the '
+        'Code (Vals config), <code>ccs</code> Claude Code (Stanford config), <code>cxd</code> Codex, <code>&mdash;</code> only shells in the '
         'pane. <b>Id</b>: Claude session id / Codex thread id / experiment number. '
         '<b>Where</b>: the working directory, fully expanded (the <code>/Users/&lt;you&gt;</code> '
         'prefix says which laptop; SNAP rows are <code>node:/lfs/…</code>), with the git '

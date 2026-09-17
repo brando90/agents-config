@@ -8,7 +8,7 @@
 #
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
-#                [--profile cc|ccv|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
+#                [--profile cc|ccv|ccs|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
 #                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
 #   --profile codex types `codex --dangerously-bypass-approvals-and-sandbox -m <model> -c 'model_reasoning_effort="<effort>"' '<prompt>'` (model and
 #   effort default to gpt-6-astra and ultra; efforts low|medium|high|xhigh|ultra) and
@@ -59,11 +59,11 @@ done
 [ -n "$NAME" ] && [ -n "$CWD" ] && [ -n "$PROMPT" ] || die "need --name, --cwd and --prompt-file"
 case "$NAME" in *[!A-Za-z0-9_-]*) die "--name may use letters, digits, _ and - only (it is a tmux target)" ;; esac
 case "$PROFILE" in
-  cc|ccv) MODEL=${MODEL:-claude-fable-5-1}; EFFORT=${EFFORT:-max}
+  cc|ccv|ccs) MODEL=${MODEL:-claude-fable-5-1}; EFFORT=${EFFORT:-max}
           case "$EFFORT" in low|medium|high|xhigh|max) ;; *) die "--effort must be one of low medium high xhigh max (got '$EFFORT')" ;; esac ;;
   codex)  MODEL=${MODEL:-gpt-6-astra}; EFFORT=${EFFORT:-ultra}
           case "$EFFORT" in low|medium|high|xhigh|ultra) ;; *) die "--effort for codex must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
-  *) die "--profile must be cc, ccv or codex" ;;
+  *) die "--profile must be cc, ccv, ccs or codex" ;;
 esac
 # model ids are like claude-fable-5-1, claude-fable-5-1[1m] (Hard Rule 8) or gpt-6-astra; typed inside single quotes
 case "$MODEL" in *[!A-Za-z0-9._\[\]-]*) die "--model may use letters, digits, . _ - [ ] only (got '$MODEL')" ;; esac
@@ -77,6 +77,7 @@ case "$PROMPT" in *\'*) die "the runbook path may not contain a single quote" ;;
 case "$PROFILE" in
   cc) WRAPPER=clauded; REG_DIR="$HOME/.claude/sessions" ;;              # personal config (zsh alias)
   ccv) WRAPPER=clauded-vals; REG_DIR="$HOME/.claude-vals/sessions" ;;   # Vals config (zsh function)
+  ccs) WRAPPER=clauded-su; REG_DIR="$HOME/.claude-su/sessions" ;;      # Stanford enterprise config (zsh function)
   codex) WRAPPER=codex; REG_DIR=""; RC=0 ;;                            # no registry, no Remote Control
 esac
 WRAPPER=${DEPLOY_WRAPPER:-$WRAPPER}     # test hook: point at a missing command to exercise the failure path
