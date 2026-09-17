@@ -4,6 +4,11 @@
 
 **TLDR:** Brando holds several subscriptions per vendor (personal, Vals AI, Stanford University enterprise). Each one gets its own CLI profile directory and its own pair of shell wrappers — `clauded-vals`, `clauded-su`, `codexd-su` — so logins, session history and *billing identity* never mix. This is the recipe for adding a new account, on the mac and on every SNAP node.
 
+**Status:** the Stanford pair is live and verified end to end on 09-16-2026 — `clauded-su`
+(`brando9@stanford.edu`, org Stanford University, **enterprise**) and `codexd-su`
+(`brando9@stanford.edu`, **edu_plus**), on the mac and on all five SNAP nodes
+(skampere1/2/3, mercury1/2).
+
 ## The one idea
 
 Both CLIs pick their entire identity (credentials, settings, sessions, history) from a single environment variable:
@@ -39,6 +44,21 @@ CLAUDE_CONFIG_DIR=$HOME/.claude-su claude -p 'reply with exactly: SU_OK'
 ```
 
 `~/.claude-su/settings.json` is independent of the personal one — set `model`, `effortLevel`, hooks per account there.
+
+**A different account entitles different models.** On the Stanford enterprise plan (probed
+09-16-2026): `claude-opus-5` ✅ and `claude-sonnet-5` ✅, but `claude-fable-5-1` answers
+`Usage credits are required for this model` ❌. So Hard Rule 8's "smartest available" resolves to
+**opus-5** on this profile, not Fable — and `deploy_cc.sh --profile ccs`, which defaults to
+`claude-fable-5-1`, must be launched with an explicit `--model claude-opus-5`. Probe a new profile
+before you dispatch a worker onto it; a missing entitlement looks exactly like a broken launch.
+
+**Driving the login when you are an agent without a browser.** Both flows are browser OAuth, but
+they are scriptable from a pty: run the CLI under `pty.fork()`, tee its output to a log, and poll a
+file to inject the pasted code (`scripts/`-adjacent harness; ~40 lines of Python). `script -q
+/dev/null` does **not** work here — it needs a tty on *stdin*, so a FIFO fails with
+`tcgetattr/ioctl: Operation not supported on socket`. Codex's flow needs no paste at all: it serves
+a localhost callback on :1455 and completes on the browser redirect. **Scrub the pty log afterwards
+— the Claude setup token is printed to it in cleartext.**
 
 **Keychain note (mac only):** Claude Code namespaces the credential entry by config dir —
 `Claude Code-credentials-<first 8 of sha256(path)>`; only the default `~/.claude` uses the bare
@@ -185,3 +205,6 @@ has the wrappers but no `~/.codex-su` profile yet, so it was not probed. Re-run 
 | `Invalid Stanford grant format` | the saved file is not `sk-ant-oat..`, e.g. a pasted URL or trailing newline noise |
 | node says logged out after the mac was used | credential-copy route + rotated refresh token — re-push, or move to a setup token / device auth |
 | Codex bills the API instead of the subscription | an `OPENAI_API_KEY` leaked into the environment — the wrappers unset it; a hand-rolled one must too |
+| `Usage credits are required for this model` | that model is not entitled on this account — pick one that is (see the entitlement note above) |
+| `deploy_cc.sh --profile ccs` says "the agent did not start" | two separate causes: the workspace-trust dialog (`tmux send-keys -t <name> Down Enter` to accept "Yes, I trust this folder"), and the registry poll looking in `~/.claude-su/sessions` while the SNAP wrapper registers in `~/.claude-su-node/sessions/*.json`. Launch with `--no-preflight` and verify by hand |
+| `codex exec` rejects your flags | `--ask-for-approval` / `--sandbox` are top-level, not `exec` flags: `codex --sandbox danger-full-access --ask-for-approval never exec --skip-git-repo-check '<prompt>'`. `exec` also needs `--skip-git-repo-check` outside a git repo |
