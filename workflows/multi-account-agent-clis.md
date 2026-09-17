@@ -153,6 +153,18 @@ Without the board entry, that account's sessions show up with a blank agent colu
 resume a Stanford conversation on the personal subscription. `python3 scripts/test_agent_board_resume.py`
 and `python3 scripts/test_dispatch_scripts.py` cover both mappings.
 
+## Verified end to end (09-16-2026)
+
+`clauded-su` on the Stanford enterprise seat (`brando9@stanford.edu`, org "Stanford University",
+`claude_enterprise`, seat `enterprise_higher_ed`): mac profile + wrappers, `setup-token` grant pushed with
+`scripts/su_finish_setup.sh`, and `SU_NODE_READY` on **skampere1** and **skampere2** (node-local runtime
+`claude 2.1.274`, own profile dir, fail-closed wrapper). A `clauded-su -p` smoke on skampere1 returned a model
+reply. First real use: the 564-task baseline half of expt-89 Phase B on skampere2.
+
+`scripts/su_finish_setup.sh` is the one command to run after the browser `/login`: it checks the profile's
+account, mints and stores the grant (mode 600, hidden prompt, never in argv), pushes it to the nodes, and
+writes the shared `keys/` copy that unattended SNAP jobs watch.
+
 ## Guardrails every one of these scripts enforces
 
 1. **Identity guard before anything is shared.** The Claude driver refuses unless
@@ -201,6 +213,8 @@ has the wrappers but no `~/.codex-su` profile yet, so it was not probed. Re-run 
 | Symptom | Cause |
 |---|---|
 | `Not logged in · Please run /login` on the mac | profile dir exists but was never logged into — step 1 |
+| `You've hit your session limit · resets <time>` | the **seat**, not the token: Stanford's enterprise seat grants short session windows. The grant is still valid — probe the route before committing a long job to it, and fall back to another subscription rather than sleeping on a closed window |
+| `You've hit your individual spend limit` on a team seat | that account's per-user cap (Vals: resets weekly). Switch model tier or profile; it is a routing problem, not a dead credential (Trigger Rule 58) |
 | `Protected Stanford remote grant unavailable` | DFS grant missing, wrong mode, or a symlink — re-run the push script |
 | `Invalid Stanford grant format` | the saved file is not `sk-ant-oat..`, e.g. a pasted URL or trailing newline noise |
 | node says logged out after the mac was used | credential-copy route + rotated refresh token — re-push, or move to a setup token / device auth |
