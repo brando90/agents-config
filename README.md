@@ -731,6 +731,26 @@ This repo is open source under the [Apache 2.0 License](LICENSE).
 
 We list Claude (Anthropic), Codex (OpenAI), and Cursor (Anysphere) as co-authors because this system was designed collaboratively between human and AI agents. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
 
+### Related paper by the author
+
+**A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption.** Yegor Denisov-Blanch, Shyam Agarwal, Pavel Azaletskiy, Hao He, Rylan Schaeffer, Brando Miranda, Bogdan Vasilescu, Sanmi Koyejo. arXiv preprint arXiv:2608.25241, 2026. [[arXiv](https://arxiv.org/abs/2608.25241)] · [[Google Scholar](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=_NQJoBkAAAAJ&sortby=pubdate&citation_for_view=_NQJoBkAAAAJ:738O_yMBCRsC)]
+
+Co-authored by this repo's author, this paper studies the same class of artifact `agents-config` provides: version-controlled configuration files that teams commit to their repositories to configure AI coding tools. It introduces RAMP (Repository AI Maturity Profile), a four-level cumulative maturity model running from behavioral rules and coding standards, through named agent definitions, to multi-agent orchestration, and applies it across 441 repositories. Among agent-first repositories, those *without* committed AI configuration show roughly twice the increase in cognitive complexity (+53% versus +27%); the authors note the maturity measure is observational and present the finding as hypothesis-generating. Its first author, Yegor Denisov-Blanch, is the same person credited in the Acknowledgments below.
+
+The paper does not study or evaluate this repo — it is cited here as related work and as empirical context for the practice `agents-config` implements.
+
+```bibtex
+@misc{denisovblanch2026markdown,
+  author = {Yegor Denisov-Blanch and Shyam Agarwal and Pavel Azaletskiy and Hao He and Rylan Schaeffer and Brando Miranda and Bogdan Vasilescu and Sanmi Koyejo},
+  title = {A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption},
+  year = {2026},
+  eprint = {2608.25241},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.SE},
+  howpublished = {\url{https://arxiv.org/abs/2608.25241}},
+}
+```
+
 ---
 
 ## Acknowledgments
