@@ -84,3 +84,11 @@ It polls every `paper_latex*/<VENUE>/` in the watched repos every 2 s and recomp
 (Cursor save, agent shell edit, Codex, `git pull`). Every `00_main_*.pdf` beside the sources is therefore always the latest
 build; open it in Cursor and it reloads. Log `~/Library/Logs/paper_watch.log`; status `launchctl print gui/$(id -u)/com.brando.paper-watch`.
 Dirs with a `.no-autocompile` marker are skipped. Trigger Rule 35 in `INDEX_RULES.md` records the policy.
+
+## Chrome zombie leak / Cursor terminal stall (09-17-2026)
+
+If the Cursor terminal “takes ages” and the chassis is hot, load
+[`~/agents-config/machine/macos-chrome-zombie-leak.md`](macos-chrome-zombie-leak.md)
+(Trigger Rule 59). Typical cause: Google Chrome stopped `wait()`-ing dead renderer
+children (hundreds of zombies, 0% CPU each) while Network/Storage helpers spun.
+Install the tripwire once: `bash ~/agents-config/scripts/install_chrome_zombie_watch.sh`.
