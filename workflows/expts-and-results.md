@@ -18,6 +18,7 @@ Read end-to-end before starting, opening, or reviewing any experiment dir.
 Every **active experiment** must have the following; deferred proposals use the lightweight [ideas convention](#optional-research-ideas) instead:
 
 - [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name), or the user-authorized `experiments/ideas/<name>/` home
+- [ ] **Data and code together** — all experiment-specific material under its canonical home; shared-code/external-storage exceptions linked in its README ([details](#keep-data-and-code-together))
 - [ ] **Experiment-index row** — canonical home, setup/goal and current status in the project's existing index (normally `experiments/README.md`; ideas use their own index)
 - [ ] **README.md at root** — goal/hypothesis, decision criterion, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
@@ -45,6 +46,20 @@ Apply these conventions automatically when starting or continuing an authorized 
 For a newly authorized distinct experiment, default to a numbered setup-descriptive home directly under `experiments/`. Check existing and archived homes, reserved index entries, active branches/worktrees and known owners before choosing the next available number; coordinate overlapping work. Honor exact user numbers, labels and names, but do not silently repurpose an occupied number. Reuse the matching canonical home for a continuation, with a new version when the setup changes. Add or update its row in the existing project experiment index (normally `experiments/README.md`). Preserve the optional-ideas exception below, archival policy and frozen/running private paths under [Trigger Rule 39](../INDEX_RULES.md).
 
 State the goal/hypothesis and decision criterion concisely in the existing README/protocol, following [Trigger Rule 50](../INDEX_RULES.md): name the central uncertainty, cheapest sufficient test, evidence for continuing/redirecting/stopping and test bound before measuring. Record inputs and the protocol/runbook using the formats below. At launch create live `results.md`, then update it as meaningful evidence arrives ([Results Storage](#results-storage), Rule 37); for qualifying long or dispatched runs also maintain the dated resumable checkpoint (Rule 44). Link these records rather than duplicating their contents or adding per-step approval gates; existing resource, review and permission requirements still apply.
+
+## Keep Data and Code Together
+
+**Default: one experiment folder owns both its data and its code** (Brando, 09-19-2026). Put all experiment-specific source snapshots/archives, raw and derived data, candidate datasets, scripts/modules, prompts, configurations, manifests, logs, results and documentation beneath its canonical home. Use `scripts/`, `data/`, `assets/`, `private/` and version folders as useful subdirectories; keep an existing sensible layout instead of renaming it for these examples. Importable code and a dataset under construction still belong to their experiment. Do not scatter them among repo-level `src/`, `scripts/`, `data/`, loose files or separate checkouts merely by file type.
+
+For example, the VeriSoftBench (VSB) → VeriBench V2 (VBV2) construction work has the canonical home `experiments/91_lean_to_python_hopefully_unsaturated_vb/`. Its source archives, derived dataset and construction/evaluation code should be discoverable together from that folder.
+
+Exceptions need a concrete reason and a pointer in the experiment README:
+
+- Shared code used by multiple experiments or production stays in its established project home. Link and pin that dependency where needed; do not duplicate shared infrastructure just to make the experiment appear standalone. Move experiment code out only when real shared use warrants promotion.
+- An intentionally released dataset may use the project's established data home; its construction inputs, code and experiment evidence retain their canonical experiment home and link the released version.
+- Large artifacts, node-local runtime storage, reusable model caches, or licensing/access constraints may require storage outside the checkout. Keep a manifest in the experiment naming the exact path or URI, the reason, version/hash where practical, and retrieval/sync instructions. Prefer the same experiment-relative directory structure on execution hosts; retain committed, allowed metadata and progress in the canonical home.
+
+This is a location rule, not a publication rule. Keep private/gold material ignored or access-controlled as required, and credentials in their existing secret store. Honor user moves and existing canonical homes; coordinate other owners before relocation, update live imports/configurations/links, and verify preserved contents. Frozen result paths and running checkouts remain unchanged until an appropriate coordinated move. This preference does not authorize a broad repository reorganization.
 
 ## Optional Research Ideas
 

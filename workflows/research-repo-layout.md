@@ -1,5 +1,7 @@
 # Workflow: Research Repo Layout — Four Buckets at the Root
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/research-repo-layout.md>
+
 **TLDR:** A research repo's root holds **four directories and a short list of files**:
 `experiments/`, `paper_latex_and_notes/`, `src/`, and (only if the repo ships data) one
 data bucket. Everything else is a stray: route it into a bucket, move it out of the
@@ -43,7 +45,7 @@ buckets, so "where does this go?" has an answer instead of a new directory.
 │   ├── notes/                #    research notes, standards docs, tweets, threads
 │   ├── support/              #    figure/table generators, reference checkers for the paper
 │   └── site/                 #    blog, talks, handoff docs, any static site
-├── src/                      # 3. all importable code AND prompts
+├── src/                      # 3. shared production/library code AND shared prompts
 │   ├── py_src/               #    the installed package (or src/<pkg>/)
 │   ├── prompts/              #    agent + judge prompt templates
 │   └── scripts/              #    shared runnable tooling (not experiment-local scripts)
@@ -61,6 +63,8 @@ source: it has its own toolchain (a Lean `lake` project, a HF dataset card), its
 job, and thousands of external references. A repo with no released data artifact has
 three buckets, and incidental data lives inside the experiment that produced it.
 
+**Keep experiment data and code together (09-19-2026).** Experiment-specific code, prompts, source archives, raw/derived data and candidate datasets stay in the experiment folder, including importable modules. File type alone is not a reason to split an experiment across buckets. The optional data bucket is for an intentionally released data product, not an experiment’s intermediate dataset. Shared-code promotion or necessary external storage needs an explicit README link/manifest; private data remains private. Follow [the colocation rule](expts-and-results.md#keep-data-and-code-together).
+
 **Root files are an allowlist, not a dumping ground:** `README.md`, `CLAUDE.md` /
 `AGENTS.md`, `LICENSE`, the package config and lockfile, a setup script, and dotfiles.
 Keep these few and boring — if you find yourself adding a *second* setup script or a
@@ -77,10 +81,10 @@ Ask in this order; stop at the first yes.
 | Ask | Then |
 |---|---|
 | Is it unrelated to this repo's purpose? (coursework, another project, a one-off side repo) | **Out of the repo.** Copy it somewhere safe **first** (`cp -R`), *then* `git rm` — `git rm` preserves nothing but history, so it is not itself a backup. Zero inbound `git grep` references is supporting evidence, not proof: also confirm the purpose mismatch and look for consumers grep cannot see (CI, sibling repos, a person's habits). |
-| Is it generated or ephemeral? (`tmp/`, `_build/`, `.venv/`, caches, a lone `*_cache.json`) | **`.gitignore` it.** Never commit a cache to buy a root directory. |
-| Is it an experiment, a run, a result, a checkpoint, or a ledger? | `experiments/` (Rule 39 for the name) |
+| Is it ephemeral runtime material? (`tmp/`, `_build/`, `.venv/`, caches) | **`.gitignore` it.** Keep experiment-specific scratch under its home when practical; shared/remote caches need a pointer. Generated datasets and scientific results continue to the experiment rule below; publication depends on their existing policy. |
+| Does it belong to one experiment, including its code, prompts, source archives, data, results, checkpoints or ledger? | That canonical `experiments/<NN>_<setup>/` or authorized ideas home (Rule 39); keep data and code together |
 | Is it prose a human reads? (paper, note, blog, slide deck, talk, tweet thread, handoff doc, standards doc) | `paper_latex_and_notes/` |
-| Is it code, a prompt template, or shared tooling that other things import or invoke? | `src/` |
+| Is it shared code used by multiple experiments or production, a shared prompt template, or shared tooling? | `src/` or the established shared-code home; link it from consuming experiments |
 | Is it the released data artifact itself? | the data bucket |
 | Still unsure? | It is almost always an experiment. Put it in `experiments/`; promotion out is cheap, a new root dir is not. |
 

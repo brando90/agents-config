@@ -15,6 +15,8 @@
 
 For uncertain research/design work, apply [Trigger Rule 50](INDEX_RULES.md): identify the consequential uncertainty and test it cheaply enough to learn. For authorized experiments, follow [Trigger Rule 39](INDEX_RULES.md) and [the experiment workflow](workflows/expts-and-results.md#starting-or-continuing-an-experiment) automatically, including canonical homes, index entries and live records.
 
+Keep experiment-specific code, data, prompts, archives and results together under its canonical experiment folder by default, even when the code is importable or the data is a dataset candidate. Shared production code and necessary external storage are explicit, README-linked exceptions; colocation does not authorize publication. See [keep data and code together](workflows/expts-and-results.md#keep-data-and-code-together) (Brando, 09-19-2026).
+
 ## Questions about other agents
 
 For another agent's purpose or progress, read the relevant task context and distinguish current response activity, scheduled follow-ups, and underlying worker/results state. Never use `idle` or a completed turn alone as the overall task status. Keep checks proportionate and read-only unless changes are authorized; state what remains unverified. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 47.
