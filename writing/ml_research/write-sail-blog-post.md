@@ -10,7 +10,7 @@ Trigger when the user asks for a SAIL / lab blog post about a paper, or when the
 > Paper: `<arXiv link | repo path | PDF>`
 > Venue + status: `<e.g. accepted at ICML 2026 Math-AI workshop>`
 > Target: `<explainer post | roundup blurb | both (default)>`
-> Links: `<arXiv, GitHub, dataset, W&B>`
+> Links: `<available arXiv, GitHub, dataset, experiment-folder Markdown reports; existing external report URLs are optional>`
 
 Siblings: [`write-poster.md`](write-poster.md) (same ingestion pipeline), [`write-abstract.md`](write-abstract.md), umbrella guide [`ml_research_writing.md`](ml_research_writing.md). The SAIL structure/voice reference is [`../../workflows/blog-posts.md`](../../workflows/blog-posts.md) — read it before drafting; this skill is the paper→draft *procedure*, that doc is the format spec. For Brando's personal site use `writing/blog/` instead (Trigger Rule 25).
 

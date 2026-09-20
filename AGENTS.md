@@ -27,6 +27,8 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 
 ## Research and experiments
 
+**Experiment-folder Markdown reports are primary and sufficient** (Brando, 09-20-2026). Keep `.md` results inside the canonical experiment folder. Weights & Biases (W&B) logging, dashboards, and Reports are optional and run only on an explicit user request; W&B credentials and dashboard publication never block ordinary progress or completion. Preserve existing historical links and receipts. See [Trigger Rule 37](INDEX_RULES.md) and [local experiment reports](workflows/expts-and-results.md#local-experiment-reports).
+
 For uncertain research/design work, apply [Trigger Rule 50](INDEX_RULES.md): identify the consequential uncertainty and test it cheaply enough to learn. For authorized experiments, follow [Trigger Rule 39](INDEX_RULES.md) and [the experiment workflow](workflows/expts-and-results.md#starting-or-continuing-an-experiment) automatically, including canonical homes, index entries and live records.
 
 Keep experiment-specific code, data, prompts, archives and results together under its canonical experiment folder by default, even when the code is importable or the data is a dataset candidate. Shared production code and necessary external storage are explicit, README-linked exceptions; colocation does not authorize publication. See [keep data and code together](workflows/expts-and-results.md#keep-data-and-code-together) (Brando, 09-19-2026).

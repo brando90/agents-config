@@ -67,6 +67,8 @@ Remote work follows [Trigger Rule 48](INDEX_RULES.md) and the [reliable-dispatch
 
 Uncertain research/design work follows [Trigger Rule 50](INDEX_RULES.md): choose the consequential uncertainty and the cheapest sufficient test, then update direction from evidence. Authorized experiments automatically follow [the existing documentation conventions](workflows/expts-and-results.md#starting-or-continuing-an-experiment), including checked-available numbered homes for distinct core experiments and reuse of canonical homes for continuations (Rule 39).
 
+Experiment-folder Markdown (`.md`) reports are the primary and sufficient results deliverable. Weights & Biases (W&B) logging, dashboards, and Reports are optional and run only when explicitly requested; W&B credentials or dashboard publication are not prerequisites for progress or completion. Existing report links and receipts remain historical evidence. See [the reporting workflow](workflows/expts-and-results.md#local-experiment-reports).
+
 Optional research belongs in `experiments/ideas/<descriptive_setup>/`, including user-named ideas such as `IDEA_00`. Track execution separately from paper inclusion: a proposal may stay deferred, or run there when authorized with the normal experiment requirements. See [the ideas convention](workflows/expts-and-results.md#optional-research-ideas).
 
 **Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
@@ -163,7 +165,7 @@ agents-config/
 │   └── README.md
 │
 └── tests/
-    └── dummy_experiment/        ← workflow validation (tiny MLP + W&B)
+    └── dummy_experiment/        ← historical tiny MLP example; W&B use only on explicit request
 ```
 
 ---

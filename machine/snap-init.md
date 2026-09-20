@@ -59,7 +59,7 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
    - `which codex && codex --version`
 
 6. **Verify keys exist:**
-   - `ls -la ~/keys/` -- should have wandb key, anthropic key, openai key, hf token, etc.
+   - `ls -la ~/keys/` -- verify only credentials needed for the authorized task; do not print secret contents. Weights & Biases (W&B) credentials are optional and only relevant when the user explicitly requests W&B work. Experiment-folder Markdown reporting needs no W&B key.
 
 7. **Check GPUs:**
    - `nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader`
@@ -86,7 +86,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
 | 4 | agents-config | Up to date, CLAUDE.md and AGENTS.md have Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
 | 5 | Tools | `claude` and `codex` on PATH with latest versions; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
-| 6 | Keys | `~/keys/` has anthropic, openai, hf, wandb, github keys |
+| 6 | Keys | Existing credentials required by the authorized task are available; no W&B credential prerequisite for ordinary experiment reporting |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |
 | 8 | Remote-job-dispatch | `klist` valid; `ssh <peer> hostname` passwordless; `ssh-submit.sh` present; ≥1 watcher heartbeat fresh; git-inbox poller heartbeat fresh (on one long-lived node) |
 

@@ -1,4 +1,4 @@
-% TLDR: Template for experiment README.tex files. Copy this to your experiment dir and fill in.
+% TLDR: Optional LaTeX presentation of an experiment report. Experiment-folder Markdown (.md) reports are primary and sufficient; copy this only when a LaTeX report is wanted.
 % Reference: pass-tests-fail-proofs/experiments/01_bayes_risk_oracle_comparison/readme.tex
 % Reference: veribench/experiments/38_full_metric/README.tex
 %
@@ -12,7 +12,7 @@
 %   7. Known Limitations — honest about confounds
 %   8. Verification Checklist — must-pass checks before reporting
 %   9. Reproduction — exact commands to re-run
-%  10. Experimental Details — model IDs, dates, file paths, W&B links
+%  10. Experimental Details — model IDs, dates, local report/evidence paths; existing external links are optional
 
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
@@ -208,7 +208,8 @@ TODO
     \begin{itemize}
       \item \texttt{results/TODO.json}
     \end{itemize}
-  \item \textbf{W\&B:} \url{https://wandb.ai/brando-su/TODO}
+  % Optional existing W&B URL; create/update a report only on explicit user request.
+  % \item \textbf{Optional external report:} \url{https://wandb.ai/brando-su/TODO}
 \end{itemize}
 
 \end{document}

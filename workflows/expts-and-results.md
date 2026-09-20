@@ -4,7 +4,8 @@
 
 **TLDR:** The canonical experiment-folder convention for this account:
 `experiments/<NN>_<name>/` with mandatory `README.md`, versioned
-sub-experiments, results storage, W&B reporting, GPU rules, and narrowly
+sub-experiments, experiment-folder Markdown reports, optional explicitly requested
+Weights & Biases (W&B) reporting, GPU rules, and narrowly
 scoped completion notifications for user-triggered big/mega QA or explicitly
 tracked tasks only. Includes the canonical templates
 for the agent prompt (`cc.md` — must open with `**TLDR:**`) and
@@ -23,8 +24,7 @@ Every **active experiment** must have the following; deferred proposals use the 
 - [ ] **README.md at root** — goal/hypothesis, decision criterion, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
-- [ ] **W&B Report** — every completed experiment version must produce a W&B Report with permanent URL (not just logged runs)
-- [ ] **Local results summary** — timestamped markdown in `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` with TL;DR, config, metrics, plots, W&B link
+- [ ] **Experiment-folder Markdown report** — the primary and sufficient reporting deliverable; save a `.md` report in the canonical experiment folder, normally `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md`, with findings, config, metrics, limitations, and relevant local artifact links
 - [ ] **Stable `results.md` at experiment root** — created at launch, updated as meaningful evidence arrives, latest outcome + TLDRs and links to timestamped summaries (see § Results Storage)
 - [ ] **Dated resumable checkpoint for qualifying runs** — `CKPT_<task>.md` (CKPT means checkpoint), with real creation/update timestamps and the next resume step; apply [Trigger Rule 44](../INDEX_RULES.md) for long or dispatched runs
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
@@ -88,7 +88,7 @@ experiments/<NN>_<name>/
 ├── expt_v1/                    ← first iteration (self-contained)
 │   ├── cc.md                   ← agent prompt (paste into Claude Code / Codex to run this version)
 │   ├── run_*.sh / run_*.py     ← execution scripts
-│   ├── push_to_wandb.py        ← W&B logging for this version
+│   ├── push_to_wandb.py        ← optional helper; use only when W&B is explicitly requested
 │   └── results/                ← outputs: JSONs, CSVs, plots, results_summary_<MM-DD-YYYY__HH-MM-SS>.md
 │
 ├── expt_v2/                    ← next iteration (e.g., changed metric, added agents, new split)
@@ -110,7 +110,7 @@ experiments/<NN>_<name>/
 ├── collect_scores.py           ← shared scoring script (or per-version in expt_vN/)
 ├── compute_correlations.py     ← correlation analysis
 ├── generate_plots.py           ← scatter plots + histograms
-├── push_to_wandb.py            ← optional shared W&B logging helper used by one or more versions
+├── push_to_wandb.py            ← optional shared W&B helper; use only on explicit user request
 ├── results_summary/            ← optional top-level rollup summaries across versions (or legacy location)
 │   ├── results_summary_MM-DD-YYYY__HH-MM-SS.md
 │   └── temporary_results/      ← unverified intermediates
@@ -289,7 +289,7 @@ Preserve the protocol's aggregation formula. The geometric mean of dataset-level
 
 Once a blocked stage becomes available, resume only the missing stages on the preserved inputs; do not rerun valid earlier stages. If an earlier result is invalidated, record the reason and rerun only the affected stages and dependents. Preserve task selection, model and judge settings, rubric, seeds, inputs, and other frozen scientific choices. The checkpoint under Rule 44 records the exact missing stage and resume command; the live results file records measured values, denominators, and blockers.
 
-A configured dashboard, including Weights & Biases (W&B), may mirror the same partial records and aggregates. Dashboard availability or credentials must not delay or replace the durable repository record. This optional live mirror does not remove the completed-experiment W&B Report requirement below. This reporting rule does not waive compilation, provenance, correctness, reference-data, quality-assurance, acceptance, resource, permission, or spending requirements.
+Experiment-folder Markdown reports are sufficient for partial progress and completed results. Use Weights & Biases (W&B) logging, dashboards, or Reports only when the user explicitly requests them. A configured account, available key, old helper, or historical URL is not a request. Dashboard credentials, availability, and external publication must not delay ordinary progress, completion, notifications, or handoff. Preserve existing report links and immutable publication receipts as historical evidence. This reporting rule does not waive compilation, provenance, correctness, reference-data, quality-assurance, acceptance, resource, permission, or spending requirements.
 
 ---
 
@@ -301,23 +301,43 @@ A configured dashboard, including Weights & Biases (W&B), may mirror the same pa
 
 ---
 
+## Local Experiment Reports
+
+**Experiment-folder Markdown (`.md`) reports are the primary and sufficient reporting deliverable** (Brando, 09-20-2026). Save the report in the canonical experiment folder, normally the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
+
+The local report must include:
+
+- **TL;DR** — 1-3 sentence summary of results at the top
+- **Config table** — all hyperparameters
+- **Results table** — final metrics
+- **Plots, when useful** — save locally and reference relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
+- **Artifact links** — local results and evidence; an existing external report URL may be included as an optional historical link. No W&B field, credential check, or publication step is required.
+
+File naming: `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for experiment-level rollups.
+
+Markdown with relative-path PNGs works in GitHub, VS Code, and most editors — no localhost server needed.
+
+---
+
 ## W&B Logging & Reports
+
+**Optional; only on an explicit user request.** The Markdown report above satisfies ordinary experiment reporting. Do not inspect/load W&B credentials, install its reporting dependencies, start logging, create a Report, or publish externally merely because an experiment runs or finishes. The following recipe and code example apply only to a requested W&B deliverable; existing historical URLs remain usable.
 
 - **Entity:** `brando-su`
 - **Project:** depends on experiment (e.g., `vb-thm-eq` for judge correlation, `veribench-e3-agents` for agent benchmarks).
 - **API key:** `export WANDB_API_KEY=$(cat ~/keys/brandos_wandb_key.txt)`
 - **Dependency:** `pip install wandb[workspaces]` (required for Reports API).
-- Log all key metrics, plots, and config as artifacts.
+- If requested, log only the authorized metrics, plots, config, and artifacts; preserve the task's privacy and publication boundaries.
 
-### W&B Reports (mandatory)
+### W&B Reports (explicit request only)
 
-Every completed experiment version must produce a W&B Report — a shareable interactive document with a permanent URL. A logged run alone is NOT sufficient. Ref: https://docs.wandb.ai/models/reports
+If the user requests a W&B Report, create the requested shareable document and retain its URL. Logging runs alone does not fulfill a specific request for a Report. No W&B artifact is required otherwise. Reference: https://docs.wandb.ai/models/reports
 
-After any experiment version completes:
+For an explicitly requested W&B Report:
 
 1. **Push metrics** via `push_to_wandb.py` or inline `wandb.log()`.
 2. **Create a Report** with: title (`<Experiment> — <Date>`), TL;DR, metric plots, config details, leaderboard table (if comparing models).
-3. **Print the Report URL** — this is the primary deliverable.
+3. **Print the Report URL** — an additional deliverable for this explicit request.
 4. **Include the Report URL** in the results summary file and in the final response to the user.
 
 ```python
@@ -343,22 +363,7 @@ report.save()
 print(f"Report URL: {report.url}")
 ```
 
-**Reference test:** See `~/agents-config/tests/dummy_experiment/train.py` for a working example.
-
-### Local Experiment Reports
-
-In addition to W&B, **always save a local markdown report** in the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
-
-The local report must include:
-- **TL;DR** — 1-3 sentence summary of results at the top
-- **Config table** — all hyperparameters
-- **Results table** — final metrics
-- **Plots** — saved as PNGs in `results/plots/`, referenced via relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
-- **W&B link** — Report URL if available, otherwise "N/A (offline or no API key)"
-
-File naming: `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for experiment-level rollups.
-
-Markdown with relative-path PNGs works in GitHub, VS Code, and most editors — no localhost server needed.
+**Optional historical example:** `~/agents-config/tests/dummy_experiment/train.py` exercises W&B logging and Reports. Run it only for explicitly requested W&B work; it is not a default reporting prerequisite.
 
 ---
 
@@ -368,7 +373,7 @@ After any training, eval, or QA run completes, check that no GPU processes are l
 
 1. **Confirm the experiment is actually finished:**
    - The process exited (exit code 0 or non-zero)
-   - W&B sync/push completed (if applicable)
+   - Any explicitly requested W&B transfer that actually started has finished; an optional dashboard failure does not keep experiment GPU processes alive
    - No checkpoint save or model upload is still in progress
    - No other experiment or pipeline stage depends on the process
 2. **Check for lingering GPU processes:**
@@ -483,9 +488,9 @@ QA verdict: <PASS / FIXED / FAIL>
 
 == LINKS ==
 
-W&B Report: <permanent W&B Report URL, e.g., https://wandb.ai/brando-su/<project>/reports/<slug>>
 Full results at: experiments/<NN>_<name>/results_summary/<file>.md
 Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
+Optional existing external report: <URL, only if relevant; omit this line otherwise>
 
 <email signature from ~/agents-config/email-signature.md>
 ```
@@ -497,10 +502,10 @@ Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
 4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
 5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
-6. **Include the W&B Report URL.** Every completed experiment version already requires a W&B Report with a permanent URL (see Requirements Checklist). That URL **must** appear in the email under `== LINKS ==`. If the report has not been generated yet, generate it before sending the email — do not send the email first and promise the report later. Example format: `https://wandb.ai/brando-su/<project>/reports/<slug>`.
+6. **Link the experiment-folder Markdown report.** It is sufficient under `== LINKS ==`. Include an existing external report URL when relevant, but do not create or update W&B artifacts without an explicit user request, and do not delay an otherwise authorized completion notification for them.
 7. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
 8. **Append the signature** from `~/agents-config/email-signature.md`.
-9. **If an explicitly tracked task failed entirely**, still send the email. Subject: `[QA] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong. If a partial W&B Report exists, include its URL anyway.
+9. **If an explicitly tracked task failed entirely**, still send the email. Subject: `[QA] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong. Link the partial Markdown report; an existing external report URL may be included as optional historical evidence.
 
 ---
 

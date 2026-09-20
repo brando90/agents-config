@@ -28,7 +28,7 @@ unless the user explicitly asks for a lab-style post.
 - **Accessible language:** Write for a broad ML audience, not just domain experts. Define terms on first use.
 - **Figures are mandatory:** Every blog post needs at least 2–3 figures. Lead with a compelling visual (pipeline diagram, key result chart, or motivating example).
 - **TL;DR is mandatory:** The first thing after the title. Readers decide whether to continue based on this.
-- **Link to artifacts:** Paper (arXiv), GitHub repo, dataset, W&B report — all linked in the TL;DR and again in the conclusion.
+- **Link to available artifacts:** Paper (arXiv), GitHub repo, dataset, and experiment-folder Markdown results — link relevant existing artifacts in the TL;DR and conclusion. An existing Weights & Biases (W&B) URL is optional; create or update W&B artifacts only on an explicit user request, never as a blog prerequisite.
 - **Conversational but precise:** More informal than a paper, but numbers and claims must be accurate.
 - **No walls of text:** Break up with figures, bullet lists, and subheadings. If a paragraph is >5 sentences, split it.
 - **Cross-reference the tweprint:** The blog post and tweprint should launch together. Link the tweprint thread from the blog and vice versa.
