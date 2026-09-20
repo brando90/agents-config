@@ -23,6 +23,7 @@ Every **active experiment** must have the following; deferred proposals use the 
 - [ ] **Experiment-index row** — canonical home, setup/goal and current status in the project's existing index (normally `experiments/README.md`; ideas use their own index)
 - [ ] **README.md at root** — goal/hypothesis, decision criterion, structure tree, method, dependencies, status table
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
+- [ ] **Full-set evaluation contract (solver/agent evaluations)** — frozen model × task × seed/repetition manifest, bounded completion/continuation procedure, durable execution, per-cell receipts and full-denominator reporting ([details](#uninterrupted-evaluation-of-the-full-declared-set))
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
 - [ ] **Experiment-folder Markdown report** — the primary and sufficient reporting deliverable; save a `.md` report in the canonical experiment folder, normally `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md`, with findings, config, metrics, limitations, and relevant local artifact links
 - [ ] **Stable `results.md` at experiment root** — created at launch, updated as meaningful evidence arrives, latest outcome + TLDRs and links to timestamped summaries (see § Results Storage)
@@ -46,6 +47,36 @@ Apply these conventions automatically when starting or continuing an authorized 
 For a newly authorized distinct experiment, default to a numbered setup-descriptive home directly under `experiments/`. Check existing and archived homes, reserved index entries, active branches/worktrees and known owners before choosing the next available number; coordinate overlapping work. Honor exact user numbers, labels and names, but do not silently repurpose an occupied number. Reuse the matching canonical home for a continuation, with a new version when the setup changes. Add or update its row in the existing project experiment index (normally `experiments/README.md`). Preserve the optional-ideas exception below, archival policy and frozen/running private paths under [Trigger Rule 39](../INDEX_RULES.md).
 
 State the goal/hypothesis and decision criterion concisely in the existing README/protocol, following [Trigger Rule 50](../INDEX_RULES.md): name the central uncertainty, cheapest sufficient test, evidence for continuing/redirecting/stopping and test bound before measuring. Record inputs and the protocol/runbook using the formats below. At launch create live `results.md`, then update it as meaningful evidence arrives ([Results Storage](#results-storage), Rule 37); for qualifying long or dispatched runs also maintain the dated resumable checkpoint (Rule 44). Link these records rather than duplicating their contents or adding per-step approval gates; existing resource, review and permission requirements still apply.
+
+## Uninterrupted Evaluation of the Full Declared Set
+
+**Current user rule (Brando, 09-20-2026): every solver or agent evaluation must execute the full prespecified procedure for every file, task, question and data point in its declared set.** This applies to every model, provider, harness and project, including every declared model × task × seed/repetition cell. A smoke test, one completed task or a clean subset is not a completed evaluation. This is an execution obligation within declared bounds, not a guarantee against hardware/provider failures or a requirement for successful answers or nonzero scores.
+
+Before measured calls, freeze the complete input/task manifest and expected cell count, input hashes, model/runtime/settings, prompts, tools, scoring rules and output contract. State per-cell and whole-run time, token, call, tool, resource and spend limits; fix continuation triggers, maximum count, session/state handling, completion checks and terminal conditions up front. Verify that **every initial and continuation prompt** includes the [solver completion reminder](#solver-completion-reminder). Preserve existing frozen runs: adding or changing this reminder or a continuation policy creates a separately identified prospective condition.
+
+The orchestrator must preflight the actual execution path: permissions, tool access, context/output capacity, authentication/funding, container lifecycle, final-file capture and compiler/scorer availability. Check nested host/client/container/scheduler/watchdog timeouts so infrastructure cannot accidentally truncate an allowed model attempt. Reserve enough overall allocation for the full declared set at its permitted per-cell budgets plus setup, capture, scoring and cleanup; use a durable planned batch schedule when one allocation cannot hold it. Keep cumulative accounting across setup failures and handoffs. A prospective infrastructure allowance change must be authorized, bounded and recorded before affected admissions; it cannot silently enlarge scientific budgets or reset spent time/calls.
+
+Use a persistent execution owner, durable per-cell ledger/checkpoints and a verified monitor that survive coordinator disconnects, context changes and laptop sleep. Do not stop healthy admitted work because the coordinator turn ends, progress is slow, the first result looks good/bad, a final model message appears, or a GPU looks idle during tool work. Let each cell follow its fixed completion/continuation procedure through its declared terminal condition, then continue the remaining manifest. Respect explicit user cancellation, real safety/resource limits and prespecified abort rules; record the exact stop reason and all affected/unattempted cells. Do not substitute a different measured model or settings to finish a row, add result-dependent continuations, or retry indefinitely.
+
+### Solver Completion Reminder
+
+Include this instruction in **every measured solver/agent initial prompt and every continuation prompt**, alongside that cell's actual task, output paths and declared limits. Adapt only inapplicable output/check names before freezing the condition; do not expose withheld reference answers or private scoring inputs.
+
+> Solve the entire assigned task, including every required file, question and subtask. Produce the complete required deliverable in the specified output location or response format; an outline, partial draft, progress report or claim of completion is not a substitute. Write/save the output, inspect the actual saved artifact or final response, and run the allowed checks, tests or compilation required by the task. Within the declared time, token, call and tool limits, continue working and fixing errors until the requirements are met or a declared terminal condition is reached. Follow the fixed continuation procedure without resetting budgets. If anything remains unresolved, preserve the best current deliverable and report the exact remaining failures and checks that did not pass; never claim success or invent verification.
+
+Prompt text alone does not implement persistence or continuation. The orchestrator must verify the delivered prompt bytes, runtime limits, continuation behavior and finalization path; do not claim these controls exist merely because this policy says they should.
+
+### Per-Cell Evidence and Full-Set Completion
+
+Maintain a row for every declared cell from launch onward, including pending, running, blocked, cancelled and unattempted cells. Bind each terminal receipt to input/condition/attempt identity, actual model/settings, cumulative usage, generation/tool logs, stop reason, final output path/hash/size (or explicit missing status), and compiler/test/scorer results. Capture the actual final file after writes have stopped; independently check its required structure and recorded checks. A nonempty file, exit zero or self-reported success alone proves neither a complete answer nor a correct one.
+
+Report execution validity, deliverable completeness and measured correctness separately. Distinguish a **clean procedure-complete attempt** (the declared procedure and finalization completed without infrastructure interruption or still-unfinished generation; correctness may fail), **budget-exhausted incomplete generation** (the declared budget ended with incomplete/missing work), and **infrastructure-interrupted execution** (the procedure was cut short by a runtime/provider/orchestration failure). Preserve native termination evidence and mixed causes instead of forcing an unsupported clean classification. A failed proof or zero score is not by itself an execution failure; unfinished generation is not clean evidence of task difficulty.
+
+The completion gate reconciles the full manifest: every expected cell has a terminal status, finalization evidence or explicit failure/missing reason, and all required scoring stages are measured or explicitly unresolved. Report expected, attempted, terminal, clean, incomplete, interrupted, cancelled and unattempted counts. Any unattempted cell or unresolved required stage keeps the evaluation partial/blocked even if its controller has exited; terminal accounting alone is not a claim that all cells were evaluated. Keep failed, missing and interrupted rows in the declared denominator; follow the frozen missing-data/scoring rule, leaving unavailable values explicit rather than inventing zeros or dropping rows. Show any clean-subset diagnostic with its subset denominator. A complete clean matrix is a separate claim requiring all declared cells to qualify; neither that diagnostic nor one passing smoke test replaces the full-set report.
+
+### Recovery Without Selective Reruns
+
+Follow only recovery/continuation rules frozen before measurement within their cumulative bounds; retain each original attempt and every charge, reservation and failure. Missing deterministic capture/scoring work may be completed on preserved outputs when its identity and validity can be verified, without regenerating answers. A new retry, changed prompt/harness, extended scientific budget or other unplanned recovery needs a separately frozen and reported prospective condition. Specify its full eligible set and selection rule before new calls, independent of favorable scores; if only interrupted cells are recovered, label that population explicitly and do not present it as a new full clean matrix. Preserve original full-denominator results and disclose prior outcomes known when the new condition was designed. Never overwrite failed evidence, silently splice a best-of mixture, or claim recovery erased interruption or restored an unbiased original run.
 
 ## Keep Data and Code Together
 
@@ -154,6 +185,8 @@ Example status table:
 
 ### Agent Prompt (`cc.md`) format — MANDATORY
 
+For measured solver/agent calls, also deliver the [solver completion reminder](#solver-completion-reminder) in every initial and continuation prompt. The orchestration prompt must enforce the entire declared evaluation manifest, not stop after one successful example.
+
 The agent prompt (`cc.md` or `<NN>_cc.md`) is the file the human pastes into
 Claude Code / Codex / Cursor to run an experiment. It must be skimmable in
 under 30 seconds, otherwise the human cannot quickly verify "what does this
@@ -225,7 +258,9 @@ during execution is documented in `REPORT.md` → "Open questions for
    `## Locked analysis params`) — every numeric knob that, if changed
    silently after the run, would invalidate the result. Include
    `JUDGE_REPEATS` / `n_samples`, bootstrap iters, permutation iters,
-   pass/fail thresholds, primary-vs-ablation split.
+   pass/fail thresholds, primary-vs-ablation split. For solver/agent evaluations,
+   include the full cell manifest and bounded completion/continuation contract
+   from [the full-set rule](#uninterrupted-evaluation-of-the-full-declared-set).
 5. `## Scale verification (no further normalization)` — if any inputs
    are already normalized to `[0, 1]` (judge scores, human labels
    divided by max), state it explicitly so a downstream script doesn't
@@ -240,7 +275,8 @@ during execution is documented in `REPORT.md` → "Open questions for
    helps the agent decide whether to background a job.
 9. `## Pass/fail / abort rules` — what makes the smoke test pass before
    the full run is launched; what causes a STOP-and-document during the
-   full run.
+   full run. A smoke pass admits the declared run; it does not complete it.
+   An abort preserves every affected and unattempted cell in its denominator.
 10. `## Identity / contact crib (verified)` — GitHub login, email,
     key paths. The "(verified)" tag matters: drop this only after you
     have actually checked the GitHub user exists and their email is

@@ -8,6 +8,8 @@ wrappers have stale defaults and have not been repaired by this documentation.
 
 Before choosing a transport, complete [reliable agent dispatch](reliable-agent-dispatch.md) under Trigger Rule 48: explicit phase-appropriate models and effort, shared usage/finishing budget, verified remote runbook/checkpoint delivery, and a tested remote recovery/watch plan. The transports below launch commands; they do not supply cross-provider recovery on their own. A regular worker can execute a strong master's concrete plan, while acceptance and measured-model pins remain fixed.
 
+For every measured solver/agent evaluation, also apply [the full-set uninterrupted evaluation contract](expts-and-results.md#uninterrupted-evaluation-of-the-full-declared-set). The dispatched job owns all declared cells, bounded initial/continuation prompts, cumulative accounting and final-artifact/check receipts. Verify scheduler/client/watchdog timeouts cover the planned work and finalization; neither a coordinator disconnect nor a successful smoke task may end the remaining evaluation. A transport launch or exit code is not a full-set completion receipt.
+
 The optional legacy wrapper is described in
 [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md). Until its launchers
 are updated, bypass it with `--direct`, `--mode direct`, or a

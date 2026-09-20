@@ -6,6 +6,8 @@ This is the operational procedure for `~/agents-config/INDEX_RULES.md` Trigger R
 
 **SNAP full access (Trigger Rule 51, September 14).** Every SNAP worker runs in full-access mode (`clauded`, `clauded-vals`, `codexd`, or `codex exec --dangerously-bypass-approvals-and-sandbox`) and its brief carries the Rule 51 pre-approval line verbatim; never leave a SNAP agent waiting at a permission prompt.
 
+**Measured solver/agent evaluations follow [Trigger Rule 61's full-set contract](expts-and-results.md#uninterrupted-evaluation-of-the-full-declared-set).** Budget and track every declared model × task × seed/repetition cell, include the completion reminder in every initial/continuation prompt, and let the fixed bounded procedure run under durable ownership. Coordinator failover must not terminate healthy measured work or alter its model, prompts, settings, budgets or continuation policy. The generic recovery below concerns eligible execution roles; it does not authorize an extra measured attempt. Keep incomplete/interrupted cells visible in the original denominator and freeze unplanned measured recovery as a separate prospective condition.
+
 ## 1. Name the master and divide the work
 
 The **master** owns the objective, decomposition, model selection, recovery and final verification. `master agent:` is an optional user designation; accept it immediately and record it in the master checkpoint. Infer the role when already coordinating workers under Rule 45; do not ask merely to obtain that label. There is one recovery owner per job, even when several masters coordinate a project. Transfer that ownership explicitly.
@@ -125,6 +127,10 @@ owned paths / target host + working directory / artifact store:
 phase roles / exact primary provider-client-model-effort-command:
 eligible alternatives in order + actual availability evidence:
 immutable experiment pins / required review families and capability:
+full input + model-task-seed/repetition manifest / expected cell count:
+initial + continuation prompt hashes / fixed completion + continuation rules:
+per-cell + whole-run limits / nested timeout checks / finalization reserve:
+per-cell status + final artifact/check receipts / full-denominator completion gate:
 usage snapshot + timestamp + shared account scope + next reset:
 included allowance / applicable authorized prepaid balance / spend controls:
 per-host client capability evidence / policy revision / unreachable hosts:
@@ -148,6 +154,10 @@ Review a proposed dispatch against these cases before calling it unattended-read
 
 | Situation | Required outcome |
 |---|---|
+| One task passes while other declared cells remain pending | Evaluation remains partial; retain the complete manifest and execute remaining cells. |
+| A solver emits a final message with an unfinished file | Apply only fixed continuations within cumulative bounds; verify the artifact and report incompleteness honestly. |
+| The coordinator disconnects while a measured attempt is healthy | Durable owner and monitor keep the admitted procedure running; no coordinator-driven cancellation. |
+| A cell exhausts its budget or infrastructure interrupts it | Preserve native cause, evidence and denominator; no silent extra attempt or best-of replacement. |
 | Master is ultra; worker runs an established analysis script | Direct command or regular executor selected explicitly; finishing budget retained. |
 | Several agents share a subscription with little allowance left | Combined budget/concurrency reduced or eligible alternate chosen before the next batch. |
 | Quota stops an agent with exit zero while its compiler continues | No false DONE; preserve/adopt compiler, then resume only missing coordination. |
