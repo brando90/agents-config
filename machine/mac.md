@@ -47,6 +47,17 @@ For full-trust local AI-agent setup on each Mac, first use [`~/agents-config/mac
 
 ## Tools
 
+### Coding-agent CLIs (Cursor, Grok, Antigravity)
+
+Install or refresh Cursor Agent (`agent`), Grok Build (`grok`), and Antigravity (`agy`) with the shared playbook — same script on this Mac, Sanmi's Mac, and SNAP:
+
+```bash
+bash ~/agents-config/scripts/install_agent_clis.sh
+bash ~/agents-config/scripts/install_agent_clis.sh --status
+```
+
+Google-model coding-agent work uses `agy` signed into a Google account. Do not install the deprecated `@google/gemini-cli`. Full table, Grok-vs-Cursor `agent` conflict, and login commands: [`~/agents-config/machine/agent-clis.md`](agent-clis.md).
+
 ### Vibe (Mistral) + Leanstral
 
 Historical Vibe/Leanstral setup used Mistral provider keys and a direct Python client.

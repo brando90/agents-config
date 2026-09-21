@@ -7,6 +7,13 @@ DFS_ROOT="${SNAP_DFS_ROOT:-/dfs/scratch0/brando9}"
 # SSH login on the cluster is always brando9, whatever the local account is called (a Vals-managed
 # Mac logs in as a different user); without this the remote check fails with "Permission denied".
 SNAP_SSH_USER="${SNAP_SSH_USER:-brando9}"
+snap_ssh_host() {
+  # ~/.ssh/config on the Macs lists Host skampere1.stanford.edu, not the short name.
+  case "$1" in
+    *.*) printf '%s' "$1" ;;
+    *) printf '%s.stanford.edu' "$1" ;;
+  esac
+}
 NVM_DIR="$DFS_ROOT/.nvm"
 DFS_BIN="$DFS_ROOT/bin"
 OPEN_NODES="skampere1 skampere2 skampere3 mercury1 mercury2"
@@ -671,7 +678,7 @@ for _node in $TARGET_NODES; do
     if [ "$_node" = "$(hostname -s)" ]; then
       bash "$SCRIPT_PATH" --_worker $([ "$DO_FIX" -eq 1 ] && printf '%s' --fix) $([ "$DO_SMOKE" -eq 1 ] && printf '%s' --smoke) >"$_out" 2>"$_err"
     else
-      timeout 420 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$SNAP_SSH_USER@$_node" \
+      timeout 420 ssh -o BatchMode=yes -o ConnectTimeout="$CONNECT_TIMEOUT" "$SNAP_SSH_USER@$(snap_ssh_host "$_node")" \
         bash -s -- --_worker $([ "$DO_FIX" -eq 1 ] && printf '%s' --fix) $([ "$DO_SMOKE" -eq 1 ] && printf '%s' --smoke) \
         <"$SCRIPT_PATH" >"$_out" 2>"$_err"
     fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TLDR: Keep the shared SNAP NVM installs of Claude Code and Codex current without writing to a shadow prefix or hiding failures.
+# TLDR: Keep Claude Code, Codex, Cursor Agent, Grok Build, and Antigravity current without writing to a shadow prefix or hiding failures.
 
 set -uo pipefail
 
@@ -13,12 +13,14 @@ MAX_AGE_MINUTES="${SNAP_TOOL_UPDATE_MAX_AGE_MINUTES:-360}"
 FORCE=0
 [ "${1:-}" = --force ] && FORCE=1
 
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(uname)" = Darwin ]; then
-  npm install -g @anthropic-ai/claude-code@latest @openai/codex@latest
+  npm install -g @anthropic-ai/claude-code@latest @openai/codex@latest || true
   if command -v brew >/dev/null 2>&1; then
     brew upgrade --cask antigravity >/dev/null 2>&1 || true
   fi
-  exit 0
+  bash "$HERE/install_agent_clis.sh" --update
+  exit $?
 fi
 
 umask 077
@@ -132,6 +134,11 @@ update_one() {
 
 update_one @anthropic-ai/claude-code claude
 update_one @openai/codex codex
+
+if ! bash "$HERE/install_agent_clis.sh" --update; then
+  printf '[%s] ERROR native agent CLI installer failed (agent/grok/agy)\n' "$(date -Is)"
+  FAILED=1
+fi
 
 if [ "$FAILED" -ne 0 ]; then
   printf '[%s] completed with errors; see this log and rerun with --force\n' "$(date -Is)"

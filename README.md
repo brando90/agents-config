@@ -114,6 +114,7 @@ agents-config/
 │   ├── snap.md                  ← Stanford SNAP cluster
 │   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
 │   ├── snap_setup.sh            ← scripted SNAP-node bootstrap (symlinks, auth, tools)
+│   ├── agent-clis.md            ← Cursor Agent / Grok / Antigravity CLI install + login
 │   ├── mac.md                   ← local macOS dev
 │   ├── macos-ai-apps/           ← reusable Mac AI-agent setup + permissions docs
 │   │   ├── ai_agent_automatable_setup_codex_clauded.md
@@ -149,7 +150,8 @@ agents-config/
 │       └── write-blog-post.md
 │
 ├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
-│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` fresh
+│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` plus Cursor/Grok/Antigravity fresh
+│   ├── install_agent_clis.sh    ← install/update `agent` (Cursor), `grok`, `agy` on Macs and SNAP
 │   ├── snap_health.sh           ← cluster-wide preflight, drift, storage, auth, and Git audit
 │   ├── harbor_snap.sh           ← Harbor wrapper that removes the incompatible shared PYTHONPATH
 │   ├── ssh-submit.sh            ← SSH fire-and-forget remote-job submitter

@@ -57,6 +57,7 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 5. **Verify tools:**
    - `which claude && claude --version`
    - `which codex && codex --version`
+   - `bash ~/agents-config/scripts/install_agent_clis.sh --status` — expect `agent`, `grok`, and `agy` installed on DFS (`/dfs/scratch0/brando9`). If missing: `bash ~/agents-config/scripts/install_agent_clis.sh`. Do not install `@google/gemini-cli`. Login is a human browser step (`NO_OPEN_BROWSER=1 agent login`, `grok login`, `agy`). See [`agent-clis.md`](agent-clis.md).
 
 6. **Verify keys exist:**
    - `ls -la ~/keys/` -- verify only credentials needed for the authorized task; do not print secret contents. Weights & Biases (W&B) credentials are optional and only relevant when the user explicitly requests W&B work. Experiment-folder Markdown reporting needs no W&B key.
@@ -85,7 +86,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 2 | Symlinks (7 + project dirs) | All point to correct DFS/agents-config targets (including `~/dfs → /dfs/scratch0/brando9`); all `~/` project dirs are symlinks to DFS |
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
 | 4 | agents-config | Up to date, CLAUDE.md and AGENTS.md have Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
-| 5 | Tools | `claude` and `codex` on PATH with latest versions; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
+| 5 | Tools | `claude` and `codex` on PATH with latest versions; `agent`, `grok`, and `agy` from `install_agent_clis.sh --status`; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
 | 6 | Keys | Existing credentials required by the authorized task are available; no W&B credential prerequisite for ordinary experiment reporting |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |
 | 8 | Remote-job-dispatch | `klist` valid; `ssh <peer> hostname` passwordless; `ssh-submit.sh` present; ≥1 watcher heartbeat fresh; git-inbox poller heartbeat fresh (on one long-lived node) |

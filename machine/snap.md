@@ -63,8 +63,12 @@ makes paid/subscription-backed one-line model calls.
 - Root-owned `/usr/local/bin/claude` and `/usr/local/bin/codex` are stale unsupported copies. User
   shell resolution avoids them; only an administrator can remove them.
 - `~/agents-config/scripts/auto-update-tools.sh` updates both Node-based agents in the selected NVM
-  prefix, uses a shared lock and six-hour success stamp, and records failures in
-  `/dfs/scratch0/brando9/.cache/agent-cli-update.log` instead of swallowing them.
+  prefix, then `scripts/install_agent_clis.sh` for Cursor Agent (`agent`), Grok Build (`grok`), and
+  Antigravity (`agy`). Native binaries live under `/dfs/scratch0/brando9/.local` (and Grok under
+  `/dfs/scratch0/brando9/.grok/bin`); wrappers in `/dfs/scratch0/brando9/bin` keep `agent` as Cursor,
+  never Grok. Playbook: [`agent-clis.md`](agent-clis.md). The updater uses a shared lock and
+  six-hour success stamp, and records failures in `/dfs/scratch0/brando9/.cache/agent-cli-update.log`
+  instead of swallowing them.
 
 ### LFS headroom and Harbor
 
