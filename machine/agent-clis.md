@@ -53,7 +53,16 @@ Do not paste tokens into chat. Do not author API-calling code.
 | Mac | `agent login` | `grok login` | `agy` (opens browser) |
 | SNAP SSH | `NO_OPEN_BROWSER=1 agent login` then open the printed URL locally | `grok login` (device/URL flow if printed) | `agy` prints a URL; paste the code back into the SNAP tty |
 
-Cursor Agent on this Mac was already logged in as the personal Cursor Pro account when this playbook was added (09-20-2026). SNAP and the other Mac still need their own `agent login` / `grok login` / `agy` Google sign-in.
+Verified 09-20-2026: this Mac and all five canonical SNAP nodes can complete real calls through all three clients. Cursor uses `brandojazz@gmail.com`; Grok uses `brando@vals.ai`; Antigravity uses the existing approved Google login. The SNAP acceptance check returned the requested token for **15/15 calls** (three clients × five nodes). Credentials remain private, mode `0600`, and are never committed.
+
+For SNAP recovery, authenticate one node through the browser/device flow, then copy only the three clients' private credential files to the other node-local homes and verify them:
+
+```bash
+SOURCE_HOST=mercury1 bash ~/agents-config/scripts/sync_agent_cli_auth_snap.sh
+bash ~/agents-config/scripts/verify_agent_clis_snap.sh
+```
+
+For Sanmi's Mac, pull this repository and run `install_agent_clis.sh` as above. Then run `agent login`, `grok login --device-auth`, and `agy`; complete each browser login using Sanmi's intended subscription accounts. Run one bounded print-mode call through each client. Do not copy Brando's Mac Keychain, browser profile, or private credentials to Sanmi's computer. If Sanmi is administering these same SNAP nodes, the existing node-local credentials should already pass `verify_agent_clis_snap.sh`; refresh them from an authenticated SNAP source only when status or a real call fails.
 
 Full-access SNAP launchers stay the Claude/Codex ones in Trigger Rule 51. Cursor/Grok/Antigravity are extra eligible executors under Trigger Rule 48 once the target host shows an authenticated client — verify with `--status` before dispatching work onto them.
 
