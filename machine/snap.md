@@ -303,6 +303,21 @@ Long jobs still require a private checkout, named persistent terminal session, r
 checks, and a recovery plan under [reliable dispatch](../workflows/reliable-agent-dispatch.md).
 This installer provides a working client, not automatic renewal or provider failover.
 
+#### Vals AI Codex profile — `codex-vals` / `codexd-vals`
+
+These commands use the Vals AI ChatGPT workspace, not personal or Stanford Codex.
+Profile: `/lfs/<node>/0/brando9/.codex-vals`. Shared PATH entry points:
+`/dfs/scratch0/brando9/bin/codex-vals` and `codexd-vals`. Install/push from the Mac after a local
+`codex-vals login` (pick the Vals workspace):
+
+```bash
+bash ~/agents-config/scripts/push_codex_vals_snap.sh
+```
+
+Verified 09-20-2026: `codex-vals login status` is `Logged in using ChatGPT` on this Mac and all five
+canonical SNAP nodes. Do not export `OPENAI_API_KEY`. Recipe:
+[`../workflows/multi-account-agent-clis.md`](../workflows/multi-account-agent-clis.md).
+
 ### Valkyrie (Vals evaluation platform CLI)
 
 - `valkyrie` / `valk` (same tool, two names) installed via `uv tool install git+https://github.com/vals-ai/Valkyrie@prod`

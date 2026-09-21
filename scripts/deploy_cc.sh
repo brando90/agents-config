@@ -8,7 +8,7 @@
 #
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
-#                [--profile cc|ccv|ccs|codex] [--model claude-fable-5-1] [--effort max] [--no-rc]
+#                [--profile cc|ccv|ccs|codex|codex-vals] [--model claude-fable-5-1] [--effort max] [--no-rc]
 #                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
 #   --profile codex types `codex --dangerously-bypass-approvals-and-sandbox -m <model> -c 'model_reasoning_effort="<effort>"' '<prompt>'` (model and
 #   effort default to gpt-6-astra and ultra; efforts low|medium|high|xhigh|ultra) and
@@ -61,9 +61,9 @@ case "$NAME" in *[!A-Za-z0-9_-]*) die "--name may use letters, digits, _ and - o
 case "$PROFILE" in
   cc|ccv|ccs) MODEL=${MODEL:-claude-fable-5-1}; EFFORT=${EFFORT:-max}
           case "$EFFORT" in low|medium|high|xhigh|max) ;; *) die "--effort must be one of low medium high xhigh max (got '$EFFORT')" ;; esac ;;
-  codex)  MODEL=${MODEL:-gpt-6-astra}; EFFORT=${EFFORT:-ultra}
-          case "$EFFORT" in low|medium|high|xhigh|ultra) ;; *) die "--effort for codex must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
-  *) die "--profile must be cc, ccv, ccs or codex" ;;
+  codex|codex-vals)  MODEL=${MODEL:-gpt-6-astra}; EFFORT=${EFFORT:-ultra}
+          case "$EFFORT" in low|medium|high|xhigh|ultra) ;; *) die "--effort for $PROFILE must be one of low medium high xhigh ultra (got '$EFFORT')" ;; esac ;;
+  *) die "--profile must be cc, ccv, ccs, codex or codex-vals" ;;
 esac
 # model ids are like claude-fable-5-1, claude-fable-5-1[1m] (Hard Rule 8) or gpt-6-astra; typed inside single quotes
 case "$MODEL" in *[!A-Za-z0-9._\[\]-]*) die "--model may use letters, digits, . _ - [ ] only (got '$MODEL')" ;; esac
@@ -79,6 +79,7 @@ case "$PROFILE" in
   ccv) WRAPPER=clauded-vals; REG_DIR="$HOME/.claude-vals/sessions" ;;   # Vals config (zsh function)
   ccs) WRAPPER=clauded-su; REG_DIR="$HOME/.claude-su/sessions" ;;      # Stanford enterprise config (zsh function)
   codex) WRAPPER=codex; REG_DIR=""; RC=0 ;;                            # no registry, no Remote Control
+  codex-vals) WRAPPER=codex-vals; REG_DIR=""; RC=0 ;;                  # Vals ChatGPT workspace; no registry
 esac
 WRAPPER=${DEPLOY_WRAPPER:-$WRAPPER}     # test hook: point at a missing command to exercise the failure path
 LAUNCHER=$(command -v byobu || command -v tmux) || die "neither byobu nor tmux is installed"
@@ -90,7 +91,7 @@ LAUNCH_MARKER="deploy_$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
 # Apostrophe-free on purpose: the prompt is typed into the shell inside single quotes.
 OPEN="Your task brief is the runbook at $PROMPT. Read it in full first, then carry it out end to end under the repo CLAUDE.md and ~/agents-config/INDEX_RULES.md: keep its results ledger live, keep a resumable CKPT_$NAME.md in the work dir with real Created/Last-updated stamps from date (Trigger Rule 44), run the QA tier it names only if it names one (QA is explicit opt-in, Hard Rule 3), and report with the mandatory TLDR/Snapshot protocol. Deployment identity: $LAUNCH_MARKER. TL;DR: Complete the runbook, maintain the results and checkpoint, verify the work, and report the outcome."
 CMD="$WRAPPER"
-if [ "$PROFILE" = codex ]; then
+if [ "$PROFILE" = codex ] || [ "$PROFILE" = "codex-vals" ]; then
   CMD="$CMD --dangerously-bypass-approvals-and-sandbox -m '$MODEL' -c 'model_reasoning_effort=\"$EFFORT\"'"
   CMD="$CMD '$OPEN'"
 else
@@ -122,7 +123,7 @@ fi
 # FAIL CLOSED: only an actual PONG proceeds. Claude Code words exhaustion several ways ("out of usage
 # credits", "monthly spend limit", "usage limit reached"), so matching known phrases lets tomorrow's
 # wording through; anything that is not PONG is treated as unusable and --no-preflight is the escape.
-if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ]; then
+if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ] && [ "$PROFILE" != "codex-vals" ]; then
   # bounded: a hung shell, hook or request must not wedge the dispatch (no deadline = no guard)
   if command -v timeout >/dev/null; then RUNNER="timeout 90"
   elif command -v gtimeout >/dev/null; then RUNNER="gtimeout 90"
@@ -281,7 +282,7 @@ registered() {
 deadline=$((SECONDS + WAIT))
 while [ "$SECONDS" -lt "$deadline" ]; do
   if SID=$(registered); then
-    if [ "$PROFILE" = codex ]; then echo "deployed: codex ($SID) is running in tmux session '$NAME'"
+    if [ "$PROFILE" = codex ] || [ "$PROFILE" = "codex-vals" ]; then echo "deployed: $WRAPPER ($SID) is running in tmux session '$NAME'"
     else echo "deployed: Claude Code session $SID is live in tmux session '$NAME'"; fi
     echo "  attach:  byobu attach -t $NAME        (tmux attach -t '=$NAME' also works; detach with the prefix + d)"
     [ "$RC" -eq 1 ] && echo "  phone:   Remote Control requested under the name '$NAME' -- open it from claude.ai/code"

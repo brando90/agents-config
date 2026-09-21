@@ -16,7 +16,7 @@ Both CLIs pick their entire identity (credentials, settings, sessions, history) 
 | CLI | Variable | Personal | Vals AI | Stanford enterprise |
 |---|---|---|---|---|
 | Claude Code | `CLAUDE_CONFIG_DIR` | `~/.claude` | `~/.claude-vals` | `~/.claude-su` |
-| Codex | `CODEX_HOME` | `~/.codex` | — | `~/.codex-su` |
+| Codex | `CODEX_HOME` | `~/.codex` | `~/.codex-vals` | `~/.codex-su` |
 
 So a new account is: **a new directory + a login into it + two shell functions**. Nothing is ever exported into the ambient shell — the variable is a per-call prefix on the wrapper, so an ordinary `claude` / `codex` in the same terminal still runs the personal account.
 
@@ -86,6 +86,21 @@ codexd-su() { env -u OPENAI_API_KEY CODEX_HOME="$HOME/.codex-su" codex --sandbox
 `env -u OPENAI_API_KEY` is not cosmetic: a stray `OPENAI_API_KEY` in the environment silently
 switches Codex from the subscription to **API billing**, and nothing in the output says so.
 
+The Vals ChatGPT workspace is the same shape, with its own profile and wrappers:
+
+```bash
+mkdir -p ~/.codex-vals && chmod 700 ~/.codex-vals
+CODEX_HOME=$HOME/.codex-vals env -u OPENAI_API_KEY codex login   # browser; pick Vals AI, not personal/Stanford
+CODEX_HOME=$HOME/.codex-vals env -u OPENAI_API_KEY codex login status
+```
+
+```bash
+codex-vals()  { env -u OPENAI_API_KEY -u OPENAI_BASE_URL -u CODEX_API_KEY CODEX_HOME="$HOME/.codex-vals" codex "$@"; }
+codexd-vals() { env -u OPENAI_API_KEY -u OPENAI_BASE_URL -u CODEX_API_KEY CODEX_HOME="$HOME/.codex-vals" codex --sandbox danger-full-access --ask-for-approval never "$@"; }
+```
+
+Verified 09-20-2026: this Mac reports `Logged in using ChatGPT` for `codex-vals login status`, and the same status is on all five SNAP nodes after `scripts/push_codex_vals_snap.sh`.
+
 ## 3. SNAP — the same accounts on every node
 
 Two rules shape the SNAP layout:
@@ -132,6 +147,9 @@ has no such race — use it when a node must run unattended for a long time.
 | `scripts/install_codex_su_node.sh` | node | Node-local `CODEX_HOME` + `codex-su` / `codexd-su` wrappers |
 | `scripts/codex_su_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Codex wrapper |
 | `scripts/push_codex_su_snap.sh` | mac | Runs the installer, ships auth (or prints the device-login command), verifies each node |
+| `scripts/install_codex_vals_node.sh` | node | Node-local `CODEX_HOME=~/.codex-vals` + `codex-vals` / `codexd-vals` wrappers |
+| `scripts/codex_vals_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Vals Codex wrapper |
+| `scripts/push_codex_vals_snap.sh` | mac | Runs the installer, ships Vals `auth.json` (or prints the device-login command), verifies each node |
 
 The Vals equivalents (`install_vals_node.sh`, `push_claude_vals_creds.sh`, `setup_claude_vals_snap.sh`,
 `vals_remote_entry.sh`) are the same shape; the Vals driver pushes the Keychain credential JSON

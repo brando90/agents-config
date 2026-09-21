@@ -120,6 +120,12 @@ sys.exit(0)
             typed = shlex.split(result.stdout.splitlines()[1])[-1]
             self.assertEqual(shlex.split(typed)[0], wrapper)
             self.assertNotIn("--remote-control", typed)
+        result = self.deploy("--profile", "codex-vals", "--dry-run")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        typed = shlex.split(result.stdout.splitlines()[1])[-1]
+        argv = shlex.split(typed)
+        self.assertEqual(argv[0], "codex-vals")
+        self.assertIn("--dangerously-bypass-approvals-and-sandbox", argv)
         for args in [("--model",), ("--effort", "bogus"), ("--profile", "bad"), ("--wait", "-1")]:
             self.assertEqual(self.deploy(*args).returncode, 2)
         result = self.run_script("deploy_cc.sh", "--dry-run", "--name", "qa-probe", "--cwd", "/tmp", "--prompt-file", "/dev/null")

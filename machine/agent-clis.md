@@ -12,7 +12,7 @@
 | `grok` | Grok Build (SpaceXAI) | `curl -fsSL https://x.ai/cli/install.sh \| bash` | `grok login` (browser). Do **not** export `XAI_API_KEY`. |
 | `agy` / `antigravity` | Antigravity CLI (Google) | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` | First run signs into a Google account. On SSH: printed URL + paste-back code. Do **not** export `GEMINI_API_KEY`. |
 | `claude` / `clauded` | Claude Code | existing NVM / native installer | existing profiles (`~/.claude`, `~/.claude-vals`, `~/.claude-su`) |
-| `codex` / `codexd` | Codex | existing NVM / brew | existing profiles (`~/.codex`, `~/.codex-su`) |
+| `codex` / `codexd` | Codex | existing NVM / brew | existing profiles (`~/.codex`, `~/.codex-vals`, `~/.codex-su`) |
 
 Do **not** install `@google/gemini-cli`. Hard Rule 7/9: Antigravity replaces that CLI. The consumer **Gemini.app** GUI on a Mac is unrelated and may stay. If an old `gemini` binary is already on a Mac, leave it; do not copy it to SNAP.
 
