@@ -91,7 +91,9 @@ for h in "${HOSTS[@]}"; do
     bash \$HOME/.install_su_node.sh; rc=\$?;
     mkdir -p /dfs/scratch0/brando9/bin &&
     install -m 755 /tmp/su_remote_entry.sh /dfs/scratch0/brando9/bin/claude-su &&
-    install -m 755 /tmp/su_remote_entry.sh /dfs/scratch0/brando9/bin/clauded-su;
+    install -m 755 /tmp/su_remote_entry.sh /dfs/scratch0/brando9/bin/clauded-su &&
+    install -m 755 /tmp/su_remote_entry.sh /dfs/scratch0/brando9/bin/claude-stanford &&
+    install -m 755 /tmp/su_remote_entry.sh /dfs/scratch0/brando9/bin/clauded-stanford;
     rm -f /tmp/install_su_node.sh /tmp/su_remote_entry.sh \$HOME/.install_su_node.sh;
     exit \$rc"' 2>&1 | sed "s/^/  [$h] /"
   rc=${PIPESTATUS[0]}
@@ -104,7 +106,7 @@ done
 for h in "${OK_HOSTS[@]}"; do
   log "=== $h: verify ==="
   ssh "${SSH_OPTS[@]}" "$h.$DOMAIN" 'bash -lc "
-    printf \"  which: %s\n\" \"\$(command -v clauded-su || echo MISSING)\"
+    printf \"  which: %s\n\" \"\$(command -v clauded-stanford || echo MISSING)\"
     printf \"  ver  : %s\n\" \"\$(claude-su --version 2>&1 | head -1)\"
   "' 2>&1 | sed "s/^/  [$h] /"
   if [ "${SKIP_SMOKE:-0}" != "1" ]; then
@@ -113,4 +115,4 @@ for h in "${OK_HOSTS[@]}"; do
   fi
 done
 [ ${#BAD_HOSTS[@]} -eq 0 ] || log "NOT deployed: ${BAD_HOSTS[*]}"
-log "done. Use 'clauded-su' (yolo) or 'claude-su' on any SNAP node."
+log "done. Use 'clauded-stanford' (alias: clauded-su) or 'claude-stanford' (alias: claude-su) on any SNAP node."

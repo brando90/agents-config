@@ -72,7 +72,9 @@ for h in "${HOSTS[@]}"; do
     bash \$HOME/.install_codex_su_node.sh; rc=\$?;
     mkdir -p /dfs/scratch0/brando9/bin &&
     install -m 755 /tmp/codex_su_remote_entry.sh /dfs/scratch0/brando9/bin/codex-su &&
-    install -m 755 /tmp/codex_su_remote_entry.sh /dfs/scratch0/brando9/bin/codexd-su;
+    install -m 755 /tmp/codex_su_remote_entry.sh /dfs/scratch0/brando9/bin/codexd-su &&
+    install -m 755 /tmp/codex_su_remote_entry.sh /dfs/scratch0/brando9/bin/codex-stanford &&
+    install -m 755 /tmp/codex_su_remote_entry.sh /dfs/scratch0/brando9/bin/codexd-stanford;
     rm -f /tmp/install_codex_su_node.sh /tmp/codex_su_remote_entry.sh \$HOME/.install_codex_su_node.sh;
     exit \$rc"' 2>&1 | sed "s/^/  [$h] /"
   rc=${PIPESTATUS[0]}
@@ -96,7 +98,7 @@ done
 for h in "${OK_HOSTS[@]}"; do
   log "=== $h: verify ==="
   ssh "${SSH_OPTS[@]}" "$h.$DOMAIN" 'bash -lc "
-    printf \"  which : %s\n\" \"\$(command -v codexd-su || echo MISSING)\"
+    printf \"  which : %s\n\" \"\$(command -v codexd-stanford || echo MISSING)\"
     printf \"  ver   : %s\n\" \"\$(codex-su --version 2>&1 | head -1)\"
     printf \"  login : %s\n\" \"\$(codex-su login status 2>&1 | head -1)\"
   "' 2>&1 | sed "s/^/  [$h] /"
@@ -106,4 +108,4 @@ for h in "${OK_HOSTS[@]}"; do
   fi
 done
 [ ${#BAD_HOSTS[@]} -eq 0 ] || log "NOT deployed: ${BAD_HOSTS[*]}"
-log "done. Use 'codexd-su' (full-trust) or 'codex-su' on any SNAP node."
+log "done. Use 'codexd-stanford' (alias: codexd-su) or 'codex-stanford' (alias: codex-su) on any SNAP node."
