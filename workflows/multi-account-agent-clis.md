@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/multi-account-agent-clis.md>
 
-**TLDR:** Brando holds several subscriptions per vendor (personal, Vals AI, Stanford University enterprise). Each one gets its own CLI profile directory and its own pair of shell wrappers — `clauded-vals`, `clauded-stanford` (`clauded-su`), and `codexd-stanford` (`codexd-su`) — so logins, session history and *billing identity* never mix. This is the recipe for adding a new account, on the mac and on every SNAP node.
+**TLDR:** Brando holds several subscriptions per vendor (personal, Vals AI, Stanford University enterprise). Each one gets its own CLI profile directory and its own pair of shell wrappers — `clauded-vals`, `codexd-vals`, `clauded-stanford` (`clauded-su`), and `codexd-stanford` (`codexd-su`) — so logins, session history and *billing identity* never mix. This is the recipe for adding a new account, on the mac and on every SNAP node.
 
 **Status:** the Stanford pair is live and verified end to end on 09-16-2026 — `clauded-su`
 (`brando9@stanford.edu`, org Stanford University, **enterprise**) and `codexd-su`
