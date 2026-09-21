@@ -66,7 +66,57 @@ For Sanmi's Mac, pull this repository and run `install_agent_clis.sh` as above. 
 
 Full-access SNAP launchers stay the Claude/Codex ones in Trigger Rule 51. Cursor/Grok/Antigravity are extra eligible executors under Trigger Rule 48 once the target host shows an authenticated client — verify with `--status` before dispatching work onto them.
 
-## Docs
+## Meta Muse Code — optional, no new spending
+
+Install on a Mac or each compute node with:
+
+```bash
+bash ~/agents-config/scripts/install_muse_cli.sh
+bash ~/agents-config/scripts/install_muse_cli.sh --check
+```
+
+The command is `muse`. This separate installer uses Meta's official installer,
+preserves shell startup files, and checks version plus the local `echo` provider
+in an empty temporary workspace. It does not authenticate, invoke a model,
+buy a subscription, add a payment method, or enable metered usage. Add
+`~/.local/bin` to PATH if that host does not already include it.
+
+For Muse, install the binary in each node's local `~/.local/bin`; keep each
+host's credentials local. This avoids depending on the distributed filesystem
+for binary startup. A version check is not an authentication or model-capability
+test. Existing Cursor/Grok/Antigravity paths are unchanged.
+
+Verified September 20, 2026: Muse Code `1.3.0 (1.3.0-R3401.1)` installed on
+Brando's Mac and `skampere1`, `skampere2`, `skampere3`, `mercury1`, `mercury2`.
+Sanmi's Mac was unreachable by its known network name; run the same script
+there when available. `muse login` uses the Meta browser/device flow. Brando's
+browser account was recognized, but authentication stopped at SMS two-factor
+verification. No authenticated inference or free account allowance is claimed.
+
+Mercury initially rejected the offline check when its workspace was under
+`/tmp`, reporting that temporary tool output was inside the workspace or
+repository. The check script uses an explicit disposable workspace under the
+user's home and a separate temporary runtime under `/var/tmp`; this passed
+on Mercury without disabling Muse's protections.
+
+Meta advertises Muse Code subscriptions starting at $5/month as well as metered
+Model API usage. The consumer Muse app's free allowance does not establish a
+free Muse Code entitlement. The user requested no payment: leave Muse out of
+unattended dispatch until an applicable no-charge allowance is verified. Do not
+select the Contributor model merely to lower cost: Meta says its inputs and
+outputs may be used for model training. Never submit private benchmark material
+to that tier without the applicable authorization.
+
+Official references: [overview](https://dev.meta.ai/docs/overview),
+[authentication](https://dev.meta.ai/docs/muse-code/auth),
+[plans](https://dev.meta.ai/products/muse-code), and
+[pricing/data tiers](https://dev.meta.ai/docs/pricing-rate-limits).
+
+**TLDR-end:** Muse is installed as an optional client on the six reachable hosts;
+offline checks establish startup only. Sign-in and no-charge entitlement remain
+unverified; paid usage is not authorized.
+
+## Other agent documentation
 
 - Cursor CLI: https://cursor.com/docs/cli/overview
 - Cursor auth: https://cursor.com/docs/cli/reference/authentication
