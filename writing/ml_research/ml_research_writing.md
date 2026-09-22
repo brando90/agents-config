@@ -200,9 +200,25 @@ Six independent issues, ranked by impact: colon overload + topic pivot (#1, domi
 
 ---
 
+## LaTeX Source Layout: One Sentence per Line (mandatory)
+
+Brando reads, edits, and cites the working paper by source line, so every `.tex` prose file uses one layout (Brando, 09-22-2026):
+
+- **A newline after every full sentence.** Each sentence, ending in `.`, `?`, or `!` plus any closing `)` or quote, sits on its own line.
+- **No hard wraps inside a sentence.** A sentence never spans two lines, however long; let the editor soft-wrap.
+- **Not sentence ends:** `e.g.`, `i.e.`, `et al.`, `vs.\ `, `Fig.~\ref{...}`, `Sec.`, decimals such as `0.833`, and initials stay mid-line.
+- **Blank lines still mean paragraphs.** Never add or remove one when reflowing. A single newline inside a paragraph is only a space to LaTeX, so the PDF does not change.
+- **Captions, `\item`s, footnotes, and the abstract follow the same rule.** A run-in heading (`\paragraph{Task.}`, `\textbf{Takeaway.}`) may share a line with its first sentence.
+- **Leave alone:** the preamble, comments, `verbatim`/`lstlisting`, display math, tables, and TikZ.
+- **Applies to every edit.** New or rewritten prose must already follow this layout. When you touch a paragraph that does not, reflow that paragraph.
+
+**Tool:** `python3 ~/agents-config/scripts/latex_sentence_lines.py FILE.tex` reflows in place and changes whitespace only; `--check` exits 1 if a file needs reflowing. After a bulk reflow, rebuild and confirm the `pdftotext` output is byte-identical to the old PDF's.
+
+---
+
 ## General LaTeX Writing Rules
 
-- **One sentence per line** in `.tex` source — makes diffs clean and reviews easier.
+- **One sentence per line** in `.tex` source — mandatory; see § LaTeX Source Layout above.
 - **Use `\textsc{}` for system/benchmark names** (e.g., `\textsc{VeriBench-DT}`).
 - **Use `\emph{}` for key terms** on first introduction (e.g., *verification hallucinations*).
 - **Concrete over vague** — replace "significant improvement" with "12.3% improvement."
