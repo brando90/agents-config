@@ -146,7 +146,7 @@ remote input acknowledgement + actual model + first-action evidence:
 verified main landing / completion record / notification outcome:
 ```
 
-The worker runbook keeps its own title, opening summary and closing TLDR under Rule 36. It carries the relevant recovery and acceptance instructions; this manifest supplies exact values and evidence.
+The worker runbook keeps its own title and closing TLDR (end-only) under Rule 36. It carries the relevant recovery and acceptance instructions; this manifest supplies exact values and evidence.
 
 ## Policy verification cases
 
