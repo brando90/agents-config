@@ -120,6 +120,7 @@ Abstracts get rewritten *many* times. After producing the first draft, also prod
 ## File-writing notes
 
 - If writing to a `.tex` file, wrap output in `\begin{abstract} ... \end{abstract}`.
+- **One paragraph by default.** Put no blank line inside `\begin{abstract} ... \end{abstract}`; a blank line starts a new paragraph. Split it only when the venue asks for a structured or multi-paragraph abstract, or when Brando asks. Brando dislikes paragraph breaks in abstracts (09-22-2026). Sentences still go one per line, and `latex_sentence_lines.py --check` warns on abstract paragraph breaks.
 - If the file already had a `\begin{abstract}` block, replace its contents rather than appending.
 - Always include `% CS197 move ...` source comments in `.tex` abstracts, immediately above the relevant sentences. These comments are part of the deliverable and should be preserved across revisions.
 - If writing to `.md` or stdout (no output path), use plain prose (no LaTeX wrapping).

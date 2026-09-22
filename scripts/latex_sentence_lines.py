@@ -211,6 +211,10 @@ def main() -> int:
     dirty = 0
     for path in args.files:
         src = path.read_text()
+        for m in re.finditer(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", src, re.S):
+            breaks = len(re.findall(r"\n[ \t]*\n", m.group(1).strip()))
+            if breaks:
+                print(f"{path}: warning: abstract has {breaks} paragraph break(s); heuristic is one paragraph")
         new = reformat(src)
         if new == src:
             continue

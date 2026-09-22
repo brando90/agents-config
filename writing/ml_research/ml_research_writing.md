@@ -208,6 +208,7 @@ Brando reads, edits, and cites the working paper by source line, so every `.tex`
 - **No hard wraps inside a sentence.** A sentence never spans two lines, however long; let the editor soft-wrap.
 - **Not sentence ends:** `e.g.`, `i.e.`, `et al.`, `vs.\ `, `Fig.~\ref{...}`, `Sec.`, decimals such as `0.833`, and initials stay mid-line.
 - **Blank lines still mean paragraphs.** Never add or remove one when reflowing. A single newline inside a paragraph is only a space to LaTeX, so the PDF does not change.
+- **Abstracts are one paragraph (heuristic).** Avoid blank lines inside `\begin{abstract}` unless the venue requires a structured abstract; see `write-abstract.md`. Merging abstract paragraphs changes the PDF, so it is a deliberate edit, not part of a reflow; rebuild afterward.
 - **Captions, `\item`s, footnotes, and the abstract follow the same rule.** A run-in heading (`\paragraph{Task.}`, `\textbf{Takeaway.}`) may share a line with its first sentence.
 - **Leave alone:** the preamble, comments, `verbatim`/`lstlisting`, display math, tables, and TikZ.
 - **Applies to every edit.** New or rewritten prose must already follow this layout. When you touch a paragraph that does not, reflow that paragraph.
