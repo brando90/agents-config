@@ -200,6 +200,19 @@ Six independent issues, ranked by impact: colon overload + topic pivot (#1, domi
 
 ---
 
+## Data-Split Names: Train / Validation / Test (mandatory)
+
+Brando uses the standard machine-learning split names in every paper (09-22-2026):
+
+- **Train set**: data used to fit parameters.
+- **Validation (val) set**: data used for any selection, including hyperparameters, prompts, model or index form, thresholds, and early stopping. Numbers reported on it are optimistic.
+- **Test set**: held out, untouched until the final evaluation, and used once.
+- **Never write "development set", "dev set", or "development panel".** The "dev set" term confused Brando and will confuse readers.
+- **Name the split behind every reported number.** If a method has no fitted parameters, say there is no training set; do not invent one. If there is no test-set result, say so plainly.
+- **A second labeling pass of the same items is not a test set**, and neither is a held-out pool rated under a different rubric.
+
+---
+
 ## LaTeX Source Layout: One Sentence per Line (mandatory)
 
 Brando reads, edits, and cites the working paper by source line, so every `.tex` prose file uses one layout (Brando, 09-22-2026):
