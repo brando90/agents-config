@@ -226,6 +226,8 @@ Brando reads, edits, and cites the working paper by source line, so every `.tex`
 - **Leave alone:** the preamble, comments, `verbatim`/`lstlisting`, display math, tables, and TikZ.
 - **Applies to every edit.** New or rewritten prose must already follow this layout. When you touch a paragraph that does not, reflow that paragraph.
 
+**One file per section (Brando, 09-22-2026).** A paper's `main.tex` holds only the preamble and an `\input` list. Prose lives in numbered section files: `00_abstract.tex`, `01_introduction.tex`, …, with the appendix as `990_appendix_<topic>.tex`, `991_…`. Start each with `% !TEX root = main.tex`. Parallel agents then edit and push different files instead of overwriting one monolithic `main.tex`. If a paper is still one file, split it at `\section` boundaries. Verify that inlining the `\input`s reproduces the old file exactly and that the rebuilt PDF's `pdftotext` output is byte-identical. Build in a scratch copy, not the paper directory, and commit with explicit pathspecs, because agents share the checkout and index.
+
 **Tool:** `python3 ~/agents-config/scripts/latex_sentence_lines.py FILE.tex` reflows in place and changes whitespace only; `--check` exits 1 if a file needs reflowing. After a bulk reflow, rebuild and confirm the `pdftotext` output is byte-identical to the old PDF's.
 
 ---
