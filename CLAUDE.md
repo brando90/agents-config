@@ -5,6 +5,8 @@
 # Claude Code: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 
+**Friendly reminder:** Shared behavior changes belong in both `AGENTS.md` (Codex) and `CLAUDE.md` (Claude), regardless of which agent edits them. When configuring a host, verify its actual global instruction files are nonempty and point to the intended content; report the expanded paths and reload status. See [Guideline 16](INDEX_RULES.md#guidelines-best-practices).
+
 ## Behavioral Rules
 
 - **Just do it** — When Brando gives a direct instruction (send email, run command, etc.), execute it immediately. Do not ask for confirmation, offer alternatives, or create drafts when "send" was requested. Only pause for truly destructive/irreversible actions on shared systems.

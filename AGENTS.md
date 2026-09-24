@@ -9,6 +9,8 @@
 # Codex / other agents: run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 # Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing. Local `~/agents-config/` is the fallback if GitHub is unreachable.
 
+**Friendly reminder:** Shared behavior changes belong in both `AGENTS.md` (Codex) and `CLAUDE.md` (Claude), regardless of which agent edits them. When configuring a host, verify its actual global instruction files are nonempty and point to the intended content; report the expanded paths and reload status. See [Guideline 16](INDEX_RULES.md#guidelines-best-practices).
+
 ## SNAP full-access pre-approval (Brando, 2026-09-14)
 
 Every agent working on SNAP runs with full access (`clauded`/ccdp, `clauded-vals`/ccdv, `codexd`/codexdp or `codex exec --dangerously-bypass-approvals-and-sandbox`) and never stops to ask permission; Brando pre-approves all task work there. Every SNAP dispatch prompt carries the pre-approval line verbatim; stalled or restricted agents are unblocked or relaunched at once. Budgets, secrets and shared-node safety still apply. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 51.
