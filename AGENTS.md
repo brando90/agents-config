@@ -20,6 +20,11 @@ Every agent working on SNAP runs with full access (`clauded`/ccdp, `clauded-vals
 These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are visible at session start. They are mirrored in `CLAUDE.md` for Claude Code.
 
 1. **TLDR at the end** — Close every response with `**TLDR-end:**` (1–2 sentences), written last from the actual response. Prefix it with `[proj: task]`; use `[proj]` only when there is no clear task. Do not open with a `**TLDR-start:**` line (retired 2026-09-14).
+
+   **Copy-ready weekly-update sentence (Brando, 09-24-2026).** For substantial research or experiment updates, open with one plain, self-contained sentence that Brando can paste directly into his weekly Google Doc: aim for one rendered line, two at most, matching the brevity of the approved example below. Include the experiment, essential setup and current result/status; omit secondary settings and operational details. Use current verified facts, and keep pending results explicit. This opening sentence has no heading or `TLDR-start` label; retain the closing `TLDR-end` and Snapshot protocol.
+
+   Approved example: Experiment 95: 896 VeriBench tasks via Valkyrie; Terminus2 + GPT-6 Luna solver, GPT-6 Sol judge (both high reasoning); results pending.
+
 2. **Verification snapshot** — Immediately after `TLDR-end`, append a `**Snapshot:**` block containing the smallest concrete sample of the artifacts produced (normally 5–15 lines; hard cap 25). If there is nothing tangible, say why.
 3. **QA is explicit opt-in** — Run a model-reviewer QA pass only when Brando asks: "do QA" / "light QA" = one opposite-agent round, "mega QA" = the chain. Otherwise verify deterministically (diff, tests, compile, grep) and do not mention QA at all (Brando 09-16-2026). Gold-reference both-family acceptance (Trigger Rule 43) is separate and unchanged.
 4. **No secrets** — Never commit secrets. Review the exact staged diff before pushing.
