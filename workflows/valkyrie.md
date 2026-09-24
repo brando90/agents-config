@@ -43,6 +43,12 @@ On Macs and Stanford Network Analysis Project (SNAP) hosts, record the actual in
 
 Follow [verified-host bootstrap](verified-host-bootstrap.md) when another authorized machine already has working Valkyrie. Prefer the private SNAP distribution store and retain a verified laptop replica. Read the private manifest and compare the actual source configuration with the packet appendix before executing an installer that can replace destination settings. Reuse approved account configuration and package pins; create a native host-local runtime and record that host's checks. Private hub addresses, account settings and receipts stay outside agents-config.
 
+## Model, agent and benchmark access are separate
+
+**Model access does not grant access to every agent.** Inspect the authenticated gateway catalog for model routes, `valk agent list` for accessible agent bundles, and the selected bundle's contract for model/effort compatibility. A model can be available while an agent archive is absent or inaccessible, or its wrapper lacks the required model interface. Reuse a permitted compatible agent or package an authorized implementation; do not promise arbitrary agent access from gateway access alone. Record the exact agent bundle/version alongside the model and effort in each experiment.
+
+Research/public and proprietary benchmark variants may reuse the same agent while supplying different datasets through separately versioned benchmark services. An authorized locally hosted service is a supported integration route; publishing tasks upstream is not a prerequisite. Keep public and private task manifests, references and results distinct, and never upload proprietary data merely to make a benchmark discoverable. Verify each variant's actual task count instead of assuming a remembered approximate count.
+
 ## Verify model routing and effort
 
 **A public registry and an authenticated deployed catalog can differ.** Inspect the official library, the deployed gateway's documented read-only model/registry endpoints, and the actual uploaded agent contract. Record exact model selector, resolved provider model, effort parameter, fallback behavior and relevant versions in the private experiment record.
