@@ -6,6 +6,8 @@
 
 ## Recommended shape
 
+The companion [one project across agent tools and computers](../cross-machine-projects.md) plan adds a proposed shared project/task catalog and authorized coordination layer. This board remains the observation view; loading it does not dispatch or resume workers. Deployment-specific records remain private.
+
 Keep `scripts/agent_board.py` and the existing local/phone view as the starting point. Separate collection, reconciliation and rendering instead of replacing the board with a new application. Updating a status table should use no model calls by default.
 
 Each supported service/account gets a small collector using its actual local state, official interface or launch wrapper. Automatic discovery includes existing sessions without restarting them; optional structured updates add purpose, dependencies, human pauses and completion evidence. A generic registration command covers unsupported services but labels those rows self-reported or manually entered. Do not claim universal coverage until a coverage inventory lists every expected service, account and host with a verified collector or an explicit visibility limit.

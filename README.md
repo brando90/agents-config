@@ -20,6 +20,8 @@ All agents follow [broad investigation](workflows/broad-investigation.md): proac
 
 For Vals tasks, start with [Valkyrie documentation and diagnosis](workflows/valkyrie.md), which routes to the official overview, benchmark conversion, local development and model-library references. This repository holds public procedures and links; credentials, private setup packets, internal endpoint details and private model aliases stay in authorized host storage.
 
+The [one-project coordination plan](workflows/cross-machine-projects.md) proposes a shared task catalog across agent tools and computers, building on the existing private agent board. It separates status observation from authorized task control; the design does not claim a deployed integration or change execution policy.
+
 When an authorized host already works, use [verified-host bootstrap](workflows/verified-host-bootstrap.md). SNAP is the preferred private distribution hub where applicable; Git holds public rules, and each laptop retains a verified private replica and native runtime.
 
 ## The Three-Layer Architecture
