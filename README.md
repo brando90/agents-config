@@ -14,6 +14,12 @@ As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction
 
 ---
 
+## Investigating problems and using Valkyrie
+
+All agents follow [broad investigation](workflows/broad-investigation.md): proactively inspect relevant local state, current official documentation, upstream source and authorized services before treating a failed command as a blocker. [Trigger Rule 62](INDEX_RULES.md) and both agent entry points make this discoverable on every host that refreshes the repository.
+
+For Vals tasks, start with [Valkyrie documentation and diagnosis](workflows/valkyrie.md), which routes to the official overview, benchmark conversion, local development and model-library references. This repository holds public procedures and links; credentials, private setup packets, internal endpoint details and private model aliases stay in authorized host storage.
+
 ## The Three-Layer Architecture
 
 ```
@@ -126,6 +132,8 @@ agents-config/
 │   ├── qa-correctness.md        ← QA tiers, explicit opt-in (deterministic checks, reviewer QA, Mega QA)
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
+│   ├── broad-investigation.md   ← official-source research, recovery and verified outcomes
+│   ├── valkyrie.md              ← public Vals references and host/model diagnosis
 │   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
 │   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox
 │   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths

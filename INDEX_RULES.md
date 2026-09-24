@@ -4,7 +4,7 @@
 
 **TLDR:** This file defines global agent rules and routes agents to the machine, workflow, and writing docs relevant to the current task.
 
-Load only the docs relevant to your current task.
+Load only the docs relevant to your current task. This limits irrelevant context, not investigation scope: follow Trigger Rule 62 to research broadly across relevant local evidence, official documentation, upstream source and authorized services.
 
 **Remote fallback:** If `~/agents-config/` is not available locally (e.g., running in a cloud sandbox or on the phone), fetch any needed files from `https://raw.githubusercontent.com/brando90/agents-config/main/`. This applies to this file, all machine docs, all workflow docs, and anything else referenced below.
 
@@ -223,6 +223,8 @@ These rules fire in specific contexts. When the trigger condition is met, they a
 
 61. **Run every solver/agent evaluation through its full declared set without premature orchestration stops.** _Trigger: planning, dispatching, continuing or reporting any solver/agent evaluation, for any model, provider, harness or project._ Read and enforce [the uninterrupted evaluation contract](workflows/expts-and-results.md#uninterrupted-evaluation-of-the-full-declared-set). Freeze all files/tasks/questions and every model × task × seed/repetition cell before measurement; preflight nested timeouts, resources and finalization for the whole set; provide persistent execution and monitoring. Every initial and continuation prompt carries the strict [solver completion reminder](workflows/expts-and-results.md#solver-completion-reminder). Let healthy work follow the fixed bounded procedure, verify actual final artifacts/logs/compiler or other checks, and reconcile every cell. A smoke pass or one clean task is not a completed evaluation. Keep failures, missing outputs and interrupted rows in the full denominator; distinguish clean procedure completion, budget-exhausted incomplete generation and infrastructure interruption from correctness. Preserve prior evidence/accounting and freeze unplanned recovery as a separate prospective condition without score-based cherry-picking, unlimited retries or silent model/settings changes. Explicit cancellation and genuine limits still apply; this rule promises neither impossible immunity from outages nor nonzero scores. It complements Rules 39/44/48/55/58 and constrains executor-recovery advice whenever the agent itself is being measured. **Why:** Brando, 09-20-2026, requires uninterrupted evaluation of all files/tasks/questions in the entire declared data-point set for every solver/agent, with a strict reminder to finish the assigned task.
 
+62. **Investigate broadly before declaring a blocker.** _Trigger: a tool, service, integration or command is unfamiliar, fails, has uncertain behavior, or the user supplies relevant documentation._ Read [the broad-investigation workflow](workflows/broad-investigation.md). Independently combine local help/configuration/implementation, current official documentation and upstream source, web search where useful, and authorized read-only service checks. Open the user's links; recover from a failed reader through official Markdown, indexes or raw source. Find the supported operation instead of stopping at an invalid alias. Expand to relevant repositories and hosts, batch independent checks, apply authorized reversible fixes, and verify the requested outcome. Do not make the user supply discoverable facts or treat the first failed command as a final blocker. Keep searches and published evidence free of private data; retain existing spending, access, experiment-setting and ownership limits. For Vals work, load [Valkyrie documentation and diagnosis](workflows/valkyrie.md). **Why:** Brando, 09-24-2026, wants every agent to investigate broadly and use current documentation proactively, while keeping private Vals information out of agents-config.
+
 ---
 
 ## Abbreviations
@@ -331,6 +333,8 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 ## Workflows
 
+- [`workflows/broad-investigation.md`](workflows/broad-investigation.md) — cross-agent investigation, official-source research, recovery and evidence before declaring blockers (Trigger Rule 62).
+- [`workflows/valkyrie.md`](workflows/valkyrie.md) — public Vals documentation, command/model-routing diagnosis and the boundary between public procedures and private host configuration.
 - [`workflows/qa-correctness.md`](workflows/qa-correctness.md) — QA tiers: deterministic checks (always), reviewer QA and Mega QA (only on request)
 - [`workflows/qa-structural.md`](workflows/qa-structural.md) — structural QA reference: anti-degradation checks and metrics
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents

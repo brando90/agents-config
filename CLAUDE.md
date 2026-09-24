@@ -9,7 +9,11 @@
 
 - **Just do it** — When Brando gives a direct instruction (send email, run command, etc.), execute it immediately. Do not ask for confirmation, offer alternatives, or create drafts when "send" was requested. Only pause for truly destructive/irreversible actions on shared systems.
 - **No unnecessary drafts** — If told to "send" an email, send it. Only create a draft if explicitly asked for a draft.
-- **When external fetches fail** — If a needed external resource (video transcript, paywalled page, gated API, IP-blocked service) is unreachable: (1) log every attempt and its failure mode in a `fetch_attempts.md` next to the work, (2) capture whatever lighter metadata *is* reachable (e.g. oEmbed for YouTube), (3) build the rest of the deliverable as a clearly-marked skeleton with a populate-script, (4) ask the user to supply the missing piece. **Never fabricate the missing content.** Canonical example: `experiments/03_youtube_transcript_takeaway_loop/`.
+- **When external fetches fail** — Follow [broad investigation](workflows/broad-investigation.md) before declaring the resource unavailable: try relevant official Markdown, indexes, raw source or another authorized reader, and distinguish a tool failure from an access restriction. Record meaningful attempts and failure modes beside the work, capture reachable metadata and complete independent parts. Ask the user for missing material only if it remains essential and unavailable through authorized alternatives. Mark unresolved sections honestly; **never fabricate the missing content** or bypass access controls. Historical example: `experiments/03_youtube_transcript_takeaway_loop/`.
+
+## Broad investigation and current documentation
+
+Follow [Trigger Rule 62](INDEX_RULES.md) and [the broad-investigation workflow](workflows/broad-investigation.md): use relevant local evidence, official documentation, upstream source, web search and authorized live checks before declaring a blocker. Open supplied links, recover from failed readers or unsupported command spellings, and complete authorized fixes without asking the user for discoverable facts. “Load relevant docs” does not restrict investigation to the current repository. For Vals work, load [Valkyrie documentation and diagnosis](workflows/valkyrie.md); keep credentials, private host packets and internal routing details out of this public repo. Existing project funding, execution and scientific-setting requirements remain binding.
 
 ## Research and experiments
 
