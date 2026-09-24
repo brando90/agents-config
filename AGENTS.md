@@ -31,6 +31,8 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 
 Follow [Trigger Rule 62](INDEX_RULES.md) and [the broad-investigation workflow](workflows/broad-investigation.md): use relevant local evidence, official documentation, upstream source, web search and authorized live checks before declaring a blocker. Open supplied links, recover from failed readers or unsupported command spellings, and complete authorized fixes without asking the user for discoverable facts. “Load relevant docs” does not restrict investigation to the current repository. For Vals work, load [Valkyrie documentation and diagnosis](workflows/valkyrie.md); keep credentials, private host packets and internal routing details out of this public repo. Existing project funding, execution and scientific-setting requirements remain binding.
 
+**Connector fallback:** If a connector fails, is unavailable or uses the wrong account, use available authorized browser or desktop computer-use tools to complete the task. Verify the active account/workspace and outcome; browser access does not prove connector access. Respect tool restrictions and required confirmations. See [broad investigation](workflows/broad-investigation.md).
+
 **Reuse verified hosts:** Before rebuilding an integration, inspect an authorized working host and its setup receipt. Follow [verified-host bootstrap](workflows/verified-host-bootstrap.md): prefer Stanford Network Analysis Project (SNAP) for private configuration distribution, retain verified laptop replicas, compare configuration freshness and install/verify each host locally. Shared public rules stay in Git; private material stays in the private store.
 
 ## Research and experiments
