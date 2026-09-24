@@ -8,6 +8,8 @@
 
 - **Shared agent access policy:** apply [routine authentication recovery and per-host client verification](../workflows/reliable-agent-dispatch.md#authentication-recovery) to Codex, Claude Code, Cursor Agent and Antigravity on both Macs. Restore authorized sign-ins through the existing browser when possible; verify each remote client independently and keep credentials out of agents-config.
 
+- **Reuse working setup:** follow [verified-host bootstrap](../workflows/verified-host-bootstrap.md) before rebuilding an integration on a laptop. Retrieve approved portable settings from the private hub or a verified replica, compare freshness, and install a native runtime; derive the actual local home and verify global instruction files.
+
 - **No CUDA.** Do not attempt vllm, sglang, or bitsandbytes — Linux-only. Run those on cluster.
 - **Docker Desktop must be running.** If you see `Cannot connect to the Docker daemon`, open Docker Desktop and wait for it to start.
 - **Check arch with** `sysctl -n hw.optional.arm64`. `uname -m` may lie under Rosetta.

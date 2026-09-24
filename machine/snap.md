@@ -320,6 +320,8 @@ canonical SNAP nodes. Do not export `OPENAI_API_KEY`. Recipe:
 
 ### Valkyrie (Vals evaluation platform CLI)
 
+**Current bootstrap guidance (09-24-2026):** Follow [verified-host bootstrap](../workflows/verified-host-bootstrap.md). Prefer an approved private packet with a pinned, host-local runtime for new setup or cross-platform repair; verify its freshness and each destination. SNAP can distribute private configuration and receipts to authorized laptops without distributing its Linux runtime. The shared-install details below describe the existing legacy route, not proof of compatibility on every host.
+
 - `valkyrie` / `valk` (same tool, two names) installed via `uv tool install git+https://github.com/vals-ai/Valkyrie@prod`
   into DFS: venv at `/dfs/scratch0/<user>/uv/tools/valkyrie`, shims in `/dfs/scratch0/<user>/bin`
   (+ AFS `bin/` mirrors), so every node runs one shared install.

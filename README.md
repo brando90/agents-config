@@ -20,6 +20,8 @@ All agents follow [broad investigation](workflows/broad-investigation.md): proac
 
 For Vals tasks, start with [Valkyrie documentation and diagnosis](workflows/valkyrie.md), which routes to the official overview, benchmark conversion, local development and model-library references. This repository holds public procedures and links; credentials, private setup packets, internal endpoint details and private model aliases stay in authorized host storage.
 
+When an authorized host already works, use [verified-host bootstrap](workflows/verified-host-bootstrap.md). SNAP is the preferred private distribution hub where applicable; Git holds public rules, and each laptop retains a verified private replica and native runtime.
+
 ## The Three-Layer Architecture
 
 ```
@@ -133,6 +135,7 @@ agents-config/
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── broad-investigation.md   ← official-source research, recovery and verified outcomes
+│   ├── verified-host-bootstrap.md ← private configuration reuse and per-host verification
 │   ├── valkyrie.md              ← public Vals references and host/model diagnosis
 │   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
 │   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox

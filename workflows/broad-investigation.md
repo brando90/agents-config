@@ -42,4 +42,6 @@ If work is still blocked, name the failed operation, concrete error and missing 
 
 Record reusable public procedures and official links in agents-config. Keep credentials, private bootstrap packets, internal routing details and private run evidence in the authorized private store. Record dated observations as observations, not permanent availability guarantees. Update both agent entry points when adding an enduring cross-agent rule.
 
+When another authorized machine already works, apply [verified-host bootstrap](verified-host-bootstrap.md) before rebuilding the setup. Reuse its approved portable configuration and evidence, compare freshness, then verify the destination independently.
+
 For Vals work, continue with [Valkyrie documentation and diagnosis](valkyrie.md).

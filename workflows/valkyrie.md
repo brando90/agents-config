@@ -39,6 +39,10 @@ Check command-line interface (CLI) imports, tracker authentication, agent storag
 
 On Macs and Stanford Network Analysis Project (SNAP) hosts, record the actual interpreter, package source and selected absolute paths. A shared installation or credential file does not prove every machine has compatible libraries, network access or permissions. Resolve host-specific dependency failures in an isolated compatible runtime and verify on each target. Follow the relevant [Mac](../machine/mac.md) or [SNAP](../machine/snap.md) instructions for access and installation ownership.
 
+## Reuse a verified configuration hub
+
+Follow [verified-host bootstrap](verified-host-bootstrap.md) when another authorized machine already has working Valkyrie. Prefer the private SNAP distribution store and retain a verified laptop replica. Read the private manifest and compare the actual source configuration with the packet appendix before executing an installer that can replace destination settings. Reuse approved account configuration and package pins; create a native host-local runtime and record that host's checks. Private hub addresses, account settings and receipts stay outside agents-config.
+
 ## Verify model routing and effort
 
 **A public registry and an authenticated deployed catalog can differ.** Inspect the official library, the deployed gateway's documented read-only model/registry endpoints, and the actual uploaded agent contract. Record exact model selector, resolved provider model, effort parameter, fallback behavior and relevant versions in the private experiment record.
