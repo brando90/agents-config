@@ -25,6 +25,10 @@ These rules are duplicated from `~/agents-config/INDEX_RULES.md` so they are vis
 
    Approved example: Experiment 95: 896 VeriBench tasks via Valkyrie; Terminus2 + GPT-6 Luna solver, GPT-6 Sol judge (both high reasoning); results pending.
 
+   **Task titles match copy-ready summaries (Brando, 09-25-2026).** Name each agent/chat/task with the same self-contained, one-sentence summary used in Brando's tracking document: project or experiment identifier, concrete scope/setup (including solver/judge models and effort when relevant), and latest verified outcome or unresolved goal. Keep the identifier first so truncated sidebars remain recognizable. Prefer the full sentence when supported; if a hard title limit applies, preserve identifier, distinguishing setup and status, and keep the full sentence in the task's first summary/checkpoint. Refresh the title when scope or material status changes; never imply the research goal is achieved merely because a run ended. Do not rename unrelated tasks speculatively. Agents own their title updates using their own evidence. Propagate rule changes with one brief notice at the next safe boundary: no worker interruption/restart, repeated acknowledgments, or changes to experiment settings/schedulers.
+
+   Approved title example: Experiment 95: 896 VeriBench tasks via Valkyrie; Terminus2 + GPT-6 Luna solver, GPT-6 Sol judge (both high reasoning); 881 compiled, judging failed, saturation unresolved.
+
 2. **Verification snapshot** — Immediately after `TLDR-end`, append a `**Snapshot:**` block containing the smallest concrete sample of the artifacts produced (normally 5–15 lines; hard cap 25). If there is nothing tangible, say why.
 3. **QA is explicit opt-in** — Run a model-reviewer QA pass only when Brando asks: "do QA" / "light QA" = one opposite-agent round, "mega QA" = the chain. Otherwise verify deterministically (diff, tests, compile, grep) and do not mention QA at all (Brando 09-16-2026). Gold-reference both-family acceptance (Trigger Rule 43) is separate and unchanged.
 4. **No secrets** — Never commit secrets. Review the exact staged diff before pushing.
