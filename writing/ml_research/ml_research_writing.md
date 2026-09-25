@@ -64,6 +64,8 @@ Each point gets 1–2 sentences in the abstract (vs. a full paragraph in the int
 
 > **Reminder:** The labels above (bit flip, etc.) are planning shorthand for you and the agent. In the actual abstract text, write professionally — no jargon, just clear scientific prose.
 
+**Full abstract skill:** the concrete quality bar (~150–200 words, memorable term, "X but only Y" result sentence, "from X to Y" closing, the exact `% CS197 move N: <recipe name> (<bit term>) -- <specific>` label template with `5a`/`5b` splits, and 2–3 alternate openings) lives in [`write-abstract.md`](write-abstract.md). Load it whenever you draft or revise an abstract; this section is only the skeleton.
+
 **LaTeX source-comments rule:** When editing or drafting a `.tex` abstract, add or preserve `% CS197 move ...` comments immediately above the relevant sentences. The comments should identify the problem motivation, prior assumption, bit flip / contribution, instantiation, evaluation, and implication so Brando can inspect the abstract's structure directly in source. These labels are allowed only as `%` comments; never put CS197 jargon in rendered prose.
 
 ### Abstract Tactics (Before → After)

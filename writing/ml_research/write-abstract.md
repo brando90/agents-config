@@ -24,13 +24,15 @@ This skill uses bit-flip vocabulary internally to scaffold the abstract. **Never
 When writing or revising a LaTeX abstract, always add or preserve `% CS197 move ...` comments immediately above the sentences they label. Brando should be able to open the `.tex` file and see what each part of the abstract is doing without reverse-engineering the structure. Use the six-move scaffold as the labels:
 
 ```tex
-% CS197 move 1: problem motivation / failure mode -- <specific problem>.
-% CS197 move 2: set up the bit / prior assumption -- <assumption being challenged>.
-% CS197 move 3: flip the bit / contribution claim -- <new idea>.
-% CS197 move 4: instantiate the bit flip -- <system, mechanism, metric, or benchmark>.
-% CS197 move 5: evaluation -- <headline setup and numbers>.
-% CS197 move 6: implication / north star -- <field-level shift>.
+% CS197 move 1: problem motivation (failure mode) -- <specific problem>.
+% CS197 move 2: assumption (setup bit) -- <assumption being challenged>.
+% CS197 move 3: contribution (bit flip) -- <new idea>.
+% CS197 move 4: instantiation (bit flip instantiation) -- <system, mechanism, metric, or benchmark>.
+% CS197 move 5: evaluation (setup / headline numbers / diagnostic result) -- <headline setup and numbers>.
+% CS197 move 6: implication (north star) -- <field-level shift>.
 ```
+
+Label format (Brando, 09-25-2026): `move N: <recipe name> (<bit term>) -- <what this sentence does>`, so the recipe step and the CS197 term are both visible. Split any move that spans sentences into `4a`/`4b`, `5a`/`5b`/`5c`, and never reuse a bare move number for two sentences. Record in the comment why a wording was chosen when it protects a claim (e.g. "target" instead of "test" when a property is proposed but unmeasured) and the artifact path behind each number.
 
 Split move 5 into `5a`, `5b`, etc. when the abstract separately states the benchmark artifact, metric, headline result, and calibration caveat. Keep these labels in comments only; never put CS197 jargon in rendered prose. If an existing `.tex` abstract lacks the comments, add them. If the prose changes, update the comments so they remain accurate.
 
