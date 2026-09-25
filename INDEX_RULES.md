@@ -340,6 +340,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 - [`workflows/cross-machine-projects.md`](workflows/cross-machine-projects.md) — proposed shared project identity and task catalog across agent tools, accounts, and computers; extends the private agent board with separate coordination controls. Design only, not a new execution policy.
 - [`workflows/broad-investigation.md`](workflows/broad-investigation.md) — cross-agent investigation, official-source research, recovery and evidence before declaring blockers (Trigger Rule 62).
+- [`workflows/codex-connector-tandem.md`](workflows/codex-connector-tandem.md) — verify connectors in the actual desktop, ChatGPT Work or cloud coding runtime; use authorized private data bridges when native tools are absent.
 - [`workflows/verified-host-bootstrap.md`](workflows/verified-host-bootstrap.md) — reuse a verified host, maintain private configuration provenance and replicas, and verify native destination setup (Trigger Rule 62).
 - [`workflows/valkyrie.md`](workflows/valkyrie.md) — public Vals documentation, command/model-routing diagnosis and the boundary between public procedures and private host configuration.
 - [`workflows/qa-correctness.md`](workflows/qa-correctness.md) — QA tiers: deterministic checks (always), reviewer QA and Mega QA (only on request)

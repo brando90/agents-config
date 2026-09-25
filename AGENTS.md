@@ -38,6 +38,8 @@ Follow [Trigger Rule 62](INDEX_RULES.md) and [the broad-investigation workflow](
 
 **Connector fallback:** If a connector fails, is unavailable or uses the wrong account, use available authorized browser or desktop computer-use tools to complete the task. Verify the active account/workspace and outcome; browser access does not prove connector access. Respect tool restrictions and required confirmations. See [broad investigation](workflows/broad-investigation.md).
 
+**Desktop/cloud connector use:** Follow [connector tandem verification](workflows/codex-connector-tandem.md): identify the exact runtime, discover its tools and verify the source account/workspace with a bounded read in each destination. A shared plugin catalog or relaxed permissions does not establish callable tools. When native tools are absent, transfer only authorized source data through a verified private bridge; label imported-data access separately from native connector access, and keep private receipts out of this public repo.
+
 **Reuse verified hosts:** Before rebuilding an integration, inspect an authorized working host and its setup receipt. Follow [verified-host bootstrap](workflows/verified-host-bootstrap.md): prefer Stanford Network Analysis Project (SNAP) for private configuration distribution, retain verified laptop replicas, compare configuration freshness and install/verify each host locally. Shared public rules stay in Git; private material stays in the private store.
 
 ## Research and experiments

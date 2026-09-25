@@ -137,6 +137,7 @@ agents-config/
 │   ├── qa-structural.md         ← structural QA reference (metrics, checks)
 │   ├── expts-and-results.md     ← experiment structure and results reporting
 │   ├── broad-investigation.md   ← official-source research, recovery and verified outcomes
+│   ├── codex-connector-tandem.md ← per-environment connector checks and private data bridges
 │   ├── verified-host-bootstrap.md ← private configuration reuse and per-host verification
 │   ├── valkyrie.md              ← public Vals references and host/model diagnosis
 │   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
