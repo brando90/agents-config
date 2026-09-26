@@ -11,6 +11,10 @@
 
 **Friendly reminder:** Shared behavior changes belong in both `AGENTS.md` (Codex) and `CLAUDE.md` (Claude), regardless of which agent edits them. When configuring a host, verify its actual global instruction files are nonempty and point to the intended content; report the expanded paths and reload status. See [Guideline 16](INDEX_RULES.md#guidelines-best-practices).
 
+## All-host full-access default (Brando, 09-26-2026)
+
+Start and resume every agent for authorized work with supported full access and routine approvals disabled, on local and remote hosts, including interactive, unattended and child sessions. Verify actual client flags and profile settings; prompt text alone does not configure permissions. Codex: `--sandbox danger-full-access --ask-for-approval never`; Claude Code: `--dangerously-skip-permissions`; other clients: their verified documented equivalent. Preserve platform restrictions, task scope, budgets, secrets and shared-system protections. See `~/agents-config/INDEX_RULES.md` Trigger Rule 51 for launch verification and recovery.
+
 ## SNAP full-access pre-approval (Brando, 2026-09-14)
 
 Every agent working on SNAP runs with full access (`clauded`/ccdp, `clauded-vals`/ccdv, `codexd`/codexdp or `codex exec --dangerously-bypass-approvals-and-sandbox`) and never stops to ask permission; Brando pre-approves all task work there. Every SNAP dispatch prompt carries the pre-approval line verbatim; stalled or restricted agents are unblocked or relaunched at once. Budgets, secrets and shared-node safety still apply. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 51.
