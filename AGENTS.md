@@ -119,3 +119,7 @@ Follow `~/agents-config/INDEX_RULES.md` Trigger Rule 52 for every board-visible 
 ## Dates: month-day-year
 
 Names that carry a date (tmux sessions, files, branches) and dates written for Brando (experiment READMEs, `results.md`, `CKPT_<task>.md` stamps, results summaries) use `MM-DD-YYYY`, never year-first; prefer no date in a name when none is needed. Tool-parsed formats (Jekyll posts, ISO 8601 in JSON/logs) and existing names stay unchanged. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 53.
+
+## Texting Brando: WhatsApp first (Trigger Rule 63, Brando 09-27-2026)
+
+When Brando asks you to text him or "text myself", send it to his own WhatsApp chat before SMS or iMessage. Use a route that leaves his Mac alone: your own built-in browser with WhatsApp Web linked, or the WhatsApp desktop app through background computer-use `app_*` tools; never pull an app to the front or take over the screen while he works. Linking WhatsApp Web needs his QR scan, so report that step rather than silently switching channels. If he says email is enough, skip the text. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 63.
