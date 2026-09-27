@@ -366,6 +366,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/codex-connector-tandem.md`](workflows/codex-connector-tandem.md) — verify connectors in the actual desktop, ChatGPT Work or cloud coding runtime; use authorized private data bridges when native tools are absent.
 - [`workflows/verified-host-bootstrap.md`](workflows/verified-host-bootstrap.md) — reuse a verified host, maintain private configuration provenance and replicas, and verify native destination setup (Trigger Rule 62).
 - [`workflows/valkyrie.md`](workflows/valkyrie.md) — public Vals documentation, command/model-routing diagnosis and the boundary between public procedures and private host configuration.
+- [`workflows/jazz-playalongs/README.md`](workflows/jazz-playalongs/README.md) — Brando's jazz play-along audio (Aebersold, Hal Leonard, Snidero): Google Drive is the source of truth; checklist to sync new songs to both Macs, the Pixel and Spotify local files, plus verification scripts. Mirrored to a Google Doc (see its SYNC NOTE).
 - [`workflows/qa-correctness.md`](workflows/qa-correctness.md) — QA tiers: deterministic checks (always), reviewer QA and Mega QA (only on request)
 - [`workflows/qa-structural.md`](workflows/qa-structural.md) — structural QA reference: anti-degradation checks and metrics
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
