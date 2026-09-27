@@ -49,18 +49,38 @@ def evaluate(expr, timeout=120):
             if "exceptionDetails" in r: raise RuntimeError(r["exceptionDetails"])
             return r.get("result", {}).get("value")
 
-def verify(playlist):
-    dev = json.loads(sh(CLI, "devices", "list", "--format", "json"))
-    me = next(d for d in dev["devices"] if d.get("is_self"))
-    subprocess.run([CLI, "play", playlist, "--device", me["device_id"]], capture_output=True, timeout=60)
-    time.sleep(8)
-    np = json.loads(sh(CLI, "now-playing", "--format", "json") or "{}").get("currently_playing", {})
-    pids = sh("pgrep", "-f", "Spotify.app/Contents").split()
-    opened = sorted({l.split(None, 8)[-1] for p in pids for l in sh("lsof", "-p", p).splitlines() if "/Music/" in l and l.strip().endswith((".mp3", ".m4a"))})
+def wait_ready(timeout=90):
+    """Wait until the local Spotify client is up and registered as a Connect device (after a relaunch)."""
+    for _ in range(timeout // 3):
+        try:
+            dev = json.loads(sh(CLI, "devices", "list", "--format", "json"))
+            me = next((d for d in dev["devices"] if d.get("is_self")), None)
+            if me: return me
+        except Exception: pass
+        time.sleep(3)
+    raise SystemExit("Spotify client did not become ready")
+
+def verify(playlist, tries=3):
+    """Play the playlist on THIS Mac and confirm a local file is actually playing (uri spotify:local:, is_playing, file open in lsof)."""
+    me = wait_ready()
+    for attempt in range(tries):
+        subprocess.run([CLI, "play", playlist, "--device", me["device_id"]], capture_output=True, timeout=60)
+        np = {}
+        for _ in range(15):                                   # poll up to ~30 s
+            time.sleep(2)
+            np = json.loads(sh(CLI, "now-playing", "--format", "json") or "{}").get("currently_playing", {}) or {}
+            if np.get("uri", "").startswith("spotify:local:") and np.get("is_playing"): break
+        else:
+            continue                                            # not playing yet: re-issue play
+        pids = sh("pgrep", "-f", "Spotify.app/Contents").split()
+        opened = sorted({l.split(None, 8)[-1] for p in pids for l in sh("lsof", "-p", p).splitlines()
+                         if "/Music/" in l and l.rstrip().endswith((".mp3", ".m4a"))})
+        subprocess.run([CLI, "pause"], capture_output=True, timeout=30)
+        print(f"verify (attempt {attempt+1}): now-playing={np.get('description')!r} uri={np.get('uri','')[:70]} is_playing={np.get('is_playing')} | local files open: {len(opened)} e.g. {opened[-1:]}")
+        ok = bool(opened)
+        print("VERIFY PASS" if ok else "VERIFY FAIL"); return ok
     subprocess.run([CLI, "pause"], capture_output=True, timeout=30)
-    ok = np.get("uri", "").startswith("spotify:local:") and np.get("is_playing") and bool(opened)
-    print(f"verify: now-playing={np.get('description')!r} uri={np.get('uri','')[:70]} is_playing={np.get('is_playing')} | file open: {opened[:1]}")
-    print("VERIFY PASS" if ok else "VERIFY FAIL"); return ok
+    print(f"verify: playback never reported a playing local track after {tries} attempts; last now-playing={np}"); print("VERIFY FAIL"); return False
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--folder", default="~/Music/Spotify Local Files")
@@ -79,7 +99,7 @@ def main():
     src = evaluate("(async () => await window.__lfapi.getSources())()")
     n = evaluate("(async () => (await window.__lfapi.getTracks()).length)()")
     print(f"sources: {src} | indexed local tracks: {n}")
-    spotify_quit(); subprocess.run(["open", "-g", "-a", "Spotify"]); time.sleep(12)
+    spotify_quit(); subprocess.run(["open", "-g", "-a", "Spotify"])
     sys.exit(0 if verify(a.playlist) else 1)
 
 if __name__ == "__main__": main()
