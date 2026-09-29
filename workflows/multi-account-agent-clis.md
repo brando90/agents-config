@@ -144,12 +144,18 @@ has no such race — use it when a node must run unattended for a long time.
 | `scripts/su_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Claude wrapper |
 | `scripts/push_claude_su_snap.sh` | mac | Pushes the grant, runs the installer, installs dispatchers, smoke-tests each node |
 | `scripts/test_su_wrappers.py` | mac | Unit-tests the generated Claude wrapper: argument forwarding, the yolo flag, and that every bad-grant case fails closed (`python3 scripts/test_su_wrappers.py`) |
+| `scripts/setup_personal_token.sh` | mac | Runs `claude setup-token` for the personal account in a 1000-column pty (a wrapped token is silently truncated) and saves it, mode 600, to `~/keys/claude_personal_oauth_token.txt` without echoing it |
+| `scripts/install_personal_node.sh` | node | Node-local runtime + `claude-personal` / `clauded-personal` wrappers reading the personal grant `/dfs/scratch0/brando9/.claude-personal-remote/oauth-token` |
+| `scripts/personal_remote_entry.sh` | DFS | Shared dispatcher installed as `clauded`, `clauded-personal` and `claude-personal` |
+| `scripts/push_claude_personal_snap.sh` | mac | Pushes the personal grant, installs every node, repoints `/dfs/.../bin/clauded` (old one kept as `clauded.pre-personal-09-29-2026`), smoke-tests Fable 5.1 |
 | `scripts/install_codex_su_node.sh` | node | Node-local `CODEX_HOME` + `codex-su` / `codexd-su` wrappers |
 | `scripts/codex_su_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Codex wrapper |
 | `scripts/push_codex_su_snap.sh` | mac | Runs the installer, ships auth (or prints the device-login command), verifies each node |
 | `scripts/install_codex_vals_node.sh` | node | Node-local `CODEX_HOME=~/.codex-vals` + `codex-vals` / `codexd-vals` wrappers |
 | `scripts/codex_vals_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Vals Codex wrapper |
 | `scripts/push_codex_vals_snap.sh` | mac | Runs the installer, ships Vals `auth.json` (or prints the device-login command), verifies each node |
+
+**Personal profile on SNAP (Brando, 09-29-2026: "All the cli's in snap should be using my personal login").** SNAP's `clauded` runs on the personal account (`brandojazz@gmail.com`), which has Claude Fable 5.1; all five nodes answered a Fable smoke test. The payer-named profiles `clauded-su` and `clauded-vals` stay on their own accounts, because experiment receipts use those names as payer labels and experiment calls must never silently move to a personal subscription. Default SNAP workers to `clauded`.
 
 The Vals equivalents (`install_vals_node.sh`, `push_claude_vals_creds.sh`, `setup_claude_vals_snap.sh`,
 `vals_remote_entry.sh`) are the same shape; the Vals driver pushes the Keychain credential JSON
