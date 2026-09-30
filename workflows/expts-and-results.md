@@ -333,29 +333,28 @@ Experiment-folder Markdown reports are sufficient for partial progress and compl
 
 - **1-3 sentence finding at the top.** Every results summary starts with a TL;DR of the key finding before tables or details.
 - **Record exact model IDs** used in the results summary for reproducibility (e.g., `claude-opus-4-6`, `gpt-5.4`).
-- **Agreement, correlation and variability statistics:** follow the checklist below whenever a score is compared with a reference.
+- **Judge or proxy validation against human labels:** use the checklist below. Other experiments (training, reinforcement learning, benchmarks) report what Hard Rule 11 asks from the data they already have.
 
 
-### Agreement and variability statistics
 
-Use this whenever a score is compared with a reference: an LLM judge or proxy metric against human ratings, a predictor against observed outcomes, or one scorer against another. Rank and linear correlations do not change under a constant offset or a rescaling, so on their own they cannot show that a score reads systematically high or low.
+### Judge-human agreement checklist
 
-| Question | Report | Notes |
+Use this when validating an LLM judge, proxy metric or other scorer against human labels or ground truth. **Free** rows are post-processing on scores already collected (seconds of CPU, no model calls): compute them. **Costly** rows need extra scorer calls or raters: include them only when the experiment's protocol and budget already provide them, otherwise write "not measured". Never add calls, repeats or raters just to fill this table; propose them as a budgeted protocol change.
+
+| Question | Report | Cost |
 |---|---|---|
-| Same ordering? | Spearman ρ; Kendall τ-b | (1 + τ)/2 is about the chance that a random pair is ordered like the reference |
-| Linear tracking? | Pearson r; r² | Blind to offset and scale |
-| Right level? | ICC(A,1) or Lin's concordance; mean absolute error; mean bias (score − reference) | Required when a value is read on its own: a level, threshold, "saturated", or a mapped scale. Put ICC(C,1) beside ICC(A,1); the gap is the offset. Weighted Cohen's κ for ordinal labels |
-| Binary or categorical labels? | Cell counts, accuracy, precision, recall, Cohen's κ; AUROC for a score against binary labels | Give base rates |
-| How sure? | 95% bootstrap interval resampling the independent unit; item and cluster counts; draws and seed | Resample tasks, not items within a task |
-| How noisy is the scorer? | Repetition count; SD across raw repeats; repeatability of the aggregate (test–retest ICC or SD of aggregated scores) | State what was aggregated and how |
-| What is achievable? | The same statistics between reference raters (inter-rater, leave-one-rater-out) | The ceiling for any judge |
-| Is a difference real? | Paired difference on the shared units, with its interval (and p-value) | Not two separately averaged means |
-| Floor or ceiling effects? | Mean, SD, interval, and fractions at the floor and ceiling | A saturation claim needs the ceiling fraction |
+| Same ordering? | Spearman ρ; Kendall τ-b ((1 + τ)/2 ≈ chance a random pair is ordered like the reference) | Free |
+| Linear tracking? | Pearson r (r² optional) | Free |
+| Right level? Needed when a value is read on its own (a level, threshold, "saturated", a mapped scale) | ICC(A,1) with ICC(C,1) beside it (the gap is the offset), or mean absolute error with mean bias (score − reference); weighted Cohen's κ for ordinal labels | Free |
+| Binary labels? | Cell counts, accuracy, precision, recall, Cohen's κ; AUROC for a score against binary labels; base rates | Free |
+| How sure? | 95% bootstrap interval resampling the independent unit (tasks, not items within a task); counts, draws, seed | Free |
+| Is a difference real? | Paired difference on shared units, with its interval | Free |
+| Scorer noise? | Repetition count; SD across raw repeats; repeatability of the aggregate | Costly: k× scorer calls |
+| Achievable ceiling? | The same statistics between human raters (inter-rater, leave-one-rater-out) | Costly: at least two raters on the same items |
 
-- **Prespecify.** Fix the headline statistic, thresholds and subsets (for example excluding degenerate items) before seeing results. Report every prespecified statistic even when it is unflattering; label later additions post hoc and never swap them in for a prespecified one.
-- **Keep splits apart.** Numbers used for selection (train, validation) are not test evidence.
-- **Match the claim to the evidence.** Rank statistics support "A ranks above B". A level claim ("0.96 coverage", "saturated") needs absolute agreement on data like the evaluated data, or an explicitly fitted mapping reported with its range limits.
-- **Mark missing statistics unavailable,** never estimated.
+- **Prespecify** the headline statistic, thresholds and subsets before seeing results. Report every prespecified statistic even when unflattering; label later additions post hoc.
+- **Keep splits apart:** numbers used for selection (train, validation) are not test evidence.
+- **Match the claim to the evidence:** rank statistics support "A ranks above B"; a level claim needs absolute agreement on data like the evaluated data, or an explicitly fitted mapping with its range limits.
 
 ---
 
