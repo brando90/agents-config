@@ -333,37 +333,9 @@ Experiment-folder Markdown reports are sufficient for partial progress and compl
 
 - **1-3 sentence finding at the top.** Every results summary starts with a TL;DR of the key finding before tables or details.
 - **Record exact model IDs** used in the results summary for reproducibility (e.g., `claude-opus-4-6`, `gpt-5.4`).
-- **Judge or proxy validation against human labels:** use the checklist below. Other experiments (training, reinforcement learning, benchmarks) report what Hard Rule 11 asks from the data they already have.
+- **Statistics:** report what [`statistics-reporting.md`](statistics-reporting.md) asks: Hard Rule 11's cheap global minimum for every experiment, and its judge-human agreement checklist when validating a judge or proxy against human labels.
 
 
-
-### Judge-human agreement checklist
-
-Use this when validating an LLM judge, proxy metric or other scorer against human labels or ground truth. **Free** rows are post-processing on scores already collected (seconds of CPU, no model calls): compute them. **Costly** rows need extra scorer calls or raters: include them only when the experiment's protocol and budget already provide them, otherwise write "not measured". Never add calls, repeats or raters just to fill this table; propose them as a budgeted protocol change.
-
-| Question | Report | Cost |
-|---|---|---|
-| Same ordering? | Spearman ρ; Kendall τ-b ((1 + τ)/2 ≈ chance a random pair is ordered like the reference) | Free |
-| Linear tracking? | Pearson r (r² optional) | Free |
-| Right level? Needed when a value is read on its own (a level, threshold, "saturated", a mapped scale) | ICC(A,1) with ICC(C,1) beside it (the gap is the offset), or mean absolute error with mean bias (score − reference); weighted Cohen's κ for ordinal labels | Free |
-| Binary labels? | Cell counts, accuracy, precision, recall, Cohen's κ; AUROC for a score against binary labels; base rates | Free |
-| How sure? | 95% bootstrap interval resampling the independent unit (tasks, not items within a task); counts, draws, seed | Free |
-| Is a difference real? | Paired difference on shared units, with its interval | Free |
-| Scorer noise? | Repetition count; SD across raw repeats; repeatability of the aggregate | Costly: k× scorer calls |
-| Achievable ceiling? | The same statistics between human raters (inter-rater, leave-one-rater-out) | Costly: at least two raters on the same items |
-
-- **ICC notation.** Use ICC(A,1) for one judge or proxy score against the reference; Shrout–Fleiss call the same statistic ICC(2,1). ICC(C,1) is their ICC(3,1). ICC(A,k), their ICC(2,k), is the reliability of an average of k ratings: use it for an averaged human reference (for example the mean of three experts), never for judge-versus-reference agreement, where it overstates agreement (VeriBench test items: ICC(A,1) 0.727 against ICC(A,2) 0.842).
-- **Reuse existing data cheaply and honestly** to measure uncertainty and variance:
-  - bootstrap intervals and permutation tests that resample the independent unit (tasks, seeds or raters, not correlated items within them): free;
-  - statistics over repeats already made, such as per-pass agreement and its SD, or test–retest ICC: free;
-  - paired comparisons on the same units, which remove shared noise: free;
-  - pooling held-out sets or cross-validating over all labels, only when prespecified; cross-validation is free when selection outputs are cached and costs calls when selection must be rerun per fold;
-  - controlled perturbations with a known answer (for example deleting half of a reference's obligations): costs scorer calls, no raters.
-
-  Never treat correlated items as independent, present model-generated labels as human, tune on test data, or report the best of several analyses without saying so.
-- **Prespecify** the headline statistic, thresholds and subsets before seeing results. Report every prespecified statistic even when unflattering; label later additions post hoc.
-- **Keep splits apart:** numbers used for selection (train, validation) are not test evidence.
-- **Match the claim to the evidence:** rank statistics support "A ranks above B"; a level claim needs absolute agreement on data like the evaluated data, or an explicitly fitted mapping with its range limits.
 
 ---
 
