@@ -333,7 +333,29 @@ Experiment-folder Markdown reports are sufficient for partial progress and compl
 
 - **1-3 sentence finding at the top.** Every results summary starts with a TL;DR of the key finding before tables or details.
 - **Record exact model IDs** used in the results summary for reproducibility (e.g., `claude-opus-4-6`, `gpt-5.4`).
-- **Include correlation metrics** where applicable: Pearson r, Spearman ρ, Kendall τ, R², ICC.
+- **Agreement, correlation and variability statistics:** follow the checklist below whenever a score is compared with a reference.
+
+
+### Agreement and variability statistics
+
+Use this whenever a score is compared with a reference: an LLM judge or proxy metric against human ratings, a predictor against observed outcomes, or one scorer against another. Rank and linear correlations do not change under a constant offset or a rescaling, so on their own they cannot show that a score reads systematically high or low.
+
+| Question | Report | Notes |
+|---|---|---|
+| Same ordering? | Spearman ρ; Kendall τ-b | (1 + τ)/2 is about the chance that a random pair is ordered like the reference |
+| Linear tracking? | Pearson r; r² | Blind to offset and scale |
+| Right level? | ICC(A,1) or Lin's concordance; mean absolute error; mean bias (score − reference) | Required when a value is read on its own: a level, threshold, "saturated", or a mapped scale. Put ICC(C,1) beside ICC(A,1); the gap is the offset. Weighted Cohen's κ for ordinal labels |
+| Binary or categorical labels? | Cell counts, accuracy, precision, recall, Cohen's κ; AUROC for a score against binary labels | Give base rates |
+| How sure? | 95% bootstrap interval resampling the independent unit; item and cluster counts; draws and seed | Resample tasks, not items within a task |
+| How noisy is the scorer? | Repetition count; SD across raw repeats; repeatability of the aggregate (test–retest ICC or SD of aggregated scores) | State what was aggregated and how |
+| What is achievable? | The same statistics between reference raters (inter-rater, leave-one-rater-out) | The ceiling for any judge |
+| Is a difference real? | Paired difference on the shared units, with its interval (and p-value) | Not two separately averaged means |
+| Floor or ceiling effects? | Mean, SD, interval, and fractions at the floor and ceiling | A saturation claim needs the ceiling fraction |
+
+- **Prespecify.** Fix the headline statistic, thresholds and subsets (for example excluding degenerate items) before seeing results. Report every prespecified statistic even when it is unflattering; label later additions post hoc and never swap them in for a prespecified one.
+- **Keep splits apart.** Numbers used for selection (train, validation) are not test evidence.
+- **Match the claim to the evidence.** Rank statistics support "A ranks above B". A level claim ("0.96 coverage", "saturated") needs absolute agreement on data like the evaluated data, or an explicitly fitted mapping reported with its range limits.
+- **Mark missing statistics unavailable,** never estimated.
 
 ---
 
