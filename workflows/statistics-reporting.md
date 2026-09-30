@@ -62,7 +62,7 @@ The judge was selected by validation Spearman and then tested once on 30 held-ou
 | Spearman ρ [95% task bootstrap] | 0.826 [0.316, 0.966] | Ranks outputs like experts, with a wide interval (10 tasks) |
 | Kendall τ-b | 0.698 | About 85% of pairs ordered like the experts |
 | Pearson r | 0.858 | Tracks experts along a line |
-| ICC(C,1) | 0.851 | High consistency, ignoring offset |
+| ICC(C,1) | 0.852 | High consistency, ignoring offset |
 | **ICC(A,1)** | **0.727** | Lower: the level is off |
 | Mean absolute error / mean bias | 0.201 / +0.181 | The judge reads about 0.18 above the experts |
 | ICC(A,2), for contrast | 0.842 | Overstates agreement; not the right statistic here |
