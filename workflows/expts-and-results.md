@@ -352,6 +352,15 @@ Use this when validating an LLM judge, proxy metric or other scorer against huma
 | Scorer noise? | Repetition count; SD across raw repeats; repeatability of the aggregate | Costly: k× scorer calls |
 | Achievable ceiling? | The same statistics between human raters (inter-rater, leave-one-rater-out) | Costly: at least two raters on the same items |
 
+- **ICC notation.** Use ICC(A,1) for one judge or proxy score against the reference; Shrout–Fleiss call the same statistic ICC(2,1). ICC(C,1) is their ICC(3,1). ICC(A,k), their ICC(2,k), is the reliability of an average of k ratings: use it for an averaged human reference (for example the mean of three experts), never for judge-versus-reference agreement, where it overstates agreement (VeriBench test items: ICC(A,1) 0.727 against ICC(A,2) 0.842).
+- **Reuse existing data cheaply and honestly** to measure uncertainty and variance:
+  - bootstrap intervals and permutation tests that resample the independent unit (tasks, seeds or raters, not correlated items within them): free;
+  - statistics over repeats already made, such as per-pass agreement and its SD, or test–retest ICC: free;
+  - paired comparisons on the same units, which remove shared noise: free;
+  - pooling held-out sets or cross-validating over all labels, only when prespecified; cross-validation is free when selection outputs are cached and costs calls when selection must be rerun per fold;
+  - controlled perturbations with a known answer (for example deleting half of a reference's obligations): costs scorer calls, no raters.
+
+  Never treat correlated items as independent, present model-generated labels as human, tune on test data, or report the best of several analyses without saying so.
 - **Prespecify** the headline statistic, thresholds and subsets before seeing results. Report every prespecified statistic even when unflattering; label later additions post hoc.
 - **Keep splits apart:** numbers used for selection (train, validation) are not test evidence.
 - **Match the claim to the evidence:** rank statistics support "A ranks above B"; a level claim needs absolute agreement on data like the evaluated data, or an explicitly fitted mapping with its range limits.
