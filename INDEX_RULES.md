@@ -394,3 +394,5 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`writing/blog/rules.md`](writing/blog/rules.md) — compact non-negotiable checklist for Brando-style personal blog posts. **Loaded by Trigger Rule 25** when drafting / revising personal blog posts.
 - [`writing/blog/blog_writing.md`](writing/blog/blog_writing.md) — full Brando personal blog voice and structure guide based on recent posts in `~/brandomiranda/`. **Loaded by Trigger Rule 25**.
 - [`writing/blog/write-blog-post.md`](writing/blog/write-blog-post.md) — reusable skill for converting rough idea dumps into polished personal blog drafts or edit-in-place revisions. **Loaded by Trigger Rule 25**.
+
+**Event and Project File Organization (Brando, 10-01-2026).** Keep all artifacts (scripts, images, generated PDFs, READMEs, promo material) for a given event or project together in a single canonical folder (e.g., `events/<event-name>/`). Do not split outputs by file type into separate `output/pdf/` or `output/images/` directories. Colocation reduces confusion.

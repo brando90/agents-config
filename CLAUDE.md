@@ -94,3 +94,7 @@ Names that carry a date (tmux sessions, files, branches) and dates written for B
 ## Texting Brando: WhatsApp first (Trigger Rule 63, Brando 09-27-2026)
 
 When Brando asks you to text him or "text myself", send it to his own WhatsApp chat before SMS or iMessage. Use a route that leaves his Mac alone: your own built-in browser with WhatsApp Web linked, or the WhatsApp desktop app through background computer-use `app_*` tools; never pull an app to the front or take over the screen while he works. Linking WhatsApp Web needs his QR scan, so report that step rather than silently switching channels. If he says email is enough, skip the text. Full rule: `~/agents-config/INDEX_RULES.md` Trigger Rule 63.
+
+## Project and Event File Organization (Brando, 10-01-2026)
+
+Keep all artifacts (scripts, images, generated PDFs, READMEs, promo material) for a given event or project together in a single folder (e.g., `events/<event-name>/`). Do not split outputs by file type into separate `output/pdf/` or `output/images/` directories. Colocation reduces confusion.
