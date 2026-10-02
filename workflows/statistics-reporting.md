@@ -68,3 +68,24 @@ The judge was selected by validation Spearman and then tested once on 30 held-ou
 | ICC(A,2), for contrast | 0.842 | Overstates agreement; not the right statistic here |
 
 Pearson, Spearman and Kendall alone would have shown a strong judge. Only the absolute-agreement statistics showed that its raw scores run about 0.18 high. The paper therefore claims that the judge's rankings are validated, and reports levels beside a fitted expert-scale mapping with its range limit. Every statistic above was computed from scores already collected; none needed a new call.
+
+## Canonical example of a results summary item (Brando, 10-02-2026)
+
+Every results summary Brando reads (weekly updates, experiment `results.md` headlines, chat replies about a result) is written at this level of detail and in this shape: the project tag in bold; one line stating the hypothesis being de-risked as a question plus "Measured via <metric>"; then bold-labelled bullets in this order where they apply: the old or baseline result with the instrument named; the judge or measuring instrument with its agreement on the train, val and test splits, each with n and `x [lo, hi]` intervals; the new results, one line per system; a "Saturated?" (or "Verdict?") bullet that reads the numbers against the pre-declared threshold and names what the instrument has not been shown to do; and a "Next step" bullet. Remarks go as numbered sub-items under the bullet they qualify. Every interval is `x [lo, hi]` with `p-val=Z` naming the test, or `p-val=n/a`; mean bias is judge minus human with the split named. Brando's own final version of the first item, kept as the reference:
+
+> 1. **vbv1 (public paper)**. Hypothesis being de-risked: when the models create the trust artifacts (tests & formal specs/unproved thms), are they "correct" i.e. the intended f-specs? Measured via Formal Spec Coverage (FSC with an AI judge, prev TE1/TC) score:
+>    - **May Result**: the "unsaturated" FSC coverage reported in May was 0.102 with a ("unvalidated") Claude Sonnet 4.6. The r=0.7 codex isotonic judge that was validated to humans was not used to score unfortunately.
+>      1. remark: Amy's detected sorry bug did not affect old FSC coverage: the FSC judge seems proof-invariant (shift +0.002 [-0.021, +0.027], p-val=1.00, Wilcoxon).
+>    - **New Judge**: GPT-6 Sol + Claude Opus 5.5 ensemble with human's rating instructions, validated/correlated against human ratings on the test split (30 rated candidate files, 10 problems = 3x10).
+>      1. Train (n=30=3x10): Spearman 0.64 [0.25, 0.91], Pearson 0.66 [0.16, 0.92], ICC(A,1) 0.64 [0.14, 0.89]. 95% task-bootstrap CIs
+>      2. Val (n=15=3x5, used to select the judge): Spearman 0.87 [0.70, 1.00] (0.88 with ties preserved), Pearson 0.86 [0.77, 1.00], ICC(A,1) 0.82 [0.48, 0.92]
+>      3. Test (n=30=3x10): Spearman 0.83 [0.32, 0.97], Pearson 0.86 [0.71, 0.94], ICC(A,1) 0.73 [0.39, 0.89], repeat SD 0.02; p-val=n/a (the pre-registered gate was the CI lower bound, not a test)
+>    - **New Sept Results** (fixed setting: agents must attempt every proof, sorry earns zero in IC_proofs):
+>      1. Claude Code (Opus 5) FSC 0.956 [0.946, 0.964],
+>      2. Codex (GPT-5.6 Sol) 0.897 [0.881, 0.913];
+>      3. tests-pass and theorems-proved 0.98 to 1.00; overall SCSC 0.970 vs 0.963, a tie (difference +0.007 [-0.003, +0.015], p-val=0.15, paired task bootstrap). CIs are task bootstraps (10,000 draws) over this one run.
+>    - **Saturated?** Arguably yes on the judge's scale (both FSC CIs lie above the 0.8 line, one-sided p-val<0.025); but this judge has not been shown to generalize to unseen agents or at least be trustworthy/validated on frontier models (the two above being reported)
+>      1. remarks: the judge has a mean bias (= judge - human) of +0.18 on the test split (means 0.65 vs 0.47) and +0.10 on the val split, so it's more lenient than our human pool.
+>    - **Next step**: A fresh human rating round on 2026 agents (Claude Code + Fable 5.1, Codex + GPT-6 Astra, Qwen 3.8 Max) needed cuz the judge hasn't been shown to work on that case formally or generalize (either minimum for paper but generalize would be nicer).
+
+Sources for the numbers: VeriBench `experiments/100_karpathy_recipe_tc_judge_search_human_train_val_test/results/ensembles/{train,val,test}_H2_sol_plus_H2_opus.json`, `experiments/102_rescore_vbv1_paper_fsc_with_validated_judge_rewrite_tmlr_icml/results.md`, `experiments/105_fsc_judge_proof_invariance_same_statements_with_vs_without_proofs/results.md`.
