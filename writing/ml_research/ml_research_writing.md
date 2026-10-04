@@ -244,6 +244,7 @@ Brando reads, edits, and cites the working paper by source line, so every `.tex`
 - **Cut filler** — remove "It is worth noting that," "In this paper, we," "It should be noted."
 - **Avoid orphan references** — don't start sentences with bare citations like "[23] shows..."
 - **Use `~` (non-breaking space)** before `\cite{}` and `\ref{}`: `Section~\ref{sec:method}`.
+- **Conclusion-first figure and table captions (Brando, 10-04-2026).** Open each paper caption with one concise, bold sentence stating the evidence-supported conclusion: `\caption{\textbf{Supported conclusion.} Remaining details.}` Use normal weight for the setup, panel/axis/legend definitions, sample sizes, uncertainty, and caveats needed to interpret the figure or table on its own. For descriptive or conceptual figures, state the precise takeaway or mechanism instead of inventing an empirical conclusion. Use ordinary sentence capitalization; do not bold the entire caption.
 
 ---
 
