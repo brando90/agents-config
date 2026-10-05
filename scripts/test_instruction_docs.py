@@ -57,6 +57,19 @@ class InstructionDocsTests(unittest.TestCase):
         self.assertTrue(any('missing link' in e for e in errors))
         self.assertTrue(any('missing anchor' in e for e in errors))
 
+    def test_swapped_numbered_routes_are_detected(self):
+        p = self.root / 'INDEX_RULES.md'
+        text = p.read_text().replace('[trigger 46]', '[46]').replace('[trigger 51]', '[51]')
+        text = text.replace('#trigger-rule-46)', '#trigger-rule-TEMP)').replace('#trigger-rule-51)', '#trigger-rule-46)').replace('#trigger-rule-TEMP)', '#trigger-rule-51)')
+        p.write_text(text)
+        errors = self.errors()
+        self.assertIn('Index label 46 points to trigger rule 51', errors)
+        self.assertIn('Index label 51 points to trigger rule 46', errors)
+
+    def test_missing_index_reports_a_check_failure(self):
+        (self.root / 'INDEX_RULES.md').unlink()
+        self.assertIn('Missing startup file: INDEX_RULES.md', self.errors())
+
     def test_example_links_and_remote_links_are_not_local_files(self):
         (self.root / 'CATALOG.md').write_text('# Catalog\n```md\n[example](not-here.md)\n```\n[web](https://example.org/x)\n')
         self.assertEqual(self.errors(), [])

@@ -225,7 +225,8 @@ claude remote-control
 <a id="codex--no-rc-equivalent-use-tmux"></a>
 ### Codex remote interaction and durable execution
 
-The earlier claim that Codex has no Remote Control equivalent is retired.
+The earlier claim that Codex has no Remote Control equivalent is retired;
+see [official Codex Remote documentation](https://learn.chatgpt.com/docs/remote).
 For current host setup, use [the maintained Mac guide](../machine/mac.md) and
 [remote dispatch workflow](../workflows/remote-job-dispatch.md). Inspect the actual
 client's supported tools and current official documentation before selecting
@@ -258,8 +259,8 @@ RC can fail silently for several reasons. Use this diagnostic sequence:
 **1. Check env vars in your current shell:**
 
 ```bash
-echo "TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-NOT_SET}"
-echo "API_KEY=${ANTHROPIC_API_KEY:-NOT_SET}"
+test -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" && echo "TOKEN=unset" || echo "TOKEN=set"
+test -z "${ANTHROPIC_API_KEY:-}" && echo "API_KEY=unset" || echo "API_KEY=set"
 claude auth status --text
 ```
 

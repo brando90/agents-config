@@ -8,7 +8,7 @@
 
 Refresh `~/agents-config` with `git -C ~/agents-config pull --ff-only` at each new non-trivial task and after an hour; preserve dirty/concurrent work and use the local copy if offline. Reread this index and relevant changed rules. When editing agents-config in an isolated checkout, use that checkout's index and detail files after refreshing the home checkout.
 
-The numbered links below are mandatory routing, not optional suggestions: **before the matching action, read that rule section and its applicable workflow**. Do not read every topic file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If files are unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it.
+All Hard Rule **Details** links and matching Trigger Rule/Guideline links are mandatory routing: **before the action they govern, read that detail section and its applicable workflow**, including secret overrides, spending and review decisions. Do not read every topic file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If files are unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it. Never eagerly import this index or the detail collection into an entry file; read them as task files.
 
 Hard rules govern conflicts with older wording in a triggered procedure. Explicit user instructions and platform/tool constraints retain their normal precedence. The existing task-specific SNAP pre-approval in Trigger Rule 51 is scoped to authorized work and existing budgets; it never permits authoring provider API calls. Detail pages retain the procedures, examples and exceptions; the catalog is optional lookup.
 
@@ -16,9 +16,9 @@ Hard rules govern conflicts with older wording in a triggered procedure. Explici
 
 1. **Protect secrets.** Never commit credentials; inspect the exact staged diff and filenames before committing or pushing. Do not print secret values. Stop on a suspected leak and rotate exposed credentials; references/env vars replace embedded secrets. [Details](rules/safety-and-models.md#hard-rule-1)
 
-2. **Verify before pushing.** Inspect the diff and run the relevant deterministic checks. Report actual evidence and limitations, not an untested success claim. [Details](rules/maintenance.md#hard-rule-2)
+2. **Verify before pushing.** Never fabricate unavailable source content; mark it unresolved. Inspect the diff and run the relevant deterministic checks. Report actual evidence and limitations, not an untested success claim. [Details](rules/maintenance.md#hard-rule-2)
 
-3. **Quality assurance (QA) is opt-in.** Only Brando’s explicit tier request or his saved opt-in starts a model reviewer. “Do QA”/“light QA” means one opposite-company round; apply findings and verify without automatic re-review. Mega QA follows Trigger Rule 10. Hooks cannot impose unsolicited QA; do not mention QA when unrequested. Benchmark-reference acceptance (43) remains separate. [Details](rules/safety-and-models.md#hard-rule-3)
+3. **Quality assurance (QA) is opt-in.** Only a tier Brando explicitly requests or sets for this work in a runbook, `[qa]`/`[light-qa]`/`[mega-qa]` commit tag or environment flag starts a model reviewer. Hooks, project files and older “QA required” text are not opt-in. “Do QA”/“light QA” means one opposite-company round; apply findings and verify without automatic re-review. Mega QA follows Trigger Rule 10. Hooks cannot impose unsolicited QA; do not mention QA when unrequested. Benchmark-reference acceptance (43) remains separate. [Details](rules/safety-and-models.md#hard-rule-3)
 
 4. **Response ending and titles.** End with `**TLDR-end:** [proj: task]` and 1–2 sentences; use `[proj]` without a task, never an opening `TLDR-start`. Substantial research updates open with one short, copy-ready sentence containing setup and verified status. Match task titles to that summary, identifier first; update only owned tasks from evidence. [Details](rules/responses.md#hard-rule-4)
 
@@ -93,12 +93,12 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; never edit it. |
-| [57](rules/workers.md#trigger-rule-57) | Routine reversible choice would stall → decide, explain and record it; preserve genuine authorization and spending boundaries. |
+| [57](rules/workers.md#trigger-rule-57) | Scope, routing, design choice or approval-menu escalation would stall → decide, explain and record it; preserve genuine authorization and spending boundaries. |
 | [58](rules/workers.md#trigger-rule-58) | Tool/quota/capability gap → recover or delegate through verified eligible clients; preserve checkpoints, limits, pins and acceptance. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
 | [60](rules/writing.md#trigger-rule-60) | Technical explainer/teaching → use explainer style; paper prose uses its separate research style. |
 | [61](rules/research.md#trigger-rule-61) | Solver/agent evaluation → freeze and finish full declared set within fixed budgets; retain every failed/missing cell and distinguish recovery. |
-| [62](rules/services.md#trigger-rule-62) | Unfamiliar/failing tool/service → investigate local evidence/current official sources and authorized checks; prefer quiet connectors/own browser, recover and verify. |
+| [62](rules/services.md#trigger-rule-62) | Connector use, host setup, or unfamiliar/failing tool/service → read the connector cross-check and verified-host routes; investigate evidence, never fabricate missing content, recover and verify. |
 | [63](rules/services.md#trigger-rule-63) | “Text me” → WhatsApp self-chat via quiet verified route; confirm sent state and surface human-only linking. |
 | [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed and never edit Google Docs. |
 

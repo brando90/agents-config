@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BUDGETS = {
     'AGENTS.md': (6144, 1000, 200),
     'CLAUDE.md': (6144, 1000, 200),
-    'INDEX_RULES.md': (24576, 3200, 250),
+    'INDEX_RULES.md': (22528, 3200, 250),
 }
 EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 65)),
             'guideline': set(range(14, 25))}
@@ -66,7 +66,16 @@ def check(root=ROOT):
         bodies = [re.sub(r'(?m)^\*\*Doc link:\*\*.*$', '', p.read_text()) for p in entries]
         if bodies[0] != bodies[1]:
             errors.append('AGENTS.md and CLAUDE.md shared content differs')
-    index = (root / 'INDEX_RULES.md').read_text()
+    index_path = root / 'INDEX_RULES.md'
+    if not index_path.is_file():
+        return errors, counts, 0, 0
+    index = index_path.read_text()
+    for label, kind, number in re.findall(r'\[(\d+)\]\(rules/[^)]+#(trigger|guideline)-rule-(\d+)\)', index):
+        if label != number:
+            errors.append(f'Index label {label} points to {kind} rule {number}')
+    for label, number in re.findall(r'^(\d+)\. .*?\[Details\]\(rules/[^)]+#hard-rule-(\d+)\)', index, re.M):
+        if label != number:
+            errors.append(f'Hard Rule label {label} points to rule {number}')
     seen = {kind: set() for kind in EXPECTED}
     rule_files = sorted((root / 'rules').glob('*.md'))
     for path in rule_files:
@@ -82,7 +91,7 @@ def check(root=ROOT):
         if seen[kind] != expected:
             errors.append(f'{kind} coverage mismatch: missing={sorted(expected-seen[kind])}, extra={sorted(seen[kind]-expected)}')
     paths = entries + [root / 'INDEX_RULES.md', root / 'CATALOG.md'] + rule_files
-    paths += [root / p for p in ('README.md', 'docs/setup-reference.md', 'docs/reference/background.md', 'workflows/repo-init.md', 'workflows/question-screenshot-ingest.md') if (root / p).is_file()]
+    paths += [root / p for p in ('README.md', 'docs/setup-reference.md', 'docs/reference/background.md', 'workflows/repo-init.md', 'workflows/question-screenshot-ingest.md', 'workflows/broad-investigation.md', 'machine/snap-init.md') if (root / p).is_file()]
     paths += sorted((root / 'docs/instruction-audit').glob('*.md'))
     link_count = 0
     for path in paths:

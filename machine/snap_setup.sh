@@ -54,7 +54,16 @@ ln -sf "$HOME/agents-config/AGENTS.md" "$HOME/agents.md"
 # ---- Symlink ~/.claude dir to DFS (shared auth + settings across all nodes) ----
 # Run 'claude auth login' once on any node — all nodes share the credential.
 rm -rf "$HOME/.claude" 2>/dev/null
+mkdir -p "$DFS/.claude"
 ln -sfn "$DFS/.claude" "$HOME/.claude"
+# Claude's native user file also covers projects outside the home ancestry.
+# Keep it a regular portable pointer and never overwrite local profile instructions.
+if [ ! -e "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
+    cat > "$HOME/.claude/CLAUDE.md" <<'CLAUDEMD'
+# Shared agent instructions
+Read `~/agents-config/CLAUDE.md` before working; follow its shared-index routing.
+CLAUDEMD
+fi
 
 # ---- Symlink keys directory (DFS → LFS home) ----
 ln -sfn "$DFS/keys" "$HOME/keys"

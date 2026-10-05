@@ -21,5 +21,16 @@ for rule in d['rules']:
  def rebase(m):
   return m[0] if re.match(r'^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|/|~|#)',m[1]) else ']('+ '../'+m[1]+')'
  text=re.sub(r'\]\(([^\s)]+)\)',rebase,text)
- assert text in (root/rule['path']).read_text(),rule['id']
+ destination=(root/rule['path']).read_text()
+ kind,number=rule['id'].split('-')
+ section=destination.split(f'## {kind.title()} Rule {number}\n',1)[1].split('\n## ',1)[0]
+ assert text.strip()==section.strip(),rule['id']
 print(f'PASS: {len(d["rules"])} of {len(blocks)} complete rule bodies retained after link rebasing and {len(d["clarifications"])} recorded wording clarifications.')
+
+for entry in d.get('entrypoint_preservation',[]):
+ old=subprocess.check_output(['git','show',d['source_commit']+':'+entry['source_file']],cwd=root,text=True)
+ paragraph=next(line for line in old.splitlines() if line.startswith(entry['prefix']))
+ assert hashlib.sha256(paragraph.encode()).hexdigest()==entry['source_sha256']
+ relocated=re.sub(r'\]\(([^\s)]+)\)',rebase,paragraph)
+ assert relocated in (root/entry['destination']).read_text(),entry['prefix']
+print(f"PASS: {len(d.get('entrypoint_preservation',[]))} unique entry-point paragraphs preserved.")

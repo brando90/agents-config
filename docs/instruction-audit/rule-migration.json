@@ -523,6 +523,40 @@
       "rule": "trigger-46",
       "old": "with no tier named it runs the deterministic checks and records \"QA: not requested\" in the PR, otherwise it records the verdict.",
       "new": "with no tier named it runs and records the deterministic checks without mentioning QA; otherwise it records the verdict."
+    },
+    {
+      "rule": "trigger-46",
+      "old": "body = PR uniform resource locator (URL), TLDR, `diff --stat`, QA verdict, ledger and CKPT paths",
+      "new": "body = PR uniform resource locator (URL), TLDR, `diff --stat`, requested-review verdict when applicable, ledger and CKPT paths"
+    },
+    {
+      "rule": "trigger-64",
+      "old": "copy-ready weekly-update sentence of Hard Rule 1",
+      "new": "copy-ready weekly-update sentence of Hard Rule 4"
+    },
+    {
+      "rule": "trigger-64",
+      "old": "commit and push the folder (Hard Rule 4)",
+      "new": "commit and push the folder (Trigger Rule 8)"
+    },
+    {
+      "rule": "trigger-42",
+      "old": "for Codex there is no Remote Control and \"started\" requires",
+      "new": "this launcher uses its Codex process check (independent of any separately configured Codex Remote capability), so \"started\" requires"
+    }
+  ],
+  "entrypoint_preservation": [
+    {
+      "source_file": "CLAUDE.md",
+      "prefix": "- **When external fetches fail**",
+      "source_sha256": "a7fd6bc4bbee8d468aebdcf25b774aa1af9e1c5f7d7fa61d8c3ae4fe76f00d6e",
+      "destination": "workflows/broad-investigation.md"
+    },
+    {
+      "source_file": "AGENTS.md",
+      "prefix": "**Desktop/cloud connector use:**",
+      "source_sha256": "313ee3a0906c655c70dd429847b753c12318c7faeda3292100f9bf73485974e7",
+      "destination": "workflows/broad-investigation.md"
     }
   ]
 }

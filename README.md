@@ -12,7 +12,7 @@ By [Brando Miranda](https://brando90.github.io/brandomiranda/). [Contributions w
 2. **Routing:** [INDEX_RULES.md](INDEX_RULES.md) summarizes everyday rules and routes numbered policies to detailed [topic rules](rules/).
 3. **Task references:** [CATALOG.md](CATALOG.md) locates machine, workflow, and writing guides. Read relevant details before acting.
 
-Markdown links are routes to follow, not automatic imports. Eager imports can defeat selective loading. Keep each detailed rule in one canonical topic file.
+Follow Markdown links explicitly; they are not imports. Keep detailed rules in one canonical file.
 
 ## Client compatibility
 
@@ -41,7 +41,7 @@ if [ ! -e "$HOME/.codex/AGENTS.md" ] && [ ! -L "$HOME/.codex/AGENTS.md" ]; then
   ln -s "$HOME/agents-config/AGENTS.md" "$HOME/.codex/AGENTS.md"
 fi
 if [ ! -e "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
-  ln -s "$HOME/agents-config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+  printf '%s\n' '# Shared agent instructions' 'Read `~/agents-config/CLAUDE.md` before working; follow its shared-index routing.' > "$HOME/.claude/CLAUDE.md"
 fi
 ```
 
