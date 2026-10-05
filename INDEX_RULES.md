@@ -20,7 +20,7 @@ Hard rules govern conflicts with older wording in a triggered procedure. Explici
 
 3. **Quality assurance (QA) is opt-in.** Only a tier Brando explicitly requests or sets for this work in a runbook, `[qa]`/`[light-qa]`/`[mega-qa]` commit tag or environment flag starts a model reviewer. Hooks, project files and older “QA required” text are not opt-in. “Do QA”/“light QA” means one opposite-company round; apply findings and verify without automatic re-review. Mega QA follows Trigger Rule 10. Hooks cannot impose unsolicited QA; do not mention QA when unrequested. Benchmark-reference acceptance (43) remains separate. [Details](rules/safety-and-models.md#hard-rule-3)
 
-4. **Response ending and titles.** End with `**TLDR-end:** [proj: task]` and 1–2 sentences; use `[proj]` without a task, never an opening `TLDR-start`. Substantial research updates open with one short, copy-ready sentence containing setup and verified status. Match task titles to that summary, identifier first; update only owned tasks from evidence. [Details](rules/responses.md#hard-rule-4)
+4. **Response ending and titles.** End with `**TLDR-end:** [proj: task]` and 1–2 sentences; use `[proj]` without a task, never an opening `TLDR-start`. The task names the core experiment or deliverable being pursued, not the current micro-step (a sub-step may follow `›`), and the TLDR's first clause restates that core work in plain words. Substantial research updates open with one short, copy-ready sentence containing setup and verified status. Match task titles to that summary, identifier first; update only owned tasks from evidence. [Details](rules/responses.md#hard-rule-4)
 
 5. **Snapshot.** Immediately after the closing summary, show `**Snapshot:**` with the smallest real artifact sample (normally 5–15 lines, at most 25), or say why nothing tangible exists. [Details](rules/responses.md#hard-rule-5)
 
@@ -84,7 +84,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
 | [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision verification, requested review, immediate authorized merge, receipt and safe synchronization. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
-| [48](rules/workers.md#trigger-rule-48) | Unattended/long dispatch or provider failure → budget through completion; verify handoff/recovery, one writer, scientific pins and eligible substitutes. |
+| [48](rules/workers.md#trigger-rule-48) | Unattended/long dispatch or provider failure → budget through completion; verify handoff/recovery, one writer, scientific pins and eligible substitutes. “ac-scheduler” → host watchdog plus master check-in, email on done/critical. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify full access/no routine approvals; preserve task/platform/budget limits and exact SNAP pre-approval. |
