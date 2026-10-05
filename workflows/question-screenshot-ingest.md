@@ -1,5 +1,8 @@
 # Workflow: Q Go Screenshot Question Ingest
-**TLDR:** When the user sends screenshots with the exact trigger phrase `Q go`, preserve the images, transcribe the handwritten question, create a numbered root-level `questions/<NN>_<slug>/` packet, open a GitHub issue, run Mega QA, commit, push to `main`, and verify the remote ref. This workflow turns rough screenshot questions into durable experiment-ready research prompts without touching unrelated dirty files.
+
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/question-screenshot-ingest.md>
+
+**TLDR:** When the user sends screenshots with the exact trigger phrase `Q go`, preserve the images, transcribe the handwritten question, create a numbered root-level `questions/<NN>_<slug>/` packet, open a GitHub issue, run an explicitly requested review tier, commit, push to `main`, and verify the remote ref. This workflow turns rough screenshot questions into durable experiment-ready research prompts without touching unrelated dirty files.
 
 ## Trigger
 
@@ -62,8 +65,8 @@ After creating the issue:
 
 ## QA And Publish
 
-Run Mega QA at the end because the trigger request usually asks for durable
-research scaffolding, not a scratch note.
+Run deterministic checks below. Run a model review only when Brando explicitly
+requests its tier under Hard Rule 3; `Q go` alone does not request Mega QA.
 
 Before committing:
 
@@ -84,7 +87,7 @@ git rev-parse HEAD
 git rev-parse origin/main
 ```
 
-Report the commit SHA, issue URL, saved image paths, and final QA result.
+Report the commit SHA, issue URL, saved image paths, and the verification result (plus the review verdict when explicitly requested).
 
 ## Guardrails
 

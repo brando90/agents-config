@@ -1,776 +1,110 @@
-# Agent-Config: Modular Documentation Architecture for Multi-Agent Coding Workflows
+# Agent-Config: shared instructions for coding agents
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/README.md>
 
-**TLDR:** This repo is the shared, modular instruction layer for Brando's AI coding agents. Start at `~/agents-config/INDEX_RULES.md`, then load only the machine, workflow, or writing docs relevant to the current task.
+**TLDR:** Start at `~/agents-config/INDEX_RULES.md`, then read the relevant topic rules and references. All clients share the same policy.
 
-A modular, agent-agnostic documentation system for AI coding agents (Claude Code, Codex, and beyond). Designed for scalability and context-window efficiency.
-
-As codebases scale past 30-50k LOC (lines of code), monolithic agent instruction files (a single `CLAUDE.md` or `AGENTS.md`) waste context window on irrelevant details and don't generalize across agents. This repo implements a three-layer architecture that solves both problems.
-
-**Designed by [Brando Miranda](https://brando90.github.io/brandomiranda/) (Stanford CS PhD).** Inspired by [Yegor Denisov-Blanch](https://x.com/yegordb)'s insight that modular documentation is essential for multi-agent workflows at scale.
-
-**Contributions welcomed and encouraged!** Open a [GitHub Issue](https://github.com/brando90/agents-config/issues), start a [Discussion](https://github.com/brando90/agents-config/discussions), or submit a PR (pull request).
-
----
-
-## Investigating problems and using Valkyrie
-
-All agents follow [broad investigation](workflows/broad-investigation.md): proactively inspect relevant local state, current official documentation, upstream source and authorized services before treating a failed command as a blocker. [Trigger Rule 62](INDEX_RULES.md) and both agent entry points make this discoverable on every host that refreshes the repository.
-
-For Vals tasks, start with [Valkyrie documentation and diagnosis](workflows/valkyrie.md), which routes to the official overview, benchmark conversion, local development and model-library references. This repository holds public procedures and links; credentials, private setup packets, internal endpoint details and private model aliases stay in authorized host storage.
-
-The [one-project coordination plan](workflows/cross-machine-projects.md) proposes a shared task catalog across agent tools and computers, building on the existing private agent board. It separates status observation from authorized task control; the design does not claim a deployed integration or change execution policy.
-
-When an authorized host already works, use [verified-host bootstrap](workflows/verified-host-bootstrap.md). SNAP is the preferred private distribution hub where applicable; Git holds public rules, and each laptop retains a verified private replica and native runtime.
+By [Brando Miranda](https://brando90.github.io/brandomiranda/). [Contributions welcome](https://github.com/brando90/agents-config/issues).
 
 ## The Three-Layer Architecture
 
-```
-←────── Layer 1: Entry Points ────────→   ←── Layer 2 ──→   ←── Layer 3: Scoped Docs ──→
-agent-config flow (shared env — abbreviating ~/agents-config/ as ~/ac/ for width):
+1. **Entry points:** [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) mirror critical reminders and direct the agent to refresh and read the index.
+2. **Routing:** [INDEX_RULES.md](INDEX_RULES.md) summarizes everyday rules and routes numbered policies to detailed [topic rules](rules/).
+3. **Task references:** [CATALOG.md](CATALOG.md) locates machine, workflow, and writing guides. Read relevant details before acting.
 
-       ~/                ~/ac/                  ~/ac/                ~/ac/
-┌──────────────┐   ┌──────────────────┐
-│ ~/CLAUDE.md  │──▸│ ~/ac/CLAUDE.md   │   ┌────────────────────┐   ┌──────────────────────┐
-│              │   │                  │   │                    │   │ ~/ac/machine/        │
-│~/.codex/     │   │                  │──▸│~/ac/INDEX_RULES.md │──▸│ ~/ac/workflows/      │
-│ AGENTS.md    │──▸│ ~/ac/AGENTS.md   │   │                    │   │ ~/ac/writing/        │
-│              │   │                  │   │                    │   └──────────────────────┘
-└──────────────┘   └──────────────────┘   └────────────────────┘
-   (symlinks)       "read ~/agents-config/INDEX_RULES.md"  (rules + routing)  (loaded on demand)
+Markdown links are routes to follow, not automatic imports. Eager imports can defeat selective loading. Keep each detailed rule in one canonical topic file.
 
-Project repo flow (e.g., ~/vb/ — layers span two repos):
+## Client compatibility
 
-┌────────────────────┐
-│ ~/vb/CLAUDE.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
-├────────────────────┤
-│ ~/vb/AGENTS.md     │──▸ ~/agents-config/INDEX_RULES.md  # shared env context
-│                    │──▸ ~/vb/docs/agent-docs/INDEX.md  # repo-specific docs
-└────────────────────┘
+| Client | Instruction discovery and practical guidance |
+|---|---|
+| [Codex](https://developers.openai.com/codex/guides/agents-md) | Global `$CODEX_HOME/AGENTS.md` (normally `~/.codex/AGENTS.md`) and repository files; observe its instruction budget. |
+| [Claude Code](https://code.claude.com/docs/en/memory) | Global `~/.claude/CLAUDE.md` and ancestor/project files. Under 200 lines is a heuristic; imports still consume context. |
+| [Cursor](https://cursor.com/docs/cli/using) | The command-line interface reads both root entrypoints; [rules guidance](https://cursor.com/docs/rules) recommends under 500 lines. |
+| [Antigravity](https://antigravity.google/docs/rules) | AGENTS.md or GEMINI.md; globals in `~/.gemini/`; 24,000-byte per-rule cap. Import syntax differs from Claude's. |
+| [Grok Build](https://docs.x.ai/build/features/project-rules.md) | Reads both entrypoint families and global `~/.grok/` rules. Verify discovery with `grok inspect`. |
 
-~/agents-config/ (~/ac/) outline:
-┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│ CLAUDE.md        ← Layer 1 entry; text ref ──▸ INDEX_RULES.md                            │
-│ AGENTS.md        ← canonical Codex entry; text ref ──▸ INDEX_RULES.md                    │
-│ INDEX_RULES.md   ← Layer 2 global rules + doc routing; refs ──▸ machine/, workflows/,     │
-│                  writing/                                                                  │
-│ README.md        ← repo docs (you are here)                                              │
-│ machine/         ← Layer 3: per-machine configs (mac.md, snap.md, sherlock.md, …)        │
-│ workflows/       ← Layer 3: reusable workflows (qa-correctness.md, git-worktrees.md, …)  │
-│ writing/         ← Layer 3: reusable writing guides (ml_research/, blog/)                 │
-└──────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Layer 1 — Agent-specific entry points.** `CLAUDE.md` (for Claude Code) and uppercase `AGENTS.md` (for Codex) live in the repo root. Their header lines bootstrap or refresh `~/agents-config/` and direct the agent to `~/agents-config/INDEX_RULES.md`. Claude reads `~/CLAUDE.md`; Codex reads `~/.codex/AGENTS.md` globally and uppercase `AGENTS.md` files from the repository root toward the working directory. A legacy home-level `~/agents.md` symlink may point to the uppercase file for older launchers; the repository itself keeps only the canonical spelling so it works on case-insensitive filesystems.
-
-**Layer 2 — Tiered rules & doc routing.** `INDEX_RULES.md` contains two things: (1) rules organized into three tiers — **Hard Rules** (every response, never skip: no secrets, explicit opt-in QA, closing TLDR, config refresh), **Trigger Rules** (mandatory when triggered: agents-config edits, PRs, QA-pass auto-commit/push, GPU jobs, Mega QA, PyPI publish for `~/ultimate-utils/`, user-triggered big/mega QA or explicitly tracked completion notifications, LaTeX edits for ML papers), and **Guidelines** (best practices: anchored paths, context efficiency) — and (2) doc routing that groups docs by topic with concise path-based "references" — file paths written as text (e.g., `~/agents-config/machine/mac.md`) that tell the agent where to look — so the agent only loads what's relevant to the current task.
-
-Repository-hosted Markdown documents use the header format in [Trigger Rule 16](INDEX_RULES.md): title, `**Doc link:**` with the full clickable document address, then the summary. Keep the address visible so readers can identify the path and copy it into notes.
-
-Questions about another agent follow [Trigger Rule 47](INDEX_RULES.md): distinguish current response activity, scheduled follow-ups, and verified worker/results state; an `idle` conversation alone does not establish overall task status. Both agent entry points carry the reminder.
-
-Review selection has one [fallback and acceptance procedure](workflows/qa-correctness.md#review-fallback-and-acceptance), governed by [Hard Rule 8](INDEX_RULES.md). Ordinary changes may use a disclosed, capable smaller reviewer from the other company when its strongest model cannot run. Critical changes and requested Mega QA stages retain strongest-model acceptance; benchmark reference changes still require both families at that tier. Entry points summarize this policy instead of duplicating its decision order.
-
-Remote work follows [Trigger Rule 48](INDEX_RULES.md) and the [reliable-dispatch procedure](workflows/reliable-agent-dispatch.md): a strong master chooses proportionate workers and effort, budgets for finish/review, verifies synchronized handoff files, and prepares remote failure detection plus bounded provider recovery. Meaningful quota/switch/blocker events notify the master and Brando. Launchers do not implement automatic failover merely because the policy exists.
-
-Uncertain research/design work follows [Trigger Rule 50](INDEX_RULES.md): choose the consequential uncertainty and the cheapest sufficient test, then update direction from evidence. Authorized experiments automatically follow [the existing documentation conventions](workflows/expts-and-results.md#starting-or-continuing-an-experiment), including checked-available numbered homes for distinct core experiments and reuse of canonical homes for continuations (Rule 39).
-
-Experiment-folder Markdown (`.md`) reports are the primary and sufficient results deliverable. Weights & Biases (W&B) logging, dashboards, and Reports are optional and run only when explicitly requested; W&B credentials or dashboard publication are not prerequisites for progress or completion. Existing report links and receipts remain historical evidence. See [the reporting workflow](workflows/expts-and-results.md#local-experiment-reports).
-
-Optional research belongs in `experiments/ideas/<descriptive_setup>/`, including user-named ideas such as `IDEA_00`. Track execution separately from paper inclusion: a proposal may stay deferred, or run there when authorized with the normal experiment requirements. See [the ideas convention](workflows/expts-and-results.md#optional-research-ideas).
-
-**Layer 3 — Modular scoped docs.** Individual markdown files organized by domain. Each is self-contained and only loaded when relevant. Machine configs, workflow guides, writing guides, and other scoped docs you choose to add.
-
-### Why this exists
-
-1. **Context window efficiency.** An agent working on a Python formatting issue doesn't need your GPU cluster docs. The index lets it pick only what's relevant.
-2. **Multi-agent compatibility.** Claude Code, Codex, and future agents all read from the same doc set. Only Layer 1 differs per agent.
-3. **Scalability.** Adding a new scoped doc is one file + one line in the index. No monolithic file to maintain.
-4. **Secrets stay out of the repo.** Machine docs reference existing config files (`~/.ssh/config`, `~/keys/`, `~/.zshrc`) rather than duplicating secrets. Nothing sensitive is tracked.
-
----
-
-## Directory Structure
-
-```
-agents-config/
-├── README.md                    ← you are here
-├── INDEX_RULES.md               ← Layer 2: global rules + doc routing
-├── CLAUDE.md                    ← Layer 1: Claude Code entry point
-├── AGENTS.md                    ← Layer 1: canonical Codex entry point
-├── LICENSE                      ← Apache 2.0
-│
-├── claude-code-settings.json    ← shared Claude Code settings (symlinked to ~/.claude/settings.json on each machine)
-├── email-signature.md           ← canonical email signature + default From/CC for outbound mail
-├── contacts.md                  ← contact-resolution workflow; points to ultimate-utils collaborator roster
-├── bm-agents-config.code-workspace  ← VS Code multi-root workspace for editing this repo
-│
-├── init_no_passwords_snap_kinit.md              ← one-time keytab setup for passwordless SSH to SNAP
-├── cursor_ssh_kerberos_todo.md                  ← Cursor SSH + Kerberos design notes & TODO tracking
-├── codex_remote_control_todo.md                 ← Codex remote-control TODO / open questions
-├── todo_codex_qa_on_snap.md                     ← TODO: cross-agent QA on SNAP via Codex
-├── todo_infinite_reauth_kinit_server_side.md    ← TODO: server-side auto-renewal (eliminate krbtmux/reauth)
-├── todo_self_improving_agents_config.md         ← TODO: self-improving feedback loop for this repo
-├── koyejo_stair_cluster_guide.md                ← Koyejo lab / STAIR cluster onboarding & gotchas
-│
-├── machine/                     ← Layer 3: per-machine configs (loaded on demand)
-│   ├── ampere1.md               ← SNAP ampere1 node (8x A100-80GB)
-│   ├── mercury1.md              ← SNAP mercury1 node (10x A4000-16GB)
-│   ├── mercury2.md              ← SNAP mercury2 node (10x A4000-16GB)
-│   ├── skampere1.md             ← SNAP skampere1 node
-│   ├── skampere2.md             ← SNAP skampere2 node
-│   ├── snap.md                  ← Stanford SNAP cluster
-│   ├── snap-init.md             ← first-time setup & verification for new SNAP nodes
-│   ├── snap_setup.sh            ← scripted SNAP-node bootstrap (symlinks, auth, tools)
-│   ├── agent-clis.md            ← Cursor Agent / Grok / Antigravity CLI install + login
-│   ├── mac.md                   ← local macOS dev
-│   ├── macos-ai-apps/           ← reusable Mac AI-agent setup + permissions docs
-│   │   ├── ai_agent_automatable_setup_codex_clauded.md
-│   │   └── manual_macos_permissions_checklist_ai_apps.md
-│   ├── sherlock.md              ← Stanford Sherlock HPC
-│   └── marlowe.md               ← Stanford Marlowe cluster
-│
-├── workflows/                   ← Layer 3: reusable workflows (loaded on demand)
-│   ├── qa-correctness.md        ← QA tiers, explicit opt-in (deterministic checks, reviewer QA, Mega QA)
-│   ├── qa-structural.md         ← structural QA reference (metrics, checks)
-│   ├── expts-and-results.md     ← experiment structure and results reporting
-│   ├── broad-investigation.md   ← official-source research, recovery and verified outcomes
-│   ├── codex-connector-tandem.md ← per-environment connector checks and private data bridges
-│   ├── verified-host-bootstrap.md ← private configuration reuse and per-host verification
-│   ├── valkyrie.md              ← public Vals references and host/model diagnosis
-│   ├── question-screenshot-ingest.md ← "Q go" screenshot → numbered questions workflow
-│   ├── remote-job-dispatch.md   ← 3 ways to dispatch jobs to SNAP: ssh, DFS watcher, phone git-inbox
-│   ├── smart-job-agent-prompt.md ← shared agent-wrapper prompt for all dispatch paths
-│   ├── git-worktrees.md         ← worktree isolation for parallel agents
-│   ├── repo-init.md             ← migrating projects to this pattern
-│   ├── research-repo-layout.md  ← four-bucket repo root + staged reorg procedure (Rule 49)
-│   ├── tweprints.md             ← tweet thread format
-│   └── blog-posts.md            ← SAIL-style research lab blog posts
-│
-├── writing/                     ← Layer 3: reusable writing guides (loaded on demand)
-│   ├── ml_research/             ← ML research paper writing guides and section skills
-│   │   ├── ml_research_writing.md
-│   │   ├── write-intro.md
-│   │   ├── write-abstract.md
-│   │   ├── write-poster.md
-│   │   ├── write-sail-blog-post.md
-│   │   ├── write-tweet-thread.md
-│   │   └── write-linkedin-post.md
-│   └── blog/                    ← Brando personal blog rules, voice guide, and draft skill
-│       ├── rules.md
-│       ├── blog_writing.md
-│       └── write-blog-post.md
-│
-├── scripts/                     ← shared shell helpers (referenced by hooks and workflows)
-│   ├── auto-update-tools.sh     ← Claude Code SessionStart hook: keeps `claude` / `codex` plus Cursor/Grok/Antigravity fresh
-│   ├── install_agent_clis.sh    ← install/update `agent` (Cursor), `grok`, `agy` on Macs and SNAP
-│   ├── snap_health.sh           ← cluster-wide preflight, drift, storage, auth, and Git audit
-│   ├── harbor_snap.sh           ← Harbor wrapper that removes the incompatible shared PYTHONPATH
-│   ├── ssh-submit.sh            ← SSH fire-and-forget remote-job submitter
-│   ├── git-inbox-poller.sh      ← phone-dispatch poller for `jobs-inbox/`
-│   └── relink-dfs-projects.sh   ← rebuild DFS-backed project symlinks on a fresh node
-│
-├── experiments/                 ← versioned experiment prompts and analysis
-│   ├── experiment_template_readme.tex
-│   ├── 00_refactor_qa_gate/     ← Experiment 00: QA-gate refactor study
-│   └── 01_self_hosted_openclaw/ ← Experiment 01: self-hosted OpenClaw admin-email triage
-│
-├── jobs-inbox/                  ← phone → git-inbox dispatch directory (pending/, dispatched/)
-│   └── README.md
-│
-└── tests/
-    └── dummy_experiment/        ← historical tiny MLP example; W&B use only on explicit request
-```
-
----
+Verify installed versions and actual loaded files; pulling or linking does not reload a running agent. The [instruction audit](docs/instruction-audit/README.md) records sources and byte/word counts alongside line heuristics.
 
 ## Quick Start
 
 ```bash
-# Clone to your home directory
-git clone https://github.com/brando90/agents-config.git ~/agents-config
+if [ -d "$HOME/agents-config/.git" ]; then
+  git -C "$HOME/agents-config" pull --ff-only
+else
+  git clone https://github.com/brando90/agents-config.git "$HOME/agents-config"
+fi
 
-# Symlink entry points from home dir
-ln -sf ~/agents-config/CLAUDE.md ~/CLAUDE.md
-mkdir -p ~/.codex
-ln -sf ~/agents-config/AGENTS.md ~/.codex/AGENTS.md
-ln -sf ~/agents-config/AGENTS.md ~/AGENTS.md       # optional compatibility
-ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibility
-
-# Claude Code will automatically read CLAUDE.md → INDEX_RULES.md
-# Codex will automatically read ~/.codex/AGENTS.md → INDEX_RULES.md
+# Create missing default-profile entry points; preserve every existing file/link.
+mkdir -p "$HOME/.codex" "$HOME/.claude"
+if [ ! -e "$HOME/.codex/AGENTS.md" ] && [ ! -L "$HOME/.codex/AGENTS.md" ]; then
+  ln -s "$HOME/agents-config/AGENTS.md" "$HOME/.codex/AGENTS.md"
+fi
+if [ ! -e "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
+  ln -s "$HOME/agents-config/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+fi
 ```
 
----
+Preserve existing profile instructions and add routing to `~/agents-config/INDEX_RULES.md` where needed. Use the active profile's paths; verify nonempty files, link targets, and loading in a fresh session.
+
+## Directory Structure
+
+- `rules/`: detailed shared policy; preserve established rule identifiers.
+- `machine/`, `workflows/`, `writing/`: focused guides loaded when relevant.
+- `scripts/`, `tests/`: working utilities and deterministic checks.
+- `experiments/`, `reports/`, `reviews/`: project records and historical evidence.
+- `docs/`: human setup reference, architecture audit, and background material.
+
+Keep useful task-scoped references intact. Add procedures to their topic and routing entry, not every startup file.
+
+## Investigating problems and using Valkyrie
+
+Use [broad investigation](workflows/broad-investigation.md), [Valkyrie diagnosis](workflows/valkyrie.md), and [verified-host bootstrap](workflows/verified-host-bootstrap.md) for their respective tasks. Public procedures stay here; credentials and private configuration stay in authorized private storage.
 
 ## Reusable macOS AI App Setup
 
-For each Mac, first use [`~/agents-config/machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) to configure shell-automatable trusted-agent setup, then use [`~/agents-config/machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) for the macOS Privacy & Security toggles that require manual approval.
-
----
+See the [macOS setup guide](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md).
 
 ## New Server Setup
 
-Setting up a new SNAP node? See [`machine/snap-init.md`](machine/snap-init.md) -- copy-paste prompt that checks/fixes all symlinks, auth, tools, keys, and GPUs on a fresh SNAP node.
-
-**Important convention:** On SNAP, all project directories under `~/` (LFS) must be **symlinks** to their canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/brando9/veribench`. This ensures every server sees the same repo state. Never clone or copy repos directly to LFS. See [`machine/snap.md`](machine/snap.md) for details.
-
-### OpenClaw self-healing watcher (per host)
-
-Brando's OpenClaw bots must be alive 24/7. `launchd KeepAlive` only catches process death — it doesn't catch a stuck agent session or a half-installed plugin cache (the kind of failure where the bot delivers ✓✓ but never replies). Install the self-healing watcher on every host that runs OpenClaw:
-
-```bash
-# 1. Run the script every 5 min via launchd (macOS) or cron (Linux); see
-#    install instructions at the bottom of:
-sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
-#    The script: checks gateway is up + Telegram is `running, connected`
-#    + PONG round-trip works. On failure it escalates: restart → full
-#    reset (clear plugin-runtime-deps + reload) → DM openclaw-ops if it
-#    still can't recover.
-
-# 2. Pre-grant macOS TCC prompts once per host so the agent is fire-and-forget:
-sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-automation.sh
-```
-
-Full design + decision tree: [`experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](experiments/01_self_hosted_openclaw/MASTER_PLAN.md) §A.0.5 (TCC pre-grants), §A.6 (gotchas), §A.8 (triage flow when bot stops replying).
-
-### OpenClaw on a new SNAP / Linux node — fast path
-
-The Linux install path is automated. From a fresh SNAP node (after the standard SNAP node setup has run):
-
-```bash
-# 1. Create a per-host bot via @BotFather on Telegram. /newbot, name it after
-#    the host (e.g. ubrando_<HOST>_bot). Copy the token — DO NOT paste it
-#    anywhere that gets recorded (chat logs, screenshots), and if it leaks,
-#    /revoke + /token to rotate before continuing.
-#    Why per-host: one bot can only be long-polled by one process. Sharing
-#    causes HTTP 409 conflicts that drop messages — see:
-#    experiments/01_self_hosted_openclaw/concepts.md Q1.
-
-# 2. Drop the token on the host (mode 600):
-printf '%s\n' '<TOKEN-FROM-BOTFATHER>' > ~/keys/openclaw_telegram_bot_token.txt
-chmod 600 ~/keys/openclaw_telegram_bot_token.txt
-
-# 3. Make sure these prereqs are in place:
-#      - Node 22.14+ (SNAP installs nvm to /dfs/scratch0/<user>/.nvm — already loaded by .bashrc)
-#      - codex CLI logged in: codex login   (interactive ChatGPT OAuth)
-#      - tmux on PATH
-#      - ~/keys/anthropic_api_key.txt (the Linux installer pins anthropic/claude-haiku-4-5
-#        as default model since openai-codex chatgpt-OAuth is currently flaky on Linux)
-
-# 4. Run the installer:
-bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance_linux.sh
-#    What it does: npm install openclaw, install the @openclaw/codex plugin,
-#    render ~/.openclaw/openclaw.json from the template, write a tmux respawn
-#    wrapper + an @reboot wrapper (waits for DFS, runs krenew first), launch
-#    the gateway in tmux session 'openclaw-gateway', install both cron entries
-#    (@reboot + 5-min health-watcher), and PONG-test through the gateway.
-
-# 5. Manual finish on Telegram:
-#    Open Telegram → search the new bot → /start → if OpenClaw asks for a
-#    pairing code: 'openclaw pairing approve telegram <CODE>'.
-
-# 6. Quick verification (try these from the bot DM):
-#    hostname && pwd && nvidia-smi --list-gpus | head -1
-#    ssh skampere1.stanford.edu 'nvidia-smi --query-gpu=name,memory.free --format=csv,noheader | head -2'
-```
-
-Restart / recovery (any host):
-
-```bash
-# Tail the live log:
-tail -f ~/openclaw/gateway.log
-
-# Force a restart (the respawn wrapper rebuilds within 5s):
-tmux kill-session -t openclaw-gateway
-
-# Manually re-run the health-watcher to trigger self-heal logic:
-bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
-
-# Hit gateway health directly (loopback only):
-curl -s http://127.0.0.1:18789/health
-```
-
-Architecture summary: gateway runs in `tmux new-session -d -s openclaw-gateway` wrapped by `~/openclaw/run_gateway_respawn.sh` (a `while true; do openclaw gateway run --force; sleep 5; done` loop). `@reboot` cron starts a fresh tmux session after a node reboot once DFS is mounted and Kerberos has been renewed via the keytab (same pattern as the DFS job-queue watcher in [`machine/snap.md`](machine/snap.md)). The 5-min cron runs the cross-platform health-watcher which checks gateway → Telegram-connected → PONG round-trip and self-heals via restart → full plugin-cache reset → DM `openclaw-ops` on give-up.
-
----
+See [server setup reference](docs/setup-reference.md#new-server-setup) and the matching machine guide in [CATALOG.md](CATALOG.md).
 
 ## Remote Access (Claude Remote Control & Codex)
 
-### Claude Remote Control — setup
-
-Remote Control (RC) lets you hand off a Claude Code session to your phone or another device via `claude.ai/code`. It requires a **full claude.ai login** — long-lived env vars like `CLAUDE_CODE_OAUTH_TOKEN` block RC.
-
-#### Mac (zsh + Cursor)
-
-Cursor injects `CLAUDE_CODE_OAUTH_TOKEN` into its terminal env. tmux/byobu sessions started from Cursor inherit it, silently blocking RC.
-
-**One-time fix** — add to `~/.zshrc`:
-
-```bash
-# Strip Cursor-injected CLAUDE_CODE_OAUTH_TOKEN inside tmux/byobu — blocks RC
-if [ -n "$TMUX" ]; then
-  unset CLAUDE_CODE_OAUTH_TOKEN
-fi
-```
-
-Also make sure `CLAUDE_CODE_OAUTH_TOKEN` is NOT exported anywhere in `~/.zshrc` or `~/.zprofile`:
-
-```bash
-# Check:
-grep -n 'CLAUDE_CODE_OAUTH_TOKEN' ~/.zshrc ~/.zprofile 2>/dev/null
-# Any uncommented export lines → comment them out
-```
-
-Then auth (one-time):
-
-```bash
-claude auth logout
-claude auth login        # signs in via browser
-claude auth status --text  # verify: "Claude Max Account", no env overrides
-claude remote-control    # success = Environment ID + claude.ai/code URL
-```
-
-#### SNAP servers (bash + DFS)
-
-On SNAP, shell config lives at `/dfs/scratch0/<user>/.bashrc` (shared across all nodes via symlink). Fix it **once on DFS** and all servers get it.
-
-**Step 1 — Remove `CLAUDE_CODE_OAUTH_TOKEN` from `.bashrc`:**
-
-```bash
-DFS="/dfs/scratch0/brando9"
-
-# Find it
-grep -n 'CLAUDE_CODE_OAUTH_TOKEN' "${DFS}/.bashrc"
-
-# Comment it out (if found)
-sed -i 's/^export CLAUDE_CODE_OAUTH_TOKEN/#export CLAUDE_CODE_OAUTH_TOKEN/' "${DFS}/.bashrc"
-```
-
-**Step 2 — Add tmux guard to `.bashrc`:**
-
-Add this block to `${DFS}/.bashrc` (works for krbtmux, tmux, byobu):
-
-```bash
-# Strip CLAUDE_CODE_OAUTH_TOKEN inside tmux/byobu/krbtmux — blocks Remote Control
-if [ -n "$TMUX" ]; then
-  unset CLAUDE_CODE_OAUTH_TOKEN
-fi
-```
-
-**Step 3 — Auth (one-time, from any server):**
-
-```bash
-source ~/.bashrc
-claude auth logout
-claude auth login
-# No browser on server — copy the URL, open on Mac/phone, sign in, paste code back
-claude auth status --text  # verify: "Claude Max Account", no env overrides
-```
-
-**Step 4 — Share auth across all nodes via DFS:**
-
-Claude stores credentials in `~/.claude/`. On SNAP, `$HOME` is per-server LFS, so auth is per-server by default. Fix by symlinking `~/.claude/` to DFS:
-
-```bash
-# On the FIRST server (after claude auth login succeeds):
-mv ~/.claude "${DFS}/.claude"
-ln -sfn "${DFS}/.claude" ~/.claude
-
-# On every OTHER server (or in new-node setup):
-rm -rf ~/.claude
-ln -sfn "${DFS}/.claude" ~/.claude
-```
-
-**Step 5 — Start RC:**
-
-```bash
-# For persistent sessions, use krbtmux first:
-/afs/cs/software/bin/krbtmux
-/afs/cs/software/bin/reauth
-
-# Then start RC inside the tmux session:
-claude remote-control
-# Open claude.ai/code on phone/Mac to connect
-```
-
-### Codex — no RC equivalent (use tmux)
-
-Codex CLI has no `remote-control` command. Auth is via **ChatGPT login** (interactive) or **API key** (automation). Persistence over SSH uses tmux:
-
-```bash
-# Start a persistent Codex session
-tmux new -As codex
-codex  # sign in with the approved ChatGPT subscription when prompted
-
-# Reconnect later from any device
-ssh <server> -t 'tmux attach -t codex'
-```
-
-### Other providers and the deprecated Gemini CLI
-
-Do not revive the deprecated Gemini CLI as an untested fallback. The master may select Google models through a working supported subscription client, or Cursor-hosted models, Grok and other providers, after verifying the target client, exact model/effort, tools and subscription-only billing under [Rule 48](workflows/reliable-agent-dispatch.md). Codex and Claude remain the preferred reviewers; the [acceptance policy](workflows/qa-correctness.md#review-fallback-and-acceptance) preserves mandatory families and capability. A provider name alone neither establishes access nor authorizes API keys or paid credits.
-
-### Server rollout checklist
-
-```
-[ ] Comment out CLAUDE_CODE_OAUTH_TOKEN in DFS .bashrc (one edit, all servers)
-[ ] Add tmux guard (unset inside TMUX) to DFS .bashrc
-[ ] Remove primaryApiKey from ~/.claude/config.json (forces API mode, blocks RC)
-[ ] claude auth login (once, from any server — DFS shares it)
-[ ] Symlink ~/.claude/ → DFS on each server
-[ ] Verify: claude auth status --text (no env overrides)
-[ ] Accept workspace trust: run `claude` in the working directory, accept the trust dialog, then exit
-[ ] Start: claude remote-control
-[ ] Mac: add tmux guard to ~/.zshrc, verify RC works in tmux
-[ ] For Codex: choose ChatGPT login or API key, run inside tmux
-```
-
-### Troubleshooting Remote Control
-
-RC can fail silently for several reasons. Use this diagnostic sequence:
-
-**1. Check env vars in your current shell:**
-
-```bash
-echo "TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-NOT_SET}"
-echo "API_KEY=${ANTHROPIC_API_KEY:-NOT_SET}"
-claude auth status --text
-```
-
-- If `TOKEN` is set → it overrides OAuth login and blocks RC. Fix: `unset CLAUDE_CODE_OAUTH_TOKEN`
-- If auth status says authentication through the `CLAUDE_CODE_OAUTH_TOKEN` environment variable → same problem, token is taking priority
-- If auth status says `Claude Max Account` → auth is fine, problem is elsewhere
-
-**2. "Long-lived tokens are limited to inference-only":**
-
-RC requires a browser-based OAuth login. This error means Claude is using either:
-- `CLAUDE_CODE_OAUTH_TOKEN` env var (even if commented out in `.bashrc`, your current shell may still have it from before the fix)
-- `primaryApiKey` in `~/.claude/config.json`
-
-Fix:
-```bash
-# Remove API key from config
-echo '{}' > ~/.claude/config.json
-
-# Unset env var
-unset CLAUDE_CODE_OAUTH_TOKEN
-
-# Re-auth via browser
-claude auth logout && claude auth login
-```
-
-**3. "Workspace not trusted":**
-
-Claude must accept the workspace trust dialog before RC can start. Run `claude` (not `claude remote-control`) in the target directory, accept the trust prompt, then exit and retry `claude remote-control`.
-
-**4. Cursor SSH / IDE-injected tokens:**
-
-Cursor (and similar IDEs) inject `CLAUDE_CODE_OAUTH_TOKEN` into their terminal environment. This token persists for the lifetime of the SSH connection — even after you comment it out of `.bashrc`. Every terminal tab and child process inherits it.
-
-Fix: **Reconnect the SSH extension** (or restart the IDE remote session) after editing `.bashrc`. Alternatively, run `unset CLAUDE_CODE_OAUTH_TOKEN` in each terminal before using `claude`.
-
-**5. Full diagnostic one-liner:**
-
-```bash
-unset CLAUDE_CODE_OAUTH_TOKEN && echo '{}' > ~/.claude/config.json && claude auth status --text && claude remote-control
-```
-
-### Verify node setup
-
-After setup, see [`machine/snap-init.md`](machine/snap-init.md) for a paste-into-Claude-Code prompt that checks paths, symlinks, RC auth, tools, keys, and GPUs.
-
----
+Use [maintained remote dispatch](workflows/remote-job-dispatch.md). Earlier setup recipes remain in the [operator reference](docs/setup-reference.md#remote-access-claude-remote-control--codex).
 
 ## DFS Job Queue (Running Experiments Across SNAP Nodes)
 
-> ⚠ **SNAP Slurm access (audited 2026-09-03).** `ampere*`, `hyperturing*`, `turing*`, and `blackwell1` are present but gated by `pam_slurm_adopt`: start from `ilc.stanford.edu`, confirm `showaccount` lists `infolab`, then allocate the node with `srun`/`sbatch`. Direct SSH remains available on `mercury1/2` and `skampere1/2/3`. Run `bash ~/agents-config/scripts/snap_health.sh` before dispatch. See [`machine/snap.md`](machine/snap.md) § "Slurm-gated nodes".
-
-On SNAP's direct-SSH nodes, the DFS job queue lets you submit experiment scripts from **any one node** and have watchers on the other direct nodes pick them up and run them. Slurm-gated nodes require a scheduler-aware launcher and an active account association.
-
-**How it works:**
-
-1. Each SNAP node runs a **watcher daemon** (usually in tmux). The daemon polls `~/dfs/job_queue/pending/` every 15 seconds.
-2. You (or an agent) **drop a script** into `pending/` from any node. Because `~/dfs/` is on the shared DFS, every node sees it immediately.
-3. The first watcher to see the job **atomically claims it** (NFS-safe hardlink protocol — no double-execution even with multiple nodes racing) and moves it to `running/`.
-4. The watcher **executes the script**, inheriting the host's environment (`CUDA_VISIBLE_DEVICES`, API keys, etc.). By default it runs in smart mode, wrapping the job in a coding agent that can diagnose failures and retry; final email is optional and reserved for explicitly tracked significant jobs. If no agent binary is available, it falls back to direct subprocess execution. Separately, there is a 48-hour wall-clock safety timeout and a 4-hour continuous GPU-idle kill.
-5. When it finishes, the job moves to `completed/` (exit 0) or `failed/` (non-zero or timeout). Logs go to `logs/`.
-
-**The key idea:** You log into one server, submit jobs, and walk away. The other servers are already listening. No coordinator, no scheduler, no manual SSH — just a shared directory and a simple protocol.
-
-```
-~/dfs/job_queue/
-    pending/      ← drop jobs here (from any node)
-    running/      ← claimed by a watcher (job.sh___<hostname>)
-    completed/    ← exit 0
-    failed/       ← exit != 0 or timeout
-    logs/         ← per-job stdout+stderr
-```
-
-**Code:** [`ultimate-utils/py_src/uutils/job_scheduler_uu/`](https://github.com/brando90/ultimate-utils/tree/master/py_src/uutils/job_scheduler_uu) (scheduler, submitter, tmux launcher).
-**Full usage guide:** [`workflows/remote-job-dispatch.md`](workflows/remote-job-dispatch.md) (covers the DFS watcher alongside SSH fire-and-forget and phone git-inbox dispatch — start/stop commands, submit examples, atomic claim details).
+For the distributed filesystem (DFS) queue on Stanford Network Analysis Project (SNAP) hosts, see [remote job dispatch](workflows/remote-job-dispatch.md) and the [setup reference](docs/setup-reference.md#dfs-job-queue-running-experiments-across-snap-nodes).
 
 ### Keeping watchers alive: keytab + cron (no password prompt, ever)
 
-Two failure modes can silently kill a watcher: (a) Kerberos/AFS ticket expiry (~10h) — outbound smtp/agent calls from inside the watcher start failing; (b) node reboot — the tmux session is gone. Both are neutralised by two cron entries on each watcher node, both pointing at scripts on shared DFS:
-
-```
-0 */4 * * * /dfs/scratch0/brando9/bin/krenew.sh                       # 4-hourly Kerberos+AFS renewal
-@reboot     /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh      # waits for DFS, krenew, relaunch
-```
-
-**No password is ever entered** — `krenew.sh` does `kinit -kt /dfs/scratch0/brando9/.keytab brando9@CS.STANFORD.EDU`, which uses the **keytab** as proof of identity. The keytab is a one-time artifact derived from your Stanford password (created interactively via `ktutil` on a Mac terminal — see [`init_no_passwords_snap_kinit.md`](init_no_passwords_snap_kinit.md) Part A). After it exists on DFS at `chmod 600`, every node and every cron invocation can refresh tickets without prompting. **An automation session (Claude Code, cron, Codex, etc.) never needs the password — it just needs read access to the keytab file.** If you change your Stanford password, the keytab becomes invalid until regenerated.
-
-**Helper scripts** (all in `/dfs/scratch0/brando9/bin/`, shared across nodes):
-- `krenew.sh` — `kinit -kt …; aklog`. Used by the 4-hourly cron and by `start_watcher_at_reboot.sh`.
-- `launch_watcher_remote.sh` — auto-detects python, bootstraps deps, pins `--job-dir /dfs/scratch0/brando9/job_queue`, wraps in `tmux new-session -d -s job_watcher 'bash -c …'` so import errors show up in `logs/watcher_daemon_<host>.log` instead of vanishing.
-- `start_watcher_at_reboot.sh` — boot wrapper: waits up to 5 min for DFS, runs `krenew.sh`, then `launch_watcher_remote.sh`. Logs to `/tmp/start_watcher_at_reboot_<host>.log`.
-
-**Verify on a node:**
-```bash
-crontab -l | grep -E 'krenew|start_watcher'    # both lines present
-klist                                          # ticket valid
-tmux ls | grep job_watcher                     # watcher session up
-ls /dfs/scratch0/brando9/job_queue/watchers/<host>.stanford.edu.heartbeat
-```
-
----
+See the [watcher persistence recipe](docs/setup-reference.md#keeping-watchers-alive-keytab--cron-no-password-prompt-ever).
 
 ## How to Integrate with Your Project Repos
 
-Each project repo should have **two canonical entry points** (`~/your-project/CLAUDE.md` for Claude Code, `~/your-project/AGENTS.md` for Codex) that point to **two indexes**: the home-level `~/agents-config/INDEX_RULES.md` (environment context) and the project's own `~/your-project/docs/agent-docs/INDEX.md` (project-specific docs).
-
-Project docs live in the repo so they're versioned with the code and available to anyone who clones it.
-
-```
-~/your-project/
-├── CLAUDE.md                         ← points to BOTH indexes
-├── AGENTS.md                         ← same for Codex
-├── docs/
-│   └── agent-docs/
-│       ├── INDEX.md                  ← project-specific doc routing
-│       ├── architecture.md           ← how the codebase is structured
-│       ├── eval-pipeline.md          ← evaluation workflow docs
-│       └── conventions.md            ← project-specific conventions
-├── src/
-└── tests/
-```
-
-Your project's `~/your-project/CLAUDE.md` looks like:
-
-```markdown
-# Project: your-project
-
-Read the home-level agent index for environment context:
-- `~/agents-config/INDEX_RULES.md`
-
-Read the project-level agent index for project-specific docs:
-- `~/your-project/docs/agent-docs/INDEX.md`
-```
-
-### Fork and customize
-
-1. Fork this repo
-2. Fill in `~/agents-config/machine/` with your actual machine specs (non-sensitive info). Reference existing config files (`~/.ssh/config`, `~/keys/`) for secrets — don't duplicate them.
-3. Add your own workflow docs
-
----
+Use [repo initialization](workflows/repo-init.md). Keep project-specific instructions alongside the project and shared policy here.
 
 ## Migrating from a Monolithic CLAUDE.md
 
-If you've been using Claude Code's `/init` command, each project already has a CLAUDE.md with project overview, build commands, architecture docs, and conventions all in one file. This section explains how to migrate that content into the three-layer architecture.
-
-### What migration looks like
-
-**Before** — monolithic CLAUDE.md (200+ lines, everything in one file):
-```
-my-project/
-└── CLAUDE.md    ← project overview, build commands, architecture, conventions, etc.
-```
-
-**After** — modular docs with shared environment context:
-```
-~/my-project/
-├── CLAUDE.md                         ← 5-line reference to both indexes
-├── AGENTS.md                         ← same reference for Codex
-└── docs/agent-docs/
-    ├── INDEX.md                      ← project doc routing
-    ├── overview.md                   ← project overview + key entry points
-    ├── build-and-dev.md              ← setup, build, test commands
-    ├── architecture.md               ← codebase structure + key patterns
-    └── conventions.md                ← project-specific conventions
-```
-
-### Step-by-step migration
-
-#### 1. Back up your old CLAUDE.md
-
-```bash
-cd ~/my-project
-cp CLAUDE.md CLAUDE.md.bak
-```
-
-#### 2. Triage the content
-
-Read through your old CLAUDE.md and sort each section into one of these buckets:
-
-| Bucket | Where it goes | Examples |
-|:-------|:-------------|:---------|
-| **Project-specific** | `~/my-project/docs/agent-docs/*.md` | Project overview, architecture, build commands, test commands, key entry points, dataset structure, experiment conventions |
-| **Already in agent-config** | Drop it (`~/agents-config/` provides it) | Machine specs, SSH config, general workflow rules (explicit opt-in QA, worktrees), global rules (no secrets, verify before push) |
-| **Cross-references to other repos** | `~/my-project/docs/agent-docs/` or drop | `@/path/to/other/CLAUDE.md` references — replace with a reference in your project INDEX.md if still needed |
-| **Stale/outdated** | Drop it | Old experiment notes, deprecated commands, hardcoded model IDs that have changed |
-
-#### 3. Create the project docs directory and split the content
-
-```bash
-mkdir -p ~/my-project/docs/agent-docs
-```
-
-Split your old CLAUDE.md into focused files. A typical project needs 2–4 files. **Don't over-split** — if your old CLAUDE.md was under 80 lines, a single `~/my-project/docs/agent-docs/overview.md` with everything is fine.
-
-**Suggested split for a typical research project:**
-
-- **`overview.md`** — Project purpose (1–3 sentences), environment variables, key entry points
-- **`build-and-dev.md`** — Setup, build, test, and lint commands
-- **`architecture.md`** — Directory structure, core components, key patterns
-- **`conventions.md`** — Only if there are project-specific rules (file naming, experiment layout, etc.)
-
-#### 4. Create the project INDEX.md
-
-```markdown
-# INDEX.md — my-project
-
-Load only the docs relevant to your current task.
-
-## Docs
-
-- [`overview.md`](overview.md) — project purpose, env vars, entry points
-- [`build-and-dev.md`](build-and-dev.md) — setup, build, test commands
-- [`architecture.md`](architecture.md) — codebase structure and key patterns
-```
-
-#### 5. Replace CLAUDE.md with the two-reference format
-
-```markdown
-# Project: my-project
-
-Read the home-level agent index for environment context:
-- `~/agents-config/INDEX_RULES.md`
-
-Read the project-level agent index for project-specific docs:
-- `~/my-project/docs/agent-docs/INDEX.md`
-```
-
-Create `~/my-project/AGENTS.md` with the same references for Codex. Do not add a case-only duplicate inside the repository; it cannot be checked out reliably on case-insensitive filesystems.
-
-#### 6. Delete the backup
-
-Once you've verified the migration, remove the backup:
-```bash
-rm ~/my-project/CLAUDE.md.bak
-```
-
-### Handling common patterns in old CLAUDE.md files
-
-**`@/path/to/other/CLAUDE.md` references** (e.g., `@/dfs/scratch0/brando9/CLAUDE.md`):
-These were used to pull in shared context from a cluster-level CLAUDE.md. Agent-config replaces this — the shared context now lives in `~/agents-config/machine/` and `~/agents-config/workflows/`. Drop the `@` reference.
-
-**Machine-specific sections** (GPU setup, cluster paths, Docker auth):
-These belong in `~/agents-config/machine/*.md`, not in individual projects. If a machine doc doesn't exist yet, create one in agent-config.
-
-**Experiment-specific sections** (e.g., "Harbor x VeriBench Experiment 35"):
-These are project-specific and should go into `~/my-project/docs/agent-docs/`. For large experiment sections, give them their own file (e.g., `~/my-project/docs/agent-docs/experiment-35.md`).
-
-**SOTA model ID lookups** (e.g., "web-search for current models before each run"):
-This is a workflow convention. If it applies across projects, add it to `~/agents-config/workflows/`. If project-specific, keep it in `~/my-project/docs/agent-docs/conventions.md`.
-
-### Migration checklist
-
-For each project, verify:
-- [ ] `~/my-project/CLAUDE.md` contains only the two-reference format (under 10 lines)
-- [ ] `~/my-project/docs/agent-docs/INDEX.md` exists and lists all project doc files
-- [ ] No secrets, API keys, or tokens appear in any doc file
-- [ ] No hardcoded machine specs (reference `~/agents-config/machine/` instead)
-- [ ] Old `~/my-project/CLAUDE.md.bak` has been deleted
-- [ ] Agent can still find build/test commands by reading the project INDEX
-
----
+See the [migration procedure](docs/setup-reference.md#migrating-from-a-monolithic-claudemd); small files can stay intact.
 
 ## Initialization Guides
 
-- **[Passwordless SSH to SNAP (Kerberos keytab)](init_no_passwords_snap_kinit.md)** — One-time setup so SSH and Cursor never prompt for a password on SNAP servers. Uses a Kerberos keytab + launchd auto-renewal. See also: [Cursor SSH + Kerberos TODO](cursor_ssh_kerberos_todo.md) for the original design notes.
-- **[TODO: Infinite server-side Kerberos renewal](todo_infinite_reauth_kinit_server_side.md)** — Eliminate `krbtmux`/`reauth` by auto-renewing server-side tickets via keytab + cron. Covers tmux, byobu, Cursor, and background jobs.
-
----
+See [passwordless host access](init_no_passwords_snap_kinit.md) and [server-side credential renewal](todo_infinite_reauth_kinit_server_side.md).
 
 ## Security
 
-This is a **public repo**. Never commit API keys, tokens, passwords, or private IPs. Machine docs should reference existing config files (`~/.ssh/config`, `~/keys/`, `~/.zshrc`) for sensitive details rather than duplicating them. Reusable templates should use `<PLACEHOLDER>` markers.
-
-
----
+Public repository: keep secrets and private host details out of commits. Use private configuration references. Model work follows Hard Rule 9 through approved clients and budgets.
 
 ## Related Work
 
-The AI coding agent ecosystem is growing fast. Here's how `agents-config` relates to existing tools:
-
-**Multi-Agent Orchestration** — [Ruflo](https://github.com/ruvnet/ruflo) (21.9K stars), [Agent Orchestrator](https://github.com/ComposioHQ/agent-orchestrator) (4.9K), [Emdash](https://github.com/generalaction/emdash) (2.8K), and [Gas Town](https://github.com/steveyegge/gastown) (12.6K) focus on *running* multiple agents — spawning, coordinating, and merging their work. `agents-config` is complementary: it standardizes the *documentation* agents read, not how they're orchestrated.
-
-**Parallel Agent Execution** — [parallel-code](https://github.com/johannesjo/parallel-code) (387 stars) and [parallel-worktrees](https://github.com/SpillwaveSolutions/parallel-worktrees) run agents side-by-side in git worktrees. Our [`workflows/git-worktrees.md`](workflows/git-worktrees.md) describes the same pattern as portable documentation, including an example that combines worktrees with byobu.
-
-**CLAUDE.md Templates & Best Practices** — [claude-code-templates](https://github.com/davila7/claude-code-templates) (23.2K stars), [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice) (19K), [claude-code-showcase](https://github.com/ChrisWiles/claude-code-showcase) (5.5K), and [claude-md-templates](https://github.com/abhishekray07/claude-md-templates) (95) provide example `CLAUDE.md` files and configurations. These are Claude-specific. `agents-config` is agent-agnostic (Layer 1 adapts per agent; Layers 2–3 are shared) and uses doc routing instead of a monolithic file.
-
-**Curated Lists** — [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) (29.2K stars) and [awesome-claude-md](https://github.com/josix/awesome-claude-md) (159) catalog plugins, skills, and example configs across the ecosystem.
-
-| Concern | Orchestration tools | Template repos | `agents-config` |
-|:--------|:-------------------|:---------------|:-----------------|
-| Runs agents | Yes | No | No |
-| Provides agent docs | Sometimes | Yes (Claude-only) | Yes (agent-agnostic) |
-| Scales past monolithic files | N/A | No | Yes (three-layer index) |
-| Secrets stay out of repo | No | No | Yes (reference existing config files) |
-
----
+[Related projects and historical comparisons](docs/reference/background.md#related-work).
 
 ## Citation
 
-This repo is open source under the [Apache 2.0 License](LICENSE).
-
-```bibtex
-@misc{miranda2026agentconfig,
-  author = {Brando Miranda and Claude (Anthropic) and Codex (OpenAI) and Cursor (Anysphere)},
-  title = {Agent-Config: A Modular, Agent-Agnostic Documentation Architecture for Multi-Agent Coding Workflows},
-  year = {2026},
-  howpublished = {\url{https://github.com/brando90/agents-config}},
-}
-```
-
-We list Claude (Anthropic), Codex (OpenAI), and Cursor (Anysphere) as co-authors because this system was designed collaboratively between human and AI agents. While AI co-authorship is not yet widely accepted in academic venues, we believe transparency about AI contributions is important and reflects the future of human-AI collaboration.
-
-### Related paper by the author
-
-**A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption.** Yegor Denisov-Blanch, Shyam Agarwal, Pavel Azaletskiy, Hao He, Rylan Schaeffer, Brando Miranda, Bogdan Vasilescu, Sanmi Koyejo. arXiv preprint arXiv:2608.25241, 2026. [[arXiv](https://arxiv.org/abs/2608.25241)] · [[Google Scholar](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=_NQJoBkAAAAJ&sortby=pubdate&citation_for_view=_NQJoBkAAAAJ:738O_yMBCRsC)]
-
-Co-authored by this repo's author, this paper studies the same class of artifact `agents-config` provides: version-controlled configuration files that teams commit to their repositories to configure AI coding tools. It introduces RAMP (Repository AI Maturity Profile), a four-level cumulative maturity model running from behavioral rules and coding standards, through named agent definitions, to multi-agent orchestration, and applies it across 441 repositories. Among agent-first repositories, those *without* committed AI configuration show roughly twice the increase in cognitive complexity (+53% versus +27%); the authors note the maturity measure is observational and present the finding as hypothesis-generating. Its first author, Yegor Denisov-Blanch, is the same person credited in the Acknowledgments below.
-
-The paper does not study or evaluate this repo — it is cited here as related work and as empirical context for the practice `agents-config` implements.
-
-```bibtex
-@misc{denisovblanch2026markdown,
-  author = {Yegor Denisov-Blanch and Shyam Agarwal and Pavel Azaletskiy and Hao He and Rylan Schaeffer and Brando Miranda and Bogdan Vasilescu and Sanmi Koyejo},
-  title = {A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption},
-  year = {2026},
-  eprint = {2608.25241},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.SE},
-  howpublished = {\url{https://arxiv.org/abs/2608.25241}},
-}
-```
-
----
+[Repository and related-paper citations](docs/reference/background.md#citation). Licensed under [Apache 2.0](LICENSE).
 
 ## Acknowledgments
 
-We thank [Yegor Denisov-Blanch](https://x.com/yegordb) for the original insight about modular, agent-agnostic documentation for multi-agent coding workflows, which inspired this project. (We plan to ask Yegor if he'd like to be listed as a co-author — pending his response.)
+[Design credit and acknowledgments](docs/reference/background.md#acknowledgments), including Yegor Denisov-Blanch's contribution to the original idea.

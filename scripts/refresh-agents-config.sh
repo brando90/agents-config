@@ -2,7 +2,7 @@
 # Refresh ~/agents-config via a throttled git pull.
 # Wired as a Claude Code UserPromptSubmit hook (see claude-code-settings.json):
 # stdout is injected into the model's context, so when a pull brings new
-# commits the session is told to re-read INDEX_RULES.md (Hard Rule 5, made
+# commits the session is told to re-read INDEX_RULES.md (Hard Rule 6, made
 # deterministic). Throttled to one attempt per 15 minutes per machine via a
 # marker file; safe offline (pull failure is silent and still stamps the
 # marker so we don't retry on every prompt). If the repo has local commits

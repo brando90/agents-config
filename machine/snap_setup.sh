@@ -3,7 +3,7 @@
 # This script handles SNAP-specific filesystem setup (AFS/DFS/LFS), then runs the
 # universal setup.sh (at repo root) for everything else (uv, Python deps, Lean, Mathlib, PyPantograph).
 #
-# For agent documentation architecture, see: ~/agent-config/INDEX_RULES.md
+# For agent documentation architecture, see: ~/agents-config/INDEX_RULES.md
 # For per-node setup (when DFS is already configured), see: agents-config/machine/snap.md
 #
 # --> IMPORTANT: Please always do an ls -lah or echo $NEW_ENV etc to check that doing the right things!
