@@ -1,5 +1,7 @@
 # Workflow: Repo Init — Migrating to agents-config
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/repo-init.md>
+
 **TLDR:** Onboard an existing or new repo to the
 `~/agents-config/` three-layer system (global rules → workflow refs →
 per-repo `CLAUDE.md` + uppercase `AGENTS.md`). Run this once per new repo and
@@ -15,7 +17,7 @@ New pattern: global rules and machine/workflow docs live in `~/agents-config/`. 
 
 There are two tiers of migration:
 - **Minimal** (recommended for most projects): Add the redirect header to `CLAUDE.md`, keep project docs inline, and add uppercase `AGENTS.md`. This is what most repos need.
-- **Full split** (for large projects with 200+ line CLAUDE.md): Split project docs into `docs/agent-docs/` with a project-level `INDEX.md`. See `~/agents-config/README.md` § "Migrating from a Monolithic CLAUDE.md" for the full split procedure.
+- **Full split** (when instructions are lengthy, duplicated or mostly task-specific; measure bytes/words as well as lines): Split project docs into `docs/agent-docs/` with a project-level `INDEX.md`. See `~/agents-config/README.md` § "Migrating from a Monolithic CLAUDE.md" for the full split procedure.
 
 This checklist covers the **minimal** tier.
 
@@ -69,7 +71,21 @@ The project's `CLAUDE.md` should still contain:
 - Key entry points
 - Experiment-specific details (Harbor adapters, metrics, etc.)
 
-### 5. Verify home-level symlinks exist
+### 5. Verify actual global instruction files
+
+Claude Code's user-wide instruction file is `~/.claude/CLAUDE.md` (under the
+active `CLAUDE_CONFIG_DIR` for a separate profile). Preserve any local content
+and add a reference to the shared entry when missing. A Claude `@` import of
+the small shared `CLAUDE.md` is supported; do not eagerly import the large
+on-demand rule files. A home-level `~/CLAUDE.md` is only an ancestor instruction,
+so it does not replace the user-wide file for projects outside the home tree.
+Codex uses `$CODEX_HOME/AGENTS.md` (normally `~/.codex/AGENTS.md`); check for a
+nonempty `AGENTS.override.md` that would take precedence. Other clients follow
+[their own discovery rules](../docs/instruction-audit/README.md#client-compatibility).
+Verify resolved paths, nonempty contents and what a fresh session actually
+loads. Existing running sessions are not automatically proven reloaded.
+
+### 5a. Optional home-level compatibility symlinks
 
 ```bash
 # These should already exist (one-time setup):
@@ -89,7 +105,7 @@ ln -sf ~/agents-config/AGENTS.md ~/agents.md       # legacy home-level compatibi
 ### 6. Test the chain
 
 After migration, verify the full routing chain works:
-1. `~/CLAUDE.md` → redirects to `~/agents-config/INDEX_RULES.md`
+1. Active Claude user file → shared `CLAUDE.md` → `~/agents-config/INDEX_RULES.md`; verify the optional home-level link separately
 2. `~/agents-config/INDEX_RULES.md` → global rules + doc routing
 3. `~/project/CLAUDE.md` → first line is the redirect header, then project docs
 4. `~/project/AGENTS.md` → exists and redirects to both `INDEX_RULES.md` and `CLAUDE.md`

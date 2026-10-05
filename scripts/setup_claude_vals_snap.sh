@@ -77,9 +77,10 @@ EOF
 write_if_needed "$VALS_DIR/CLAUDE.md" <<'EOF'
 This profile is for Vals AI work, kept separate from the personal Claude Code login.
 
-## Response style
-Always end responses with a TL;DR: at least 1 sentence, only longer than
-3-4 sentences when really necessary. Be direct and quick, not padded.
+## Shared agent instructions
+Read `~/agents-config/CLAUDE.md` and follow its compact shared contract and
+`~/agents-config/INDEX_RULES.md` routing before working. Load only triggered
+detail sections; retain the exact closing TLDR-end and Snapshot protocol.
 EOF
 
 # Skip first-run onboarding (theme/login walkthrough) and pre-accept the folder-trust prompt for

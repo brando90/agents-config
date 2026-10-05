@@ -1,0 +1,562 @@
+{
+  "source_commit": "2b53349",
+  "rules": [
+    {
+      "id": "hard-1",
+      "path": "rules/safety-and-models.md",
+      "anchor": "hard-rule-1",
+      "source_sha256": "a96acdb0dc7194960a1f6014ce5d281fe0fb69ceba2db2232c2a01a616f33dec"
+    },
+    {
+      "id": "hard-3",
+      "path": "rules/safety-and-models.md",
+      "anchor": "hard-rule-3",
+      "source_sha256": "fb9c0e6f040c8d5c80ac0e4f4e3b67b277f53b0c7f2ae5c1382575e06733a56e"
+    },
+    {
+      "id": "hard-8",
+      "path": "rules/safety-and-models.md",
+      "anchor": "hard-rule-8",
+      "source_sha256": "14b3c70f6d1161716ee96b2971e95367bb01b663003b884332a6d4c1d5ee90bb"
+    },
+    {
+      "id": "hard-9",
+      "path": "rules/safety-and-models.md",
+      "anchor": "hard-rule-9",
+      "source_sha256": "af17582c8bfcbbf713e7faa692325af7724a2ed82d472b8523eced2064bde3d6"
+    },
+    {
+      "id": "trigger-10",
+      "path": "rules/safety-and-models.md",
+      "anchor": "trigger-rule-10",
+      "source_sha256": "6aa1163a34e621a4795211d95fc526024740cbed68117f23df71b77709583b46"
+    },
+    {
+      "id": "trigger-43",
+      "path": "rules/safety-and-models.md",
+      "anchor": "trigger-rule-43",
+      "source_sha256": "bcd09da0ddbfcba1e4f43c694172ca35297597bc25e6fab9c22c645d792e3823"
+    },
+    {
+      "id": "hard-4",
+      "path": "rules/responses.md",
+      "anchor": "hard-rule-4",
+      "source_sha256": "d41a25ec65c4132df3017ae4a7f9ea0b66a634f476c282da8886b7f0fa131196"
+    },
+    {
+      "id": "hard-5",
+      "path": "rules/responses.md",
+      "anchor": "hard-rule-5",
+      "source_sha256": "1025dbf2ef0c909979d3dc7bcde78b1bef1bf36858f4167ea84430c4111d4406"
+    },
+    {
+      "id": "hard-10",
+      "path": "rules/responses.md",
+      "anchor": "hard-rule-10",
+      "source_sha256": "f8d7f83d55f96376feb42020ebf98d221a91457cfc899792110f39fb7649fe45"
+    },
+    {
+      "id": "hard-11",
+      "path": "rules/responses.md",
+      "anchor": "hard-rule-11",
+      "source_sha256": "141dc6fd8c2ab898c569ca75364bf92096320996258a01e9d363e00a8933b01e"
+    },
+    {
+      "id": "trigger-15",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-15",
+      "source_sha256": "9f617924384879af538f11a03d4d30f4f7fa5ed5b612a8b19a09f48ccd1e2030"
+    },
+    {
+      "id": "trigger-16",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-16",
+      "source_sha256": "d01b630ad8524d84b5cb54389919c95b7507a1f7070d82677c0373e975203b6d"
+    },
+    {
+      "id": "trigger-23",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-23",
+      "source_sha256": "1d213bf9c30c72e3d55ca99da0b3e41c5ce2a8b45b9c4c6949e148b28568134c"
+    },
+    {
+      "id": "trigger-24",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-24",
+      "source_sha256": "8af10f3cbd5207eb767de968fdc6215980b4581b78ad0487b408e2a0392b4239"
+    },
+    {
+      "id": "trigger-27",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-27",
+      "source_sha256": "ba0a85c1159434997f0276bd58826f0429d2a848e9539e057bb9386f517a581d"
+    },
+    {
+      "id": "trigger-41",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-41",
+      "source_sha256": "55a10f511ba1cf636f77b3987ec37b32c59a48513be67d6e688e864d690d73cc"
+    },
+    {
+      "id": "trigger-53",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-53",
+      "source_sha256": "9103b17de1ad88c7aa6a2d93982d027afb7aa83e0305f9a88f246e1b8cef9ccd"
+    },
+    {
+      "id": "trigger-54",
+      "path": "rules/responses.md",
+      "anchor": "trigger-rule-54",
+      "source_sha256": "50d19195e697e437575a0025cedf748b0054a71843cc0aa0ad19a85a08d602c6"
+    },
+    {
+      "id": "guideline-17",
+      "path": "rules/responses.md",
+      "anchor": "guideline-rule-17",
+      "source_sha256": "1dd44b06c89a7cc4473c9ea81be2c83f9df5720122157e99ea6f59ece0cb56e4"
+    },
+    {
+      "id": "guideline-20",
+      "path": "rules/responses.md",
+      "anchor": "guideline-rule-20",
+      "source_sha256": "aaa614311d21a7985643f7cbabbc68f751c438ec750b10a056a3953b85b5a19d"
+    },
+    {
+      "id": "hard-2",
+      "path": "rules/maintenance.md",
+      "anchor": "hard-rule-2",
+      "source_sha256": "18b5b6db55d348788fc6e6ac182646edd982cc6613204527836dd589cdacee6c"
+    },
+    {
+      "id": "hard-6",
+      "path": "rules/maintenance.md",
+      "anchor": "hard-rule-6",
+      "source_sha256": "778978d829d7266e2c209397dc0e716d7d78beba53674b8655009d94c8c142c7"
+    },
+    {
+      "id": "hard-7",
+      "path": "rules/maintenance.md",
+      "anchor": "hard-rule-7",
+      "source_sha256": "ff7f80478c8f8ad905006b777eee5af5464da537fee7904c9525658404a9f9ee"
+    },
+    {
+      "id": "trigger-6",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-6",
+      "source_sha256": "f36aee9a90cddd79aed85f1d769aa6a62e7236745e95b10cf7fa2eae341d2504"
+    },
+    {
+      "id": "trigger-7",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-7",
+      "source_sha256": "745eda5a36b93783a3d80df2e63242158c9ea3376f60d4546f4140c1031078e3"
+    },
+    {
+      "id": "trigger-8",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-8",
+      "source_sha256": "cb6ca9a5789575faf78e45d766e3a33672eb248cf7b1290704261af97f88e993"
+    },
+    {
+      "id": "trigger-11",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-11",
+      "source_sha256": "4174ef39db9befdf6d54c43257b3d3e43d22b9885d4f9008f9e4776eb75ffb93"
+    },
+    {
+      "id": "trigger-17",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-17",
+      "source_sha256": "333443d6463d0089aa4ae327898cee9470454ce76c30c20bcf06a7613051f18a"
+    },
+    {
+      "id": "trigger-18",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-18",
+      "source_sha256": "9eb032a29b526a1658d4f09b06fae4e42186b9bfef43f1f8730612811880902e"
+    },
+    {
+      "id": "trigger-19",
+      "path": "rules/maintenance.md",
+      "anchor": "trigger-rule-19",
+      "source_sha256": "b01b64dca8e6a4c14ed151fa0c6f0dcc0646aeeb7d22a592b043639f8e335665"
+    },
+    {
+      "id": "guideline-14",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-14",
+      "source_sha256": "bd166dce2bd8b31ce4ffa9c227f6a32da913dd87cfc58f81d2af69f2a0bd4662"
+    },
+    {
+      "id": "guideline-15",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-15",
+      "source_sha256": "3b2719f4dbcfe78126d14d74e5cd05f56ffa445b3d4e93c30c339cbea4a6202c"
+    },
+    {
+      "id": "guideline-16",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-16",
+      "source_sha256": "00fc1c10d49ceee3b4038e3c58c96be59b503552d48688ace4da8f325bd5b9f1"
+    },
+    {
+      "id": "guideline-18",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-18",
+      "source_sha256": "3450b638f82837cad73d36f46726c1cd3cb2b6c25d3474b334d8cb68a88220a5"
+    },
+    {
+      "id": "guideline-21",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-21",
+      "source_sha256": "d04ba5231e28388b5458decc132bb88703f0cde416548e3dc86498718290557f"
+    },
+    {
+      "id": "guideline-22",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-22",
+      "source_sha256": "4e150669b3febda73159c12e990a36e93749aa4a5c2c59a88dd2fab408fb0721"
+    },
+    {
+      "id": "guideline-23",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-23",
+      "source_sha256": "195c834e88e13d03a3d3f7d1d1b095efa869bb5281088bec9e0c291fea165dea"
+    },
+    {
+      "id": "guideline-24",
+      "path": "rules/maintenance.md",
+      "anchor": "guideline-rule-24",
+      "source_sha256": "00964491b3958195806dd64deef99c307210c2aee9d4bbae95a9e09ceddae2cd"
+    },
+    {
+      "id": "trigger-9",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-9",
+      "source_sha256": "47062019c33197605becade4fd447bfa20e615ed7e389df1910e8decc25064c4"
+    },
+    {
+      "id": "trigger-20",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-20",
+      "source_sha256": "0db53aa23f1a5ec567665f59e2d0f64930700c16896e09ae8d91455c7cbfd106"
+    },
+    {
+      "id": "trigger-28",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-28",
+      "source_sha256": "b5a69a5f407a5b8be16ed654fc0f88788c23d087b725c148491231d114521880"
+    },
+    {
+      "id": "trigger-37",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-37",
+      "source_sha256": "8498ae836864a7b2a32b3e11e16013c14a3dc7a65933df3186faedb7c486e401"
+    },
+    {
+      "id": "trigger-39",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-39",
+      "source_sha256": "4518ce3ca28ce590ca758d55659e2d1708e3905a6dd253b6b890a1f46c249079"
+    },
+    {
+      "id": "trigger-49",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-49",
+      "source_sha256": "916546667f617e2da844ee6fd645f0a0524618e0e8d6f54fdb7aaf11d33cad0a"
+    },
+    {
+      "id": "trigger-50",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-50",
+      "source_sha256": "c871f0ca0fe01a798ecda2363cd83b5602a6976dc1ed3426ee9805688713f1be"
+    },
+    {
+      "id": "trigger-61",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-61",
+      "source_sha256": "8ff3b82e0a456fec76995451b6ab541c08c7b9bb2cd1ea8bcd3bd7bc780cd4c1"
+    },
+    {
+      "id": "trigger-64",
+      "path": "rules/research.md",
+      "anchor": "trigger-rule-64",
+      "source_sha256": "ac22d6e2df37052579c3bfae4d22c3e53a0f2724de01b108ab7777ba26e8e26d"
+    },
+    {
+      "id": "guideline-19",
+      "path": "rules/research.md",
+      "anchor": "guideline-rule-19",
+      "source_sha256": "a50b1b8e7a173aea7a0175db8f767a08b261e81d3d8f6439451d9d5cf4fd12bf"
+    },
+    {
+      "id": "trigger-13",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-13",
+      "source_sha256": "d34765f17a7d090d32a0b89ae9b57fb4858c70ae8096538f3944e577a86645f8"
+    },
+    {
+      "id": "trigger-21",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-21",
+      "source_sha256": "cac0fafb5a2854b0988a59ad645874e75944e550b357ccea04526ab179a89f95"
+    },
+    {
+      "id": "trigger-22",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-22",
+      "source_sha256": "675b43e2a162f58e28fede7bf171ac1daa19ef86ce9e9a54fbf099dc84b7bb62"
+    },
+    {
+      "id": "trigger-25",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-25",
+      "source_sha256": "caee2ed84ef0395191099991275c131e85f48544114d3bffdeae0ed964c4505b"
+    },
+    {
+      "id": "trigger-29",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-29",
+      "source_sha256": "e1e83161cf94874e191dfd02cf105f4f6aca537f0fe280ecb87802c8f03ea006"
+    },
+    {
+      "id": "trigger-30",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-30",
+      "source_sha256": "14fdab237f4af94bea7328f68ec176e5f9c4fdc254ac5edb7d475e3601aff15b"
+    },
+    {
+      "id": "trigger-31",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-31",
+      "source_sha256": "c51ea360e288c070d476944a703ad4297ab13123f983a2583f97836644135ac4"
+    },
+    {
+      "id": "trigger-32",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-32",
+      "source_sha256": "c993779c6ea09c250958078f32f3af2d76dabb158aab6fcf60c1fa2cba8b4c95"
+    },
+    {
+      "id": "trigger-33",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-33",
+      "source_sha256": "9dcb45b85f21c9370a51d8397cc63b64d5c60a7ae3fba03904c1560eb2691a8c"
+    },
+    {
+      "id": "trigger-35",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-35",
+      "source_sha256": "318dc89db4a0fefc4d3ef9e941560c4f7cf7195ff7ab5e113e8df308762b09bf"
+    },
+    {
+      "id": "trigger-40",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-40",
+      "source_sha256": "506879ff5fcc62a5c1e3dade54a592e51c62f53d7c935cb0da3b4d1bad3e02c6"
+    },
+    {
+      "id": "trigger-60",
+      "path": "rules/writing.md",
+      "anchor": "trigger-rule-60",
+      "source_sha256": "8956063bbb332144a8287fb67e582bfda63f7be54d975838de731a18ce3316b7"
+    },
+    {
+      "id": "trigger-12",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-12",
+      "source_sha256": "d1ab368caee5915b5410aab76c6b00eb0745c4462b31ec93d35a79dee0c850e0"
+    },
+    {
+      "id": "trigger-36",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-36",
+      "source_sha256": "ae93b207efde129650be535cdf486d8607df66e1c2aa642ac686515c75eecd5f"
+    },
+    {
+      "id": "trigger-42",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-42",
+      "source_sha256": "6f9090a7fcde880e6494fa5f141478e29b545acc1b1349faedd643ce15c4da3a"
+    },
+    {
+      "id": "trigger-44",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-44",
+      "source_sha256": "75a2f50e9546c1199b45f3c4a821b43f36f44093b6991a285e6fa21fba109144"
+    },
+    {
+      "id": "trigger-45",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-45",
+      "source_sha256": "e844bfe0562ff747521e0dbf4eba9814eb0c93b1cb85cafaf50b62f2365e7fd7"
+    },
+    {
+      "id": "trigger-48",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-48",
+      "source_sha256": "3f61f3f5c04cdec1af8c741fb3feda5d7e1967d9cbd1a0ffdedf8533e465f54a"
+    },
+    {
+      "id": "trigger-52",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-52",
+      "source_sha256": "541f08da9ec05b71bcf09d6cf6586d1b21c0848bfb18a99ef2e3cf8bf536e5c2"
+    },
+    {
+      "id": "trigger-57",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-57",
+      "source_sha256": "b3c15dbaf90c975b0860739f0b9ddc5a1e990e410934a5427cb9387399a15651"
+    },
+    {
+      "id": "trigger-58",
+      "path": "rules/workers.md",
+      "anchor": "trigger-rule-58",
+      "source_sha256": "fddb436340d45d73f1bd74a2ef4e43abbe60ce7edbef87e2197a756c0ef1b76d"
+    },
+    {
+      "id": "trigger-38",
+      "path": "rules/hosts.md",
+      "anchor": "trigger-rule-38",
+      "source_sha256": "bcdd38e575c2506be02b1f56be82c361802608248f6198cd436ca7b313635017"
+    },
+    {
+      "id": "trigger-46",
+      "path": "rules/hosts.md",
+      "anchor": "trigger-rule-46",
+      "source_sha256": "7a6f9e5d714637d387b489ac7071206360843c10f31c9d8fae3223aecb1ba08a"
+    },
+    {
+      "id": "trigger-51",
+      "path": "rules/hosts.md",
+      "anchor": "trigger-rule-51",
+      "source_sha256": "06f0e93a1592e0de37583e29b28895027eda8cd5b83fa320d4a279304ae93287"
+    },
+    {
+      "id": "trigger-55",
+      "path": "rules/hosts.md",
+      "anchor": "trigger-rule-55",
+      "source_sha256": "dff2b6678bfb564598c4e897cc733593e9bc8197da619e5e861811f3d1124404"
+    },
+    {
+      "id": "trigger-14",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-14",
+      "source_sha256": "dfd91ab5057819b7766221c287b92e4c67d96e1e418c13392f8d4f882ac1a535"
+    },
+    {
+      "id": "trigger-26",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-26",
+      "source_sha256": "15aab2b91700d94ab20d16646bc6a38335d88b7ba168deb5ca4e0c7e3793841d"
+    },
+    {
+      "id": "trigger-34",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-34",
+      "source_sha256": "034daf00d659cd79bfc1b0eb6875bd552d99c33a031d7519cb6919b96060fb22"
+    },
+    {
+      "id": "trigger-47",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-47",
+      "source_sha256": "707c7730b2ab5efc08b60324d7e86c0caf16986efe4d0ee8c82a4de15e3b559c"
+    },
+    {
+      "id": "trigger-56",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-56",
+      "source_sha256": "c4a9d19d8fb36077f9848ff48b214bbc3483bfb67e818119b077154d7c086915"
+    },
+    {
+      "id": "trigger-59",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-59",
+      "source_sha256": "a9e7e2dd75510bd8d3ebc08f70a3616db6258ee27ac0188535c05cc4d40b9774"
+    },
+    {
+      "id": "trigger-62",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-62",
+      "source_sha256": "22e438abaec6cbb819471c77979803a10ee9c9d2c5d9c8874b388119b322b838"
+    },
+    {
+      "id": "trigger-63",
+      "path": "rules/services.md",
+      "anchor": "trigger-rule-63",
+      "source_sha256": "e7cb680fea63fd17c299e1920d1f7687cb7275bf94a6e4a28a8bb525a8f8c6b6"
+    }
+  ],
+  "clarifications": [
+    {
+      "rule": "hard-6",
+      "old": "Push any uncommitted agents-config changes and run QA if changes were pulled from another agent.",
+      "new": "Publish only your owned agents-config changes after verification; model review remains opt-in under Hard Rule 3."
+    },
+    {
+      "rule": "trigger-7",
+      "old": "a **Summary** section of 5\u201310 bullet points max (one line each)",
+      "new": "a **Summary** section of at most 10 concise bullet points (fewer for small changes)"
+    },
+    {
+      "rule": "guideline-21",
+      "old": "Load them with `cat ~/keys/<file>.txt` and set as env vars.",
+      "new": "Load them transiently into the authorized tool or environment without printing secret values."
+    },
+    {
+      "rule": "trigger-29",
+      "old": "run Mega QA, commit only relevant files",
+      "new": "run only the review tier explicitly requested under Hard Rule 3, commit only relevant files"
+    },
+    {
+      "rule": "trigger-46",
+      "old": "light quality assurance (QA), merge to `main`",
+      "new": "requested quality assurance (QA), merge to `main`"
+    },
+    {
+      "rule": "trigger-46",
+      "old": "the QA verdict block, the model identifiers",
+      "new": "the QA verdict block when requested, the model identifiers"
+    },
+    {
+      "rule": "trigger-46",
+      "old": "with no tier named it runs the deterministic checks and records \"QA: not requested\" in the PR, otherwise it records the verdict.",
+      "new": "with no tier named it runs and records the deterministic checks without mentioning QA; otherwise it records the verdict."
+    },
+    {
+      "rule": "trigger-46",
+      "old": "body = PR uniform resource locator (URL), TLDR, `diff --stat`, QA verdict, ledger and CKPT paths",
+      "new": "body = PR uniform resource locator (URL), TLDR, `diff --stat`, requested-review verdict when applicable, ledger and CKPT paths"
+    },
+    {
+      "rule": "trigger-64",
+      "old": "copy-ready weekly-update sentence of Hard Rule 1",
+      "new": "copy-ready weekly-update sentence of Hard Rule 4"
+    },
+    {
+      "rule": "trigger-64",
+      "old": "commit and push the folder (Hard Rule 4)",
+      "new": "commit and push the folder (Trigger Rule 8)"
+    },
+    {
+      "rule": "trigger-42",
+      "old": "for Codex there is no Remote Control and \"started\" requires",
+      "new": "this launcher uses its Codex process check (independent of any separately configured Codex Remote capability), so \"started\" requires"
+    }
+  ],
+  "entrypoint_preservation": [
+    {
+      "source_file": "CLAUDE.md",
+      "prefix": "- **When external fetches fail**",
+      "source_sha256": "a7fd6bc4bbee8d468aebdcf25b774aa1af9e1c5f7d7fa61d8c3ae4fe76f00d6e",
+      "destination": "workflows/broad-investigation.md"
+    },
+    {
+      "source_file": "AGENTS.md",
+      "prefix": "**Desktop/cloud connector use:**",
+      "source_sha256": "313ee3a0906c655c70dd429847b753c12318c7faeda3292100f9bf73485974e7",
+      "destination": "workflows/broad-investigation.md"
+    }
+  ]
+}

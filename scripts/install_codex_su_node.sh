@@ -60,7 +60,7 @@ if [ ! -e "$profile/AGENTS.md" ]; then
   cat > "$profile/AGENTS.md" <<'AGENTSMD'
 # Codex entry point — Stanford University enterprise profile (SNAP node)
 
-Run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull 2>/dev/null` to bootstrap/update config.
+Run `git clone https://github.com/brando90/agents-config.git ~/agents-config 2>/dev/null || git -C ~/agents-config pull --ff-only 2>/dev/null` to bootstrap/update config.
 Read `~/agents-config/INDEX_RULES.md` for all agent documentation and routing.
 AGENTSMD
   chmod 600 "$profile/AGENTS.md"

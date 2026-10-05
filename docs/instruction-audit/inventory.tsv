@@ -1,0 +1,224 @@
+path	bytes	words	lines	role	disposition	reason
+.gitignore	529	67	37	repository hygiene configuration	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+AGENTS.md	23006	2981	139	automatically discovered agent entry point	change	Thin portable adapter; eliminate startup duplication while preserving critical reminders.
+CLAUDE.md	24281	3154	108	automatically discovered agent entry point	change	Thin Claude adapter; mirror shared body and preserve explicit shared-index routing.
+INDEX_RULES.md	193333	27485	400	mandatory shared policy and routing	change	Replace 193333-byte mandatory read with compact ID-preserving topic routing.
+LICENSE	10765	1497	190	legal license	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+README.md	48874	5848	776	human architecture, onboarding and operator reference	change	Move long operator recipes to linked setup reference; retain architecture and quick start.
+bm-agents-config.code-workspace	404	45	34	editor workspace configuration	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+claude-code-settings.json	972	71	43	Claude settings and lifecycle hook template	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+codex_remote_control_todo.md	4234	518	97	historical or pending task note	keep	Preserve evidence/data; not a mandatory startup instruction.
+contacts.md	3397	448	49	on-demand identity and communication policy	keep	Task-scoped reference; its length does not impose universal startup cost.
+cursor_ssh_kerberos_todo.md	8390	1082	228	historical or pending task note	keep	Preserve evidence/data; not a mandatory startup instruction.
+email-signature.md	1773	249	29	on-demand identity and communication policy	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/00_refactor_qa_gate/SlopCodeBench- Benchmarking How Coding Agents Degrade Over Long-Horizon Iterative Tasks.pdf	662940			experiment data or source artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+experiments/00_refactor_qa_gate/analysis.md	9342	1332	161	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/00_refactor_qa_gate/cc_prompt.md	4520	677	102	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v2.md	8493	1294	179	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/00_refactor_qa_gate/refactor_qa_gate_prompt_v3.md	11771	1768	243	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/MASTER_PLAN.md	85845	11761	1110	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/PLAN.md	511	66	7	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/TODO.md	12913	1817	99	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/chatops.md	8277	1085	152	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/concepts.md	8163	1266	108	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/config/admin-filter.txt	1085	133	35	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/config/agent-prompt.md	10529	1479	203	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/config/openclaw.json.template	1261	137	49	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/runbook.md	19574	2527	456	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance.sh	10779	1296	238	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance_linux.sh	15025	1761	378	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh	6321	748	202	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-automation.sh	2490	353	60	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/01_self_hosted_openclaw/scripts/update_openclaw_instance.sh	1105	143	33	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/01_self_hosted_openclaw/standing_orders/README.md	7369	1049	140	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/drive_to_social.md	3724	506	60	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/experiment_dispatch.md	6275	852	80	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/fb_event_post.md	4525	633	66	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/grant_applications.md	8089	1067	85	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/ig_post.md	3120	444	58	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/lean_ai_club.md	5401	776	88	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/paper_announcements.md	3758	513	64	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/stackexchange_proofassistants_post.md	15321	2254	173	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/telegram_voice_to_discord.md	2616	361	34	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/travel_search.md	6961	999	86	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/standing_orders/whatsapp_voice_draft.md	4682	705	76	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/test_tasks/README.md	3405	489	44	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/test_tasks/dm_sri_agent_flex.md	3956	631	70	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/test_tasks/email_aiken_students_veriveribench.md	7621	1067	90	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/test_tasks/email_bay_area_sax_repair.md	8260	1139	106	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/01_self_hosted_openclaw/test_tasks/email_saumya_neurips.md	3476	494	62	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/02_improving_ml_research_writing_skills/agents.md	7318	922	75	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/02_improving_ml_research_writing_skills/fixes.md	12953	1677	197	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_synth_lean4_data_pipeline/PLAN.md	13177	1555	201	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_synth_lean4_data_pipeline/TODO.md	6051	882	76	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_synth_lean4_data_pipeline/prompts/README.md	3107	446	53	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_synth_lean4_data_pipeline/prompts/v0_eshaan_initial.md	12327	1907	216	on-demand experiment prompt, configuration or sample task	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_youtube_transcript_takeaway_loop/README.md	2960	418	58	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_youtube_transcript_takeaway_loop/fetch_attempts.md	2732	370	37	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_youtube_transcript_takeaway_loop/fetch_transcript.sh	389	40	8	experiment-specific executable or setup script	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+experiments/03_youtube_transcript_takeaway_loop/takeaways.md	4807	655	103	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_youtube_transcript_takeaway_loop/transcript.md	574	71	20	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/03_youtube_transcript_takeaway_loop/video_metadata.json	761	41	17	experiment data or source artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+experiments/experiment_template_readme.tex	6290	637	215	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+experiments/experiment_template_talk_distill.md	2491	337	64	on-demand experiment plan, source, report or template	keep	Task-scoped reference; its length does not impose universal startup cost.
+init_no_passwords_snap_kinit.md	11298	1622	347	on-demand cluster setup and troubleshooting	keep	Task-scoped reference; its length does not impose universal startup cost.
+jobs-inbox/README.md	2578	377	64	job inbox interface and queue placeholder	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+jobs-inbox/dispatched/.keep	0	0	0	job inbox interface and queue placeholder	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+jobs-inbox/pending/.keep	0	0	0	job inbox interface and queue placeholder	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+koyejo_stair_cluster_guide.md	22789	2553	714	on-demand cluster setup and troubleshooting	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/agent-clis.md	8276	1102	125	on-demand machine and client operations guide	candidate	Add client instruction-file discovery differences and verification commands; no universal globals.
+machine/ampere1.md	941	126	30	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/mac-agent-board-phone.md	3935	518	80	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/mac-never-sleep-lid.md	9990	1189	199	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/mac.md	13630	1849	107	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md	18268	2188	469	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md	11130	1745	605	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/macos-chrome-zombie-leak.md	4456	660	65	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/marlowe.md	1215	173	65	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/mercury1.md	966	133	31	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/mercury2.md	1436	196	39	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/sherlock.md	1909	272	81	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/skampere1.md	951	126	30	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/skampere2.md	1137	155	31	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/snap-init.md	6720	866	96	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/snap.md	31959	4133	481	on-demand machine and client operations guide	keep	Task-scoped reference; its length does not impose universal startup cost.
+machine/snap_setup.sh	4238	534	91	machine setup executable	candidate	Documented Claude global is ~/.claude/CLAUDE.md; current script installs only ancestor ~/CLAUDE.md; repair typo agent-config.
+reports/vals-snap-20260914/CKPT_vals_setup.md	2017	218	21	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/default-probe.json	2069	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/fable-limit.json	1241	15	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/mercury1-dispatch.json	2110	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/mercury2-dispatch.json	2100	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/opus-probe.json	2066	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/results.md	5351	694	53	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/review.md	2192	224	31	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/skampere1-dispatch.json	2100	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/skampere2-dispatch.json	2101	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reports/vals-snap-20260914/sonnet-print.json	2093	1	1	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_experiment_naming/review.md	1196	141	14	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/ACK_codex.md	2303	225	26	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/CKPT_local_sync.md	1574	123	17	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/activation.json	812	47	17	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/deterministic_checks.json	1254	133	39	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/initial_sync.json	1725	151	121	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/reconciliation.md	2940	365	22	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/results.md	2924	390	24	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/review_codex.md	12428	1605	70	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_local_sync/schedule_prompt.md	7014	945	19	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/ACK_review_codex.md	1547	161	12	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/CKPT_reliable_dispatch.md	1981	195	20	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/claude_attempt.json	547	52	14	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/input_manifest.json	1840	49	25	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/results.md	5575	673	42	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/review_codex.md	12150	1429	47	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260911_reliable_dispatch/review_prompt.md	4637	580	25	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+reviews/20260913_auth_recovery/README.md	3081	350	22	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+scripts/agent_board.py	101420	10941	2171	agent dashboard implementation or installer	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/agent_board_install.sh	4983	566	121	agent dashboard implementation or installer	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/agent_board_phone.py	4723	385	118	agent dashboard implementation or installer	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/agent_board_remote_status.py	4069	376	101	agent dashboard implementation or installer	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/agent_board_serve.py	1818	132	50	agent dashboard implementation or installer	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/agent_session_register.sh	2940	399	74	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/auto-update-tools.sh	5549	692	149	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/chrome_zombie_watch.py	5172	516	174	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/codex_su_remote_entry.sh	795	98	17	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/codex_vals_remote_entry.sh	373	49	8	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/deploy_cc.sh	16774	2371	298	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/fetch_youtube_transcript.sh	3248	366	91	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/git-inbox-poller.sh	6147	632	140	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/harbor_snap.sh	377	51	10	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_agent_clis.sh	10867	1275	341	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_chrome_zombie_watch.sh	2078	177	51	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_codex_su_node.sh	3701	496	88	client installation, authentication or host setup utility	candidate	Generated AGENTS pointer survives routing refactor; bootstrap pull lacks --ff-only.
+scripts/install_codex_vals_node.sh	1647	194	46	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_muse_cli.sh	1717	151	31	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_paper_watch.sh	2478	213	55	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_personal_node.sh	4072	508	75	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_su_node.sh	3980	508	75	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/install_vals_node.sh	3910	502	74	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/latex_sentence_lines.py	8378	941	231	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/paper_watch.py	4805	509	103	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/personal_remote_entry.sh	793	97	17	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/push_claude_personal_snap.sh	5996	714	106	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/push_claude_su_snap.sh	6412	794	118	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/push_claude_vals_creds.sh	8673	1106	161	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/push_codex_su_snap.sh	5959	707	111	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/push_codex_vals_snap.sh	6004	724	109	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/refresh-agents-config.sh	2044	305	43	operational launcher, monitor, synchronizer or maintenance utility	candidate	Keep functional INDEX reread hook; comment calls refresh Hard Rule 5 rather than existing Rule 6.
+scripts/relink-dfs-projects.sh	1426	192	44	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/setup_claude_vals_snap.sh	8987	1211	219	client installation, authentication or host setup utility	candidate	Generated profile CLAUDE.md has obsolete TL;DR wording without canonical shared-rule pointer.
+scripts/setup_personal_token.sh	958	112	19	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/setup_valkyrie_snap.sh	8800	1257	155	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/snap_dispatch.sh	9447	1268	208	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/snap_health.sh	31344	3633	727	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/ssh-submit.sh	11712	1344	265	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/su_finish_setup.sh	2590	353	44	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/su_remote_entry.sh	803	101	17	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/sync_agent_cli_auth_snap.sh	1915	163	38	client installation, authentication or host setup utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/sync_shared_checkout.sh	8157	1321	154	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/sync_slide_decks.py	39939	4168	1010	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_agent_board_remote_status.py	7932	450	129	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_agent_board_resume.py	30305	2097	575	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_agent_board_serve.py	3226	189	82	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_dispatch_scripts.py	22617	1669	382	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_su_wrappers.py	2519	233	57	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_sync_slide_decks.py	17770	949	376	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/test_vals_wrappers.py	2531	233	57	deterministic regression test	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/vals_remote_entry.sh	481	63	11	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+scripts/verify_agent_clis_snap.sh	1394	175	33	operational launcher, monitor, synchronizer or maintenance utility	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+tests/dummy_experiment/.gitignore	7	1	1	test fixture or example experiment artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+tests/dummy_experiment/results_summary/plots/accuracy_2026-04-05__22-24-26.png	27624			test fixture or example experiment artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+tests/dummy_experiment/results_summary/plots/loss_2026-04-05__22-24-26.png	34966			test fixture or example experiment artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+tests/dummy_experiment/results_summary/results_summary_2026-04-05__22-24-26.md	769	110	40	test fixture or example experiment artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+tests/dummy_experiment/train.py	8308	720	252	test fixture or example experiment artifact	keep	Preserve evidence/data; not a mandatory startup instruction.
+todo_codex_qa_on_snap.md	4256	551	90	historical or pending task note	keep	Preserve evidence/data; not a mandatory startup instruction.
+todo_infinite_reauth_kinit_server_side.md	2675	381	60	historical or pending task note	keep	Preserve evidence/data; not a mandatory startup instruction.
+todo_self_improving_agents_config.md	6765	982	156	historical or pending task note	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/agent-board-design/CKPT_design.md	1265	133	18	on-demand design record and checkpoint	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/agent-board-design/design.md	9884	1359	73	on-demand design record and checkpoint	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/agent-board-design/prompt.md	3706	486	22	on-demand design record and checkpoint	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/agent-board-design/results.md	1367	182	24	on-demand design record and checkpoint	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/blog-posts.md	3665	541	51	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/broad-investigation.md	7326	985	51	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/codex-connector-tandem.md	10896	1473	97	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/cross-machine-projects.md	11837	1614	103	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/expts-and-results.md	53894	7285	619	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/git-worktrees.md	2371	350	94	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/jazz-playalongs/README.md	12205	1774	82	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/jazz-playalongs/cdp.py	1158	94	19	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/jazz-playalongs/fixdur.py	2327	300	40	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/jazz-playalongs/mp4atoms.py	2170	272	37	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/jazz-playalongs/spotify_local_setup.py	6740	684	105	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/jazz-playalongs/spuri.py	1859	213	48	project-specific media workflow or executable	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+workflows/multi-account-agent-clis.md	18098	2504	248	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/qa-correctness.md	24404	3603	290	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/qa-reports/megaqa-2026-09-08-A-s1.md	18556	2365	103	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/qa-reports/megaqa-2026-09-08-A-s2.md	8235	1146	107	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/qa-reports/megaqa-2026-09-08-A-s3.md	19628	2667	117	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/qa-reports/megaqa-review-fallback-2026-09-10.md	6326	827	69	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/qa-reports/review-fallback-policy-2026-09-10.md	5752	739	57	historical verification evidence or receipt	keep	Preserve evidence/data; not a mandatory startup instruction.
+workflows/qa-structural.md	8468	1199	215	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/question-screenshot-ingest.md	3614	509	98	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/reliable-agent-dispatch.md	33608	4726	179	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/remote-job-dispatch.md	19559	2704	322	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/repo-init.md	6880	903	132	on-demand canonical task procedure	change	Align initialization and global discovery instructions with compact adapters and new routing.
+workflows/research-repo-layout.md	12272	1935	197	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/smart-job-agent-prompt.md	5882	797	93	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/statistics-reporting.md	12600	1959	93	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/tweprints.md	4118	581	66	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/valkyrie.md	8657	1087	68	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+workflows/verified-host-bootstrap.md	4514	594	27	on-demand canonical task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/blog/blog_writing.md	9408	1433	235	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/blog/rules.md	6185	891	106	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/blog/write-blog-post.md	7336	1136	209	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/explanations/technical-explainer-style.md	9869	1553	175	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/assets/codapo_example_linkedin.md	4052	526	49	writing reference example or asset	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+writing/ml_research/assets/codapo_example_x_thread.md	3022	396	74	writing reference example or asset	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+writing/ml_research/assets/whatsapp_rylan_poster_advice.md	2255	325	33	writing reference example or asset	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+writing/ml_research/assets/whatsapp_rylan_poster_advice.png	726854			writing reference example or asset	keep	Executable/configuration/support content; preserve behavior and avoid cosmetic churn.
+writing/ml_research/ml_research_writing.md	31227	4643	259	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-abstract.md	12090	1739	140	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-intro.md	9432	1344	122	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-linkedin-post.md	3231	453	39	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-poster.md	13137	1923	141	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-sail-blog-post.md	6023	886	58	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.
+writing/ml_research/write-tweet-thread.md	4004	561	40	on-demand writing guide or task procedure	keep	Task-scoped reference; its length does not impose universal startup cost.

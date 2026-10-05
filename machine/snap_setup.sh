@@ -3,7 +3,7 @@
 # This script handles SNAP-specific filesystem setup (AFS/DFS/LFS), then runs the
 # universal setup.sh (at repo root) for everything else (uv, Python deps, Lean, Mathlib, PyPantograph).
 #
-# For agent documentation architecture, see: ~/agent-config/INDEX_RULES.md
+# For agent documentation architecture, see: ~/agents-config/INDEX_RULES.md
 # For per-node setup (when DFS is already configured), see: agents-config/machine/snap.md
 #
 # --> IMPORTANT: Please always do an ls -lah or echo $NEW_ENV etc to check that doing the right things!
@@ -54,7 +54,16 @@ ln -sf "$HOME/agents-config/AGENTS.md" "$HOME/agents.md"
 # ---- Symlink ~/.claude dir to DFS (shared auth + settings across all nodes) ----
 # Run 'claude auth login' once on any node — all nodes share the credential.
 rm -rf "$HOME/.claude" 2>/dev/null
+mkdir -p "$DFS/.claude"
 ln -sfn "$DFS/.claude" "$HOME/.claude"
+# Claude's native user file also covers projects outside the home ancestry.
+# Keep it a regular portable pointer and never overwrite local profile instructions.
+if [ ! -e "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ]; then
+    cat > "$HOME/.claude/CLAUDE.md" <<'CLAUDEMD'
+# Shared agent instructions
+Read `~/agents-config/CLAUDE.md` before working; follow its shared-index routing.
+CLAUDEMD
+fi
 
 # ---- Symlink keys directory (DFS → LFS home) ----
 ln -sfn "$DFS/keys" "$HOME/keys"

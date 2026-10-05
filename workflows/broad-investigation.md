@@ -38,6 +38,10 @@ Apply reversible fixes already authorized by the task, preserve the prior state 
 
 Broad investigation does not authorize new spending, personal experiment funding, changing scientific settings, overwriting another owner's work or bypassing access controls. Respect project-specific funding and execution rules. Metadata discovery must not silently turn into a paid inference test.
 
+- **When external fetches fail** — Follow [broad investigation](../workflows/broad-investigation.md) before declaring the resource unavailable: try relevant official Markdown, indexes, raw source or another authorized reader, and distinguish a tool failure from an access restriction. Record meaningful attempts and failure modes beside the work, capture reachable metadata and complete independent parts. Ask the user for missing material only if it remains essential and unavailable through authorized alternatives. Mark unresolved sections honestly; **never fabricate the missing content** or bypass access controls. Historical example: `experiments/03_youtube_transcript_takeaway_loop/`.
+
+**Desktop/cloud connector use:** Follow [connector tandem verification](../workflows/codex-connector-tandem.md): identify the exact runtime, discover its tools and verify the source account/workspace with a bounded read in each destination. A shared plugin catalog or relaxed permissions does not establish callable tools. When native tools are absent, transfer only authorized source data through a verified private bridge; label imported-data access separately from native connector access, and keep private receipts out of this public repo.
+
 ## Verify and leave reusable knowledge
 
 **Report the verified result and the remaining boundary of the evidence.** Include what was attempted, the decisive observation, any repair, and the check performed afterward. Distinguish local installation, remote access, model catalog visibility, successful inference and completed evaluation; success at one layer does not prove the next.

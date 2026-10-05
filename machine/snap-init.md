@@ -33,7 +33,8 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
 2. **Verify symlinks (create any that are missing):**
    - `~/.bashrc` -> `/dfs/scratch0/brando9/.bashrc`
    - `~/agents-config` -> `/dfs/scratch0/brando9/agents-config`
-   - `~/CLAUDE.md` -> `~/agents-config/CLAUDE.md`
+   - `~/CLAUDE.md` -> `~/agents-config/CLAUDE.md` (ancestor compatibility only)
+   - Verify the active profile’s native user file (`~/.claude/CLAUDE.md` by default) is nonempty and routes to `~/agents-config/CLAUDE.md`, including sessions launched under `/dfs`; preserve existing local instructions and use a regular pointer file.
    - `~/.codex/AGENTS.md` -> `~/agents-config/AGENTS.md` (canonical Codex global entry point)
    - `~/AGENTS.md` -> `~/agents-config/AGENTS.md` (optional compatibility)
    - `~/agents.md` -> `~/agents-config/AGENTS.md` (legacy home-level compatibility)
@@ -43,15 +44,15 @@ Check and fix my SNAP node setup. Run these checks and fix anything broken:
    - All project dirs under `~/` (e.g., `~/veribench`, `~/harbor-fork`) should be symlinks to `/dfs/scratch0/brando9/<project>`, NOT real directories. Run: `for d in /dfs/scratch0/brando9/*/; do name=$(basename "$d"); [ -L ~/"$name" ] || echo "WARNING: ~/$name is not a symlink to DFS"; done`
 
 3. **Verify RC auth:**
-   - `env | grep CLAUDE_CODE_OAUTH_TOKEN` should print NOTHING
-   - If it prints a value, find it in `/dfs/scratch0/brando9/.bashrc` and comment it out
+   - `test -z "${CLAUDE_CODE_OAUTH_TOKEN:-}"` should succeed without printing a value
+   - If it fails, locate the assignment in `/dfs/scratch0/brando9/.bashrc` and comment it out
    - `~/.claude/config.json` should NOT contain `primaryApiKey`
    - `.bashrc` should have `if [ -n "$TMUX" ]; then unset CLAUDE_CODE_OAUTH_TOKEN; fi`
    - `claude auth status --text` should show "Claude Max Account", no env overrides
 
 4. **Verify agents-config is current:**
-   - `cd ~/agents-config && git pull`
-   - `cat ~/agents-config/CLAUDE.md` and `cat ~/agents-config/AGENTS.md` should show the Mandatory Response Protocol
+   - `git -C ~/agents-config pull --ff-only`
+   - `python3 ~/agents-config/scripts/check_instruction_docs.py` must pass; both entries should show `Always-visible safeguards`, `TLDR-end` and `Snapshot`
    - `cat ~/agents-config/INDEX_RULES.md` should show a `## Hard Rules` section
 
 5. **Verify tools:**
@@ -85,7 +86,7 @@ Report what passed, what failed, and what you fixed. End with a summary table.
 | 1 | Paths | `HOME=/lfs/<hostname>/0/brando9`, `DFS=/dfs/scratch0/brando9`, `AFS=/afs/cs.stanford.edu/u/brando9` |
 | 2 | Symlinks (7 + project dirs) | All point to correct DFS/agents-config targets (including `~/dfs → /dfs/scratch0/brando9`); all `~/` project dirs are symlinks to DFS |
 | 3 | RC auth | No `CLAUDE_CODE_OAUTH_TOKEN` in env, no `primaryApiKey`, TMUX guard present, Claude Max Account |
-| 4 | agents-config | Up to date, CLAUDE.md and AGENTS.md have Mandatory Response Protocol, INDEX_RULES.md has Hard Rules |
+| 4 | agents-config | Up to date, both entries have Always-visible safeguards and the instruction checker passes, INDEX_RULES.md has Hard Rules |
 | 5 | Tools | `claude` and `codex` on PATH with latest versions; `agent`, `grok`, and `agy` from `install_agent_clis.sh --status`; `auto-update-tools.sh` exists; SessionStart hook in `~/.claude/settings.json` |
 | 6 | Keys | Existing credentials required by the authorized task are available; no W&B credential prerequisite for ordinary experiment reporting |
 | 7 | GPUs | `nvidia-smi` shows GPUs (A100/H200/B200 depending on node) |
