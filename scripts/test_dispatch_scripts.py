@@ -7,6 +7,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import termios
 import time
 import unittest
 
@@ -34,7 +35,9 @@ root = Path(os.environ["TEST_ROOT"])
 a = sys.argv[1:]
 with (root / "tmux.jsonl").open("a") as f: f.write(json.dumps(a) + "\\n")
 if a[0] == "has-session": sys.exit(int(os.environ.get("TEST_DUPLICATE", "1")))
-if a[0] == "display-message": print("900" if "pane_pid" in a[-1] else os.environ.get("TEST_FOREGROUND", "zsh"))
+if a[0] == "display-message":
+    if os.environ.get("TEST_PANE_GONE"): sys.exit(1)
+    print(a[-1].replace("#{pane_pid}", "900").replace("#{pane_tty}", os.environ.get("TEST_TTY", "/dev/null")))
 if a[0] == "capture-pane": print("worker exited")
 if a[0] == "new-session":
     rc = int(os.environ.get("TEST_LAUNCH_RC", "0"))
@@ -96,7 +99,8 @@ sys.exit(0)
         result = self.deploy("--profile", "codex", "--wait", "08", "--dry-run")
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = [shlex.split(line) for line in result.stdout.splitlines() if not line.startswith("#")]
-        self.assertEqual(commands[0][commands[0].index("-c") + 1], str(self.root))
+        # The script resolves --cwd physically (macOS: /var -> /private/var).
+        self.assertEqual(commands[0][commands[0].index("-c") + 1], os.path.realpath(self.root))
         typed = commands[1][-1]
         argv = shlex.split(typed)
         self.assertIn("--dangerously-bypass-approvals-and-sandbox", argv)
@@ -126,8 +130,9 @@ sys.exit(0)
         argv = shlex.split(typed)
         self.assertEqual(argv[0], "codex-vals")
         self.assertIn("--dangerously-bypass-approvals-and-sandbox", argv)
-        for args in [("--model",), ("--effort", "bogus"), ("--profile", "bad"), ("--wait", "-1")]:
-            self.assertEqual(self.deploy(*args).returncode, 2)
+        for args in [("--model",), ("--effort", "bogus"), ("--profile", "bad"), ("--wait", "-1"),
+                     ("--shell-wait",), ("--shell-wait", "-5"), ("--shell-wait", "1.5"), ("--shell-wait", "x")]:
+            self.assertEqual(self.deploy(*args, "--dry-run").returncode, 2, args)
         result = self.run_script("deploy_cc.sh", "--dry-run", "--name", "qa-probe", "--cwd", "/tmp", "--prompt-file", "/dev/null")
         self.assertEqual(result.returncode, 2)
 
@@ -243,29 +248,113 @@ flag.touch()
                                     text=True, capture_output=True, timeout=8)
             self.assertEqual(result.returncode, 0 if stable else 1, result.stderr)
 
+    def pane_terminal(self, line_mode):
+        """A real pseudo-terminal standing in for the pane's: in line mode while startup files
+        run, out of it once the shell's line editor waits at the prompt."""
+        master, slave = os.openpty()
+        self.addCleanup(os.close, master)
+        self.addCleanup(os.close, slave)
+        self.set_line_mode(slave, line_mode)
+        return slave
+
+    @staticmethod
+    def set_line_mode(fd, on):
+        attrs = termios.tcgetattr(fd)
+        flags = termios.ICANON | termios.ECHO
+        attrs[3] = attrs[3] | flags if on else attrs[3] & ~flags
+        termios.tcsetattr(fd, termios.TCSANOW, attrs)
+
     def test_dead_deploy_returns_one_and_preserves_diagnostics(self):
-        (self.root / "processes").write_text("")
-        result = self.deploy("--profile", "codex", "--wait", "1")
+        # A shell at its prompt (pid pgid tpgid stat comm), then no worker ever appears.
+        (self.root / "processes").write_text("900 1 900 900 Ss+ /bin/zsh\n")
+        tty = os.ttyname(self.pane_terminal(line_mode=False))
+        result = self.run_script("deploy_cc.sh", "--name", "qa-probe", "--cwd", str(self.root),
+                                 "--prompt-file", str(self.runbook), "--profile", "codex", "--wait", "1",
+                                 TEST_TTY=tty)
         self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("once its shell was ready after", result.stdout)
         self.assertIn("NOT verified", result.stderr)
         self.assertIn("discard:", result.stderr)
 
-    def test_deploy_does_not_type_into_a_busy_startup_program(self):
+    def test_shell_wait_defaults_to_the_agent_wait_with_a_90s_floor(self):
+        for args, expected in [((), 120), (("--wait", "200"), 200), (("--wait", "08"), 90),
+                               (("--shell-wait", "15"), 15), (("--wait", "200", "--shell-wait", "0"), 0)]:
+            result = self.deploy(*args, "--dry-run")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(f"# Wait up to {expected}s for the login shell to sit at its prompt", result.stdout)
+
+    def readiness(self, steps, tty, shell_wait="3", **extra):
+        """Run the script's wait-then-type section against `ps` snapshots, one per check
+        (pid ppid pgid tpgid stat comm; the last repeats), with the clock advanced, not slept."""
+        (self.root / "processes").write_text("---\n".join(steps))
+        self.command("ps", '''import os
+from pathlib import Path
+root = Path(os.environ["TEST_ROOT"])
+counter = root / "ps-count"
+n = int(counter.read_text()) if counter.exists() else 0
+counter.write_text(str(n + 1))
+steps = (root / "processes").read_text().split("---\\n")
+print(steps[min(n, len(steps) - 1)], end="")
+''')
+        for path in [self.root / "ps-count", self.root / "tmux.jsonl"]:
+            path.unlink(missing_ok=True)
         source = (SCRIPTS / "deploy_cc.sh").read_text()
-        startup = "shell_ready() {" + source.split("shell_ready() {", 1)[1].split('echo "typed into tmux', 1)[0]
-        # Advance the shell clock instead of sleeping through the 30-second startup budget.
-        script = 'set -euo pipefail\npython3() { SECONDS=$((SECONDS + 31)); }\n' + startup
-        for foreground, expected in [("kinit", 1), ("zsh", 0)]:
-            calls_path = self.root / "tmux.jsonl"
-            calls_path.unlink(missing_ok=True)
-            result = subprocess.run(["bash", "-c", script],
-                                    env=dict(self.env, NAME="qa-probe", CMD="fixture-command",
-                                             TEST_FOREGROUND=foreground),
-                                    text=True, capture_output=True, timeout=5)
-            self.assertEqual(result.returncode, expected, result.stderr)
-            calls = [json.loads(line) for line in calls_path.read_text().splitlines()]
-            sent = [call for call in calls if call[0] == "send-keys"]
-            self.assertEqual(len(sent), 0 if foreground == "kinit" else 2)
+        section = "shell_state() {" + source.split("shell_state() {", 1)[1].split('echo "typed into tmux', 1)[0]
+        script = ('set -euo pipefail\n'
+                  'python3() { if [ "$1" = -c ]; then SECONDS=$((SECONDS + 1)); else command python3 "$@"; fi; }\n'
+                  + section)
+        result = subprocess.run(["bash", "-c", script], text=True, capture_output=True, timeout=30,
+                                env=dict(self.env, NAME="qa-probe", CMD="fixture-command", SHELL_WAIT=shell_wait,
+                                         TEST_TTY=tty, TEST_DUPLICATE="0", **extra))
+        calls = [json.loads(line) for line in (self.root / "tmux.jsonl").read_text().splitlines()]
+        typed = [call for call in calls if call[0] == "send-keys"]
+        checks = int((self.root / "ps-count").read_text()) if (self.root / "ps-count").exists() else 0
+        return result, typed, checks
+
+    def test_deploy_types_only_once_the_shell_sits_at_its_prompt(self):
+        """The pane's foreground-command name reads `zsh` while ~/.zshrc runs builtins and between
+        two of its commands, which once let keys be typed into a starting shell. Readiness now
+        also needs no startup child left in the shell's process group and a terminal out of line
+        mode, on two checks in a row."""
+        slave = self.pane_terminal(line_mode=False)
+        tty = os.ttyname(slave)
+        prompt = "900 1 900 900 Ss+ /bin/zsh\n"
+        busy = {
+            "kinit is running in the foreground": "900 1 900 950 Ss /bin/zsh\n950 900 950 950 S+ kinit\n",
+            "cat still running": prompt + "951 900 900 900 S+ cat\n",   # e.g. $(cat key-file)
+            "the pane shell (pid 900) is not running": "",
+        }
+        for reason, snapshot in busy.items():
+            with self.subTest(reason=reason):
+                result, typed, checks = self.readiness([snapshot], tty)
+                self.assertEqual(result.returncode, 1, result.stderr)
+                self.assertEqual(typed, [])
+                self.assertIn(f"({reason}); no command was typed", result.stderr)
+                self.assertIn("longer --shell-wait (this run allowed 3s)", result.stderr)
+                self.assertGreaterEqual(checks, 2)   # it kept checking (real time also moves the clock)
+        # At the prompt; a disowned helper has its own group; a zombie is about to be reaped.
+        for snapshot in [prompt, prompt + "952 900 952 900 SN gitstatusd\n", prompt + "953 900 900 900 Z+ (cat)\n"]:
+            with self.subTest(snapshot=snapshot):
+                result, typed, checks = self.readiness([snapshot], tty)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(typed, [["send-keys", "-l", "-t", "=qa-probe:", "fixture-command"],
+                                         ["send-keys", "-t", "=qa-probe:", "Enter"]])
+                self.assertEqual(checks, 2)
+        # One ready-looking check between two startup commands is not enough.
+        result, typed, checks = self.readiness([prompt + "951 900 900 900 S+ kinit\n", prompt,
+                                                prompt + "951 900 900 900 S+ cat\n", prompt], tty,
+                                               shell_wait="30")
+        self.assertEqual((result.returncode, len(typed), checks), (0, 2, 5), result.stderr)
+        # Startup files still running builtins: no child at all, but no prompt either.
+        self.set_line_mode(slave, True)
+        result, typed, _ = self.readiness([prompt], tty)
+        self.assertEqual((result.returncode, typed), (1, []), result.stderr)
+        self.assertIn("still in line mode", result.stderr)
+        self.set_line_mode(slave, False)
+        # A shell that exits during startup closes the session: stop at once.
+        result, typed, checks = self.readiness([prompt], tty, TEST_PANE_GONE="1")
+        self.assertEqual((result.returncode, typed, checks), (1, [], 0), result.stderr)
+        self.assertIn("the session closed", result.stderr)
 
     def test_snap_rejects_invalid_names_and_hosts_before_ssh(self):
         for action in ["run", "tail", "log", "attach", "kill"]:

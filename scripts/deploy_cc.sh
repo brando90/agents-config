@@ -9,7 +9,11 @@
 # Usage:
 #   deploy_cc.sh --name <tmux-session> --cwd <dir> --prompt-file <runbook.md>
 #                [--profile cc|ccv|ccs|codex|codex-vals] [--model claude-fable-5-1] [--effort max] [--no-rc]
-#                [--wait <seconds, default 120>] [--no-preflight] [--dry-run]
+#                [--wait <seconds, default 120>] [--shell-wait <seconds, default --wait, at least 90>]
+#                [--no-preflight] [--dry-run]
+#   --shell-wait bounds the wait for the new pane's login shell to reach its prompt before anything is
+#   typed (~/.zshrc may run kinit, environment activation and nvm first); --wait bounds the wait for the
+#   agent to start after that.
 #   --profile codex types `codex --dangerously-bypass-approvals-and-sandbox -m <model> -c 'model_reasoning_effort="<effort>"' '<prompt>'` (model and
 #   effort default to gpt-6-astra and ultra; efforts low|medium|high|xhigh|ultra) and
 #   counts the worker as started once a `codex` process carrying this launch's prompt is running under
@@ -22,7 +26,9 @@
 #   rm "$brief"
 #
 # What it does: starts a detached session on the byobu/tmux server (`byobu new-session` when byobu is
-# installed, so a cold server gets the byobu profile) running an interactive login zsh in <cwd>, types
+# installed, so a cold server gets the byobu profile) running an interactive login zsh in <cwd>, waits
+# until that shell sits at its prompt (exit 1, typing nothing, if it is still busy after --shell-wait
+# seconds), types
 #   <wrapper> --remote-control <name> --model '<model>' --effort <effort> '<opening prompt>'
 # into it, then polls Claude Code's own per-process registry (~/.claude*/sessions/<pid>.json, the same
 # source the agent board uses) until a live process reports tmux session <name>. Exit 0 only then;
@@ -39,7 +45,7 @@ val() { [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || die "$1 needs a va
 # single-quote a value for a shell command line (bash 3.2 has no ${var@Q})
 shq() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
 
-NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120; PREFLIGHT=1
+NAME=""; CWD=""; PROMPT=""; PROFILE=cc; MODEL=""; EFFORT=""; RC=1; DRY=0; WAIT=120; SHELL_WAIT=""; PREFLIGHT=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --name) NAME=$(val "$@"); shift 2 ;;
@@ -49,6 +55,7 @@ while [ $# -gt 0 ]; do
     --model) MODEL=$(val "$@"); shift 2 ;;
     --effort) EFFORT=$(val "$@"); shift 2 ;;
     --wait) WAIT=$(val "$@"); shift 2 ;;
+    --shell-wait) SHELL_WAIT=$(val "$@"); shift 2 ;;
     --no-rc) RC=0; shift ;;
     --no-preflight) PREFLIGHT=0; shift ;;
     --dry-run) DRY=1; shift ;;
@@ -70,6 +77,11 @@ case "$MODEL" in *[!A-Za-z0-9._\[\]-]*) die "--model may use letters, digits, . 
 case "$WAIT" in *[!0-9]*|"") die "--wait must be a whole number of seconds" ;; esac
 # Force decimal arithmetic: a valid value such as 08 must not be interpreted as octal.
 WAIT=$((10#$WAIT))
+# Two launches on 10-06-2026 gave up after a fixed 30s on a login shell that was idle seconds later, so
+# the default is the agent wait, never under 90s; an idle shell is still detected within a few seconds.
+[ -n "$SHELL_WAIT" ] || SHELL_WAIT=$((WAIT > 90 ? WAIT : 90))
+case "$SHELL_WAIT" in *[!0-9]*|"") die "--shell-wait must be a whole number of seconds" ;; esac
+SHELL_WAIT=$((10#$SHELL_WAIT))
 CWD=$(cd "$CWD" 2>/dev/null && pwd -P) || die "--cwd is not a directory: $CWD"
 case "$PROMPT" in /*) ;; *) PROMPT="$CWD/$PROMPT" ;; esac
 [ -f "$PROMPT" ] || die "--prompt-file not found: $PROMPT"
@@ -105,7 +117,7 @@ if [ "$DRY" -eq 1 ]; then
   print_cmd "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
   print_cmd tmux send-keys -l -t "=$NAME:" "$CMD"
   print_cmd tmux send-keys -t "=$NAME:" Enter
-  echo "# Wait for the shell, then verify a non-zombie worker carrying $LAUNCH_MARKER below the pane with stable process identity (up to ${WAIT}s)."
+  echo "# Wait up to ${SHELL_WAIT}s for the login shell to sit at its prompt (it owns the terminal, no startup command is running, its line editor is reading), type the command, then verify a non-zombie worker carrying $LAUNCH_MARKER below the pane with stable process identity (up to ${WAIT}s)."
   if [ -n "$REG_DIR" ]; then
     printf '# Require a matching Claude registry entry in %s and process start time.\n' "$REG_DIR"
   else
@@ -145,24 +157,93 @@ if [ "$PREFLIGHT" -eq 1 ] && [ "$PROFILE" != codex ] && [ "$PROFILE" != "codex-v
 fi
 # an explicit interactive login zsh: the wrappers are defined in ~/.zshrc, whatever the server default is
 "$LAUNCHER" new-session -d -s "$NAME" -c "$CWD" /bin/zsh -il
-# wait for the interactive shell to be the pane's foreground command again: ~/.zshrc may run kinit
-# and friends first, and keys typed before it finishes can be eaten or misparsed
-shell_ready() {
-  case "$(tmux display-message -p -t "=$NAME:" '#{pane_current_command}' 2>/dev/null)" in
-    zsh|-zsh|bash|-bash|sh|fish) return 0 ;; *) return 1 ;;
-  esac
+# Type nothing until the login shell sits at its prompt: keys typed while ~/.zshrc is still running
+# (kinit, environment activation, nvm) can be eaten or misparsed. The pane's foreground command name is
+# not that signal -- it reads `zsh` while ~/.zshrc runs builtins and between two of its commands -- so
+# the shell counts as ready only when (1) its own process group owns the terminal, (2) no child of it
+# is still running in that group (a helper started with `&` or disowned, such as a prompt daemon, has a
+# group of its own and does not count), and (3) the terminal is out of line mode: zsh's line editor
+# takes it out of line mode only while it waits for input, so the prompt is recognised whatever it
+# looks like. Prints why it is not ready; exit 0 = ready, 1 = busy, 2 = the session is gone.
+shell_state() {
+  local pane
+  pane=$(tmux display-message -p -t "=$NAME:" '#{pane_pid} #{pane_tty}' 2>/dev/null) || {
+    echo "the session closed; did its shell exit during startup?"; return 2; }
+  python3 - "${pane%% *}" "${pane#* }" <<'SHELL_STATE'
+import os, subprocess, sys, termios
+shell, tty = sys.argv[1:]
+try:
+    listing = subprocess.run(
+        ["ps", "-ax", "-o", "pid=,ppid=,pgid=,tpgid=,stat=,comm="],
+        env=dict(os.environ, LC_ALL="C"), capture_output=True, text=True, timeout=5,
+        check=True,
+    ).stdout
+except (OSError, subprocess.SubprocessError):
+    print("could not list processes")
+    sys.exit(1)
+processes, children = {}, {}
+for line in listing.splitlines():
+    fields = line.split(None, 5)
+    if len(fields) == 6:
+        processes[fields[0]] = fields
+        children.setdefault(fields[1], []).append(fields[0])
+if shell not in processes:
+    print(f"the pane shell (pid {shell}) is not running")
+    sys.exit(1)
+group, foreground = processes[shell][2], processes[shell][3]
+if foreground != group:
+    leader = processes.get(foreground)
+    owner = os.path.basename(leader[5]) if leader else "process group " + foreground
+    print(f"{owner} is running in the foreground")
+    sys.exit(1)
+running, todo = set(), list(children.get(shell, []))
+while todo:
+    pid = todo.pop()
+    _, _, pgid, _, state, command = processes[pid]
+    if pgid == group and not state.startswith(("Z", "X")):
+        running.add(os.path.basename(command))
+    todo.extend(children.get(pid, []))
+if running:
+    print(", ".join(sorted(running)) + " still running")
+    sys.exit(1)
+try:
+    fd = os.open(tty, os.O_RDONLY | os.O_NONBLOCK | os.O_NOCTTY)
+    try:
+        line_mode = termios.tcgetattr(fd)[3] & termios.ICANON
+    finally:
+        os.close(fd)
+except (OSError, termios.error) as error:
+    print(f"could not read the terminal mode of {tty}: {error}")
+    sys.exit(1)
+if line_mode:
+    print("no prompt yet: the terminal is still in line mode, so startup files are running")
+    sys.exit(1)
+SHELL_STATE
 }
-t0=$SECONDS
-until shell_ready || [ $((SECONDS - t0)) -ge 30 ]; do python3 -c 'import time; time.sleep(1)'; done
-if ! shell_ready; then
-  echo "deploy_cc.sh: the shell in '$NAME' was still busy after 30s; no command was typed." >&2
-  echo "  inspect: byobu attach -t $NAME" >&2
+# Ready means ready on two checks a second apart, since startup files run commands back to back.
+t0=$SECONDS; streak=0
+while :; do
+  if WHY=$(shell_state); then
+    streak=$((streak + 1)); [ "$streak" -lt 2 ] || break
+  else
+    code=$?; streak=0
+    [ "$code" -ne 2 ] && [ $((SECONDS - t0)) -lt "$SHELL_WAIT" ] || break
+  fi
+  python3 -c 'import time; time.sleep(1)'
+done
+if [ "$streak" -lt 2 ]; then
+  echo "deploy_cc.sh: the shell in '$NAME' was not ready after $((SECONDS - t0))s ($WHY); no command was typed." >&2
+  if tmux has-session -t "=$NAME" 2>/dev/null; then
+    echo "  last lines of the pane:" >&2
+    tmux capture-pane -p -t "=$NAME:" 2>/dev/null | grep -v '^$' | tail -6 | sed 's/^/    /' >&2 || true
+    echo "  inspect: byobu attach -t $NAME      discard: tmux kill-session -t '=$NAME'" >&2
+    echo "  if the shell is only slow, discard the session and re-run with a longer --shell-wait (this run allowed ${SHELL_WAIT}s)" >&2
+  fi
   exit 1
 fi
-python3 -c 'import time; time.sleep(1)'
 tmux send-keys -l -t "=$NAME:" "$CMD"
 tmux send-keys -t "=$NAME:" Enter
-echo "typed into tmux session '$NAME' ($CWD): $CMD"
+echo "typed into tmux session '$NAME' ($CWD) once its shell was ready after $((SECONDS - t0))s: $CMD"
 echo "waiting up to ${WAIT}s for the $WRAPPER worker to start in that session ..."
 
 # Both profiles must identify an actual, non-zombie agent under this pane twice. A live
