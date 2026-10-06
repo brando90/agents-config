@@ -3,7 +3,7 @@
 ## Default send address
 - **From:** whichever of Brando's accounts the agent already has signed in: the client's mail connector if it has one, otherwise SMTP from `brandojazz@gmail.com` (or a configured alias such as `brando.science@gmail.com`). Never hold an email for a particular sender address.
 - **Internal agent notifications to Brando:** `To: brando.science@gmail.com`, no CC by default.
-- **Emails sent on Brando's behalf to other people:** CC `brando@vals.ai` and `brandojazz@gmail.com` (minus whichever is the sender) so reply-all reaches both inboxes, and BCC `brando.science@gmail.com` for auditability; add `brando9@stanford.edu` only when a Stanford/academic record is useful.
+- **Emails sent on Brando's behalf to other people:** CC `brando.science@gmail.com`, `brando9@stanford.edu` and `brandojazz@gmail.com` by default; for the VeriBench and cert-judge projects CC `brando.science@gmail.com`, `brandojazz@gmail.com` and `brando@vals.ai` (Brando, 10-06-2026). Skip the address that is sending.
 - **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
 
 ## Voice rules for emails sent as Brando

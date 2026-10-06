@@ -28,8 +28,7 @@ The same repo also exposes `email_collaborator(...)` in `~/ultimate-utils/py_src
 When sending any email on Brando's behalf or to Brando, apply the routing rule from `INDEX_RULES.md` Trigger Rule 26:
 
 - Internal agent notifications to Brando go to `brando.science@gmail.com` with no CC by default.
-- Emails sent on Brando's behalf to other people CC `brando@vals.ai` and `brandojazz@gmail.com` (minus whichever is the sender) and BCC `brando.science@gmail.com` for auditability.
-- Add `brando9@stanford.edu` only when a Stanford/academic record is useful.
+- Emails sent on Brando's behalf to other people CC `brando.science@gmail.com`, `brando9@stanford.edu` and `brandojazz@gmail.com` by default, and `brando.science@gmail.com`, `brandojazz@gmail.com` and `brando@vals.ai` for the VeriBench and cert-judge projects, skipping the address that is sending.
 
 Also recognize `brando9@cs.stanford.edu`, `brando90@mit.edu`, `miranda9@illinois.edu`, `miranda9@ibm.com`, and `miranebr@amazon.com` as Brando aliases in the collaborator registry.
 
