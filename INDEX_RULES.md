@@ -113,7 +113,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
-- [23](rules/maintenance.md#guideline-rule-23): Authorized email uses the prescribed uutils mail route first and verified fallback; “send” means send.
+- [23](rules/maintenance.md#guideline-rule-23): Authorized email goes out from whichever of Brando's accounts is already signed in (mail connector, else uutils SMTP) and CCs his other inboxes; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
 
 ## Authorized sign-in and verification codes
