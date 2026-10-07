@@ -78,7 +78,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [39](rules/research.md#trigger-rule-39) | Start/continue/finish experiment → canonical setup-named home/index, colocated artifacts, frozen evidence and lifecycle tracking. |
 | [40](rules/writing.md#trigger-rule-40) | Commit slide deck → fresh PDF, applicable text sibling and hash manifest in the same commit. |
 | [41](rules/responses.md#trigger-rule-41) | Present next tasks/options → rank each `[p N/10]`, explain deciding reason and disclose unverified ranking facts. |
-| [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch. |
+| [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered or stale session renames its own to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
 | [44](rules/workers.md#trigger-rule-44) | Long/dispatched run → maintain concise timestamped checkpoint with exact continuation and recovery state. |
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
