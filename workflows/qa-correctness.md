@@ -143,6 +143,10 @@ If skip-permissions mode is not appropriate for your environment, do not treat
 Claude Code as an unattended reviewer; run the same prompt in interactive
 `claude` instead.
 
+**Close stdin and confirm progress.** `codex exec` appends standard input to the prompt whenever stdin is not a terminal. A reviewer launched from a background or automation shell therefore waits forever at "Reading additional input from stdin…". Redirect it: `codex exec … "$QA_PROMPT" < /dev/null`. Within a few minutes of launch, confirm that the run is actually progressing (its log shows the model banner and growing output), not merely started.
+
+**A gating review is not a stopping point.** When the QA round gates a step the user already authorized (landing, merge, dispatch or publication), keep an armed completion watch while it runs. When it closes, apply the fixes, rerun the deterministic checks and continue straight into that step in the same flow, without asking again (Trigger Rule 57). Brando, 10-07-2026: "go dispatch it to snap once qa is done (this should be the default...no?)".
+
 ### Only one company is available
 
 A fresh strongest-model review from that company is allowed when the acceptance requirements permit it. Report the missing company diversity. This does not satisfy Trigger Rule 43 or an explicit required cross-company/model gate. Follow the same attempt budget; do not restart the budget by relabeling a failed run as self-review.
