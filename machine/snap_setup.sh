@@ -32,7 +32,7 @@ fi
 # Symlink veribench from LFS home → DFS
 ln -sfn "$DFS/veribench" "$HOME/veribench"
 # Copy .bashrc from veribench to DFS (canonical location), then symlink from AFS and LFS
-cp "$HOME/veribench/experiments/.bashrc" "$DFS/.bashrc"
+cp "$HOME/veribench/scripts/snap_bashrc" "$DFS/.bashrc"
 ln -sf "$DFS/.bashrc" "$AFS/.bashrc"
 ln -sf "$DFS/.bashrc" "$HOME/.bashrc"
 # Source it (sets HOME to LFS, adds DFS/bin to PATH, loads nvm)

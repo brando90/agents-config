@@ -157,7 +157,7 @@ remote-tracking branch.
 
 **Key rules:**
 - `$HOME` is set to `/lfs/<hostname>/0/<user>` (LFS) in `.bashrc` — fast local scratch.
-- `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/experiments/.bashrc` by `snap_setup.sh`.
+- `~/.bashrc` is a symlink to `/dfs/scratch0/<user>/.bashrc` — shared across all nodes. Originally seeded from `veribench/scripts/snap_bashrc` (moved from `experiments/.bashrc` on 10-08-2026) by `snap_setup.sh`.
 - `~/.bash_profile` is a symlink to `/dfs/scratch0/<user>/.bash_profile` — makes explicit Bash login shells source that shared `.bashrc`.
 - **Clone repos to DFS** (`/dfs/scratch0/<user>/`), then symlink from LFS home. Never clone directly to LFS — it's node-local and not backed up.
 - **LFS project paths are always symlinks to DFS.** Every project directory under `~/` (LFS) must be a symlink to its canonical location on `/dfs/scratch0/<user>/`. For example, `~/veribench` → `/dfs/scratch0/<user>/veribench`. This ensures all servers see the same repo state and avoids stale or divergent copies. The `snap_setup.sh` and new-node setup scripts create these symlinks automatically.
@@ -467,7 +467,7 @@ For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench
 3. Symlinks `~/keys` → DFS keys dir, and all DFS projects into LFS home
 4. Calls `~/veribench/veribench_setup.sh` which installs uv, Lean/elan, Mathlib, and Python deps
 
-**Warning:** `snap_setup.sh` unconditionally copies `veribench/experiments/.bashrc` over `$DFS/.bashrc`. If your `.bashrc` has diverged (check with `wc -c`), back it up first or the copy will overwrite your customizations.
+**Warning:** `snap_setup.sh` unconditionally copies `veribench/scripts/snap_bashrc` (moved from `experiments/.bashrc` on 10-08-2026) over `$DFS/.bashrc`. If your `.bashrc` has diverged (check with `wc -c`), back it up first or the copy will overwrite your customizations.
 
 ---
 
