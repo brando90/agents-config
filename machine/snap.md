@@ -45,6 +45,17 @@ Include only the user's configured cluster hosts; keep `whale` outside the match
 
 With this route in place, the existing `snap_health.sh`, `snap_dispatch.sh`, SSH, secure copy and file synchronization commands inherit it; no new publicly exposed shell, polling credential or service is needed. The laptop needs internet and valid authorized authentication. On this Mac, the protected existing `~/.keytab` supports passwordless Kerberos renewal, and the existing `com.stanford.kinit-renew` LaunchAgent runs every four hours. Verify actual successful renewal and its last exit status; a loaded schedule alone is not evidence of success. A fresh keytab renewal and scheduled renewal succeeded on 10-07-2026. Credential revocation, unavailable authentication servers or new institutional requirements can still require recovery; no promise of permanent login is made.
 
+Submit through the existing launcher after its relevant preflight passes (replace the job name and command with the owned authorized task):
+
+```bash
+ssh -o BatchMode=yes brando9@skampere2.stanford.edu hostname
+bash ~/agents-config/scripts/snap_health.sh --node skampere2
+SNAP_HOST=skampere2 bash ~/agents-config/scripts/snap_dispatch.sh run <unique-job-name> '<authorized-command>'
+SNAP_HOST=skampere2 bash ~/agents-config/scripts/snap_dispatch.sh log <unique-job-name>
+```
+
+A launch receipt means submitted; inspect the final log, exit status and requested output before reporting complete. Agent commands additionally need Rule 51 full-access settings, Rule 48 handoff/watch and Rule 46 publication receipts.
+
 After route setup, run the ordinary health preflight and obey failures relevant to the job. Low percentage-free storage can coexist with substantial absolute headroom: record available bytes and the bounded job's requirements rather than ignoring a warning or deleting unrelated data. A tiny transport receipt does not establish storage sufficiency for a full study. Use Rules 44/48 for a real job's checkpoint/watchdog and Rule 46 for verified completion publication and notification; a route test is not an installed completion monitor.
 
 ---
