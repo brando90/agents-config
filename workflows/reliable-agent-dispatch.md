@@ -142,6 +142,7 @@ watch command + config + state / cadence + progress timeout:
 watch smoke evidence / reboot behavior / stop or wake-up condition:
 failure classifier / fixed launch arguments / global attempts + deadline:
 notification channel + delivery check + incident deduplication key:
+effective permission mode + runtime evidence + pending approval mechanism:
 remote input acknowledgement + actual model + first-action evidence:
 verified main landing / completion record / notification outcome:
 ```
@@ -154,6 +155,8 @@ Review a proposed dispatch against these cases before calling it unattended-read
 
 | Situation | Required outcome |
 |---|---|
+| Task-creation tool has no permission field | Inspect child runtime permissions; use an eligible supported full-access client if needed, preserving platform boundaries and one writer. |
+| Approval text was queued but the app still shows a pending request | Identify the actual request/control; do not claim recovery until the next useful action is verified. |
 | One task passes while other declared cells remain pending | Evaluation remains partial; retain the complete manifest and execute remaining cells. |
 | A solver emits a final message with an unfinished file | Apply only fixed continuations within cumulative bounds; verify the artifact and report incompleteness honestly. |
 | The coordinator disconnects while a measured attempt is healthy | Durable owner and monitor keep the admitted procedure running; no coordinator-driven cancellation. |

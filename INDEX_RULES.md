@@ -87,7 +87,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [48](rules/workers.md#trigger-rule-48) | Unattended/long dispatch or provider failure → budget through completion; verify handoff/recovery, one writer, scientific pins and eligible substitutes. “ac-scheduler” → host watchdog plus master check-in, email on done/critical. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
-| [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify full access/no routine approvals; preserve task/platform/budget limits and exact SNAP pre-approval. |
+| [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
 | [52](rules/workers.md#trigger-rule-52) | Board-visible job → run-bound fresh receipts, ordinary-code liveness and verified board row; separate coordinator and execution state. |
 | [53](rules/responses.md#trigger-rule-53) | Human-facing dates/new dated names → MM-DD-YYYY; preserve machine formats, existing names and frozen records. |
 | [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
