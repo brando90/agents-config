@@ -10,6 +10,8 @@ Before choosing a transport, complete [reliable agent dispatch](reliable-agent-d
 
 For every measured solver/agent evaluation, also apply [the full-set uninterrupted evaluation contract](expts-and-results.md#uninterrupted-evaluation-of-the-full-declared-set). The dispatched job owns all declared cells, bounded initial/continuation prompts, cumulative accounting and final-artifact/check receipts. Verify scheduler/client/watchdog timeouts cover the planned work and finalization; neither a coordinator disconnect nor a successful smoke task may end the remaining evaluation. A transport launch or exit code is not a full-set completion receipt.
 
+From an external laptop network, use the [verified official SSH gateway route](../machine/snap.md#internet-only-laptop-dispatch-through-the-official-gateway) before treating direct-node timeouts as a cluster outage or requiring an interactive VPN login. Existing launchers inherit the scoped SSH configuration; authentication, host identity and Slurm allocation checks still apply.
+
 The optional legacy wrapper is described in
 [`smart-job-agent-prompt.md`](smart-job-agent-prompt.md). Until its launchers
 are updated, bypass it with `--direct`, `--mode direct`, or a

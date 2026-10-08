@@ -17,15 +17,35 @@ Cluster wiki:
 Apply [routine authentication recovery and per-host client verification](../workflows/reliable-agent-dispatch.md#authentication-recovery) before treating a failed model login as a user task. A reachable cluster and a signed-in desktop app do not prove target CLI access. Use a single recovery owner, supported remote sign-in, protected host/job credential stores and verified continuation; preserve healthy child jobs and distinguish authentication from spending limits. Browser-dependent recovery still needs an available authorized Mac.
 
 ```bash
-# Agents: can run one-shot commands on a direct-SSH node (e.g., ssh skampere2.stanford.edu "nvidia-smi")
-# but cannot maintain interactive sessions. Auth via ~/.ssh/config and ~/keys/.
+# Use a permitted direct-SSH node, or obtain a Slurm allocation on gated nodes.
+# Detached tmux jobs survive this submitting SSH connection.
 ssh <user>@<hostname>.stanford.edu
 ```
 
-- **Access:** Direct SSH from Stanford network or VPN. No jump host.
+- **Access:** Direct Secure Shell (SSH) from Stanford network or virtual private network (VPN), or the institution-documented `whale.stanford.edu` SSH gateway from an external network. Prefer the verified gateway route for internet-only laptop dispatch; a direct-node timeout does not establish a cluster outage. See the verified route below.
 - **Port:** 22
-- **Persistent sessions:** Use `byobu` (tmux-based, human-only — agents cannot interact with tmux). Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
+- **Persistent sessions:** Agents may launch and inspect named detached `tmux`/`byobu` sessions through the supported dispatch scripts (Rule 42). These survive SSH disconnects, not automatically node reboot. Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
 - **Kerberos auto-renewal:** Server-side tickets are auto-renewed every 4h by `krenew.sh` (DFS keytab + `.bashrc` background loop + cron). `krbtmux`/`reauth` are no longer needed for ticket renewal. See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for details. Fallback: `/afs/cs/software/bin/krbtmux` and `/afs/cs/software/bin/reauth` still work if auto-renewal is not set up. Ref: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
+
+
+### Internet-only laptop dispatch through the official gateway
+
+Stanford documents SSH to `whale.stanford.edu`, then to the desired server, as an external-network alternative to VPN ([SNAP introduction](https://ilops.stanford.edu/wiki/lib/exe/fetch.php?media=wiki%3Asnap-intro-20250925.pdf), [remote-access documentation](https://snap.stanford.edu/moin/SshAccessFromOutsideGates)). This is normal authenticated institutional access, not an allocation bypass. Preserve Slurm gates and never run research workloads on the gateway.
+
+The MacBook Air route was verified on 10-07-2026 with Cisco VPN **disconnected**: the gateway authenticated with the existing Kerberos ticket, `skampere2` was reachable, and a named detached ordinary-code job completed with exit zero after its submitting SSH connection ended. A fresh connection retrieved its persisted output. This proves the tested route and short-job completion, not uninterrupted long experiments or access to every configured host. [Receipt and limitations](../reports/snap-vpn-free-dispatch-10-07-2026.md).
+
+Use a **scoped** host stanza in the laptop's `~/.ssh/config`, preserving existing user, Kerberos and host-key settings. For example:
+
+```sshconfig
+Host skampere1 skampere2 skampere3 mercury1 mercury2 ilc skampere1.stanford.edu skampere2.stanford.edu skampere3.stanford.edu mercury1.stanford.edu mercury2.stanford.edu ilc.stanford.edu
+    ProxyJump brando9@whale.stanford.edu
+```
+
+Include only the user's configured cluster hosts; keep `whale` outside the matched set to avoid recursive proxying. The actual Mac stanza also routes its configured allocation-gated nodes, without changing their allocation requirements. A named-host `HostName` mapping remains necessary for short aliases. Preserve a private backup before changes, inspect `ssh -G <host>`, then test with `BatchMode=yes`. Do not disable host-key checking or silently replace changed keys. First-use trust is distinct from independent fingerprint verification.
+
+With this route in place, the existing `snap_health.sh`, `snap_dispatch.sh`, SSH, secure copy and file synchronization commands inherit it; no new publicly exposed shell, polling credential or service is needed. The laptop needs internet and valid authorized authentication. On this Mac, the protected existing `~/.keytab` supports passwordless Kerberos renewal, and the existing `com.stanford.kinit-renew` LaunchAgent runs every four hours. Verify actual successful renewal and its last exit status; a loaded schedule alone is not evidence of success. A fresh keytab renewal and scheduled renewal succeeded on 10-07-2026. Credential revocation, unavailable authentication servers or new institutional requirements can still require recovery; no promise of permanent login is made.
+
+After route setup, run the ordinary health preflight and obey failures relevant to the job. Low percentage-free storage can coexist with substantial absolute headroom: record available bytes and the bounded job's requirements rather than ignoring a warning or deleting unrelated data. A tiny transport receipt does not establish storage sufficiency for a full study. Use Rules 44/48 for a real job's checkpoint/watchdog and Rule 46 for verified completion publication and notification; a route test is not an installed completion monitor.
 
 ---
 
