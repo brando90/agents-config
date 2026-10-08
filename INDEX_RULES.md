@@ -92,7 +92,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [53](rules/responses.md#trigger-rule-53) | Human-facing dates/new dated names → MM-DD-YYYY; preserve machine formats, existing names and frozen records. |
 | [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
-| [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; never edit it. |
+| [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
 | [57](rules/workers.md#trigger-rule-57) | Scope, routing, design choice or approval-menu escalation would stall → decide, explain and record it; preserve genuine authorization and spending boundaries. |
 | [58](rules/workers.md#trigger-rule-58) | Tool/quota/capability gap → recover or delegate through verified eligible clients; preserve checkpoints, limits, pins and acceptance. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
@@ -100,7 +100,8 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [61](rules/research.md#trigger-rule-61) | Solver/agent evaluation → freeze and finish full declared set within fixed budgets; retain every failed/missing cell and distinguish recovery. |
 | [62](rules/services.md#trigger-rule-62) | Connector use, host setup, or unfamiliar/failing tool/service → read the connector cross-check and verified-host routes; investigate evidence, never fabricate missing content, recover and verify. |
 | [63](rules/services.md#trigger-rule-63) | “Text me” → WhatsApp self-chat via quiet verified route; confirm sent state and surface human-only linking. |
-| [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed and never edit Google Docs. |
+| [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed; edit Google Docs only when Brando asks. |
+| [65](rules/services.md#trigger-rule-65) | Open files for Brando in an editor → one call `cursor -n <project root> <files…>` (new window for that project); never `-r` or per-file open prompts. |
 
 ## Guidelines (best practices)
 
