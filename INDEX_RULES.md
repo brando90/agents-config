@@ -80,11 +80,11 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [41](rules/responses.md#trigger-rule-41) | Present next tasks/options → rank each `[p N/10]`, explain deciding reason and disclose unverified ranking facts. |
 | [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered or stale session renames its own to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
-| [44](rules/workers.md#trigger-rule-44) | Long/dispatched run → maintain concise timestamped checkpoint with exact continuation and recovery state. |
+| [44](rules/workers.md#trigger-rule-44) | Long run or account/context/turn limit → durable timestamped checkpoint, exact continuation and verified handoff. |
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
 | [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision verification, requested review, immediate authorized merge, receipt and safe synchronization. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
-| [48](rules/workers.md#trigger-rule-48) | Unattended/long dispatch or provider failure → budget through completion; verify handoff/recovery, one writer, scientific pins and eligible substitutes. “ac-scheduler” → host watchdog plus master check-in, email on done/critical. |
+| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound and verify handoff, preserving one writer and scientific limits. “ac-scheduler” → host watch plus master check-in and authorized notifications. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
@@ -94,7 +94,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
 | [57](rules/workers.md#trigger-rule-57) | Scope, routing, design choice or approval-menu escalation would stall → decide, explain and record it; preserve genuine authorization and spending boundaries. |
-| [58](rules/workers.md#trigger-rule-58) | Tool/quota/capability gap → recover or delegate through verified eligible clients; preserve checkpoints, limits, pins and acceptance. |
+| [58](rules/workers.md#trigger-rule-58) | Capacity/tool gap → checkpoint and continue through eligible existing accounts/agents; one failed route is not all accounts exhausted. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
 | [60](rules/writing.md#trigger-rule-60) | Technical explainer/teaching → use explainer style; paper prose uses its separate research style. |
 | [61](rules/research.md#trigger-rule-61) | Solver/agent evaluation → freeze and finish full declared set within fixed budgets; retain every failed/missing cell and distinguish recovery. |
