@@ -92,3 +92,7 @@ Canonical bidirectional mapping **name ↔ email ↔ github** for Brando's resea
 - Use this to resolve any name / email / github handle to the person before emailing, CC'ing, @-mentioning, or assigning PRs. Includes Brando's own aliases so hostnames like `brando9@<host>.stanford.edu` don't get mistaken for a different person.
 
 ---
+
+## Trigger Rule 68
+
+68. **Google files an agent creates are shared by link.** _Trigger: an agent creates or copies a Google Doc, Sheet, Slides deck or other Drive file for Brando or for people he works with._ Share it as "Anyone with the link" when you create it: Viewer by default, Editor when the readers must fill it in (rating sheets, sign-up sheets, shared drafts). Say which in the reply. Keep a file restricted only when it holds credentials, sealed or private evaluation data, private references or personal records. A sheet made for one person is sent only to that person. If the connector cannot set link sharing, use the signed-in browser's Share dialog. **Why:** Brando, 10-09-2026: "can you always by default make google docs sharable by link at least viewerable? And common sense should have been to make them editable here!"
