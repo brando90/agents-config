@@ -102,6 +102,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [63](rules/services.md#trigger-rule-63) | “Text me” → WhatsApp self-chat via quiet verified route; confirm sent state and surface human-only linking. |
 | [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed; edit Google Docs only when Brando asks. |
 | [65](rules/services.md#trigger-rule-65) | Open files for Brando in an editor → one call `cursor -n <project root> <files…>` (new window for that project); never `-r` or per-file open prompts. |
+| [66](rules/services.md#trigger-rule-66) | Brando's AI meeting notes (Fathom link/ID, "get my notes") → verbatim transcript first, then summary and action items; script-written byte-exact copies with provenance in the named folder; never retype or reconstruct. |
 
 ## Guidelines (best practices)
 
