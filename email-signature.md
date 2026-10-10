@@ -14,6 +14,10 @@
 - If approval context is needed, translate it into first-person intent: "Could you please...", "I'm good with this plan", "Thanks, that works for me."
 - Before sending, do a quick self-read: if the sentence would be weird for Brando to say himself, rewrite it.
 
+## Drafted-with sign-off
+
+End every email sent as Brando to other people with the line `Brando (drafted with <agent>)`, naming the agent that actually drafted it (Claude, Codex, Antigravity, …), then the signature below. Brando uses many agents and is happy to say so; this line is not a chatbot tell (Brando, 10-09-2026).
+
 ## Signature
 
 Append this signature to every email sent on Brando's behalf:
