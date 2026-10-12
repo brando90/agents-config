@@ -4,6 +4,7 @@
 - **From:** whichever of Brando's accounts the agent already has signed in: the client's mail connector if it has one, otherwise SMTP from `brandojazz@gmail.com` (or a configured alias such as `brando.science@gmail.com`). Never hold an email for a particular sender address.
 - **Internal agent notifications to Brando:** `To: brando.science@gmail.com`, no CC by default.
 - **Emails sent on Brando's behalf to other people:** CC `brando.science@gmail.com`, `brando9@stanford.edu` and `brandojazz@gmail.com` by default; for the VeriBench and cert-judge projects CC `brando.science@gmail.com`, `brandojazz@gmail.com` and `brando@vals.ai` (Brando, 10-06-2026). Skip the address that is sending.
+- **Always copy every inbox, CC by default (Brando, 10-11-2026).** Every email an agent sends for Brando copies all of these inboxes, so all his agents see the email and the replies. Use CC, because BCC'd inboxes never receive replies; use BCC only when Brando asks for it for that email. When the CCs are present, add one line just before the sign-off: "Please keep my CC'd inboxes on replies so my agents can follow the thread."
 - **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
 
 ## Voice rules for emails sent as Brando
@@ -16,7 +17,7 @@
 
 ## Drafted-with sign-off
 
-End every email sent as Brando to other people with the line `Brando (drafted with <agent>)`, naming the agent that actually drafted it (Claude, Codex, Antigravity, …), then the signature below. Brando uses many agents and is happy to say so; this line is not a chatbot tell (Brando, 10-09-2026).
+End every email sent as Brando to other people with the line `Brando (drafted with <agent>)`, where `<agent>` is the agent that actually drafted it: `Brando (drafted with Claude)` from Claude, `Brando (drafted with Codex)` from Codex, and so on (Antigravity, Grok, …), then the signature below. Brando uses many agents and is happy to say so; this line is not a chatbot tell (Brando, 10-09-2026).
 
 ## Signature
 
