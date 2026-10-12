@@ -106,7 +106,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
 | [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
-| [70](rules/services.md#trigger-rule-70) | Run, experiment or long task finishes (success or failure) → one `[RUN DONE] <name>: <status>` email to brando.science, CC brandojazz, brando9@stanford, brando@vals.ai; 2-5 lines with metric and denominator, outputs, errors. |
+| [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster or background job, or >~15-30 min; never chat turns or quick edits) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, CC brandojazz, brando9@stanford, brando@vals.ai. |
 
 ## Guidelines (best practices)
 
