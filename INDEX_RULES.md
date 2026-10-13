@@ -93,7 +93,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
-| [57](rules/workers.md#trigger-rule-57) | Scope, routing, design choice or approval-menu escalation would stall → decide, explain and record it; preserve genuine authorization and spending boundaries. |
+| [57](rules/workers.md#trigger-rule-57) | Scope, routing, approval menu or a human click would stall → decide or take the no-human route, record it; no self-made gates; to-dos only what Brando must do. |
 | [58](rules/workers.md#trigger-rule-58) | Capacity/tool gap → checkpoint and continue through eligible existing accounts/agents; one failed route is not all accounts exhausted. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
 | [60](rules/writing.md#trigger-rule-60) | Technical explainer/teaching → use explainer style; paper prose uses its separate research style. |
