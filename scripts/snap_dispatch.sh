@@ -92,7 +92,12 @@ if tmux has-session -t "=$name" 2>/dev/null; then
 fi
 # A killed session can be relaunched within the same timestamp second. Reserve a
 # unique file on the node so tee cannot append the new job to an earlier job's log.
-log=$(mktemp "${log%.log}.XXXXXX.log")
+# BSD mktemp (macOS, where the tests run this side) randomizes only trailing Xs, so reserve
+# a unique stem, then create stem.log with noclobber (O_EXCL) and mktemp's private 0600 mode.
+stem=$(mktemp "${log%.log}.XXXXXX")
+log="$stem.log"
+(umask 077; set -C; : > "$log") || { rm -f "$stem"; exit 1; }
+rm -f "$stem"
 runner=$(mktemp "$logdir/${name}_runner.XXXXXX")
 {
   echo '#!/usr/bin/env bash'

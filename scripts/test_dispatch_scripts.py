@@ -394,11 +394,17 @@ print(steps[min(n, len(steps) - 1)], end="")
             reported = next(line.split(" : ", 1)[1] for line in result.stdout.splitlines()
                             if line.strip().startswith("log     : "))
             self.assertEqual(Path(reported).name, paths[-1].name)
+            # GNU (SNAP) and BSD (macOS) mktemp must give the same <job>_<stamp>.<random>.log.
+            self.assertRegex(reported, r"^/lfs/skampere1/0/brando9/snap_jobs/"
+                                       r"qa-probe_2026-09-09_14-00-00\.(?!XXXXXX)[A-Za-z0-9]{6}\.log$")
         self.assertNotEqual(paths[0], paths[1])
         self.assertIn("FIRST_JOB", paths[0].read_text())
         self.assertNotIn("SECOND_JOB", paths[0].read_text())
         self.assertIn("SECOND_JOB", paths[1].read_text())
         self.assertNotIn("FIRST_JOB", paths[1].read_text())
+        # Reserving a name leaves no placeholder or lock: only the logs, latest link and runners.
+        kept = sorted(path.name for path in (self.root / "remote").iterdir() if "_runner." not in path.name)
+        self.assertEqual(kept, sorted([paths[0].name, paths[1].name, "qa-probe_latest.log"]))
 
     def test_snap_argv_and_exact_targets(self):
         result = self.run_script("snap_dispatch.sh", "run", "qa-probe", "printf", "%s", "a b; literal", TEST_RUNNER="1")
