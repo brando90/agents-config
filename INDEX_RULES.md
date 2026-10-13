@@ -107,7 +107,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
 | [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
 | [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster or background job, or >~15-30 min; never chat turns or quick edits) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, CC brandojazz, brando9@stanford, brando@vals.ai. |
-| [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line email to brando.science. Temporary stopgap until a live channel exists. |
+| [71](rules/services.md#trigger-rule-71) | Session start, a pasted ultimate_brando9 message (Brando's context; his words win), or need email/calendar/people → read who it is + new `[FROM-UB9]` comments in issue #68; ask there with `[TO-UB9]` + one-line email to brando.science. Temporary. |
 
 ## Guidelines (best practices)
 
