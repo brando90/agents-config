@@ -80,7 +80,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [41](rules/responses.md#trigger-rule-41) | Present next tasks/options → rank each `[p N/10]`, explain deciding reason and disclose unverified ranking facts. |
 | [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered or stale session renames its own to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
-| [44](rules/workers.md#trigger-rule-44) | Long run or account/context/turn limit → durable timestamped checkpoint, exact continuation and verified handoff. |
+| [44](rules/workers.md#trigger-rule-44) | Long run, account/context/turn limit, or end of any session in an experiment folder → durable timestamped `CKPT_<task>.md` (Goal, What ran, Results, Stuck/blocked, Next steps, Brando to-do), exact continuation and verified handoff. |
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
 | [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision verification, requested review, immediate authorized merge, receipt and safe synchronization. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
