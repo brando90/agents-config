@@ -703,7 +703,7 @@ for _node in $TARGET_NODES; do
         "ssh -t ilc.stanford.edu \"srun --partition=il-cpu --account=infolab --nodelist=$_node --nodes=1 --ntasks=1 --cpus-per-task=1 --time=00:10:00 --pty bash -l\"; then run $DFS_ROOT/agents-config/scripts/snap_health.sh --node $_node inside the allocation" >>"$RESULTS"
     else
       emit FAIL "$_node" reachability "unreachable: $_reason" \
-        "ssh -vv $_node; if the host is retired or its mount is broken, file a SNAP administrator ticket" >>"$RESULTS"
+        "inspect ssh -G $SNAP_SSH_USER@$(snap_ssh_host "$_node"); before Cisco VPN/Duo, follow ~/agents-config/machine/snap.md connection recovery via whale.stanford.edu; distinguish gateway authentication from target-node failure" >>"$RESULTS"
     fi
   fi
 done

@@ -60,6 +60,26 @@ After route setup, run the ordinary health preflight and obey failures relevant 
 
 ---
 
+## Connection recovery before Cisco
+
+**Required before asking Brando for Cisco VPN sign-in, Duo approval or a password-manager unlock.** The gateway procedure above applies to Codex, Claude and other clients using the same laptop SSH configuration. Check the current host's configuration; a setup receipt from another Mac does not establish that this Mac has the route.
+
+1. Inspect the effective route for the exact failing destination with `ssh -G brando9@skampere1.stanford.edu`. Check `hostname`, `user`, `proxyjump` and `proxycommand` locally; keep credentials out of output and reports. An absent gateway setting identifies a route configuration gap.
+2. From an external network, test the official gateway with a bounded, noninteractive command. This example opens fresh connections and preserves normal host-key checking:
+
+   ```bash
+   ssh -T -S none -o BatchMode=yes -o ConnectTimeout=10 \
+     -o 'ProxyCommand=ssh -T -S none -o BatchMode=yes -o ConnectTimeout=10 -W %h:%p brando9@whale.stanford.edu' \
+     brando9@skampere1.stanford.edu hostname
+   ```
+
+   Bound the whole operation in the calling tool as well. Use the task's intended node; a successful gateway login alone does not prove that node is reachable. Existing institutional authentication is still required. If a ticket expired, follow the existing protected renewal setup before escalating; do not read or copy credential contents.
+3. If the explicit gateway works and the configured route omits it, save a private backup, restore the scoped `ProxyJump` stanza for the affected configured hosts, and verify with `ssh -G`. Keep `whale` outside its own proxy stanza, preserve other routes, and retain host-key checks and node allocation requirements. Re-test the ordinary command with target connection sharing disabled, then perform the task's smallest missing read or action.
+4. If the gateway fails, retain its exact sanitized failure and distinguish network reachability, gateway authentication, host-key verification and target-node access. Follow [bounded authentication recovery](../workflows/reliable-agent-dispatch.md#authentication-recovery). Ask for a human step only when the remaining supported route actually requires it. Do not send repeated Duo pushes or restart healthy remote work to repair laptop access.
+5. Record the route and verification time in the task checkpoint. Withdraw any obsolete Cisco/Duo request when gateway access succeeds. Repository instructions help future sessions discover the route; they do not install local SSH settings or prove that already-running agents reread them.
+
+**Observed 10-13-2026:** a Mac's effective SSH settings omitted `ProxyJump` despite the 10-07-2026 setup record. Explicit gateway access succeeded; restoring the affected host stanzas made the ordinary command work with Cisco disconnected. The cause of the missing stanza was not established. Check actual configuration before requesting VPN authentication. Institutional access can still need renewal.
+
 ## Cluster health
 
 Run this **before dispatching any SNAP agent job**:
