@@ -34,14 +34,15 @@ Stanford documents SSH to `whale.stanford.edu`, then to the desired server, as a
 
 The MacBook Air route was verified on 10-07-2026 with Cisco VPN **disconnected**: the gateway authenticated with the existing Kerberos ticket, `skampere2` was reachable, and a named detached ordinary-code job completed with exit zero after its submitting SSH connection ended. A fresh connection retrieved its persisted output. This proves the tested route and short-job completion, not uninterrupted long experiments or access to every configured host. [Receipt and limitations](../reports/snap-vpn-free-dispatch-10-07-2026.md).
 
-Use a **scoped** host stanza in the laptop's `~/.ssh/config`, preserving existing user, Kerberos and host-key settings. For example:
+Install or refresh the route on any Mac with one idempotent command:
 
-```sshconfig
-Host skampere1 skampere2 skampere3 mercury1 mercury2 ilc skampere1.stanford.edu skampere2.stanford.edu skampere3.stanford.edu mercury1.stanford.edu mercury2.stanford.edu ilc.stanford.edu
-    ProxyJump brando9@whale.stanford.edu
+```bash
+python3 ~/agents-config/scripts/setup_snap_gateway.py
 ```
 
-Include only the user's configured cluster hosts; keep `whale` outside the matched set to avoid recursive proxying. The actual Mac stanza also routes its configured allocation-gated nodes, without changing their allocation requirements. A named-host `HostName` mapping remains necessary for short aliases. Preserve a private backup before changes, inspect `ssh -G <host>`, then test with `BatchMode=yes`. Do not disable host-key checking or silently replace changed keys. First-use trust is distinct from independent fingerprint verification.
+It owns one marked block at the top of `~/.ssh/config` that sends every SNAP node Brando uses through `brando9@whale.stanford.edu`, under both short and `.stanford.edu` names: the open nodes `skampere1`–`3` and `mercury1`–`2`, the Slurm controller `ilc`, and the Slurm-gated `hyperturing1`–`2`, `ampere1`–`9`, `turing1`–`3`, `blackwell1` and `rambo`. The Koyejo group's own servers are `mercury1`–`2` and `skampere1`–`2` ([InfoLab list](https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo)); the rest are shared SNAP servers ([SNAP list](https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers)). The script keeps a private backup, never routes `whale` through itself, leaves other stanzas and `known_hosts` alone, checks `ssh -G`, then logs in to every node. A gated node that answers with its known host key counts as reachable; logging in still needs a Slurm allocation. `--check` tests without changing anything. Edit the node list in the script and keep it in sync with `snap_health.sh`.
+
+Do not disable host-key checking or silently replace changed keys. `--accept-new-hostkeys` gives first-use trust on a Mac that has never seen a node and still refuses a changed key. When a node reports a changed key, compare the key seen through the gateway with one scanned from inside Stanford (for example `ssh skampere2 ssh-keyscan -t ed25519 <node>.stanford.edu`), and replace the stale entry only when they agree. On 10-13-2026 the MacBook Pro held pre-reinstall keys for 11 nodes; both paths agreed on every new key.
 
 With this route in place, the existing `snap_health.sh`, `snap_dispatch.sh`, SSH, secure copy and file synchronization commands inherit it; no new publicly exposed shell, polling credential or service is needed. The laptop needs internet and valid authorized authentication. On this Mac, the protected existing `~/.keytab` supports passwordless Kerberos renewal, and the existing `com.stanford.kinit-renew` LaunchAgent runs every four hours. Verify actual successful renewal and its last exit status; a loaded schedule alone is not evidence of success. A fresh keytab renewal and scheduled renewal succeeded on 10-07-2026. Credential revocation, unavailable authentication servers or new institutional requirements can still require recovery; no promise of permanent login is made.
 
@@ -74,7 +75,7 @@ After route setup, run the ordinary health preflight and obey failures relevant 
    ```
 
    Bound the whole operation in the calling tool as well. Use the task's intended node; a successful gateway login alone does not prove that node is reachable. Existing institutional authentication is still required. If a ticket expired, follow the existing protected renewal setup before escalating; do not read or copy credential contents.
-3. If the explicit gateway works and the configured route omits it, save a private backup, restore the scoped `ProxyJump` stanza for the affected configured hosts, and verify with `ssh -G`. Keep `whale` outside its own proxy stanza, preserve other routes, and retain host-key checks and node allocation requirements. Re-test the ordinary command with target connection sharing disabled, then perform the task's smallest missing read or action.
+3. If the explicit gateway works and the configured route omits it, save a private backup, restore the scoped `ProxyJump` stanza for the affected configured hosts (`python3 ~/agents-config/scripts/setup_snap_gateway.py` restores every node), and verify with `ssh -G`. Keep `whale` outside its own proxy stanza, preserve other routes, and retain host-key checks and node allocation requirements. Re-test the ordinary command with target connection sharing disabled, then perform the task's smallest missing read or action.
 4. If the gateway fails, retain its exact sanitized failure and distinguish network reachability, gateway authentication, host-key verification and target-node access. Follow [bounded authentication recovery](../workflows/reliable-agent-dispatch.md#authentication-recovery). Ask for a human step only when the remaining supported route actually requires it. Do not send repeated Duo pushes or restart healthy remote work to repair laptop access.
 5. Record the route and verification time in the task checkpoint. Withdraw any obsolete Cisco/Duo request when gateway access succeeds. Repository instructions help future sessions discover the route; they do not install local SSH settings or prove that already-running agents reread them.
 
@@ -145,7 +146,9 @@ srun --partition=il --qos=il-interactive --account=infolab \
 For a CPU-only health/setup shell, use `--partition=il-cpu`, omit `--gres`, and request one task and
 one CPU. Once an allocation is running, direct SSH to its node is accepted by `pam_slurm_adopt`, or
 the job can remain under `srun`. If `showaccount` is empty, request the `infolab` Slurm association
-from `il-action@cs.stanford.edu`; no local command can grant it. Current syntax and limits are at
+from `il-action@cs.stanford.edu`; no local command can grant it. Observed 10-13-2026: `showaccount`
+was empty for `brando9`, and `sbatch --test-only --partition=il --account=infolab` reported an invalid
+account or account/partition combination, so no gated node was usable. Current syntax and limits are at
 https://ilops.stanford.edu/wiki/doku.php?id=hints%3Aslurm.
 
 ### One dedicated clone per agent job
@@ -230,7 +233,7 @@ be permanently gone. Filesystem state on a gated node can be tested only from in
 |------|------------|-----------|-----------------|
 | `mercury1`, `mercury2` | open (CS) | OK | ✅ |
 | `skampere1`, `skampere2`, `skampere3` | open (CS) | OK | ✅ |
-| `rambo` (ICL compute) | open (CS) | OK | ✅ (CPU-only, needs `lark`) |
+| `rambo` (ICL compute) | **Slurm-gated (`il-cpu`) by 10-13-2026** | test in allocation | via `srun`/`sbatch` (CPU-only, needs `lark`) |
 | `hyperturing1`, `hyperturing2` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `ampere1`–`ampere9` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `turing1`–`turing3` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |

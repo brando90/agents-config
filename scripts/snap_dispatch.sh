@@ -48,7 +48,7 @@ valid_name() {
 preflight() {
   local host="$1"
   ssh "${SSH_OPTS[@]}" "${SNAP_SSH_USER}@${host}.stanford.edu" true 2>/dev/null \
-    || die "cannot SSH to ${host}. Is the Stanford VPN up and 'klist' showing a valid ticket?"
+    || die "cannot SSH to ${host}. No VPN needed: run 'python3 ~/agents-config/scripts/setup_snap_gateway.py' (routes SNAP through the whale.stanford.edu gateway) and check that 'klist' shows a valid ticket."
 }
 
 cmd_run() {

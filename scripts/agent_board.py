@@ -1775,12 +1775,24 @@ def stanford_status(cache_s=60):
         pass
 
     import socket
-    reachable = False
+    reachable, route = False, ""
     try:
         socket.create_connection(("skampere1.stanford.edu", 22), timeout=2.5).close()
-        reachable = True
+        reachable, route = True, "direct"
     except Exception:
-        pass
+        # Off campus without the VPN, SSH still reaches SNAP when ~/.ssh/config jumps through the
+        # official gateway (scripts/setup_snap_gateway.py), so probe that first hop instead.
+        try:
+            out = subprocess.run(["ssh", "-G", "skampere1.stanford.edu"], capture_output=True,
+                                 text=True, timeout=5).stdout
+            jump = next((ln.split(" ", 1)[1] for ln in out.splitlines()
+                         if ln.startswith("proxyjump ")), "none")
+            if jump != "none":
+                host, _, port = jump.split(",")[0].rsplit("@", 1)[-1].partition(":")
+                socket.create_connection((host, int(port or 22)), timeout=2.5).close()
+                reachable, route = True, f"via {host}"
+        except Exception:
+            pass
 
     ticket, expires = False, ""
     try:
@@ -1795,7 +1807,8 @@ def stanford_status(cache_s=60):
     except Exception:
         pass
 
-    c = {"at": time.time(), "reachable": reachable, "ticket": ticket, "expires": expires}
+    c = {"at": time.time(), "reachable": reachable, "route": route, "ticket": ticket,
+         "expires": expires}
     try:
         os.makedirs(BOARD_DIR, exist_ok=True)
         tmp = NET_CACHE + ".tmp"
@@ -1870,9 +1883,11 @@ def render_text(sections, net=None, panes=None):
     if net:
         if net.get("reachable"):
             tick = f"kerberos until {net['expires']}" if net.get("ticket") else "NO kerberos ticket (run kinit)"
-            print(f"\n  \U0001F7E2 Stanford / SNAP reachable   \033[90m{tick}\033[0m")
+            via = f" ({net['route']})" if net.get("route", "").startswith("via ") else ""
+            print(f"\n  \U0001F7E2 Stanford / SNAP reachable{via}   \033[90m{tick}\033[0m")
         else:
-            print("\n  \U0001F534 No Stanford access — connect the VPN "
+            print("\n  \U0001F534 No Stanford access — no VPN needed: run "
+                  "python3 ~/agents-config/scripts/setup_snap_gateway.py "
                   "\033[90m(SNAP nodes unreachable)\033[0m")
     print(f"\n  \033[32m●\033[0m working now (<2m / job RUNNING)   "
           f"\033[33m●\033[0m waiting on you (2-30m / results not landed)   "
@@ -2030,10 +2045,12 @@ def render_html(sections, out_path, refresh, net=None):
     if net.get("reachable"):
         tick = (f'<i>Kerberos ticket until {E(net.get("expires", ""))}</i>' if net.get("ticket")
                 else '<i>no Kerberos ticket &mdash; run <code>kinit</code></i>')
-        parts.append(f'<div class="net ok">&#x1F7E2; <b>Stanford / SNAP reachable</b>{tick}</div>')
+        via = E(f' ({net["route"]})') if net.get("route", "").startswith("via ") else ""
+        parts.append(f'<div class="net ok">&#x1F7E2; <b>Stanford / SNAP reachable{via}</b>{tick}</div>')
     else:
         parts.append('<div class="net bad">&#x1F534; <b>No Stanford access</b>'
-                     '<i>connect the Stanford VPN &mdash; SNAP nodes unreachable from here</i></div>')
+                     '<i>no VPN needed &mdash; run <code>python3 ~/agents-config/scripts/setup_snap_gateway.py'
+                     '</code> to route SNAP through the whale.stanford.edu gateway</i></div>')
 
     # --- colour key (one meaning per colour, in every table)
     parts.append('<div class="key">'
