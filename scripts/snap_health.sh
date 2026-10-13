@@ -17,7 +17,7 @@ snap_ssh_host() {
 NVM_DIR="$DFS_ROOT/.nvm"
 DFS_BIN="$DFS_ROOT/bin"
 OPEN_NODES="skampere1 skampere2 skampere3 mercury1 mercury2"
-GATED_NODES="hyperturing1 hyperturing2 ampere1 ampere2 ampere3 ampere4 ampere5 ampere6 ampere7 ampere8 ampere9 turing1 turing2 turing3 blackwell1"
+GATED_NODES="hyperturing1 hyperturing2 ampere1 ampere2 ampere3 ampere4 ampere5 ampere6 ampere7 ampere8 ampere9 turing1 turing2 turing3 blackwell1 rambo"
 ALL_NODES="$OPEN_NODES $GATED_NODES"
 DISK_WARN_FREE_PCT="${SNAP_HEALTH_DISK_WARN_FREE_PCT:-10}"
 DISK_FAIL_FREE_PCT="${SNAP_HEALTH_DISK_FAIL_FREE_PCT:-5}"
