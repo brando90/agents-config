@@ -138,7 +138,7 @@ For an unattended dispatch, maintain a durable repository event and use the task
 
 Validate only the authorized delivery path before launch; record actual delivery success or failure. If it is unavailable, use another already-authorized user channel or keep a pending receipt; never add email to a task that forbids it. A failed notification never erases an otherwise verified landing. No collaborator messages are authorized here. Completion notices still follow Rule 46; do not send a second completion email for the documentation-only landing record.
 
-`DONE` requires the requested outputs, relevant deterministic checks, required review, verified merge/publication to `main`, and its durable completion record. Report notification delivery separately. A completed agent turn, a submitted pull request, a launch receipt, a quota reset or a provider switch is not task completion. The master reconciles every strand and reports what finished, what continues and what is blocked, with evidence and freshness.
+`DONE` requires the requested outputs, relevant deterministic checks, required review, verified merge/publication to `main`, its durable completion record, and temporary-checkout cleanup under [Rule 19](../rules/maintenance.md#trigger-rule-19). Record any retained active or unresolved checkout and its owner explicitly; hiding or archiving a full copy is not completed cleanup. Report notification delivery separately. A completed agent turn, a submitted pull request, a launch receipt, a quota reset or a provider switch is not task completion. The master reconciles every strand and reports what finished, what continues and what is blocked, with evidence and freshness.
 
 ## Dispatch manifest fields
 

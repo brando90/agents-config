@@ -55,7 +55,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [16](rules/responses.md#trigger-rule-16) | Create/substantially rewrite a document → title, visible Doc link and summary; respect specialized formats and frozen evidence. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
 | [18](rules/maintenance.md#trigger-rule-18) | Appendix/results-consistency/polish-only branch → inspect scope and land; substantive claims retain authorization requirements. |
-| [19](rules/maintenance.md#trigger-rule-19) | Feature branch fully merged → verify integration and remove merged branches; preserve shared/release/active work. |
+| [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts or merge branches → keep one canonical project and remove completed temporary copies. |
 | [20](rules/research.md#trigger-rule-20) | Lean proof/type-check task → discover pinned toolchain and actually compile; report observed output. |
 | [21](rules/writing.md#trigger-rule-21) | Paper introduction → load introduction and general research-writing guides. |
 | [22](rules/writing.md#trigger-rule-22) | Paper abstract → load abstract and general guides; preserve structural source comments. |
