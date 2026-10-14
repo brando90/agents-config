@@ -6,10 +6,9 @@
 # Usage (run ON a SNAP node; steps 1-2 are shared, so only step 3 really repeats per node):
 #   bash ~/agents-config/scripts/setup_valkyrie_snap.sh [--force]
 #
-# What it does NOT do: put a Vals API key on disk. Finish with ONE of
-#   export VALKYRIE_API_KEY=...   &&  valkyrie config init      # hosted mode, non-interactive key
-#   valkyrie config init                                        # prompts for the key
-# The resulting ~/.config/valkyrie/valkyrie.yaml lands on DFS and is then shared by every node.
+# Hosted-cloud migration (10-14-2026): this installs the shared runtime, not account access.
+# Follow ~/agents-config/workflows/valkyrie.md; finish with `valkyrie login --no-browser`,
+# `valkyrie whoami` and organization provider/secret setup. Legacy YAML presence is not readiness.
 set -euo pipefail
 
 DFS_ROOT="${DFS_ROOT:-/dfs/scratch0/brando9}"
@@ -147,9 +146,7 @@ elif [ -z "$CHECK" ]; then
 else
   log "  valkyrie: FAILED — $(printf '%s' "$CHECK" | tail -1)"
 fi
-if [ -f "$VALK_CFG/valkyrie.yaml" ]; then
-  log "  config:   $VALK_CFG/valkyrie.yaml present"
-else
-  log "  config:   MISSING — run: export VALKYRIE_API_KEY=<vals key> && valkyrie config init"
-fi
+log "  cloud:    verify current CLI help has login, secret and provider commands"
+log "  access:   run valkyrie login --no-browser, then valkyrie whoami and valkyrie provider list"
+log "  setup:    follow ~/agents-config/workflows/valkyrie.md; legacy YAML presence is not readiness"
 log "  repos:    $(ls -d "$DFS_ROOT"/Valkyrie "$DFS_ROOT"/vals-* 2>/dev/null | tr '\n' ' ')"

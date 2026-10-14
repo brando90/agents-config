@@ -374,7 +374,9 @@ canonical SNAP nodes. Do not export `OPENAI_API_KEY`. Recipe:
 
 ### Valkyrie (Vals evaluation platform CLI)
 
-**Current bootstrap guidance (09-24-2026):** Follow [verified-host bootstrap](../workflows/verified-host-bootstrap.md). Prefer an approved private packet with a pinned, host-local runtime for new setup or cross-platform repair; verify its freshness and each destination. SNAP can distribute private configuration and receipts to authorized laptops without distributing its Linux runtime. The shared-install details below describe the existing legacy route, not proof of compatibility on every host.
+**Current hosted setup (10-14-2026):** Follow [Valkyrie's hosted-cloud migration](../workflows/valkyrie.md#hosted-cloud-migration-10-14-2026): update the client, use `valkyrie login --no-browser`, confirm `whoami`, and verify organization secrets and the Daytona provider mapping/default. Current hosted clients save sessions under `~/.config/valkyrie/sessions`; old YAML/AWS bootstrap packets and `config init` are not the current login path. Preserve shared-runtime users and historical receipts; verify every target host independently. [Verified-host bootstrap](../workflows/verified-host-bootstrap.md) still applies to compatible packages and private host evidence.
+
+**Historical shared installation:** The details below describe the pre-migration runtime and are not proof that it has been upgraded or can access the new organization.
 
 - `valkyrie` / `valk` (same tool, two names) installed via `uv tool install git+https://github.com/vals-ai/Valkyrie@prod`
   into DFS: venv at `/dfs/scratch0/<user>/uv/tools/valkyrie`, shims in `/dfs/scratch0/<user>/bin`
@@ -382,10 +384,10 @@ canonical SNAP nodes. Do not export `OPENAI_API_KEY`. Recipe:
 - The tool venv **must** use a uv-managed interpreter under `/dfs/scratch0/<user>/uv/python`
   (`UV_PYTHON_PREFERENCE=only-managed`): skampere nodes have `/usr/bin/python3.12`, but mercury nodes
   only ship python 3.8, so a system-pinned venv is broken there.
-- Config: `~/.config/valkyrie/valkyrie.yaml` (override path with `VALKYRIE_CONFIG_PATH`), symlinked
+- Legacy config: `~/.config/valkyrie/valkyrie.yaml` (override path with `VALKYRIE_CONFIG_PATH`), symlinked
   from each node to `/dfs/scratch0/<user>/.config/valkyrie` so credentials are entered once.
-  Create it with `export VALKYRIE_API_KEY=<vals key> && valkyrie config init` — the key is read from
-  `VALKYRIE_API_KEY` if set, otherwise prompted for, and is *not* stored in `~/keys` by any script.
+  This was created with the former `config init` command; preserve it only for historical compatibility,
+  not as the setup recipe for new hosted runs.
 - Repos cloned to DFS alongside it: `Valkyrie/`, `vals-public-agent-registry/`,
   `vals-create-benchmark-service/`.
 - The shared wrapper dynamically selects `/dfs/scratch0/brando9/uv/tools/valkyrie` on glibc 2.34+
@@ -394,9 +396,10 @@ canonical SNAP nodes. Do not export `OPENAI_API_KEY`. Recipe:
   import failures. `snap_health.sh` runs a bounded `--help` startup check, not metadata alone. First
   start is slow (~1-5 min cold, ~5 s warm) because the imports come off DFS.
 - `valkyrie` has **no `--version` flag**; `valkyrie --help` is the smoke test.
-- Install / repair on a node: `bash ~/agents-config/scripts/setup_valkyrie_snap.sh`.
+- Legacy shared-runtime installer: `bash ~/agents-config/scripts/setup_valkyrie_snap.sh`.
+  Its installation check does not establish current cloud authentication or provider readiness.
 - VeriBench-specific state (agents, benchmark service, gateway secret) lives in
-  `~/veribench/experiments/71_vals_ai_eval_code/docs/04_valkyrie_setup.md`.
+  `~/veribench/experiments/71_E2_valkyrie_harbor_vals_ai_eval_code/docs/04_valkyrie_setup.md`.
 
 ### npm globals — "update loop" gotcha
 
