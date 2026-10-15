@@ -69,9 +69,24 @@ The judge was selected by validation Spearman and then tested once on 30 held-ou
 
 Pearson, Spearman and Kendall alone would have shown a strong judge. Only the absolute-agreement statistics showed that its raw scores run about 0.18 high. The paper therefore claims that the judge's rankings are validated, and reports levels beside a fitted expert-scale mapping with its range limit. Every statistic above was computed from scores already collected; none needed a new call.
 
-## Canonical example of a results summary item (Brando, 10-02-2026)
+## Compact results entry
 
-Every results summary Brando reads (weekly updates, experiment `results.md` headlines, chat replies about a result) is written at this level of detail and in this shape: the project tag in bold; one line stating the hypothesis being de-risked as a question plus "Measured via <metric>"; then bold-labelled bullets in this order where they apply: the old or baseline result with the instrument named; the judge or measuring instrument with its agreement on the train, val and test splits, each with n and `x [lo, hi]` intervals; the new results, one line per system; a "Saturated?" (or "Verdict?") bullet that reads the numbers against the pre-declared threshold and names what the instrument has not been shown to do; and a "Next step" bullet. Remarks go as numbered sub-items under the bullet they qualify. Every interval is `x [lo, hi]` with `p-val=Z` naming the test, or `p-val=n/a`; mean bias is judge minus human with the split named. Brando's own final version of the first item, kept as the reference:
+**Default format (Brando, 10-15-2026): 1–2 sentences plus two links.** Use this for task-list results, weekly-update items and chat result summaries. Lead with the answer and decisive measured numbers, including the relevant denominator or split. Use the second sentence only for the main limitation, practical consequence or next test. Follow with exactly the two verified report links when both exist:
+
+```markdown
+- **result**: <Finding, decisive numbers and scope>. <Material limitation or consequence>.
+- Table: [.md](verified_markdown_report_url), [gdoc](verified_google_doc_url)
+```
+
+The linked reports hold full factor tables, 95% intervals and resampling units, p-values or `p-val=n/a`, bias, repeat variability, source conditions and reproducible methods. Keep a caveat in the short entry if omitting it changes the conclusion (for example, historical results do not validate frontier models). Do not paste the whole report or a long running-work log beneath `results:`. Use existing reports where appropriate; create a companion Google Doc when the requested two-link deliverable needs it, preserving sharing/data rules. If a destination is unavailable, report the missing link rather than fabricating it.
+
+This later format supersedes the long example below **for compact entries only**. It preserves all statistical evidence requirements for the full reports. Do not copy an example's equations or numerical claims without checking them.
+
+<a id="canonical-example-of-a-results-summary-item-brando-10-02-2026"></a>
+
+## Detailed report example (Brando, 10-02-2026)
+
+The following older example illustrates the evidence depth of a full results report or appendix; compact entries use the format above. A detailed report can use this shape: the project tag in bold; one line stating the hypothesis being de-risked as a question plus "Measured via <metric>"; then bold-labelled bullets in this order where they apply: the old or baseline result with the instrument named; the judge or measuring instrument with its agreement on the train, val and test splits, each with n and `x [lo, hi]` intervals; the new results, one line per system; a "Saturated?" (or "Verdict?") bullet that reads the numbers against the pre-declared threshold and names what the instrument has not been shown to do; and a "Next step" bullet. Remarks go as numbered sub-items under the bullet they qualify. Every interval is `x [lo, hi]` with `p-val=Z` naming the test, or `p-val=n/a`; mean bias is judge minus human with the split named. Brando's own final version of the first item, kept as the reference:
 
 > 1. **vbv1 (public paper)**. Hypothesis being de-risked: when the models create the trust artifacts (tests & formal specs/unproved thms), are they "correct" i.e. the intended f-specs? Measured via Formal Spec Coverage (FSC with an AI judge, prev TE1/TC) score:
 >    - **May Result**: the "unsaturated" FSC coverage reported in May was 0.102 with a ("unvalidated") Claude Sonnet 4.6. The r=0.7 codex isotonic judge that was validated to humans was not used to score unfortunately.
@@ -94,7 +109,7 @@ Sources for the numbers: VeriBench `experiments/100_karpathy_recipe_tc_judge_sea
 
 ## Short form: answering a question bullet in Brando's own doc (Brando, 10-15-2026)
 
-The long shape above is for a results summary Brando reads start to finish (a weekly update, an experiment headline). Inside **his own Google Doc** — "Vals AI Brando's Weekly Updates" and its successors — he instead writes a question bullet ("Expt3: what are the results from the ... experiment?") and leaves an empty `results:` sub-bullet for an agent to fill. Fill that one in the short form, which is the doc's existing house style, not the long one:
+The detailed shape above is for a full report or appendix; compact entries follow the short format above. Inside **his own Google Doc** — "Vals AI Brando's Weekly Updates" and its successors — he instead writes a question bullet ("Expt3: what are the results from the ... experiment?") and leaves an empty `results:` sub-bullet for an agent to fill. Fill that one in the short form, which is the doc's existing house style, not the long one:
 
 - `results: <1-2 sentences>` — the verdict and the numbers that carry it, nothing else. Lead with what actually answers his question, and if a number of his looks good but the experiment still failed, say which part passed and which part failed in the same sentence; he has asked "why did you consider it a failure then?" about exactly this.
 - `Table: .md, gdoc` — a sibling bullet at the same nesting level, two words, each hyperlinked: `.md` to a **purpose-built one-page results file** in the experiment's canonical folder on GitHub, `gdoc` to a Google Doc holding the same content with its tables. One page, not a pointer into three result files: write `<TOPIC>_RESULTS_<MM-DD-YYYY>.md` next to them and link that.
