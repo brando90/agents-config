@@ -92,6 +92,8 @@ Exceptions need a concrete reason and a pointer in the experiment README:
 
 This is a location rule, not a publication rule. Keep private/gold material ignored or access-controlled as required, and credentials in their existing secret store. Honor user moves and existing canonical homes; coordinate other owners before relocation, update live imports/configurations/links, and verify preserved contents. Frozen result paths and running checkouts remain unchanged until an appropriate coordinated move. This preference does not authorize a broad repository reorganization.
 
+**Results tables go in git (10-15-2026).** Commit every per-item results table an analysis or reported number reads, even for cluster runs; keep only bulky raw outputs external, withhold only rows a binding rule makes private (say which, why and until when), and never make a committed number depend on cluster access. See [Trigger Rule 39](../rules/research.md#trigger-rule-39).
+
 ## Optional Research Ideas
 
 Use `experiments/ideas/<descriptive_setup>/` for research whose priority or paper inclusion is uncertain. Index it in `experiments/ideas/README.md`, separate from core numbered workstreams and concluded archives. Honor explicit names such as `IDEA_00_waterfall_vs_llm_judge`; otherwise use a descriptive unnumbered name without reserving an active experiment number.
