@@ -148,7 +148,7 @@ one CPU. Once an allocation is running, direct SSH to its node is accepted by `p
 the job can remain under `srun`. If `showaccount` is empty, request the `infolab` Slurm association
 from `il-action@cs.stanford.edu`; no local command can grant it. Observed 10-13-2026: `showaccount`
 was empty for `brando9`, and `sbatch --test-only --partition=il --account=infolab` reported an invalid
-account or account/partition combination, so no gated node was usable. Current syntax and limits are at
+account or account/partition combination, so no gated node was usable. Re-checked 10-14-2026 19:35 PDT with the same result (`showaccount` empty; `srun --partition=il-cpu --qos=il-cpu-long --account=infolab` refused), and the association was requested by email from brando9@stanford.edu to il-action@cs.stanford.edu at 19:40 PDT; do not send a duplicate request. Current syntax and limits are at
 https://ilops.stanford.edu/wiki/doku.php?id=hints%3Aslurm.
 
 ### One dedicated clone per agent job
