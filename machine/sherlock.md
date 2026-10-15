@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/sherlock.md>
 
-Stanford's shared Slurm cluster, run by Stanford Research Computing (SRCC). Load-balanced login nodes, Slurm for all compute, Lustre (parallel filesystem) `$SCRATCH`, NFS (Network File System) `$HOME`/`$GROUP_HOME`. Account: `brando9`, PI (principal investigator) group: Sanmi Koyejo. Account created 10-15-2026 (SRCC ticket #106356). **Shell: bash** (`~/.bashrc`).
+Stanford's shared Slurm cluster, run by Stanford Research Computing (SRCC). Load-balanced login nodes, Slurm for all compute, Lustre (parallel filesystem) `$SCRATCH`, NFS (Network File System) `$HOME`/`$GROUP_HOME`. Account: `brando9`, PI (principal investigator) group: Sanmi Koyejo. Account created 10-15-2026. **Shell: bash** (`~/.bashrc`).
 
 Official docs (every fact below cites one of these; facts checked 10-15-2026):
 - Connecting: https://www.sherlock.stanford.edu/docs/getting-started/connecting/
@@ -32,7 +32,7 @@ Official docs (every fact below cites one of these; facts checked 10-15-2026):
 5. **No Anaconda.** SRCC recommends against it on Sherlock (fills `$HOME`, edits `.bashrc`, duplicates modules) ([anaconda](https://www.sherlock.stanford.edu/docs/software/using/anaconda/)). Use `ml python` + `uv` or `venv`.
 6. **Persistent services go to the `service` partition**, not a tmux session on a login node ([running-jobs](https://www.sherlock.stanford.edu/docs/user-guide/running-jobs/)).
 7. **No high-risk data.** Sherlock is *not* approved for HIPAA (Health Insurance Portability and Accountability Act) data, PHI (protected health information), PII (personally identifiable information) or any other High Risk data; the user is responsible for compliance (SRCC welcome email, 10-15-2026; [Stanford HIPAA FAQ](https://privacy.stanford.edu/faqs/hipaa-faqs)). Public benchmarks, model weights, code and synthetic data are fine.
-8. **Never share credentials.** The cluster falls under Stanford's Computer and Network Usage Policy, which strictly prohibits sharing authentication credentials ([Stanford Administrative Guide](https://adminguide.stanford.edu)). Agents only *reuse Brando's live SSH socket on his own computer*; they never copy keys, tickets or passwords to other machines or people.
+8. **Never share credentials.** The cluster falls under Stanford's Computer and Network Usage Policy, which strictly prohibits sharing authentication credentials ([Administrative Guide 6.2.1, Computer and Network Usage Policy](https://adminguide.stanford.edu/chapters/computing/computer-and-network-usage/computer-and-network-usage-policy); SRCC welcome email). Agents only *reuse Brando's live SSH socket on his own computer*; they never copy keys, tickets or passwords to other machines or people.
 9. **Sponsored research only.** Sherlock supports sponsored research, not course work, class assignments or general training sessions (SRCC welcome email).
 
 ---
