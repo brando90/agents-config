@@ -36,6 +36,10 @@ Legacy `valkyrie config init`, `valkyrie.yaml`, `VALKYRIE_CONFIG_PATH`, `VALKYRI
 
 Before admitting work, verify host/client revision, Tracker, organization, provider mapping/default, contract secrets, agent bundle access, benchmark reachability/authentication and model payer. Record non-secret evidence in the private project checkpoint. Transport migration preserves model/effort, prompts, rubric, task manifest, budget, completed cells and existing run holds. A migration announcement alone does not resolve an earlier authorization failure or authorize resumed experiments.
 
+## One large paid experiment at a time
+
+Before starting, resuming or retrying a run, follow [Trigger Rule 72](../rules/services.md#trigger-rule-72): the shared `valk` wrappers refuse a large launch while another experiment has unfinished work, and only Brando approves running two at once.
+
 ## Official sources by task
 
 | Task | Public source |
