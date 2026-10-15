@@ -81,6 +81,14 @@ After route setup, run the ordinary health preflight and obey failures relevant 
 
 **Observed 10-13-2026:** a Mac's effective SSH settings omitted `ProxyJump` despite the 10-07-2026 setup record. Explicit gateway access succeeded; restoring the affected host stanzas made the ordinary command work with Cisco disconnected. The cause of the missing stanza was not established. Check actual configuration before requesting VPN authentication. Institutional access can still need renewal.
 
+### Do not flood the gateway (10-15-2026)
+
+`whale.stanford.edu` blocks a machine that opens SSH connections too fast, the way attack protection does. From about 11:15 PDT on 10-15-2026 it refused Brando's Mac, and every agent there lost SNAP. The likely trigger was the ChatGPT/Codex desktop app: it had five SNAP remote hosts saved and reconnected through `whale` about every 3 seconds (14 to 18 new connections in 30 to 60 seconds).
+
+- **Signature.** `sleep 3 | nc -w 5 whale.stanford.edu 22` connects but prints no `SSH-2.0-` greeting, and `ssh` fails with `kex_exchange_identification: read: Connection reset by peer`, while another Stanford host such as `snap.stanford.edu` greets normally. That is a block on this machine, not a network or VPN problem.
+- **Prevent.** Never leave an auto-reconnecting client pointed at SNAP through `whale`: remove SNAP hosts from the Codex app's remote connections, or keep the app closed while SNAP is unreachable. Keep one watcher per purpose. Poll no more often than every 10 minutes and back off after a failure (for example 15, 20, 30, then 60 minutes). Reuse connections (`ControlMaster auto`, `ControlPersist`) for repeated commands.
+- **Recover.** Find the local SSH loops with `ps -axo pid,ppid,etime,command | grep -E 'ssh.*(whale|skampere|mercury)'`, stop the one flooding (only processes you own or the user approves), slow the other pollers, wait 30 to 60 quiet minutes and try once. If `whale` still refuses after about two quiet hours, email `il-action@cs.stanford.edu` with the time window and the cause. Cisco VPN stays the last resort.
+
 ## Cluster health
 
 Run this **before dispatching any SNAP agent job**:
