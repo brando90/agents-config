@@ -52,7 +52,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [13](rules/writing.md#trigger-rule-13) | Research paper work or validity question → load research-writing guide; preserve evidence and source format. |
 | [14](rules/services.md#trigger-rule-14) | Explicitly tracked completion/substantial review or authorized recovery event → verified, deduplicated notification; ordinary edits/light QA do not trigger email. |
 | [15](rules/responses.md#trigger-rule-15) | Substantive question → answer in chat; email only when explicitly requested. |
-| [16](rules/responses.md#trigger-rule-16) | Create/substantially rewrite a document → title, visible Doc link and summary; respect specialized formats and frozen evidence. |
+| [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for substantial findings; preserve audience and verify. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
 | [18](rules/maintenance.md#trigger-rule-18) | Appendix/results-consistency/polish-only branch → inspect scope and land; substantive claims retain authorization requirements. |
 | [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts or merge branches → keep one canonical project and remove completed temporary copies. |
@@ -73,7 +73,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [34](rules/services.md#trigger-rule-34) | Browser/account/form task → finish mechanical work, verify account/files and sign in as authorized; preserve human-only and final-action boundaries. |
 | [35](rules/writing.md#trigger-rule-35) | Semantic paper-source edit → compile and commit fresh PDFs beside active paper sources; verify build and references. |
 | [36](rules/workers.md#trigger-rule-36) | Handoff/reusable/scheduled prompt → use the appropriate summary format; selection advice stays outside, execution facts inside; preserve schedule settings. |
-| [37](rules/research.md#trigger-rule-37) | Long/dispatched run → maintain and publish live canonical results.md from launch; Markdown is sufficient, dashboards require explicit request. |
+| [37](rules/research.md#trigger-rule-37) | Long/dispatched run → maintain and publish live canonical results.md from launch; Markdown record + Google findings (Rule 16); dashboards opt-in. |
 | [38](rules/hosts.md#trigger-rule-38) | SNAP connection or dispatch → check the official gateway (never flood it) before Cisco/Duo escalation; run health preflight, fix relevant failures, use owned checkout; token-spending checks remain opt-in. |
 | [39](rules/research.md#trigger-rule-39) | Start/continue/finish experiment → canonical setup-named home/index, colocated artifacts, results tables in git, frozen evidence, lifecycle. |
 | [40](rules/writing.md#trigger-rule-40) | Commit slide deck → fresh PDF, applicable text sibling and hash manifest in the same commit. |
@@ -100,7 +100,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [61](rules/research.md#trigger-rule-61) | Solver/agent evaluation → freeze and finish full declared set within fixed budgets; retain every failed/missing cell and distinguish recovery. |
 | [62](rules/services.md#trigger-rule-62) | Connector use, host setup, or unfamiliar/failing tool/service → read the connector cross-check and verified-host routes; investigate evidence, never fabricate missing content, recover and verify. |
 | [63](rules/services.md#trigger-rule-63) | “Text me” → WhatsApp self-chat via quiet verified route; confirm sent state and surface human-only linking. |
-| [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed; edit Google Docs only when Brando asks. |
+| [64](rules/research.md#trigger-rule-64) | Explicit weekly update → newest-first project folder, complete post plus appendix/images; publish and return full post/path; keep sealed data sealed; sync knowledge under Rule 16; preserve his task-list text. |
 | [65](rules/services.md#trigger-rule-65) | Open files for Brando in an editor → one call `cursor -n <project root> <files…>` (new window for that project); never `-r` or per-file open prompts. |
 | [66](rules/services.md#trigger-rule-66) | Brando's AI meeting notes (Fathom link/ID, "get my notes") → verbatim transcript first, then summary and action items; script-written byte-exact copies with provenance in the named folder; never retype or reconstruct. |
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |

@@ -14,6 +14,8 @@ By [Brando Miranda](https://brando90.github.io/brandomiranda/). [Contributions w
 
 Follow Markdown links explicitly; they are not imports. Keep detailed rules in one canonical file.
 
+[Rule 16](rules/responses.md#trigger-rule-16) keeps substantial research knowledge in both its reproducible Markdown record and the relevant Google Doc or Slides deck. Reuse the destination humans already read, preserve its audience, and verify the update.
+
 ## Client compatibility
 
 | Client | Instruction discovery and practical guidance |

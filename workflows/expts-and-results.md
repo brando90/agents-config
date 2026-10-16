@@ -25,7 +25,7 @@ Every **active experiment** must have the following; deferred proposals use the 
 - [ ] **Versioned sub-experiments** — `expt_v1/`, `expt_v2/`, … each self-contained with own agent prompt, scripts, and `results/` dir
 - [ ] **Full-set evaluation contract (solver/agent evaluations)** — frozen model × task × seed/repetition manifest, bounded completion/continuation procedure, durable execution, per-cell receipts and full-denominator reporting ([details](#uninterrupted-evaluation-of-the-full-declared-set))
 - [ ] **Agent prompt per version** — `cc.md` or `agents_vN.md` (paste-into-agent runnable prompt)
-- [ ] **Experiment-folder Markdown report** — the primary and sufficient reporting deliverable; save a `.md` report in the canonical experiment folder, normally `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md`, with findings, config, metrics, limitations, and relevant local artifact links
+- [ ] **Experiment-folder Markdown report** — the canonical reproducible record, with substantial findings also mirrored to Google under [Rule 16](../rules/responses.md#trigger-rule-16); save a `.md` report in the canonical experiment folder, normally `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md`, with findings, config, metrics, limitations, and relevant local artifact links
 - [ ] **Stable `results.md` at experiment root** — created at launch, updated as meaningful evidence arrives, latest outcome + TLDRs and links to timestamped summaries (see § Results Storage)
 - [ ] **Dated resumable checkpoint for qualifying runs** — `CKPT_<task>.md` (CKPT means checkpoint), with real creation/update timestamps and the next resume step; apply [Trigger Rule 44](../INDEX_RULES.md) for long or dispatched runs
 - [ ] **QA review** — cross-agent correctness review before committing results (per `qa-correctness.md`)
@@ -327,7 +327,7 @@ Preserve the protocol's aggregation formula. The geometric mean of dataset-level
 
 Once a blocked stage becomes available, resume only the missing stages on the preserved inputs; do not rerun valid earlier stages. If an earlier result is invalidated, record the reason and rerun only the affected stages and dependents. Preserve task selection, model and judge settings, rubric, seeds, inputs, and other frozen scientific choices. The checkpoint under Rule 44 records the exact missing stage and resume command; the live results file records measured values, denominators, and blockers.
 
-Experiment-folder Markdown reports are sufficient for partial progress and completed results. Use Weights & Biases (W&B) logging, dashboards, or Reports only when the user explicitly requests them. A configured account, available key, old helper, or historical URL is not a request. Dashboard credentials, availability, and external publication must not delay ordinary progress, completion, notifications, or handoff. Preserve existing report links and immutable publication receipts as historical evidence. This reporting rule does not waive compilation, provenance, correctness, reference-data, quality-assurance, acceptance, resource, permission, or spending requirements.
+Experiment-folder Markdown reports preserve partial progress and completed results; mirror meaningful human-facing findings to the relevant Google document or deck under [Rule 16](../rules/responses.md#trigger-rule-16). Use Weights & Biases (W&B) logging, dashboards, or Reports only when the user explicitly requests them. A configured account, available key, old helper, or historical URL is not a request. Dashboard credentials, availability, and external publication must not delay ordinary progress, completion, notifications, or handoff. Preserve existing report links and immutable publication receipts as historical evidence. This reporting rule does not waive compilation, provenance, correctness, reference-data, quality-assurance, acceptance, resource, permission, or spending requirements.
 
 ---
 
@@ -343,7 +343,7 @@ Experiment-folder Markdown reports are sufficient for partial progress and compl
 
 ## Local Experiment Reports
 
-**Experiment-folder Markdown (`.md`) reports are the primary and sufficient reporting deliverable** (Brando, 09-20-2026). Save the report in the canonical experiment folder, normally the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
+**Experiment-folder Markdown (`.md`) reports are the canonical reproducible record**. Also mirror substantial findings to the relevant Google document or deck under [Rule 16](../rules/responses.md#trigger-rule-16) (Brando, 10-16-2026). Save the report in the canonical experiment folder, normally the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
 
 The local report must include:
 
