@@ -30,3 +30,7 @@ On the current Mac, `/Users/brandomiranda/.codex/AGENTS.md` and `.codex-vals/AGE
 On skampere1, skampere2, skampere3, mercury1 and mercury2, read-only checks verified nonempty Codex and Claude global entries and the home CLAUDE link. The shared `/dfs/scratch0/brando9/agents-config` clone was fast-forwarded through `746c847`, preserving an unrelated deletion and local backup. The shared Vals Claude profile also lacked an import; `/dfs/scratch0/brando9/.claude-vals/CLAUDE.md` now imports the shared entry, preserving its notes. All five inspected Vals profile paths resolve to that shared file.
 
 The separately configured `Sanmis-MacBook-Air.local` could not be resolved through Secure Shell (SSH) from this Mac; its on-disk deployment is unverified. No claim is made about gated compute nodes or unrelated hosts. A pull/import repair does not reload another running agent. Other sessions adopt the change when they refresh and read the shared rules; their current contexts were not inspected or interrupted.
+
+## Verified send
+
+The experiment START message `1a14670035f2ac4f` was sent on 10-16-2026. Gmail returned SENT and the stored headers showed From `brandojazz@gmail.com`, To `brando.science@gmail.com`, and BCC all four required addresses, including both From and To. This verifies one real send, not delivery to every downstream mailbox or universal behavior by other agents.
