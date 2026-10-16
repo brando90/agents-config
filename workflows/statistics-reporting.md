@@ -82,6 +82,8 @@ The linked reports hold full factor tables, 95% intervals and resampling units, 
 
 This later format supersedes the long example below **for compact entries only**. It preserves all statistical evidence requirements for the full reports. Do not copy an example's equations or numerical claims without checking them.
 
+When giving Brando research results, also include a **Copy-ready message** of 1–2 sentences in his voice for the intended collaborator, following [Hard Rule 4](../rules/responses.md#hard-rule-4). Keep it scientific and easy to read, with the finding and any caveat that changes its interpretation; detailed evidence stays in the reports. This is a draft for Brando to share, not authorization to send it.
+
 <a id="canonical-example-of-a-results-summary-item-brando-10-02-2026"></a>
 
 ## Detailed report example (Brando, 10-02-2026)
