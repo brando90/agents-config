@@ -538,7 +538,7 @@ Optional existing external report: <URL, only if relevant; omit this line otherw
 ### Rules
 
 1. **Send only when Trigger Rule 14 fires.** Default QA, ordinary edits, routine experiment runs, and exploratory reads do not email by default.
-2. **No CC by default.** Internal notifications go to `brando.science@gmail.com` only. Do not CC personal email unless Brando explicitly asks.
+2. **No CC by default.** Internal notifications go to `brando.science@gmail.com` and explicitly BCC all four inboxes under Trigger Rule 26, including sender and To addresses. Visible CC requires an explicit request.
 3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
 4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
 5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
@@ -603,7 +603,7 @@ Links:
 ### Rules (explicitly tracked-task emails)
 
 1. **Send only for explicitly tracked significant tasks** — after the final commit/push/QA, not before.
-2. **No CC by default.** Use `brando.science@gmail.com` only unless Brando explicitly names additional recipients.
+2. **No CC by default.** Use `To: brando.science@gmail.com` and explicitly BCC all four inboxes under Trigger Rule 26, including sender and To addresses; preserve additional recipients Brando explicitly names.
 3. **Subject line** must be scannable from a phone lock screen — task in 5-8 words, outcome tag (DONE / PARTIAL / BLOCKED).
 4. **List every touched file** under WHAT CHANGED with a one-liner. No walls of prose.
 5. **Include commit SHAs and push status** so Brando can pull/verify from any machine.

@@ -62,7 +62,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [23](rules/responses.md#trigger-rule-23) | Reader-facing prose → omit internal course/lab planning jargon. |
 | [24](rules/responses.md#trigger-rule-24) | Reader outside a subfield → translate ambiguous jargon and explain concepts first. |
 | [25](rules/writing.md#trigger-rule-25) | Personal blog → load personal-blog guides and reference posts; lab blogs use their separate route. |
-| [26](rules/services.md#trigger-rule-26) | Authorized email → follow internal/external recipient routing and signature; avoid duplicate personal-inbox copies. |
+| [26](rules/services.md#trigger-rule-26) | Authorized email → always BCC all four Brando inboxes, including sender and To addresses; follow signature. |
 | [27](rules/responses.md#trigger-rule-27) | Substantive answer/explainer → lead with `**A (TLDR):**` and a direct answer; retain closing protocol. |
 | [28](rules/research.md#trigger-rule-28) | Attached image/transcription → preserve original and provenance in the canonical project/experiment location. |
 | [29](rules/writing.md#trigger-rule-29) | Exact “Q go” plus screenshots → numbered question packet, original images, issue, verification and publication; review still follows Hard Rule 3. |
@@ -106,7 +106,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
 | [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
-| [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, BCC brandojazz, brando9@stanford, brando@vals.ai. |
+| [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, with all four inboxes in BCC (including sender and To). |
 | [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line email to brando.science. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 
@@ -121,7 +121,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
-- [23](rules/maintenance.md#guideline-rule-23): Authorized email uses a signed-in Brando account (mail connector, else uutils SMTP), blind-copies his routed inboxes, omits the old CC note, and keeps the `drafted with <agent>` sign-off. BCC is the default for copies to his own addresses; visible CC requires his explicit request. “Send” means send.
+- [23](rules/maintenance.md#guideline-rule-23): Authorized email uses a signed-in Brando account (mail connector, else uutils SMTP), blind-copies all four inboxes, including sender and To addresses, omits the old CC note, and keeps the `drafted with <agent>` sign-off. BCC is the default for copies to his own addresses; visible CC requires his explicit request. “Send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
 
 ## Authorized sign-in and verification codes

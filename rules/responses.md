@@ -38,7 +38,7 @@
 
 ## Trigger Rule 15
 
-15. **Q&A stays in chat unless explicitly emailed.** _Trigger: the user asks a substantive question._ Answer the question in the normal response and do not send an email by default. If Brando explicitly says to email the answer, send one email to `brando.science@gmail.com` only, with no CC unless the prompt names additional recipients. **Subject:** `Q -> A: <brief question> -> <brief answer>`. **Body:** Start with `TLDR: <1 sentence>`, then write in natural conversational prose. Skip email for ordinary clarification, diagnosis, or "why did this happen?" questions; otherwise requests become slower and every debugging conversation turns into mailbox noise.
+15. **Q&A stays in chat unless explicitly emailed.** _Trigger: the user asks a substantive question._ Answer the question in the normal response and do not send an email by default. If Brando explicitly says to email the answer, send one email to `brando.science@gmail.com`, with all four inboxes in BCC under Trigger Rule 26; visible CC requires an explicit request. **Subject:** `Q -> A: <brief question> -> <brief answer>`. **Body:** Start with `TLDR: <1 sentence>`, then write in natural conversational prose. Skip email for ordinary clarification, diagnosis, or "why did this happen?" questions; otherwise requests become slower and every debugging conversation turns into mailbox noise.
 
 ## Trigger Rule 16
 
