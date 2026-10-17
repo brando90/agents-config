@@ -62,7 +62,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [23](rules/responses.md#trigger-rule-23) | Reader-facing prose → omit internal course/lab planning jargon. |
 | [24](rules/responses.md#trigger-rule-24) | Reader outside a subfield → translate ambiguous jargon and explain concepts first. |
 | [25](rules/writing.md#trigger-rule-25) | Personal blog → load personal-blog guides and reference posts; lab blogs use their separate route. |
-| [26](rules/services.md#trigger-rule-26) | Authorized email → always BCC all four Brando inboxes, including sender and To addresses; follow signature. |
+| [26](rules/services.md#trigger-rule-26) | Authorized email → always BCC all four Brando inboxes, including sender and To addresses; follow signature; result emails: plain takeaway, no slugs, one slide. |
 | [27](rules/responses.md#trigger-rule-27) | Substantive answer/explainer → lead with `**A (TLDR):**` and a direct answer; retain closing protocol. |
 | [28](rules/research.md#trigger-rule-28) | Attached image/transcription → preserve original and provenance in the canonical project/experiment location. |
 | [29](rules/writing.md#trigger-rule-29) | Exact “Q go” plus screenshots → numbered question packet, original images, issue, verification and publication; review still follows Hard Rule 3. |

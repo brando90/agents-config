@@ -15,6 +15,15 @@
 - If approval context is needed, translate it into first-person intent: "Could you please...", "I'm good with this plan", "Thanks, that works for me."
 - Before sending, do a quick self-read: if the sentence would be weird for Brando to say himself, rewrite it.
 
+## Research-result emails
+
+_Trigger: an agent emails collaborators about experiment or research results._ Collaborators asked for these to be interpretable, with less jargon and a slide (Varun, relayed by Brando, 10-16-2026).
+
+- **Takeaway first, in plain words.** The first 2-3 sentences say what was tested, what was found and why it matters for the project. A collaborator who missed the last few meetings should get the point from them alone.
+- **No internal labels.** Never put experiment slugs, run IDs, branch or folder names (e.g. `the-difficulty-confound`) in the email; describe the idea in words. Expand every acronym and define every term of art on first use (Hard Rule 10).
+- **Short.** After the takeaway: at most 5 bullets of key numbers, each against its baseline and with its uncertainty, then one line on the next step. Methods and extra tables go in the linked doc, not the body.
+- **One summary slide when there are results.** Make a one-slide Google Slides deck: a title that states the finding, the key plot or table, a one-line caption. Share it by link (Trigger Rule 68) and put the link right after the takeaway. No results, no slide.
+
 ## Drafted-with sign-off
 
 End every email sent as Brando to other people with the line `Brando (drafted with <agent>)`, where `<agent>` is the agent that actually drafted it: `Brando (drafted with Claude)` from Claude, `Brando (drafted with Codex)` from Codex, and so on (Antigravity, Grok, …), then the signature below. Brando uses many agents and is happy to say so; this line is not a chatbot tell (Brando, 10-09-2026).
