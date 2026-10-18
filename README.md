@@ -14,7 +14,7 @@ By [Brando Miranda](https://brando90.github.io/brandomiranda/). [Contributions w
 
 Follow Markdown links explicitly; they are not imports. Keep detailed rules in one canonical file.
 
-[Rule 16](rules/responses.md#trigger-rule-16) keeps substantial research knowledge in both its reproducible Markdown record and the relevant Google Doc or Slides deck. Reuse the destination humans already read, preserve its audience, and verify the update.
+[Rule 16](rules/responses.md#trigger-rule-16) keeps substantial research knowledge in both its reproducible Markdown record and the relevant Google Doc or Slides deck. Reuse the destination humans already read, preserve its audience, and verify the update. [Daily research slides](workflows/daily-research-slides.md) keeps Vals and Sanmi updates separate, with 2–3 dated slides per audience per day.
 
 ## Client compatibility
 
