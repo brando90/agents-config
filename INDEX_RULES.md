@@ -52,7 +52,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [13](rules/writing.md#trigger-rule-13) | Research paper work or validity question → load research-writing guide; preserve evidence and source format. |
 | [14](rules/services.md#trigger-rule-14) | Explicitly tracked completion/substantial review or authorized recovery event → verified, deduplicated notification; ordinary edits/light QA do not trigger email. |
 | [15](rules/responses.md#trigger-rule-15) | Substantive question → answer in chat; email only when explicitly requested. |
-| [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for substantial findings; preserve audience and verify. |
+| [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for findings; separate dated daily audience decks; verify. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
 | [18](rules/maintenance.md#trigger-rule-18) | Appendix/results-consistency/polish-only branch → inspect scope and land; substantive claims retain authorization requirements. |
 | [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts or merge branches → keep one canonical project and remove completed temporary copies. |
