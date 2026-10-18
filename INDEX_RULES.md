@@ -130,7 +130,7 @@ For an authorized account task, read [Rule 34](rules/services.md#trigger-rule-34
 
 ## Machine Configs
 
-For host-specific work, use the [machine catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md), [other agent clients](machine/agent-clis.md). Do not load unrelated hosts.
+Host routes: [catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md), [Sherlock](machine/sherlock-agent-access.md), [other agent clients](machine/agent-clis.md). Do not load unrelated hosts.
 
 ## Workflows
 

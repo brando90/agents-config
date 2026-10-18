@@ -1,6 +1,8 @@
 # Machine: Sherlock — Stanford Sherlock HPC Cluster
 
-Template for Stanford's Sherlock high-performance computing cluster.
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/sherlock.md>
+
+**TLDR:** Stanford Sherlock uses scheduled compute jobs. For unattended agent commands and the distinction between fresh Duo login and existing authenticated access, start with [reusable agent access](sherlock-agent-access.md).
 
 ---
 
@@ -26,7 +28,7 @@ ssh <user>@login.sherlock.stanford.edu
 | `$GROUP_HOME` | Group home directory |
 
 **Storage notes:**
-- `$SCRATCH` files are purged after 90 days of no access. Do not store important results there long-term.
+- `$SCRATCH` files are purged after 90 days without content modification. Do not store important results there long-term.
 - `$HOME` has a small quota (~15 GB). Use `$SCRATCH` or `$OAK` for large data.
 - Oak storage requires a PI allocation.
 
