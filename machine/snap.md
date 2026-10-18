@@ -546,3 +546,9 @@ For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench
 - **Use `byobu`** for persistent sessions that survive SSH disconnects. Status bar shows hostname.
 - **Prefer `uv`** over conda for new Python environments.
 - **Check GPU availability** before starting jobs: `nvidia-smi --query-gpu=index,memory.used,memory.free,utilization.gpu --format=csv,noheader`.
+
+---
+
+## Related Clusters
+
+- [Stanford Sherlock HPC](sherlock.md) — multi-node Slurm HPC cluster with large CPU partitions (`normal`, `bigmem`) and GPU pools (`gpu`, `dev`). See `sherlock.md` for Sherlock vs SNAP comparison, partitions, and storage retention.

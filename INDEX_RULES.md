@@ -77,7 +77,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [38](rules/hosts.md#trigger-rule-38) | SNAP connection or dispatch → check the official gateway (never flood it) before Cisco/Duo escalation; run health preflight, fix relevant failures, use owned checkout; token-spending checks remain opt-in. |
 | [39](rules/research.md#trigger-rule-39) | Start/continue/finish experiment → canonical setup-named home/index, colocated artifacts, results tables in git, frozen evidence, lifecycle. |
 | [40](rules/writing.md#trigger-rule-40) | Commit slide deck → fresh PDF, applicable text sibling and hash manifest in the same commit. |
-| [41](rules/responses.md#trigger-rule-41) | End substantive replies with a ranked `[p N/10]` list; start 9-10 items without spending or rule violations. |
+| [41](rules/responses.md#trigger-rule-41) | End substantive replies with a ranked `[p N/10]` list. Do a 9 or 10 in that turn unless it would exhaust an approved budget, buy access, or open an unapproved large paid run. |
 | [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered or stale session renames its own to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
 | [44](rules/workers.md#trigger-rule-44) | Long run, account/context/turn limit, or end of any session in an experiment folder → durable timestamped `CKPT_<task>.md`; update only on events: edit the ≤30-line state block, append one dated log line, never rewrite; exact continuation and verified handoff. |
@@ -130,7 +130,7 @@ For an authorized account task, read [Rule 34](rules/services.md#trigger-rule-34
 
 ## Machine Configs
 
-For host-specific work, use the [machine catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md), [other agent clients](machine/agent-clis.md). Do not load unrelated hosts.
+For host-specific work, use the [machine catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md), [Sherlock](machine/sherlock.md), [agents](machine/agent-clis.md). Do not load unrelated hosts.
 
 ## Workflows
 
