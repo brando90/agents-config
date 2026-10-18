@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/daily-research-slides.md>
 
-**TLDR:** Keep the Vals/Nikil and Sanmi decks separate, with about 2–3 dated slides per audience per day and a weekday 5:30 p.m. Pacific refresh. Update the day’s existing slides from verified evidence; preserve detailed reasoning in notes or an archive and keep material caveats visible.
+**TLDR:** Keep the Vals/Nikil and Sanmi decks separate, preserving each deck’s original title and two template slides plus about 2–3 dated research slides per audience per day and a weekday 5:30 p.m. Pacific refresh. Update the day’s existing slides from verified evidence; preserve detailed reasoning in notes or an archive and keep material caveats visible.
 
 ## Destinations and priority
 
@@ -18,8 +18,9 @@ Keep these as two destinations, even when a verified result belongs in both. On 
 ## Daily refresh and consolidation
 
 - Schedule: Monday–Friday at **17:30 America/Los_Angeles**, following local daylight saving time. Use the existing app automation when available; inspect and update a matching schedule instead of adding a duplicate. The existing heartbeat is `research-weekday-vals-and-sanmi-slides-at-5-30pm`, owned by lead chat `01a14659-06c8-7670-a8f0-d0ca378b4607` and verified ACTIVE on 10-18-2026. It is separate from the three-hour private-task execution heartbeat. The lead chat owns scheduling and the editable decks; other agents provide evidence through their existing reports.
-- Aim for **2–3 slides total per date in each deck**, across its relevant projects, rather than 2–3 per project or per update. Fewer are appropriate when there is little new evidence; do not invent progress or add filler to meet a quota.
-- Put the local date in **every slide title** using `MM-DD-YYYY`. The newest daily group is first after any cover or navigation slide. Update the same-day slide IDs in place so corrections and later results do not multiply slides.
+- Preserve the **original title slide and two original template slides** as the first three slides in both decks (user correction, 10-18-2026). This fixed front matter is exempt from the daily research-slide limit. Never replace, retitle or remove these slides during routine consolidation.
+- Aim for **2–3 research slides total per date in each deck**, across its relevant projects, rather than 2–3 per project or per update. Fewer are appropriate when there is little new evidence; do not invent progress or add filler to meet a quota.
+- Put the local date in **every research-update slide title** using `MM-DD-YYYY`. Place daily research groups newest-first after the protected title and two template slides. Update the same-day slide IDs in place so corrections and later results do not multiply slides.
 - Select the most important result, its practical implication and the next decision. Vals should immediately show progress toward the private-task delivery goal and any actual bottleneck; operational detail belongs in notes unless it changes the result or delivery outlook.
 - Consolidate obsolete or intermediate slides into the day’s summary. First preserve unique evidence, useful comments and prior conditions in speaker notes or a clearly dated archive accessible to the same authorized audience. Keep a link to that archive; do not erase the history of corrected claims.
 - A run with no material change leaves content and user notifications quiet. A missing result is not progress. Record a blocking edit/access failure in the existing checkpoint and notify only when action is needed; do not claim a deck was refreshed if the read-back failed.
@@ -34,6 +35,6 @@ Selection effects, incomplete reviews, uncertainty that changes the conclusion, 
 
 ## Verification and hand-back
 
-After editing, read back the affected slide text, order, dates and notes, and inspect rendered slides when available. Verify the audience, links, 2–3-slide daily grouping, missing-result markings and preservation of unique historical details. Keep the linked Markdown report as the reproducible record and cross-link the Google destination.
+After editing, read back the affected slide text, order, dates and notes, and inspect rendered slides when available. Verify the audience, links, unchanged original title and two templates at the front, 2–3-research-slide daily grouping, missing-result markings and preservation of unique historical details. Keep the linked Markdown report as the reproducible record and cross-link the Google destination.
 
 For a material research update, provide the verified deck/report links and the [1–2 sentence copy-ready collaborator message](../rules/responses.md#hard-rule-4) in Brando’s scientific, readable voice. Drafting slides or a message does not authorize sending a message to a person.
