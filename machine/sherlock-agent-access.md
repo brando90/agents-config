@@ -43,9 +43,14 @@ The private implementation uses one processor and 2 GB memory on the `service` p
 
 The client reports a request identifier and workflow link. Retrieve uncertain outcomes before retrying a job submission; a new request is a new execution. Private workflow logs retain command text and output, so do not put secrets in either. Repository write access confers command execution as the configured Sherlock account; keep that repository private and limited to the already-authorized owner/agents. Registration credentials stay in an owner-only directory on Sherlock.
 
-## Job scheduling, 10-18-2026
+## Job scheduling: concurrent work vs. anti-spam safeguards, 10-18-2026
 
-Brando, 10-18-2026: many real Slurm jobs at once are fine. Submit different work as ordinary `sbatch` commands. Do not spam Sherlock: no tight `squeue`/`sacct`/`ssh` loops, no `watch`, no bursts of new logins, no immediate retry of a failed connection, and no second copy of a job that is still pending. Wait at least 60 seconds between status checks.
+- **Concurrent multi-job execution is fine and supported:** Users and agents can submit multiple distinct Slurm jobs at once (e.g., parameter sweeps, separate evaluation benchmarks, concurrent training runs). Submit different work as ordinary `sbatch` commands or via `sherlock_dispatch.sh run <name> '<cmd>'`.
+- **Do not spam Sherlock in destructive ways:**
+  - **No tight polling loops:** Never run high-frequency polling on Slurm APIs (`squeue`, `sacct`, `sinfo`), filesystems, or logs (e.g., no `watch`, no `while true; do squeue; sleep 1; done`). Wait at least 60 seconds between status checks.
+  - **No SSH reconnection storms:** Preserve and reuse a single multiplexed `ControlMaster` socket; do not burst new TCP/SSH logins.
+  - **No duplicate submissions:** Never submit a duplicate copy of a job that is already pending (`PD`) or queued.
+  - **Zero compute on login nodes:** Always dispatch computation to compute nodes via `sbatch` or `srun`.
 
 ## Evidence, 10-18-2026
 

@@ -49,6 +49,26 @@ sbatch <JOB_SCRIPT>.sh
 - **GPU partitions:** `gpu` (general), `owners` (priority for owners)
 - **GPU types:** V100, A100, H100 (specify with `--gres=gpu:<TYPE>:1`)
 
+### Dispatcher & Multi-Job Etiquette
+
+Use `scripts/sherlock_dispatch.sh` (mirrors `snap_dispatch.sh`) to launch and track Slurm jobs:
+
+```bash
+# Launch jobs (submitting multiple distinct jobs at once is fine and encouraged)
+bash scripts/sherlock_dispatch.sh run exp1 'python train.py --lr 1e-4' --gpu 1
+bash scripts/sherlock_dispatch.sh run exp2 'python train.py --lr 3e-4' --gpu 1
+
+# List active jobs
+bash scripts/sherlock_dispatch.sh list
+```
+
+**Anti-Spam Cluster Safeguards:**
+- **Concurrent jobs:** Submitting multiple distinct Slurm jobs concurrently is standard and supported.
+- **No tight polling loops:** Never run tight loops or `watch` querying `squeue`/`sacct` (wait $\ge 60\text{s}$ between status checks).
+- **No SSH storms:** Always reuse the multiplexed SSH `ControlMaster` connection.
+- **No duplicate submissions:** Do not resubmit an identical job while an earlier copy is still pending.
+- **Keep login nodes clean:** Never run heavy compute or training on login nodes.
+
 ---
 
 ## Environment Setup
