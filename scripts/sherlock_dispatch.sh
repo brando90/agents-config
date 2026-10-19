@@ -204,11 +204,18 @@ cmd_tail() {
   rdir=$(remote_dir "$name")
   ssh "${SSH_OPTS[@]}" "$SHERLOCK_HOST" "
     if [[ -f '$rdir/output.log' ]]; then
-      tail -f '$rdir/output.log'
+      tail -n 50 -f '$rdir/output.log'
     else
-      echo 'Waiting for $rdir/output.log to appear...'
-      while [[ ! -f '$rdir/output.log' ]]; do sleep 1; done
-      tail -f '$rdir/output.log'
+      echo 'Waiting for $rdir/output.log to appear (checking every 5s, timeout 60s)...'
+      for i in {1..12}; do
+        if [[ -f '$rdir/output.log' ]]; then break; fi
+        sleep 5
+      done
+      if [[ -f '$rdir/output.log' ]]; then
+        tail -n 50 -f '$rdir/output.log'
+      else
+        echo 'Log file not created yet. The job may still be queued. Check status via: scripts/sherlock_dispatch.sh status $name'
+      fi
     fi
   "
 }
