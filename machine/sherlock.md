@@ -19,7 +19,7 @@ Official docs (every fact below cites one of these; facts checked 10-15-2026):
 - Troubleshooting / how to report issues: https://www.sherlock.stanford.edu/docs/user-guide/troubleshoot/
 - System status and news: https://status.sherlock.stanford.edu and https://news.sherlock.stanford.edu
 
-**Status (10-15-2026):** this doc is built from SRCC's docs and the account welcome email. Nothing here has been run on Sherlock yet; the first live check is Brando's first login (see [First-time setup](#first-time-setup-brando-must-do-himself-once-per-computer)). Replace the doc-only claims below with real `sh_part` / `sh_quota` output once that runs.
+**Status (10-18-2026):** Verified live on the cluster via OpenSSH multiplexing (`login.sherlock.stanford.edu`). Account `brando9`, primary group `sanmi` (`/home/groups/sanmi`). Quotas, partitions, interactive CPU/GPU Slurm execution on `dev`, and Python 3.12.1 venv verified live (see [Live Verification](#live-verification-results-10-18-2026)).
 
 ---
 
@@ -259,6 +259,41 @@ uv pip install -r requirements.txt
 - Profile in `sh_dev` (`htop`, `nvtop`) before sizing a big `sbatch` request; smaller requests start sooner ([running-jobs](https://www.sherlock.stanford.edu/docs/user-guide/running-jobs/)).
 - Sherlock docs: https://www.sherlock.stanford.edu/docs/
 - Report problems to srcc-support@stanford.edu with the details their [troubleshoot page](https://www.sherlock.stanford.edu/docs/user-guide/troubleshoot/) asks for (job ID, exact error, what you ran).
+
+---
+
+## Live Verification Results (10-18-2026)
+
+Verified live via authenticated OpenSSH ControlMaster session:
+
+1. **Identity and Paths:**
+   ```text
+   Hostname: sh02-ln03.stanford.edu
+   User: brando9 (uid=412530) | Primary group: sanmi (gid=267909) | Groups: sanmi, sh_s-eng, sh_users
+   $HOME: /home/users/brando9
+   $SCRATCH: /scratch/users/brando9
+   $GROUP_HOME: /home/groups/sanmi
+   ```
+2. **Storage Quotas (`sh_quota`):**
+   - `$HOME`: 1.0 MB / 15.0 GB (0%)
+   - `$GROUP_HOME`: 204.7 GB / 1.0 TB (19%)
+   - `$SCRATCH`: 4.0 KB / 100.0 TB (0%, 20.0M inodes, 90-day content purge)
+   - `$GROUP_SCRATCH`: 4.0 KB / 100.0 TB (0%, 20.0M inodes, 90-day content purge)
+3. **Partition Inventory (`sh_part`):**
+   - `normal*` (default): 268 nodes, 7,048 cores (707 idle, 66,216 queued), 2h default / 7d max
+   - `bigmem`: 13 nodes, 1,080 cores (643 idle), up to 4,096 GB RAM/node, 1d max
+   - `gpu`: 49 nodes, 1,508 cores, 200 GPUs (27 idle, 664 queued), 1h default / 2d max
+   - `dev`: 4 nodes, 112 cores (92 idle), 64 GPUs (63 idle), interactive only (`srun`/`salloc`/`sh_dev`), 1h default / 2h max
+   - `service`: 2 nodes, 64 cores (31 idle), 1h default / 2d max
+4. **Interactive Slurm Compute Verified (`srun`):**
+   - CPU test: `srun -p dev -c 1 --time=00:01:00 hostname` ran on node `sh04-18n32.int` (Job ID 48398721).
+   - GPU test: `srun -p dev -c 1 -G 1 --time=00:01:00 nvidia-smi -L` verified: `NVIDIA A30 MIG 1g.6gb` (Job ID 48398725).
+5. **Python Virtual Environment (`venv`):**
+   - Module: `python/3.12.1`
+   - Path: `/home/groups/sanmi/brando9_envs/sherlock_test_env/bin/python` (Python 3.12.1).
+6. **AI Agent Policy (`/etc/agents/AGENTS.md`):**
+   - SRCC cluster policy prohibits unattended background servers or daemons on login nodes.
+   - Attended OpenSSH multiplexing (`ControlMaster auto`, `ControlPersist 12h`) is fully compliant.
 
 ---
 
