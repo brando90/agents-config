@@ -135,10 +135,14 @@ printf '=== Job Started: %s on %s ===\n' "$name" "\$(hostname)"
 printf 'Date: %s\n' "\$(date)"
 printf 'Slurm Job ID: %s\n\n' "\${SLURM_JOB_ID:-n/a}"
 
-# Load modules if available
+# Load modules and activate primary scientific environment
 module purge
-module load gcc/12.4.0 python/3.14.2 2>/dev/null || true
-$([ -n "$gpu" ] && echo "module load cuda/12.4.0 py-pytorch/2.4.1_py312 2>/dev/null || true")
+module load gcc/12.4.0 python/3.12.1 uv 2>/dev/null || true
+$([ -n "$gpu" ] && echo "module load cuda/12.4.0 2>/dev/null || true")
+if [ -d "\$HOME/venvs/main" ]; then
+  export LD_LIBRARY_PATH="/share/software/user/open/python/3.12.1/lib:\${LD_LIBRARY_PATH:-}"
+  source "\$HOME/venvs/main/bin/activate"
+fi
 
 cd "\$HOME"
 

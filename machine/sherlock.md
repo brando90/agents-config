@@ -73,13 +73,23 @@ bash scripts/sherlock_dispatch.sh list
 
 ## Environment Setup
 
-```bash
-# Load modules
-module load python/<VERSION>
-module load cuda/<VERSION>
+The primary scientific Python 3.12 environment is located at `~/venvs/main` and is automatically activated in `~/.bashrc` and by `scripts/sherlock_dispatch.sh`:
 
-# Or use uv
-source <VENV_PATH>/bin/activate
+```bash
+# Modules loaded automatically:
+module load gcc/12.4.0 python/3.12.1 uv
+source ~/venvs/main/bin/activate
+```
+
+**Installed & verified libraries in `~/venvs/main`:**
+- `scipy` (1.16.3), `numpy` (2.2.6), `pandas` (2.3.2), `scikit-learn` (1.7.2)
+- `torch` (2.6.0+cu124), `torchvision` (0.21.0), `torchaudio` (2.6.0)
+- `transformers` (4.57.6), `datasets` (2.14.4), `accelerate` (1.15.0)
+- `tqdm` (4.70.1), `wandb` (0.23.0), `einops` (0.8.2), `matplotlib` (3.11.2)
+
+To install additional packages into `~/venvs/main` without glibc compilation errors, always use `--only-binary :all:`:
+```bash
+uv pip install --python ~/venvs/main/bin/python --only-binary :all: <package_name>
 ```
 
 ---
