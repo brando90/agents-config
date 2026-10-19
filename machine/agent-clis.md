@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/agent-clis.md>
 
-**TLDR:** One installer, `~/agents-config/scripts/install_agent_clis.sh`, puts Cursor Agent (`agent`), Grok Build (`grok`), and Antigravity (`agy`) on both Macs and every SNAP node. Google-model coding-agent work uses `agy` with a Google account. The deprecated `gemini` npm CLI is not installed. Grok also ships a binary named `agent`; Cursor keeps that name.
+**TLDR:** One installer, `~/agents-config/scripts/install_agent_clis.sh`, puts Cursor Agent (`agent`), Grok Build (`grok`), and Antigravity (`agy`) on Macs, every SNAP node, and Stanford Sherlock. Installing agents on SNAP and Sherlock is explicitly permitted and approved by Brando. Google-model coding-agent work uses `agy` with a Google account. The deprecated `gemini` npm CLI is not installed. Grok also ships a binary named `agent`; Cursor keeps that name.
 
 ## What lives where
 
@@ -28,9 +28,13 @@ Grok's official installer links **both** `grok` and `agent` into `~/.local/bin` 
 
 Never put `$HOME/.grok/bin` ahead of Cursor on `PATH`.
 
+## Authorization on SNAP and Sherlock
+
+Brando, 10-18-2026: It is explicitly fine and approved to install coding agents (`claude`, `codex`, `grok`, `agy`, `agent`/`cursor-agent`, `vibe`) on SNAP and Sherlock. There is no rule against this. On Sherlock, `agy` and `agent` run via a lightweight local Apptainer container (`~/.local/share/apptainer/ubuntu-agent.sif`) to satisfy glibc requirements seamlessly.
+
 ## Install / update
 
-On **this Mac, Sanmi's Mac, or any SNAP node**:
+On **this Mac, Sanmi's Mac, any SNAP node, or Stanford Sherlock**:
 
 ```bash
 git -C ~/agents-config pull --ff-only
@@ -52,6 +56,7 @@ Do not paste tokens into chat. Do not author API-calling code.
 |---|---|---|---|
 | Mac | `agent login` | `grok login` | `agy` (opens browser) |
 | SNAP SSH | `NO_OPEN_BROWSER=1 agent login` then open the printed URL locally | `grok login` (device/URL flow if printed) | `agy` prints a URL; paste the code back into the SNAP tty |
+| Sherlock SSH | `NO_OPEN_BROWSER=1 agent login` then open the printed URL locally | `grok login` | `agy` prints a URL; paste code back into tty (runs via Apptainer) |
 
 Verified 09-20-2026: this Mac and all five canonical SNAP nodes can complete real calls through all three clients. Cursor uses `brandojazz@gmail.com`; Grok uses `brando@vals.ai`; Antigravity uses the existing approved Google login. The SNAP acceptance check returned the requested token for **15/15 calls** (three clients × five nodes). Credentials remain private, mode `0600`, and are never committed.
 
