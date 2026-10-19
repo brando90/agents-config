@@ -10,7 +10,7 @@
 2. **Existing Secure Shell (SSH) connection:** check `ssh -O check sherlock`. If it succeeds, reuse it with `ssh -o BatchMode=yes sherlock 'hostname; id -un'`. Sharing applies to agents running as the same local user on that computer, not automatically to every machine. Do not terminate another agent's authentication prompt.
 3. **Existing OnDemand session:** use the authorized browser's [Sherlock dashboard](https://ondemand.sherlock.stanford.edu), verify the account, and open **Clusters → Sherlock Shell Access**. Browser-capable agents can submit and inspect jobs there without establishing a separate local SSH session. Submitted jobs survive closing the browser. A command-line-only agent does not inherit browser access merely because another agent has it.
 4. **Actual authentication challenge:** follow [authorized sign-in](../rules/services.md#authorized-sign-in-and-verification-codes). When Duo prompts for an SMS passcode, inspect the paired Google Messages tab (`messages.google.com/web/conversations`) on macOS before asking Brando to check his physical phone. Ask only for a physical or unavailable factor after checking usable existing routes. Do not loop failed passwords or classify one missing socket as a cluster-wide outage.
-5. **Scheduler & login-node etiquette (anti-spam):** Follow official policy in `/etc/agents/AGENTS.md`: never leave tight `watch` or rapid polling loops querying Slurm, filesystems, or logs (wait at least 60 seconds between status checks); avoid rapid SSH reconnect loops that trigger firewall/DoS alarms (preserve single multiplexed `ControlMaster` sockets); and keep all compute off login nodes.
+5. **Scheduler & login-node etiquette (anti-spam):** Follow official policy in `/etc/agents/AGENTS.md`: never leave tight `watch` or rapid polling loops querying Slurm, filesystems, or logs (wait at least 60 seconds between status checks); avoid rapid SSH reconnect loops that trigger firewall/DoS alarms (preserve single multiplexed `ControlMaster` sockets). Running coding agent CLIs on the login node is explicitly fine and approved (they are low-CPU orchestrators for code editing and job dispatch); dispatch all heavy compute (training, inference, preprocessing) to compute nodes via `sbatch` or `srun`.
 
 ## What “without Duo” means
 
@@ -46,11 +46,12 @@ The client reports a request identifier and workflow link. Retrieve uncertain ou
 ## Job scheduling: concurrent work vs. anti-spam safeguards, 10-18-2026
 
 - **Concurrent multi-job execution is fine and supported:** Users and agents can submit multiple distinct Slurm jobs at once (e.g., parameter sweeps, separate evaluation benchmarks, concurrent training runs). Submit different work as ordinary `sbatch` commands or via `sherlock_dispatch.sh run <name> '<cmd>'`.
+- **Agents on the login node are fine (low-CPU orchestration):** Running coding agent CLIs (`claude`, `codex`, `grok`, `agy`, `agent`/`cursor-agent`, `vibe`) on the login node is explicitly approved by Brando. They are lightweight orchestrators that edit files, inspect git, and dispatch jobs.
 - **Do not spam Sherlock in destructive ways:**
   - **No tight polling loops:** Never run high-frequency polling on Slurm APIs (`squeue`, `sacct`, `sinfo`), filesystems, or logs (e.g., no `watch`, no `while true; do squeue; sleep 1; done`). Wait at least 60 seconds between status checks.
   - **No SSH reconnection storms:** Preserve and reuse a single multiplexed `ControlMaster` socket; do not burst new TCP/SSH logins.
   - **No duplicate submissions:** Never submit a duplicate copy of a job that is already pending (`PD`) or queued.
-  - **Zero compute on login nodes:** Always dispatch computation to compute nodes via `sbatch` or `srun`.
+  - **Keep heavy compute on compute nodes:** Always dispatch heavy computation (training, large model inference, heavy preprocessing) to compute nodes via `sbatch` or `srun`.
 
 ## Evidence, 10-18-2026
 

@@ -67,7 +67,8 @@ bash scripts/sherlock_dispatch.sh list
 - **No tight polling loops:** Never run tight loops or `watch` querying `squeue`/`sacct` (wait $\ge 60\text{s}$ between status checks).
 - **No SSH storms:** Always reuse the multiplexed SSH `ControlMaster` connection.
 - **No duplicate submissions:** Do not resubmit an identical job while an earlier copy is still pending.
-- **Keep login nodes clean:** Never run heavy compute or training on login nodes.
+- **Agents on login nodes:** Running coding agents (`claude`, `codex`, `grok`, `agy`, `agent`, `vibe`) directly on the login node is explicitly fine and approved by Brando (they are low-CPU orchestrators for editing, git, and job dispatch).
+- **Keep heavy compute on compute nodes:** Always dispatch heavy computation (training, large model inference, heavy preprocessing) to compute nodes via Slurm.
 
 ---
 
