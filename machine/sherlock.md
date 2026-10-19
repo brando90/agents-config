@@ -285,9 +285,11 @@ Verified live via authenticated OpenSSH ControlMaster session:
    - `gpu`: 49 nodes, 1,508 cores, 200 GPUs (27 idle, 664 queued), 1h default / 2d max
    - `dev`: 4 nodes, 112 cores (92 idle), 64 GPUs (63 idle), interactive only (`srun`/`salloc`/`sh_dev`), 1h default / 2h max
    - `service`: 2 nodes, 64 cores (31 idle), 1h default / 2d max
-4. **Interactive Slurm Compute Verified (`srun`):**
-   - CPU test: `srun -p dev -c 1 --time=00:01:00 hostname` ran on node `sh04-18n32.int` (Job ID 48398721).
-   - GPU test: `srun -p dev -c 1 -G 1 --time=00:01:00 nvidia-smi -L` verified: `NVIDIA A30 MIG 1g.6gb` (Job ID 48398725).
+4. **Slurm Compute Execution Verified:**
+   - Interactive CPU: `srun -p dev -c 1 --time=00:01:00 hostname` ran on node `sh04-18n32.int` (Job ID 48398721).
+   - Interactive GPU: `srun -p dev -c 1 -G 1 --time=00:01:00 nvidia-smi -L` verified: `NVIDIA A30 MIG 1g.6gb` (Job ID 48398725).
+   - Batch CPU (`sbatch -p normal`): Job ID `48398650` completed in 8s on `sh02-02n43.int`.
+   - Batch GPU (`sbatch -p gpu -G 1`): Job ID `48398680` allocated `sh04-11n10.int` and completed in 9s (`NVIDIA L40S 46GB`, Driver 550.163.01, CUDA 12.4).
 5. **Python Virtual Environment (`venv`):**
    - Module: `python/3.12.1`
    - Path: `/home/groups/sanmi/brando9_envs/sherlock_test_env/bin/python` (Python 3.12.1).
