@@ -42,6 +42,10 @@ The private implementation uses one processor and 2 GB memory on the `service` p
 
 The client reports a request identifier and workflow link. Retrieve uncertain outcomes before retrying a job submission; a new request is a new execution. Private workflow logs retain command text and output, so do not put secrets in either. Repository write access confers command execution as the configured Sherlock account; keep that repository private and limited to the already-authorized owner/agents. Registration credentials stay in an owner-only directory on Sherlock.
 
+## Job scheduling, 10-18-2026
+
+Brando, 10-18-2026: many real Slurm jobs at once are fine. Submit different work as ordinary `sbatch` commands. Do not spam Sherlock: no tight `squeue`/`sacct`/`ssh` loops, no `watch`, no bursts of new logins, no immediate retry of a failed connection, and no second copy of a job that is still pending. Wait at least 60 seconds between status checks.
+
 ## Evidence, 10-18-2026
 
 Official authentication, runner and service documentation were retrieved. The local authenticated GitHub account created the private control repository and installed the client; nine local deterministic checks passed. Registration, recurring scheduling and live runner execution remain pending activation in the private receipt. An already-authenticated OnDemand shell was working independently. Refresh and read this guide on each host; publication alone does not reload other running agents.
