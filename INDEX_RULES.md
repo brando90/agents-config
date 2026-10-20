@@ -109,6 +109,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, with all four inboxes in BCC (including sender and To). |
 | [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line email to brando.science. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
+| [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
 
 ## Guidelines (best practices)
 
@@ -121,7 +122,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
-- [23](rules/maintenance.md#guideline-rule-23): Authorized email uses a signed-in Brando account (mail connector, else uutils SMTP), blind-copies all four inboxes, including sender and To addresses, omits the old CC note, and keeps the `drafted with <agent>` sign-off. BCC is the default for copies to his own addresses; visible CC requires his explicit request. “Send” means send.
+- [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
 
 ## Authorized sign-in and verification codes
