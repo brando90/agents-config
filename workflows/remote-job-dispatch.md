@@ -95,9 +95,11 @@ never load provider billing keys. Record the actual model in the results.
 --name STR           override job name (default: basename without .sh)
 --smart|--direct     wrap in agent (default) | plain bash (no retries, no email)
 --tmux-prefix STR    tmux session prefix (default: ssh_job)
---notify-email ADDR  override primary recipient; use brando.science@gmail.com for tracked internal notifications
---notify-cc ADDR     explicit CC only; omit for internal notifications unless Brando named extra recipients
+--notify-email ADDR  legacy smart-mode primary-recipient override; does not add notices to direct jobs
+--notify-cc ADDR     legacy smart-mode CC field; current routing follows Rule 26
 ```
+
+Current direct jobs or their coordinators implement Rule 14/70 notices with To `brandojazz@gmail.com`, BCC `brando.science@gmail.com`, and CC `brando@vals.ai` only for Vals work. Legacy flags and defaults do not establish notification coverage.
 
 ### Watch live
 
@@ -132,7 +134,7 @@ python -m uutils.job_scheduler_uu.scheduler --poll 15 --max-concurrent 4 --defau
 
 Attach / kill: `tmux attach -t job_watcher` / `tmux kill-session -t job_watcher`
 
-The daemon logs start, stop (Ctrl-C), and crash events. Email `brando.science@gmail.com` only when the watcher/job was explicitly configured as a tracked task.
+The daemon logs start, stop (Ctrl-C), and crash events. The coordinator verifies which events are meaningful and sends Rule 14/26/70 notices; routine daemon log entries alone do not trigger mail.
 
 ### Submit a job
 
@@ -201,7 +203,7 @@ The watcher uses `os.link()` not `os.rename()`. `rename()` is *not* reliably ato
 
 - **Legacy default remains smart.** The scheduler code still wraps jobs unless overridden. Set `--default-mode direct` and the per-job direct header; direct jobs own retries and any authorized completion notice.
 - **Legacy agent selection is stale.** It prefers `clauded`, then Codex, then `claude`; the Codex fallback still uses the removed `--full-auto` flag and model settings are not pinned. Bypass this path until the scheduler code is fixed; use explicit agent commands inside direct jobs.
-- **Daemon lifecycle logs** on start, stop, crash; email only when explicitly configured for a tracked job.
+- **Daemon lifecycle logs** on start, stop, crash; the coordinator supplies current Rule 14/26/70 notification coverage independently of legacy flags.
 - **GPU-idle kill:** default 4 h of ≤1 % GPU util → kill. `--gpu-idle-timeout` seconds (0 = disable), `--gpu-idle-threshold` (default 1.0).
 - **Wall-clock safety net:** default 48 h hard timeout. `--timeout`.
 - **Environment inheritance.** Direct jobs inherit the host environment. Set `CUDA_VISIBLE_DEVICES` for any Python workload and use authenticated agent commands under Hard Rule 9; do not add provider-key exports.
@@ -251,7 +253,7 @@ Open claude.ai (mobile or web) in a context where `gh` works (most Anthropic clo
 
 > "Clone my agents-config repo into a private checkout, add a job file to `jobs-inbox/pending/<name>.sh` that does X with `# JOB_MODE: direct`, commit and push. Include explicit model settings and the applicable checkpoint, results, watch, and remote-worker landing instructions. Email follows Trigger Rules 14/26/46. Repo: https://github.com/brando90/agents-config. TL;DR: Submit the isolated, direct-mode job with its completion protocol and report the commit."
 
-Claude writes the script, commits, pushes. Poller fetches, dispatches. Watcher runs. You inspect status from the queue/logs; explicitly tracked jobs may send one final PASS/FAIL email.
+Claude writes the script, commits, pushes. Poller fetches, dispatches. Watcher runs. Verify actual status from the queue/logs and send important-event notices under Rules 14, 26 and 70, with deduplication and a sent receipt.
 
 ### Writing an inbox job
 

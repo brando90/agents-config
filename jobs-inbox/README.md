@@ -5,9 +5,9 @@ Drop `.sh` files in [`pending/`](pending/) from **any context that can reach thi
 1. `git pull` this repo every ~30 s.
 2. Move each `pending/*.sh` into `~/dfs/job_queue/pending/` on the cluster (the DFS watcher queue).
 3. Move the source file to [`dispatched/`](dispatched/) and commit+push.
-4. The DFS watcher daemon (smart mode) then wraps the job in a coding agent that diagnoses failures, retries up to 3×, and optionally emails final PASS/FAIL only for explicitly tracked jobs.
+4. The legacy DFS watcher smart mode wraps the job in a coding agent. New jobs use the [direct-dispatch procedure](../workflows/remote-job-dispatch.md), explicit model settings, and a verified watch/recovery plan; the job's coordinator handles important-event email under Rules 14, 26 and 70.
 
-End-to-end: commit from phone → running on cluster within ~30 s → inspect logs/queue state; explicitly tracked jobs can send one final completion email.
+End-to-end: commit from phone → poller queues the job → verify actual execution through logs and queue state. Polling cadence is not a launch guarantee. Important-event email follows Rules 14, 26 and 70 and requires a verified receipt.
 
 ---
 
@@ -35,7 +35,7 @@ Commit path: `jobs-inbox/pending/<descriptive-name>.sh`
 Paste this into a claude.ai session (mobile or web) in an Anthropic cloud env with `gh` available:
 
 ```
-Clone my agents-config repo, add a job file to jobs-inbox/pending/<NAME>.sh that does X, commit and push. The cluster poller will pick it up within 30 seconds. Email brando.science@gmail.com only if this is an explicitly tracked job.
+Clone my agents-config repo into an isolated checkout and add a job file to jobs-inbox/pending/<NAME>.sh that does X with # JOB_MODE: direct, explicit model settings, and the applicable checkpoint, results and watch instructions. Commit and push, then verify actual dispatch and execution. Email important events under Rules 14, 26 and 70: To brandojazz@gmail.com, BCC brando.science@gmail.com; CC brando@vals.ai only for Vals work.
 
 Repo: https://github.com/brando90/agents-config
 ```

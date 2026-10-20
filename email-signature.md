@@ -3,7 +3,7 @@
 ## Default send address
 - **From:** a signed-in Brando account permitted for the task: mail connector first, otherwise personal SMTP from `brandojazz@gmail.com` (or its configured alias). Never use an account forbidden by the task.
 - **Task events:** To `brandojazz@gmail.com`, BCC `brando.science@gmail.com`; CC `brando@vals.ai` only for Vals work. Never copy unrelated work to Vals, including through BCC. No default Stanford or four-inbox copies.
-- **External messages:** preserve explicitly requested primary addressees and copies while respecting the same privacy boundary. Explicit task-specific recipients and subjects override defaults.
+- **External messages:** preserve explicitly requested primary addressees and copies, BCC `brando.science@gmail.com` as Brando's copy unless he names different copies, and respect the same Vals boundary. Explicit task-specific recipients and subjects from Brando or his runbook override defaults.
 - **Format:** Rule 14 defines the exact agent/account/project event subject, takeaway, at most five numbered bullets, one next step, and final comparison table plus three-line recommendation. Rule 70 adds job identifiers and run evidence. Verify delivery and deduplicate events.
 - **Policy date:** 10-20-2026; this supersedes the earlier universal four-address BCC policy. Do not resend old mail to change its routing.
 
