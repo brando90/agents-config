@@ -78,13 +78,13 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [39](rules/research.md#trigger-rule-39) | Start/continue/finish experiment → canonical setup-named home/index, colocated artifacts, results tables in git, frozen evidence, lifecycle. |
 | [40](rules/writing.md#trigger-rule-40) | Commit slide deck → fresh PDF, applicable text sibling and hash manifest in the same commit. |
 | [41](rules/responses.md#trigger-rule-41) | End substantive replies with a ranked `[p N/10]` list; start 9-10 items without spending or rule violations. |
-| [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered or stale session renames its own to `<client>-<project>-<role>-<task>`. |
+| [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered/stale session renames it to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
 | [44](rules/workers.md#trigger-rule-44) | Long run, account/context/turn limit, or end of any session in an experiment folder → durable timestamped `CKPT_<task>.md`; update only on events: edit the ≤30-line state block, append one dated log line, never rewrite; exact continuation and verified handoff. |
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
 | [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision verification, requested review, immediate authorized merge, receipt and safe synchronization. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
-| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound and verify handoff, preserving one writer and scientific limits. “ac-scheduler” → host watch plus master check-in and authorized notifications. |
+| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound and verify handoff, preserving one writer and scientific limits. “ac-scheduler” → host watch, master check-in, authorized notifications. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
@@ -93,7 +93,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
-| [57](rules/workers.md#trigger-rule-57) | Scope, routing, approval menu or a human click would stall → decide or take the no-human route, record it; no self-made gates; to-dos only what Brando must do. |
+| [57](rules/workers.md#trigger-rule-57), [74](rules/workers.md#trigger-rule-74) | Would stall on scope, routing, approval or a click → decide (no-human route), record it; no self-made gates; to-dos only Brando's own. Grade next steps /10; do ≥9 now. |
 | [58](rules/workers.md#trigger-rule-58) | Capacity/tool gap → checkpoint and continue through eligible existing accounts/agents; one failed route is not all accounts exhausted. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
 | [60](rules/writing.md#trigger-rule-60) | Technical explainer/teaching → use explainer style; paper prose uses its separate research style. |
@@ -106,7 +106,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
 | [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
-| [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, with all four inboxes in BCC (including sender and To). |
+| [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, BCC all four inboxes. |
 | [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line email to brando.science. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 | [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
