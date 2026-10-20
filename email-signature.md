@@ -1,11 +1,11 @@
 # Email Signature & Defaults
 
 ## Default send address
-- **From:** whichever of Brando's accounts the agent already has signed in: the client's mail connector if it has one, otherwise SMTP from `brandojazz@gmail.com` (or a configured alias such as `brando.science@gmail.com`). Never hold an email for a particular sender address.
-- **Every outgoing email:** explicitly BCC `brando.science@gmail.com`, `brando9@stanford.edu`, `brandojazz@gmail.com` and `brando@vals.ai`. Include all four even if an address is the sender or already in To; deduplicate only within BCC. This applies to every agent, project, external email and internal notification, with no project substitutions (Brando, 10-16-2026).
-- **Primary recipients:** preserve intended addressees and collaborators' requested copies. Internal notifications use `To: brando.science@gmail.com`; existing notification triggers remain unchanged.
-- **Visible copies:** CC requires an explicit request for that message and does not replace the four BCC entries unless Brando explicitly says so. Omit the former CC reply note; BCC does not automatically include recipients on later replies. Do not resend old emails merely to apply this policy. See Trigger Rule 26.
-- **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
+- **From:** a signed-in Brando account permitted for the task: mail connector first, otherwise personal SMTP from `brandojazz@gmail.com` (or its configured alias). Never use an account forbidden by the task.
+- **Task events:** To `brandojazz@gmail.com`, BCC `brando.science@gmail.com`; CC `brando@vals.ai` only for Vals work. Never copy unrelated work to Vals, including through BCC. No default Stanford or four-inbox copies.
+- **External messages:** preserve explicitly requested primary addressees and copies while respecting the same privacy boundary. Explicit task-specific recipients and subjects override defaults.
+- **Format:** Rule 14 defines the exact agent/account/project event subject, takeaway, at most five numbered bullets, one next step, and final comparison table plus three-line recommendation. Rule 70 adds job identifiers and run evidence. Verify delivery and deduplicate events.
+- **Policy date:** 10-20-2026; this supersedes the earlier universal four-address BCC policy. Do not resend old mail to change its routing.
 
 ## Voice rules for emails sent as Brando
 

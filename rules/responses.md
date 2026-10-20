@@ -42,7 +42,7 @@ Give one draft by default, not several alternatives. Keep internal paths, operat
 
 ## Trigger Rule 15
 
-15. **Q&A stays in chat unless explicitly emailed.** _Trigger: the user asks a substantive question._ Answer the question in the normal response and do not send an email by default. If Brando explicitly says to email the answer, send one email to `brando.science@gmail.com`, with all four inboxes in BCC under Trigger Rule 26; visible CC requires an explicit request. **Subject:** `Q -> A: <brief question> -> <brief answer>`. **Body:** Start with `TLDR: <1 sentence>`, then write in natural conversational prose. Skip email for ordinary clarification, diagnosis, or "why did this happen?" questions; otherwise requests become slower and every debugging conversation turns into mailbox noise.
+15. **Answer substantive questions in chat; email only for an authorized event or request.** _Trigger: the user asks a substantive question._ Give the answer in the normal response. Ordinary clarification and diagnosis do not trigger email; Rule 14 separately authorizes important task events. If Brando explicitly requests an emailed answer, use Rule 26 routing unless he names different recipients, subject `Q -> A: <brief question> -> <brief answer>`, and a concise takeaway followed by natural prose. Deduplicate an answer that is already included in the same task's event report.
 
 ## Trigger Rule 16
 
