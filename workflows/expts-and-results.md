@@ -482,133 +482,35 @@ After every experiment run completes (success or failure):
 
 ## Email Notification on Significant QA / Tracked Completion
 
-Email is intentionally narrow. Send one email to `brando.science@gmail.com` only when a user-triggered "mega QA", "deep QA", "big QA", or explicitly requested tracked task finishes. Routine experiment runs, ordinary paper edits, default QA, exploratory reads, and small fixes should report in chat/Telegram only unless Brando explicitly asks for email.
-
-**Why this matters:** Email is useful as a durable audit trail for major work, but automatic emails on every edit slow agents down and spam Brando's personal workflows. Keep email for user-triggered big/mega QA or explicitly tracked completions; use the current chat/Telegram thread for normal progress.
+Follow [Rule 14](../rules/services.md#trigger-rule-14) for substantive task completion, failure, blockers, required decisions and meaningful results, including requested review results. Small steps and unchanged polls do not trigger email. A review is still opt-in under Hard Rule 3; email authorization does not authorize a reviewer.
 
 ### Email Template
 
-Use this structure when the notification trigger in `INDEX_RULES.md` Trigger Rule 14 actually fires. Adapt the sections to fit the task — not every task has a comparison — but include the final status, key artifacts, QA verdict, and links.
+```text
+To: brandojazz@gmail.com
+BCC: brando.science@gmail.com
+CC: brando@vals.ai ONLY when this is Vals work
+Subject: [AGENT · ACCOUNT · PROJECT] <started|done|failed|blocked|needs you>
 
-```
-To: brando.science@gmail.com
-Subject: [QA] <task or experiment name> — <PASS|FIXED|FAIL> (<key takeaway>)
+<One-sentence takeaway, stating whether the overall task is complete.>
 
-Hi Brando,
+1. <Verified result with denominator and material limitation.>
+2. <Report / pull request / evidence links.>
+<At most five numbered bullets in total.>
 
-Here is the completion summary for <task / experiment / QA pass>.
+<For a comparison: final table and three-line recommendation.>
+Next step: <One concrete action, or none.>
 
-== RESULTS SUMMARY ==
-
-<X/Y pass rate, one-line headline metric>
-
-  [PASS] <item 1> (<attempts> attempt(s)) — <category/domain>
-  [PASS] <item 2> (<attempts> attempt(s)) — <category/domain>
-  [FAIL] <item 3> (<failure reason>) — <category/domain>
-  ...
-
-== COMPARISON == (if applicable — e.g., vs baseline, vs other system)
-
-<Comparison metrics organized by dimension (verification, cost, discovery, etc.)>
-
-== KEY INSIGHTS == (optional — 2-3 bullets on what was learned)
-
-- <insight 1>
-- <insight 2>
-
-== QA / CONFIG ==
-
-Model: <exact model ID, e.g., claude-opus-4-6, gpt-5-pro>
-Backend: <backend used>
-Max attempts: <N>
-Lean: <version>
-Mathlib: <branch> (<N> cached oleans)
-Runtime: ~<duration>
-QA verdict: <PASS / FIXED / FAIL>
-
-== LINKS ==
-
-Full results at: experiments/<NN>_<name>/results_summary/<file>.md
-Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
-Optional existing external report: <URL, only if relevant; omit this line otherwise>
-
-<email signature from ~/agents-config/email-signature.md>
+<Signature from email-signature.md.>
 ```
 
-### Rules
-
-1. **Send only when Trigger Rule 14 fires.** Default QA, ordinary edits, routine experiment runs, and exploratory reads do not email by default.
-2. **No CC by default.** Internal notifications go to `brando.science@gmail.com` and explicitly BCC all four inboxes under Trigger Rule 26, including sender and To addresses. Visible CC requires an explicit request.
-3. **Subject line** must include the experiment number, name, pass rate, and a short takeaway. Keep it scannable from a phone notification.
-4. **[PASS]/[FAIL] tags** on every individual item — Brando skims these first.
-5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
-6. **Link the experiment-folder Markdown report.** It is sufficient under `== LINKS ==`. Include an existing external report URL when relevant, but do not create or update W&B artifacts without an explicit user request, and do not delay an otherwise authorized completion notification for them.
-7. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
-8. **Append the signature** from `~/agents-config/email-signature.md`.
-9. **If an explicitly tracked task failed entirely**, still send the email. Subject: `[QA] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong. Link the partial Markdown report; an existing external report URL may be included as optional historical evidence.
-
----
+Use the exact client and verified execution account; use `account-unverified` if unknown. Honor explicit task-specific subject or recipient overrides. [Rule 26](../rules/services.md#trigger-rule-26) owns recipients and privacy, and [Rule 70](../rules/services.md#trigger-rule-70) overrides run subjects with `[RUN START]` / `[RUN DONE]` and requires launcher, beneficiary, task, cost, results, job identifier and host in both receipts. Never copy unrelated work to Vals. Verify delivery and deduplicate overlapping completion, landing and run notices. Link the canonical experiment report and relevant evidence; do not create an external dashboard merely for a notification.
 
 ## Research/Paper Completion Notification (Only If Explicitly Tracked)
 
-Per `INDEX_RULES.md` Trigger Rule 14, email `brando.science@gmail.com` only when a user-triggered big/mega QA pass finishes or Brando explicitly requested email/notification/tracking on completion. A normal paper edit, table fix, default QA run, or small research cleanup does not email by default. When Telegram initiated or approved the task, send a concise Telegram completion message in the originating chat.
+The historical heading is retained for incoming links; the old opt-in-only email trigger is superseded by [Rule 14](../rules/services.md#trigger-rule-14). Substantive research or paper tasks now use the event policy and template above. Routine commands and small edits still do not generate separate emails. If Telegram explicitly initiated or authorized the task, retain its authorized concise completion reply.
 
-### What counts as a "big" task
-
-Send the email only if any of these apply:
-- Brando explicitly asked for email/notification/tracking on completion.
-- The task was a user-triggered "mega QA", "deep QA", "big QA", or similar substantial review pass.
-
-Do NOT send for: single-line edits, routine paper edits, a light QA round Brando asked for in passing, read-only questions, exploratory searches, ordinary refactors, or agent-judged "significant" work that Brando did not explicitly ask to track by email.
-
-**When in doubt, do not email.** Summarize in chat/Telegram instead.
-
-### Explicitly Tracked Task Email Template
-
-```
-To: brando.science@gmail.com
-Subject: [Task] <one-line task description> — <DONE|PARTIAL|BLOCKED> (<key outcome>)
-
-Hi Brando,
-
-Finished the task you asked for: <one-sentence description>.
-
-== WHAT CHANGED ==
-
-- <file 1 path> — <one-line what/why>
-- <file 2 path> — <one-line what/why>
-- ...
-
-== COMMITS / PUSHES ==
-
-- <repo>: <short SHA> — <commit subject>  (pushed: yes/no)
-- ...
-
-== QA ==
-
-<QA verdict: PASS / FIXED / FAIL. One line on what was checked and by whom (Codex / CC / self-review; other providers only when eligible under the canonical QA policy and Trigger Rule 48). Link or path to QA output if substantive.>
-
-== NOTES == (optional — 1-3 bullets on anything surprising, partial, or needing follow-up)
-
-- <note 1>
-- <note 2>
-
-Links:
-- <repo URL(s) or PR link(s) if applicable>
-- <doc path(s)>
-
-<email signature from ~/agents-config/email-signature.md>
-```
-
-### Rules (explicitly tracked-task emails)
-
-1. **Send only for explicitly tracked significant tasks** — after the final commit/push/QA, not before.
-2. **No CC by default.** Use `To: brando.science@gmail.com` and explicitly BCC all four inboxes under Trigger Rule 26, including sender and To addresses; preserve additional recipients Brando explicitly names.
-3. **Subject line** must be scannable from a phone lock screen — task in 5-8 words, outcome tag (DONE / PARTIAL / BLOCKED).
-4. **List every touched file** under WHAT CHANGED with a one-liner. No walls of prose.
-5. **Include commit SHAs and push status** so Brando can pull/verify from any machine.
-6. **Append the signature** from `~/agents-config/email-signature.md`.
-7. **If the task is BLOCKED or PARTIAL**, still send the email. Subject: `[Task] <desc> — BLOCKED (<reason>)` or `— PARTIAL`. Explain what's done, what's not, what's needed to unblock.
+Report failed or blocked work honestly, including completed work, unresolved dependencies and the one next step. A partial phase can be reported as a phase result, but must not imply the whole task is done. Include commit / pull request and report links when relevant, and report only checks or requested reviews actually performed.
 
 ---
 

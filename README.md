@@ -22,6 +22,7 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 |---|---|
 | [Codex](https://developers.openai.com/codex/guides/agents-md) | Global `$CODEX_HOME/AGENTS.md` (normally `~/.codex/AGENTS.md`) and repository files; observe its instruction budget. |
 | [Claude Code](https://code.claude.com/docs/en/memory) | Global `~/.claude/CLAUDE.md` and ancestor/project files. Under 200 lines is a heuristic; imports still consume context. |
+| Cowork | When repository access is unavailable, deliver the applicable rules inline in its runbook, including [event email and routing](rules/services.md#trigger-rule-14) and [session status and pins](rules/workers.md#trigger-rule-73); verify delivery rather than assuming a repository pull reached it. |
 | [Cursor](https://cursor.com/docs/cli/using) | The command-line interface reads both root entrypoints; [rules guidance](https://cursor.com/docs/rules) recommends under 500 lines. |
 | [Antigravity](https://antigravity.google/docs/rules) | AGENTS.md or GEMINI.md; globals in `~/.gemini/`; 24,000-byte per-rule cap. Import syntax differs from Claude's. |
 | [Grok Build](https://docs.x.ai/build/features/project-rules.md) | Reads both entrypoint families and global `~/.grok/` rules. Verify discovery with `grok inspect`. |
