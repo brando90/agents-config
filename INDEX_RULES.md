@@ -106,7 +106,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
 | [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
-| [70](rules/services.md#trigger-rule-70) | Long-run start/finish → Rule 14 email with job ID, resource limits and terminal evidence; deduplicate. |
+| [70](rules/services.md#trigger-rule-70) | Every agent, long-run start/finish → `[RUN START]`/`[RUN DONE]` to brandojazz + brando.science: launcher, beneficiary, task, cost, results; deduplicate. |
 | [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line Rule 26 email. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 | [73](rules/workers.md#trigger-rule-73) | All clients: pinned = running/waiting; last-active date + status tag; finish/idle 24h → final email and unpin. |

@@ -504,7 +504,7 @@ Next step: <One concrete action, or none.>
 <Signature from email-signature.md.>
 ```
 
-Use the exact client and verified execution account; use `account-unverified` if unknown. Honor explicit task-specific subject or recipient overrides. [Rule 26](../rules/services.md#trigger-rule-26) owns recipients and privacy, and [Rule 70](../rules/services.md#trigger-rule-70) adds real job identifiers, host and resource limits to long-run starts. Never copy unrelated work to Vals. Verify delivery and deduplicate overlapping completion, landing and run notices. Link the canonical experiment report and relevant evidence; do not create an external dashboard merely for a notification.
+Use the exact client and verified execution account; use `account-unverified` if unknown. Honor explicit task-specific subject or recipient overrides. [Rule 26](../rules/services.md#trigger-rule-26) owns recipients and privacy, and [Rule 70](../rules/services.md#trigger-rule-70) overrides run subjects with `[RUN START]` / `[RUN DONE]` and requires launcher, beneficiary, task, cost, results, job identifier and host in both receipts. Never copy unrelated work to Vals. Verify delivery and deduplicate overlapping completion, landing and run notices. Link the canonical experiment report and relevant evidence; do not create an external dashboard merely for a notification.
 
 ## Research/Paper Completion Notification (Only If Explicitly Tracked)
 
