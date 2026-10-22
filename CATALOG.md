@@ -17,6 +17,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC; [reusable agent access](machine/sherlock-agent-access.md)
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
+- [`machine/farmshare.md`](machine/farmshare.md) — Stanford FarmShare (free; coursework + unsponsored research): 4x L40S per user, `-p gpu --qos=gpu --gres=gpu:N`, limits, fair use, model sizes
 - [`machine/agent-clis.md`](machine/agent-clis.md) — shared Cursor Agent / Grok Build / Antigravity CLI install, PATH, and login playbook for both Macs and SNAP (`scripts/install_agent_clis.sh`)
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install; § Agent board — the per-machine dashboard of every Claude/Codex/SNAP agent session and its tmux window, installed via `scripts/agent_board_install.sh`)
 - [`machine/mac-never-sleep-lid.md`](machine/mac-never-sleep-lid.md) — reusable prompt/workflow for configuring a Mac to stay awake when the lid closes; load via `machine/mac.md` when Brando asks for never-sleep lid behavior.

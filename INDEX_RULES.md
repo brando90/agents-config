@@ -110,6 +110,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [71](rules/services.md#trigger-rule-71) | Session start, or need email/calendar/people/a relay to Brando → read new `[FROM-UB9]` comments in agents-config issue #68 and act; ask there with `[TO-UB9]` plus a one-line email to brando.science. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 | [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
+| [75](rules/hosts.md#trigger-rule-75) | Slurm job → `--mail-type=END,FAIL` to brandojazz, brando.science; +BEGIN if long/key; one per array. |
 
 ## Guidelines (best practices)
 
@@ -131,7 +132,7 @@ For an authorized account task, read [Rule 34](rules/services.md#trigger-rule-34
 
 ## Machine Configs
 
-Host routes: [catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md), [Sherlock](machine/sherlock-agent-access.md), [other agent clients](machine/agent-clis.md). Do not load unrelated hosts.
+Host routes: [catalog](CATALOG.md#machine-configs): [Mac](machine/mac.md), [SNAP](machine/snap.md) ([watcher reauth](rules/hosts.md#snap-watcher-reauth--reboot-persistence-2026-04), [⚠ Slurm gate](rules/hosts.md#-snap-slurm-gated-access-audited-2026-09-03), [required symlinks](rules/hosts.md#snap-required-symlinks-every-node)), [Sherlock](machine/sherlock-agent-access.md), [FarmShare](machine/farmshare.md), [other agent clients](machine/agent-clis.md). Do not load unrelated hosts.
 
 ## Workflows
 
@@ -148,15 +149,3 @@ The [writing catalog](CATALOG.md#writing) routes paper, blog and announcement wo
 ## Collaborators / Contact roster
 
 Before addressing/assigning a person, resolve identity through [contacts](contacts.md) and the [roster route](rules/services.md#collaborators--contact-roster).
-
-## SNAP watcher reauth & reboot persistence (2026-04)
-
-[Watcher reference](rules/hosts.md#snap-watcher-reauth--reboot-persistence-2026-04).
-
-## ⚠ SNAP Slurm-gated access (audited 2026-09-03)
-
-[Allocation and access reference](rules/hosts.md#-snap-slurm-gated-access-audited-2026-09-03).
-
-## SNAP Required Symlinks (every node)
-
-[Required paths and verification](rules/hosts.md#snap-required-symlinks-every-node).
