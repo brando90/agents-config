@@ -15,13 +15,19 @@
 - If approval context is needed, translate it into first-person intent: "Could you please...", "I'm good with this plan", "Thanks, that works for me."
 - Before sending, do a quick self-read: if the sentence would be weird for Brando to say himself, rewrite it.
 
+## Closing summary
+
+Every drafted or sent email ends its substantive body with `TLDR-end: [proj: task]` and 1–2 sentences, following [Hard Rule 4](rules/responses.md#hard-rule-4). State the outcome and any real decision/deadline; do not invent an action or deadline. Put the summary after any decisions, links or verification evidence and immediately before the drafted-with sign-off and signature. For internal notifications that omit a signature under Rule 70, it is the final body text.
+
+Before sending, check that the closing summary is present, matches the final body and precedes any sign-off/signature. An opening status sentence does not replace it. Keep existing send triggers; do not resend old emails just to change their format.
+
 ## Drafted-with sign-off
 
 End every email sent as Brando to other people with the line `Brando (drafted with <agent>)`, where `<agent>` is the agent that actually drafted it: `Brando (drafted with Claude)` from Claude, `Brando (drafted with Codex)` from Codex, and so on (Antigravity, Grok, …), then the signature below. Brando uses many agents and is happy to say so; this line is not a chatbot tell (Brando, 10-09-2026).
 
 ## Signature
 
-Append this signature to every email sent on Brando's behalf:
+Append this signature to emails sent on Brando's behalf; preserve Rule 70's signature-free internal notifications:
 
 ```
 -----
