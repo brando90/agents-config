@@ -14,7 +14,7 @@ BUDGETS = {
     'INDEX_RULES.md': (22528, 3200, 250),
 }
 EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 75)),
-            'guideline': set(range(14, 25))}
+            'guideline': set(range(14, 26))}
 LINK = re.compile(r'\]\((?:<([^>]+)>|([^\s)]+))(?:\s+"[^"]*")?\)')
 
 
