@@ -8,7 +8,7 @@
 
 Refresh `~/agents-config` with `git -C ~/agents-config pull --ff-only` at each new non-trivial task and after an hour; preserve dirty/concurrent work and use the local copy if offline. Reread this index and relevant changed rules. When editing agents-config in an isolated checkout, use that checkout's index and detail files after refreshing the home checkout.
 
-All Hard Rule **Details** links and matching Trigger Rule/Guideline links are mandatory routing: **before the action they govern, read that detail section and its applicable workflow**, including secret overrides, spending and review decisions. Do not read every topic file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If files are unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it. Never eagerly import this index or the detail collection into an entry file; read them as task files.
+All Hard Rule **Details** links and matching Trigger Rule/Guideline links are mandatory routing: **before the action they govern, read that detail section and its applicable workflow**, including secret overrides, spending and review. Rule numbers are stable; paths below resolve beneath `~/agents-config/`. If unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it. Never import this index or the detail files into an entry file; read them as task files.
 
 Hard rules govern conflicts with older wording in a triggered procedure. Explicit user instructions and platform/tool constraints retain their normal precedence. The existing task-specific SNAP pre-approval in Trigger Rule 51 is scoped to authorized work and existing budgets; it never permits authoring provider API calls. Detail pages retain the procedures, examples and exceptions; the catalog is optional lookup.
 
@@ -124,7 +124,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
 - [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
-- [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best.
+- [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; <=0.9 good, <=0.5 great, 0 best.
 
 ## Authorized sign-in and verification codes
 

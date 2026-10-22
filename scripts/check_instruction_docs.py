@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BUDGETS = {
     'AGENTS.md': (6144, 1000, 200),
     'CLAUDE.md': (6144, 1000, 200),
-    'INDEX_RULES.md': (22656, 3200, 250),
+    'INDEX_RULES.md': (22528, 3200, 250),
 }
 EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 75)),
             'guideline': set(range(14, 26))}
