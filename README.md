@@ -59,6 +59,10 @@ Preserve existing profile instructions and add routing to `~/agents-config/INDEX
 
 Keep useful task-scoped references intact. Add procedures to their topic and routing entry, not every startup file.
 
+## Selecting experiment models and judges
+
+Use [model-and-agent selection](workflows/model-and-agent-selection.md) for new, unpinned model-calling workloads: compare relevant quality and total task cost, validate judges for their role, and preserve frozen settings and required reference acceptance.
+
 ## Investigating problems and using Valkyrie
 
 Use [broad investigation](workflows/broad-investigation.md), [Valkyrie diagnosis](workflows/valkyrie.md), and [verified-host bootstrap](workflows/verified-host-bootstrap.md) for their respective tasks. Public procedures stay here; credentials and private configuration stay in authorized private storage.

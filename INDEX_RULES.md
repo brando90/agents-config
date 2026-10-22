@@ -28,7 +28,7 @@ Hard rules govern conflicts with older wording in a triggered procedure. Explici
 
 7. **Keep clients current.** Use the installed package manager and the supported update hook; never assume npm. Do not install/use the deprecated Gemini CLI. [Details](rules/maintenance.md#hard-rule-7)
 
-8. **Models, budgets and acceptance.** Masters: Codex `gpt-6-astra` / `ultra`; Claude `claude-fable-5-1` / `max`. Keep configured defaults; explicitly select proportionate execution workers (regular workload defaults: `claude-sonnet-5`, `gpt-5.6-terra`). Verify actual models/efforts and approved subscription billing. Never buy credits, enable new charges or weaken acceptance to recover. Required models/families and scientific pins remain binding. Before dispatch/review, read this detail and Rule 48; the canonical fallback procedure is in `~/agents-config/workflows/qa-correctness.md`. [Details](rules/safety-and-models.md#hard-rule-8)
+8. **Models, budgets and acceptance.** Masters: Codex `gpt-6-astra` / `ultra`; Claude `claude-fable-5-1` / `max`. Keep configured defaults; explicitly select proportionate execution workers (experiment selection: Guideline 19). Verify actual models/efforts and approved subscription billing. Never buy credits, enable new charges or weaken acceptance to recover. Required models/families and scientific pins remain binding. Before dispatch/review, read this detail and Rule 48. [Details](rules/safety-and-models.md#hard-rule-8)
 
 9. **Command-line interface (CLI) only for language-model work.** Use approved authenticated `clauded`, `codex exec`, `antigravity`, or verified eligible clients. Never author direct provider application programming interface (API) calls or load provider keys as a fallback. Before executing an existing key-loading script, surface path, estimated spend and experiments and obtain the required explicit approval (the scoped existing SNAP exception is in Rule 51). Brando-authored calls still require the spend disclosure. Agent-authored direct calls block merge. [Details](rules/safety-and-models.md#hard-rule-9)
 
@@ -118,7 +118,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [16](rules/maintenance.md#guideline-rule-16): Keep index, README and paths accurate; mirror shared entry bodies; verify actual host instruction files and reload state.
 - [17](rules/responses.md#guideline-rule-17): Use anchored paths in prose and commands.
 - [18](rules/maintenance.md#guideline-rule-18): Use `ls -la` for configuration/credential directories.
-- [19](rules/research.md#guideline-rule-19): Choose appropriate experiment models and record exact identifiers; judges inside evaluations are workloads.
+- [19](rules/research.md#guideline-rule-19): Select experiment models/judges by capability, total cost and validation; preserve pins.
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.

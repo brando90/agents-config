@@ -26,6 +26,8 @@ Load the one matching your current environment. Machine docs contain only behavi
 
 ## Workflows
 
+- [`workflows/model-and-agent-selection.md`](workflows/model-and-agent-selection.md) — capability, total cost, judge validity and subset uncertainty for new model-calling experiments; loaded by Hard Rule 8 and Guideline 19.
+
 - [`workflows/daily-research-slides.md`](workflows/daily-research-slides.md) — Separate Vals/Nikil and Sanmi research updates, with 2–3 dated slides per day and a weekday 5:30 p.m. Pacific refresh. **Loaded by Trigger Rule 16.**
 
 - [`workflows/cross-machine-projects.md`](workflows/cross-machine-projects.md) — proposed shared project identity and task catalog across agent tools, accounts, and computers; extends the private agent board with separate coordination controls. Design only, not a new execution policy.
