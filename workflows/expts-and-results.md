@@ -532,7 +532,9 @@ Full results at: experiments/<NN>_<name>/results_summary/<file>.md
 Experiment plan at: experiments/<NN>_<name>/experiment_plan.md
 Optional existing external report: <URL, only if relevant; omit this line otherwise>
 
-<email signature from ~/agents-config/email-signature.md>
+TLDR-end: [<project>: <task>] <Verified outcome in 1–2 sentences; include a real decision/deadline only if applicable.>
+
+<drafted-with sign-off and email signature from ~/agents-config/email-signature.md>
 ```
 
 ### Rules
@@ -544,7 +546,7 @@ Optional existing external report: <URL, only if relevant; omit this line otherw
 5. **Exact model IDs** in the Config section — never "Claude" or "GPT", always the full ID.
 6. **Link the experiment-folder Markdown report.** It is sufficient under `== LINKS ==`. Include an existing external report URL when relevant, but do not create or update W&B artifacts without an explicit user request, and do not delay an otherwise authorized completion notification for them.
 7. **Include file paths** to the full results and experiment plan so Brando can jump straight to the details.
-8. **Append the signature** from `~/agents-config/email-signature.md`.
+8. **End the body with `TLDR-end: [proj: task]`** under Hard Rule 4, then append the sign-off and signature from `~/agents-config/email-signature.md`. Verify the summary matches the final body.
 9. **If an explicitly tracked task failed entirely**, still send the email. Subject: `[QA] <name> — FAILED (<reason>)`. Include the error details and what you think went wrong. Link the partial Markdown report; an existing external report URL may be included as optional historical evidence.
 
 ---
@@ -597,7 +599,9 @@ Links:
 - <repo URL(s) or PR link(s) if applicable>
 - <doc path(s)>
 
-<email signature from ~/agents-config/email-signature.md>
+TLDR-end: [<project>: <task>] <Verified outcome in 1–2 sentences; include a real decision/deadline only if applicable.>
+
+<drafted-with sign-off and email signature from ~/agents-config/email-signature.md>
 ```
 
 ### Rules (explicitly tracked-task emails)
@@ -607,7 +611,7 @@ Links:
 3. **Subject line** must be scannable from a phone lock screen — task in 5-8 words, outcome tag (DONE / PARTIAL / BLOCKED).
 4. **List every touched file** under WHAT CHANGED with a one-liner. No walls of prose.
 5. **Include commit SHAs and push status** so Brando can pull/verify from any machine.
-6. **Append the signature** from `~/agents-config/email-signature.md`.
+6. **End the body with `TLDR-end: [proj: task]`** under Hard Rule 4, then append the sign-off and signature from `~/agents-config/email-signature.md`. Verify the summary matches the final body.
 7. **If the task is BLOCKED or PARTIAL**, still send the email. Subject: `[Task] <desc> — BLOCKED (<reason>)` or `— PARTIAL`. Explain what's done, what's not, what's needed to unblock.
 
 ---
