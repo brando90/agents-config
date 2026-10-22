@@ -125,6 +125,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
 - [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best.
+- [26](rules/research.md#guideline-rule-26): Any higher-is-better metric: best-model score ≥~0.98–0.99 means saturated, smooth or harsh (heuristic, not a hard rule).
 
 ## Authorized sign-in and verification codes
 
