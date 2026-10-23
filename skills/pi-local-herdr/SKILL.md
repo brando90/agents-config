@@ -5,7 +5,7 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 
 # Local Pi and Herdr
 
-**TLDR:** Use `pi-gemini` for authorized VeriBench work and `pi-local` for free local inference; switching is explicit, not automatic. Qwen3.5 9B passed the disposable 10-test repair in 41.0 seconds on 10-22-2026; see the dated proof for scope. Herdr has seven saved profiles; four SNAP setup/status checks passed on 10-22-2026, but a later skampere1 agent-list command timed out. Sherlock and FarmShare SSH need human authentication.
+**TLDR:** Use `pi-gemini` for authorized VeriBench work and `pi-local` for free local inference; switching is explicit, not automatic. Qwen3.5 9B passed the disposable 10-test repair in 41.0 seconds on 10-22-2026; see the dated proof for scope. Herdr has seven saved profiles; five SNAP nodes have reachable receipts; after an earlier timeout, explicit-target skampere1 agent-list succeeded and reported Pi idle. Sherlock and FarmShare SSH need human authentication.
 
 ## Gemini for VeriBench
 
