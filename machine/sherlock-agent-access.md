@@ -4,6 +4,10 @@
 
 **TLDR:** Use the private scheduled GitHub runner when it is active, an existing SSH connection, or authenticated OnDemand before asking for another login. Fresh Sherlock login connections still require Duo; the prepared runner's live activation status is recorded separately.
 
+## Herdr setup and current cluster policy
+
+See [Sherlock/FarmShare Herdr setup and remaining authentication](herdr-stanford-access.md) for the Mac repairs verified on 10-23-2026. The live `/etc/agents/AGENTS.md` now explicitly forbids persistent servers and processes that outlive an interactive session on login nodes; place persistent Herdr servers in a compute allocation. This current host policy supersedes broader historical login-node language below. Read the live instructions on each session.
+
 ## Choose an available route
 
 1. **Private runner:** inspect `sherlockctl status` when installed. It uses an already-authorized GitHub command-line interface (CLI) account and a repository-scoped runner executing under Slurm. An online runner permits `sherlockctl exec 'hostname; id -un'`, `sherlockctl jobs` and `sherlockctl submit /absolute/local/job.sbatch`. Follow the [private installation and command guide](https://github.com/brando90/sherlock-agent-bridge/blob/main/README.md) and [activation receipt](https://github.com/brando90/sherlock-agent-bridge/blob/main/receipts/status.md). A published script is not proof that the runner is online; check live status on the invoking host.
