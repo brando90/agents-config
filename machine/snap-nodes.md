@@ -59,7 +59,7 @@ Source: the SNAP server list <https://ilwiki.stanford.edu/doku.php?id=snap-serve
 
 **Why Slurm is closed to Brando.** `showaccount` is empty for `brando9` (checked 10-13, 10-14 and again 10-22 17:12 on `ilc`: empty table); `sbatch --test-only --partition=il --account=infolab` reports an invalid account or partition. The `infolab` association was requested from `il-action@cs.stanford.edu` on 10-14 19:40, and CS IT said on 10-15 that Koyejo-group students are not eligible yet.
 
-**Could everything be managed by Slurm?** Yes in principle, in two separate steps:
+**Could everything be managed by Slurm?** Yes in principle; there are three routes:
 1. *Use the gated nodes.* Needs the `infolab` association for `brando9` (CS IT decision, plus a sponsor). Then run through `ilc`: `srun --partition=il --qos=il-interactive --account=infolab --nodelist=<node> --gres=gpu:1 --pty bash -l` (CPU-only: `--partition=il-cpu`). Do not email CS IT again before Brando says so.
 2. *Put our own five nodes under Slurm.* Needs a SNAP/CS IT admin to add them to the cluster (slurmd plus the SSH gate), which they have done for the older nodes. It is their call, not ours, and it has a cost: once gated, direct SSH stops working without an allocation, as on `ampere`, and the Koyejo nodes would compete with the shared partition rules.
 3. *What we can do without anyone's permission.* A thin queue of our own on the open nodes: a small watcher that runs `nvidia-smi`, claims only idle GPUs, runs one job per GPU with `nohup`, and writes a status line per job. A `job_queue` watcher already exists on `skampere1` (max-concurrent 1). Extending it across the five nodes gives most of the benefit of Slurm (queueing, one place to look) with no admin involved.
