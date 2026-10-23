@@ -120,7 +120,14 @@ def main():
     args = parser.parse_args()
     if (args.check or args.runtime_only) and args.devin_desktop:
         parser.error('--check/--runtime-only cannot be combined with --devin-desktop')
-    from sync_runtime import sync
+    from sync_runtime import sync, load_plan, package_source
+    plan = load_plan(args.runtime_manifest, args.agent_dir.expanduser().resolve(), args.host_config)
+    account_package = str(ROOT/'claude-accounts')
+    if not args.check and any(package_source(p) == account_package for p in plan['settings']['packages']):
+        # Local Pi packages do not install their own dependencies. Prepare the
+        # pinned transport and host-specific launchers before advancing sync state.
+        subprocess.run([sys.executable, str(ROOT/'claude-accounts/install.py'),
+                        '--agent-dir', str(args.agent_dir.expanduser().resolve())], check=True)
     status = sync(args.runtime_manifest, args.agent_dir, check=args.check,
                   host_config=args.host_config)
     if args.check or args.runtime_only:

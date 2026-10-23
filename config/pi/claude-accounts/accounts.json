@@ -1,0 +1,5 @@
+[
+  {"id": "personal-claude-code", "label": "Personal Claude Max", "configDir": null, "email": "brandojazz@gmail.com", "orgId": "26d02011-64c4-4622-be82-20ff6e2df8e4"},
+  {"id": "vals-claude-code", "label": "Vals Claude Team", "configDir": ".claude-vals", "email": "brando@vals.ai", "orgId": "9cc7549a-be5b-4088-a66e-137d5f854d4a"},
+  {"id": "stanford-claude-code", "label": "Stanford Claude Enterprise", "configDir": ".claude-su", "email": "brando9@stanford.edu", "orgId": "22f9d993-4553-4d91-9cb4-4d135fca40df"}
+]
