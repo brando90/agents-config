@@ -72,6 +72,24 @@ def install(manifest, catalog_dir, keys_dir, agent_dir):
     print(f'Installed: {target}; open /model or restart Pi.')
 
 
+def configure_devin(settings_path, pi_command, agent_dir):
+    """Point Devin's existing pi-acp connector at the same Pi/profile as the CLI."""
+    settings = json.loads(settings_path.read_text()) if settings_path.exists() else {}
+    settings.setdefault('devin.acp.agentEnv', {}).setdefault('pi-acp', {}).update({
+        'PI_ACP_PI_COMMAND': str(pi_command),
+        'PI_CODING_AGENT_DIR': str(agent_dir),
+        'PI_OFFLINE': '1',
+    })
+    settings.setdefault('devin.acp.enabledAgents', {})['pi-acp'] = True
+    if settings_path.exists():
+        backup = settings_path.with_name('settings.json.before-pi-providers-' + datetime.now().strftime('%m-%d-%Y-%H%M%S-%f'))
+        shutil.copy2(settings_path, backup)
+        backup.chmod(0o600)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    settings_path.write_text(json.dumps(settings, indent=2)+'\n')
+    print('Devin Desktop: pi-acp linked to the named-provider Pi profile.')
+
+
 def find_catalog():
     # Follow the selected Pi executable before consulting npm, which may belong
     # to a different Node installation on this host.
@@ -93,10 +111,17 @@ def main():
     parser.add_argument('--agent-dir', type=Path, default=Path.home()/'.pi/agent')
     parser.add_argument('--keys-dir', type=Path, default=Path.home()/'keys')
     parser.add_argument('--catalog-dir', type=Path)
+    parser.add_argument('--devin-desktop', action='store_true', help='Also configure the existing Devin Desktop pi-acp connector (macOS)')
     args = parser.parse_args()
     catalog_dir = args.catalog_dir.expanduser() if args.catalog_dir else find_catalog()
     install(json.loads((ROOT/'providers.json').read_text()), catalog_dir,
             args.keys_dir.expanduser(), args.agent_dir.expanduser())
+    if args.devin_desktop:
+        pi = shutil.which('pi')
+        if not pi:
+            raise ValueError('Pi executable is not on PATH')
+        configure_devin(Path.home()/'Library/Application Support/Devin/User/settings.json',
+                        Path(pi), args.agent_dir.expanduser().resolve())
 
 
 if __name__ == '__main__':

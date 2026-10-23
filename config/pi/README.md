@@ -41,6 +41,22 @@ The Mistral credential's sponsor is **unverified**, not assumed personal or labo
 
 Each `apiKey` is an idiomatic Pi secret command (`!cat '/absolute/key/path'`). Pi consumes its stdout internally; do not run the command in chat tools or use `auth --credentials` or `print-api-key`. Each alias has its own credential command and does not depend on the generic inherited `OPENAI_API_KEY`. Catalog entries are **configured**, not proof that every model is enabled or funded by that account. No paid inference is needed to verify menu visibility.
 
+## Devin Desktop: use the same named providers
+
+Devin Desktop's **Pi ACP** agent runs `pi-acp`, which launches `pi --mode rpc`. It can expose the same providers; Devin Local and the standalone Devin CLI use Devin's own model catalog instead. This is not a bulk key import into Devin Local.
+
+```bash
+python3 ~/agents-config/config/pi/install.py --devin-desktop
+```
+
+On macOS this backs up and merges `~/Library/Application Support/Devin/User/settings.json`. The supported `devin.acp.agentEnv` map pins `pi-acp` to the selected Pi executable through `PI_ACP_PI_COMMAND` and the installed provider directory through `PI_CODING_AGENT_DIR`. Only non-secret paths are stored, and the preferred/default agent is unchanged. `PI_OFFLINE=1` disables startup catalog/network activity, not model inference.
+
+For an existing stale connection, run **Devin: Reload ACP Connections** in the Command Palette. This reconnects agents, so wait until other active turns finish. Then start a **Pi ACP** conversation and use the model dropdown. New connections read the named providers; an existing session's cached list may require a new conversation. In this adapter `/model` itself is not implemented: the desktop dropdown is the supported selector.
+
+`verify_devin_acp.py --adapter /path/to/pi-acp/dist/index.js` performs initialization, creates a disposable session, verifies all manifest providers are advertised, and selects `personal-openai-brando/gpt-5.6-sol` through `session/set_config_option`. It sends **no `session/prompt`** and does not generate tokens. Verification on 10-23-2026 with pi-acp 0.0.34 advertised 42 + 42 + 17 + 2 + 37 = 140 named model routes and accepted selection. This verifies the agent-to-client protocol, not the already-open desktop menu or successful paid inference.
+
+Sources: [Devin Desktop ACP](https://docs.devin.ai/desktop/acp.md), [custom agents and reload](https://docs.devin.ai/desktop/acp-custom.md), [pi-acp](https://github.com/svkozak/pi-acp).
+
 ## Verification and recovery
 
 ```bash

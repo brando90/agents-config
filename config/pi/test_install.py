@@ -51,6 +51,21 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(len(list(self.agent.glob('models.json.before-named-*'))), 2)
         self.assertEqual((self.agent/'models.json').stat().st_mode & 0o777, 0o600)
 
+    def test_devin_preserves_other_agents_and_preferences(self):
+        settings_path = self.root/'settings.json'
+        existing = {'devin.acp.preferredAgent': 'devin-cli',
+                    'devin.acp.agentEnv': {'other': {'KEEP': 'yes'}, 'pi-acp': {'CUSTOM': 'preserve'}},
+                    'devin.acp.enabledAgents': {'other': True}}
+        settings_path.write_text(json.dumps(existing))
+        setup.configure_devin(settings_path, Path('/test/pi'), self.agent)
+        updated = json.loads(settings_path.read_text())
+        self.assertEqual(updated['devin.acp.preferredAgent'], 'devin-cli')
+        self.assertEqual(updated['devin.acp.agentEnv']['other'], {'KEEP': 'yes'})
+        self.assertEqual(updated['devin.acp.agentEnv']['pi-acp']['CUSTOM'], 'preserve')
+        self.assertEqual(updated['devin.acp.agentEnv']['pi-acp']['PI_ACP_PI_COMMAND'], '/test/pi')
+        self.assertTrue(updated['devin.acp.enabledAgents']['pi-acp'])
+        self.assertEqual(len(list(self.root.glob('settings.json.before-pi-providers-*'))), 1)
+
     def test_catalog_follows_selected_pi(self):
         package = self.root/'package'
         cli = package/'dist/bundle/cli.js'
