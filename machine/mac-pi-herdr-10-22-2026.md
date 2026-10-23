@@ -4,27 +4,29 @@
 
 **Google Doc:** <https://docs.google.com/document/d/1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4/edit>
 
-**TLDR:** Pi 1.4.0, Ollama 0.40.8 and Herdr 0.9.5 are installed without sudo on this M1 Max/64 GiB Mac. Model download and coding verification are in progress; four initial SNAP Herdr status checks passed, while Sherlock/FarmShare SSH require authentication.
+**TLDR:** Free local Pi works: Qwen3.5 9B repaired a disposable Python project in **41.0 seconds**, with **10/10 tests independently passing**. Herdr has six saved profiles; remote access has the limitations below.
 
-## Installation
+## Install and use
 
-1. Inspected chip, memory, disk and existing configuration. Only 5.3 GiB was free. With explicit permission, removed an unused 2023 Hugging Face model-download cache (21,113,714,475 bytes; no open files reported), recovering about 19.7 GiB.
-2. Installed Pi with `npm install -g --prefix ~/.local @earendil-works/pi-coding-agent@1.4.0`. Extracted the official [Ollama release](https://github.com/ollama/ollama/releases/tag/v0.40.8) into `~/.local/opt/ollama-0.40.8`; linked `~/.local/bin/ollama`. Installed the official [Herdr ARM64 binary](https://github.com/herdrdev/herdr/releases/tag/v0.9.5) as `~/.local/bin/herdr`.
-3. Configured user LaunchAgent `com.brando.ollama-local`: loopback only, cloud disabled, 32,768-token context. User explicitly allowed Ollama's first-run local identity file. No provider key, paid service, subscription or charge was added; passwords, keytabs and login prompts were untouched.
-4. Selected `ollama pull qwen3.5:9b-q4_K_M` (6.6 GB). A 27B download was stopped before inference after a multi-hour estimate. [Pi profile](pi-local-models.example.json), [launcher source](../scripts/pi_local.py), and [loadable skill](../skills/pi-local-herdr/SKILL.md) reproduce the configuration.
+1. Verified **Apple M1 Max, 64 GiB RAM**. With permission, removed an unused 2023 model-download cache (21,113,714,475 bytes; no open files), recovering about 19.7 GiB from an initial 5.3 GiB free.
+2. Installed Pi **1.4.0** using `npm install -g --prefix ~/.local @earendil-works/pi-coding-agent@1.4.0`; installed official [Ollama 0.40.8](https://github.com/ollama/ollama/releases/tag/v0.40.8) and [Herdr 0.9.5](https://github.com/herdrdev/herdr/releases/tag/v0.9.5) ARM64 releases under `~/.local`, with verified release checksums and no sudo.
+3. Configured Ollama's user LaunchAgent on loopback, cloud disabled, 32,768-token context; installed `qwen3.5:9b-q4_K_M` (6.6 GB). Its local identity file was explicitly approved. No provider keys, paid services, subscriptions or charges were added; passwords, keytabs and login prompts were untouched.
+4. From a repository: `pi-local`. Saved-task handoff: `pi-takeover CHECKPOINT.md -p`. Quota recovery: `pi-resilient CHECKPOINT.md --error-log quota.log -p`. Stop the previous writer first; `--previous-pid PID` checks a known process. Recovery starts a fresh checkpoint-based local session and saves a hash receipt.
 
-## Checks and usage
+## Verification and timings
 
-Eight launcher contract checks passed. The disposable Python repair baseline is **2/10 passing, 8 failing**. Pi repair and independent verification are pending the model download; no inference success is claimed yet. Install durations were not separately measured.
+The repair baseline was **2/10 passing**. Pi fixed tail-chunk handling and nonpositive-size validation in **40.984 s**; an independent rerun passed **10/10** in **0.059 s**, with tests unchanged. Eight launcher checks passed. This is one small functional test, not the Air benchmark or a performance comparison. [Frozen proof and test source](pi-local-proof-10-22-2026.json).
 
-From a repository, run `pi-local`. For a saved task: `pi-takeover CHECKPOINT.md -p`; quota recovery: `pi-resilient CHECKPOINT.md --error-log quota.log -p`. Ensure the previous writer has stopped; `--previous-pid PID` verifies a known process. Recovery uses a new local session, records a checkpoint hash, and never invokes a paid primary agent.
+Download-to-registration took **48.9 minutes** (30-second polling resolution). Ollama's multipart download repeatedly stalled and rolled back progress; a resumable single-stream official-registry download completed in **4:30**, passed SHA-256 verification, then `ollama pull` finalized it. A 27B download was abandoned before inference. Install durations were not separately measured.
 
-## Cross-machine outcome
+## Remote outcome
 
-- **skampere1, skampere2, mercury1, mercury2:** Herdr setup and individual `machine status` checks succeeded through the existing whale gateway. A later skampere1 agent-list command timed out in its server-status probe; actual agent control is not established by the earlier checks.
-- **Sherlock:** existing ControlMaster configuration preserved; single SSH probe refused (1.08 s). Its existing private `sherlockctl` bridge executed `hostname` successfully and found Herdr. This does not establish a working Herdr SSH connection.
-- **FarmShare:** existing alias preserved; single SSH probe refused (4.80 s). Profile saved but unverified. No refusal retries on either host.
+Existing Secure Shell (SSH) aliases already supplied whale jumps for **skampere1/2 and mercury1/2**, plus Sherlock ControlMaster; preserved them. All four initial Herdr setup/status checks passed. A later skampere1 agent-list probe timed out, so agent control remains unverified.
 
-All six profiles are disabled after testing to avoid automatic reconnects; final `herdr machine status --json` reports six disabled profiles. To address one target, enable its profile, run `herdr --machine skampere1 agent list`, then disable it; disabled profiles reject direct commands. Local Herdr server startup and workspace listing passed, then the test server was stopped. One sequencing mistake briefly overlapped mercury2 setup with the Sherlock probe; subsequent host calls were serialized.
+**Sherlock** refused one SSH attempt (1.08 s); its existing private command bridge successfully executed `hostname` and found Herdr. **FarmShare** refused one attempt (4.80 s). Neither refusal was retried; their profiles remain unverified. One sequencing mistake briefly overlapped mercury2 setup and the Sherlock probe; later calls were serialized.
 
-**Evidence:** local step log and receipts: `~/.local/share/pi-local-setup/10-22-2026/`. Prior Pi cluster note: [PR #86](https://github.com/brando90/agents-config/pull/86). Google Doc is viewable by link; this change is for an unmerged pull request.
+Local Herdr startup/listing passed. All six profiles are now disabled; final `herdr machine status --json` confirms this. Enable one selected profile for a one-shot command, then disable it. Human authentication is still needed for the refused SSH routes.
+
+**Artifacts:** [launcher](../scripts/pi_local.py), [profile](pi-local-models.example.json), [installed skill source](../skills/pi-local-herdr/SKILL.md), [unmerged PR #87](https://github.com/brando90/agents-config/pull/87); prior Pi note: [PR #86](https://github.com/brando90/agents-config/pull/86). Step logs and receipts: `~/.local/share/pi-local-setup/10-22-2026/`.
+
+**TLDR-end:** [agents-config: local Pi and Herdr] Local fallback verified; remote profiles saved with authentication and control limits.

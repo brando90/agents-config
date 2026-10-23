@@ -5,7 +5,7 @@ description: Run the free local Pi coding fallback on Brando's Mac, resume a sav
 
 # Local Pi and Herdr
 
-**TLDR:** Use the installed local Pi launchers for bounded coding work and saved-task recovery. Herdr has six saved profiles; four SNAP setup/status checks passed on 10-22-2026, but a later skampere1 agent-list command timed out. Sherlock and FarmShare SSH need human authentication.
+**TLDR:** Use the installed local Pi launchers for bounded coding work and saved-task recovery. Qwen3.5 9B passed the disposable 10-test repair in 41.0 seconds on 10-22-2026; see the dated proof for scope. Herdr has six saved profiles; four SNAP setup/status checks passed on 10-22-2026, but a later skampere1 agent-list command timed out. Sherlock and FarmShare SSH need human authentication.
 
 ## Local coding and recovery
 
