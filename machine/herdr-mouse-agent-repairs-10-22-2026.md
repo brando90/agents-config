@@ -73,6 +73,10 @@ Devin Local visibly showed **Bypass Permissions** on 10-22-2026; this is agent p
 
 Initialization proves adapter startup, not provider entitlement or a successful coding task. Preserve failed attempts; make one evidence-based repair and verify it, then record a remaining blocker rather than retrying indefinitely. All times above are local PDT on 10-22-2026.
 
+## Later Pi command and backend repair
+
+The [cross-host Pi repair](pi-host-parity-10-22-2026.md) supersedes the earlier 27B availability observation above. All five SNAP nodes now use the shared Pi 1.4.0 launcher and the existing Qwen3-Coder 30B service. Sherlock/FarmShare are temporarily disabled while human authentication is pending; their current noninteractive checks stop at host-key verification.
+
 ## Saved order and recovery without repeating setup
 
 Herdr 0.9.5 appends new profiles to its saved `ssh` array; adding skampere3 last placed it last. On 10-22-2026, reordered `~/.local/state/herdr/client/endpoints.json` to **skampere1, skampere2, skampere3, mercury1, mercury2, Sherlock, FarmShare**, with Local preceding the saved machines. Profile IDs, targets, sessions, enabled flags and selection were preserved. The catalog is watched live and loaded again on launch. No server restart or reconnect is needed for this change. Saved ordering and a no-change second run were verified; the iTerm2 sidebar itself was not visually inspected because tool access remains denied.

@@ -31,9 +31,17 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 
 ## Cross-machine control
 
-- Inspect `herdr machine list --json`. Brando explicitly authorized the original six profiles enabled for normal automatic connection on 10-22-2026, superseding the initial manual/no-retry mode. skampere3 was subsequently added and verified reachable; five SNAP nodes have reachable receipts. Sherlock/FarmShare still fail authentication. Avoid adding redundant reconnect loops.
+- Inspect `herdr machine list --json`. Brando explicitly authorized the original six profiles enabled for normal automatic connection on 10-22-2026, superseding the initial manual/no-retry mode. skampere3 was subsequently added and verified reachable; five SNAP nodes have reachable receipts. Sherlock/FarmShare are now temporarily disabled pending human login; the latest noninteractive checks stopped at host-key verification. Avoid adding redundant reconnect loops.
 - SNAP aliases use the existing ProxyJump through whale; Sherlock uses the existing ControlMaster socket. Preserve normal host-key checks. Passwords, keytabs and login prompts remain outside this setup's scope; ask for an actual Duo step when required.
 - Reachability and installed hooks do not prove remote agent control; the earlier skampere1 agent-list probe timed out, but a subsequent explicit-target check succeeded and reported Pi idle.
+
+## Remote Pi parity
+
+- Check actual shells, not only Herdr reachability: `command -v pi; pi --version`. Five SNAP nodes have Pi 1.4.0; use the shared `/dfs/scratch0/brando9/bin/pi` launcher, with each `~/.local/bin/pi` pointing to it. It resolves the existing node-local package and loads the existing Node version manager when needed.
+- An already-open shell does not reread startup files. Immediate recovery: `export PATH="/dfs/scratch0/brando9/bin:$HOME/.local/bin:$PATH"; hash -r; pi --version`. Do not install Ubuntu's unrelated `apt` package named `pi`.
+- `pi --check-local` checks the configured local route without generation. For the existing `snap-coder` loopback profile, the launcher reuses the current service or makes one bounded SSH tunnel attempt to skampere1. It never starts GPU workloads, loads provider keys or rewrites model settings. Explicit other providers remain unchanged. Keep host-key checks and human authentication boundaries.
+- Current fresh-session provider/model: `snap-coder/qwen3-coder-30b`; skampere1 serves port 18201, other SNAP hosts forward loopback port 18127. The earlier 27B endpoint is unavailable. See `machine/pi-host-parity-10-22-2026.md` for proof and historical failures.
+- Same command does not mean the same hardware or local model server. Sherlock/FarmShare require independent authentication and verification. Their pending user-level installer is `scripts/install_pi_remote.sh`; it installs Pi 1.4.0 with npm under the home directory, needs Node >=22.19.0, and preserves shell files with backups. Never infer successful installation from a copied script.
 
 ## Persistent mouse and clipboard
 
