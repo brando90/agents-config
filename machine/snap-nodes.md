@@ -1,8 +1,12 @@
 # SNAP nodes Brando can access, and whether they need Slurm
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/snap-nodes.md>
+**Doc link:** <https://docs.google.com/document/d/1wNmYbPQp-HlfaAonAcyjyPQ4oscSMp638isJQ1yO_8o/edit>
 
-**TLDR:** Brando can run jobs today on five SNAP nodes: `skampere1`, `skampere2`, `skampere3`, `mercury1`, `mercury2`. None of them has a scheduler (no Slurm): start jobs with `nohup` or `tmux`, and check `nvidia-smi` first so you only take idle GPUs. Every other SNAP machine that answers (17 GPU nodes: `turing1-3`, `hyperturing1-2`, `hyperion1`, `hyperion3`, `ampere1-9`, `blackwell1`; and the CPU servers `rambo`, `trinity`, `furiosa`, `madmax2-4,6,7`) refuses login without an active Slurm job, and Brando's account has no Slurm association yet, so they are closed for now. `ilc.stanford.edu` (the Slurm login node) does accept his login, so Slurm is one account approval away. `snap.stanford.edu` is the group's public web server, not a login host: never target it. Server list: <https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers> (did not open from the assistant on 10-22). Last verified Thu 10-22-2026 16:20-17:12 PDT.
+**TLDR:** Five nodes are open to Brando with no Slurm: `skampere1-3` and `mercury1-2` (start jobs with `nohup` or `tmux`, only on idle GPUs). The other 17 GPU nodes and the CPU servers (`rambo`, `trinity`, `furiosa`, `madmax2-4,6,7`) are closed behind a Slurm account he lacks; `ilc.stanford.edu` accepts his login, so Slurm is one approval away. Recommendation: build our own GPU-claiming queue on the five open nodes now, and ask CS IT for the Slurm account when he says so.
+
+Server list: <https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers> (it refused the assistant's connection on 10-22, so the node names come from the overview text Brando pasted).
+
+Last verified: Thu 10-22-2026, 16:20-17:25 PDT.
 
 For environment, filesystems and setup see [`snap.md`](snap.md) and the per-node files ([`skampere1`](skampere1.md), [`skampere2`](skampere2.md), [`mercury1`](mercury1.md), [`mercury2`](mercury2.md)).
 
@@ -16,9 +20,9 @@ Through the gateway: `ssh brando9@whale.stanford.edu`, then `ssh <node>.stanford
 |---|---|---|---|---|---|---|
 | `skampere1` | yes, 10-22 (16:21 and later); 10 s `nohup` test job ran | 8x A100-SXM4-80GB | 128 cores, ~2 TB RAM | `/` 217 GB; `/lfs/skampere1/0` 424 GB (shared, 100% full) | no | Others' jobs share it (alexspan, vmadan, sttruong, eth127, eshaanb, truongvo, animjha, sahasras); ~4 GPUs near idle at 16:21. Brando's rl4cv runs live here. |
 | `skampere2` | yes, 10-22 16:21; test job ran | 8x H200 (144 GB) | 224 cores, ~3 TB RAM | `/` 1.5 TB; `/lfs/skampere2/0` only 44 GB free (100% full) | no | No idle GPU at 16:21 (4 at ~100% util, 3 hold 83-114 GB at 0% util). CPU mostly free (load ~12-15). |
-| `skampere3` | yes, 10-22 16:37; test job ran | 8x B200 | not recorded | `/lfs` 386 GB free | no | New node. No fully idle GPU at 16:37 (4 hold memory at 0% util, 2 at ~95% util). |
-| `mercury1` | yes, 10-22 16:37; test job ran | 10x RTX A4000 (16 GB) | 96 cores, ~487 GB RAM (per [`mercury1.md`](mercury1.md)) | not recorded | no | 2 idle GPUs at 16:37, 8 busy at 100% (owner not yet identified). |
-| `mercury2` | yes, 10-22 16:37; test job ran | 10x RTX A4000 (16 GB) | 96 cores, ~503 GB RAM (per [`mercury2.md`](mercury2.md)) | not recorded | no | All 10 GPUs idle at 16:37. Brando wants these used heavily. |
+| `skampere3` | yes, 10-22 16:37; test job ran | 8x B200 (183 GB each) | 288 cores, ~3 TB RAM | `/` 238 GB free; `/lfs/skampere3/0` 386 GB free (shared, 100% full) | no | New node. No fully idle GPU at 16:37 (4 hold memory at 0% util, 2 at ~95% util). |
+| `mercury1` | yes, 10-22 16:37; test job ran | 10x RTX A4000 (16 GB) | 96 cores, 487 GB RAM | `/` 63 GB free; `/lfs/mercury1/0` 756 GB free (89% full) | no | 2 idle GPUs at 16:37, 8 busy at 100% (owner not yet identified). |
+| `mercury2` | yes, 10-22 16:37; test job ran | 10x RTX A4000 (16 GB) | 96 cores, ~503 GB RAM (from [`mercury2.md`](mercury2.md); not re-read) | not read: SSH to `mercury2` hung at 25 s and 70 s on 10-22 ~17:20 (cause unknown), so no `df` reading | no | All 10 GPUs idle at 16:37. Brando wants these used heavily. |
 
 Rules for all five: only idle GPUs, pinned with `CUDA_VISIBLE_DEVICES`; never touch other users' jobs or files; mind the nearly-full shared `/lfs` disks; nothing paid and nothing in `vals-ai`. The Koyejo group's own servers are `mercury1-2` and `skampere1-2` ([InfoLab list](https://ilwiki.stanford.edu/doku.php?id=koyejo-servers:koyejo)); `skampere3` and the rest are shared SNAP machines.
 
@@ -41,7 +45,7 @@ Rules for all five: only idle GPUs, pinned with `CUDA_VISIBLE_DEVICES`; never to
 
 ## D. Named on the SNAP wiki overview (tested 10-22 17:05-17:12, one try each from `whale`)
 
-Source: the SNAP server list <https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers> (it refused my connection on 10-22, so the names come from the overview text Brando pasted at 16:54, not the page itself). Old boxes: check python and CUDA before launching anywhere that opens.
+Source: the SNAP server list <https://ilwiki.stanford.edu/doku.php?id=snap-servers:snap-servers> (names are from the overview text Brando pasted at 16:54). Old boxes: check python and CUDA before launching anywhere that opens.
 
 | Node | Kind | Result | Needs Slurm? |
 |---|---|---|---|
