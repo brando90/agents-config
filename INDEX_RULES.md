@@ -122,9 +122,9 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
-- [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC 4 inboxes, incl. sender and To; visible CC only if asked; `drafted with <agent>` sign-off; “send” means send.
+- [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
-- [25](rules/research.md#guideline-rule-25): [VeriBench sets](workflows/veribench-set-names.md); VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best.
+- [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best. [sets](workflows/vb-sets.md)
 
 ## Authorized sign-in and verification codes
 

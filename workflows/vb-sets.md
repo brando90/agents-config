@@ -1,6 +1,6 @@
 # VeriBench set names
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/veribench-set-names.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/vb-sets.md>
 
 **TLDR:** Use these names, and only these, for VeriBench task sets in prompts, reports and run labels. "Small" is not a name of any set; say Tiny256 or the full set.
 
