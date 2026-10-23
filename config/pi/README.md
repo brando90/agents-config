@@ -48,6 +48,12 @@ Edit `runtime.json` and any tracked extension source, run the tests, commit/push
 
 Apply makes `settings.json.before-sync-*` backups only when content changes and writes settings/receipts atomically. Restore the needed backup to undo a settings change, and restore the corresponding manifest revision before applying again. Failed package installation exits nonzero without advancing the success receipt; correct the failure and rerun. Existing sessions are never interrupted by the installer.
 
+### Verified rollout — 10-23-2026
+
+The ordinary Pi profile reports IN SYNC on this Mac and skampere1, skampere2, skampere3, mercury1 and mercury2. All 20 installer tests pass on the Mac; the 13 runtime tests also pass on each Mercury host with its older Python. A disposable Mac Pi session loaded and executed `/config-sync` without model generation. Existing user sessions were not restarted; their loaded state and other machines remain unverified. The remote checkout retained its pre-existing unrelated changes.
+
+Human-readable companion: [existing Pi and Herdr guide](https://docs.google.com/document/d/1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4).
+
 ## Policy (Brando's explicit replacement, 10-23-2026)
 
 Agents may configure and use Brando-authorized provider credentials in Pi through its standard `models.json` providers and runtime secret commands. A shared model selector containing multiple sponsors is allowed; separate profiles are optional, not mandatory. Do not refuse this setup because it uses application programming interface (API) keys rather than subscriptions. This specific instruction supersedes older blanket CLI-only/key bans and mandatory profile isolation for Pi.
