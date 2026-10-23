@@ -1,0 +1,105 @@
+# .bashrc
+# todo, read to correct silly mistake: https://unix.stackexchange.com/questions/728040/why-is-my-ln-command-trying-to-create-a-sym-link-with-a-duplicate-name
+
+# - use local machine as home, can't start with cd because like in .bashrc.user since we need to figure out local path in lfs
+export LOCAL_MACHINE_PWD=$(python3 -c "import socket;hostname=socket.gethostname().split('.')[0];print(f'/lfs/{hostname}/0/brando9');")
+mkdir -p $LOCAL_MACHINE_PWD
+export WANDB_DIR=$LOCAL_MACHINE_PWD
+export HOME=$LOCAL_MACHINE_PWD
+
+# - set up afs short cuts
+cd $HOME
+export TEMP=$HOME
+export AFS=/afs/cs.stanford.edu/u/brando9
+export DFS=/dfs/scratch0/brando9/
+alias afs='cd $AFS'
+
+# prompt colours
+BLACK='\e[0;30m'
+RED='\e[0;31m'
+GREEN='\e[0;32m'
+BROWN='\e[0;33m'
+BLUE='\e[0;34m'
+PURPLE='\e[0;35m'
+CYAN='\e[0;36m'
+LIGHT_GREY='\e[0;37m'
+DARK_GREY='\e[1;30m'
+LIGHT_RED='\e[1;31m'
+LIGHT_GREEN='\e[1;32m'
+YELLOW='\e[1;33m'
+LIGHT_BLUE='\e[1;34m'
+LIGHT_PURPLE='\e[1;35m'
+LIGHT_CYAN='\e[1;36m'
+WHITE='\e[1;37m'
+
+BACK_DEFAULT_COLOR='\e[m'
+
+export PS1="\[$LIGHT_GREY\]\u\[$LIGHT_GREEN\]\w\[$LIGHT_GREY\] \$ \[$LIGHT_CYAN\]"
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+if [ -f $HOME/.bashrc ]; then
+        sh $HOME/.bashrc
+fi
+
+# - https://ilwiki.stanford.edu/doku.php?id=hints:gpu
+#module load gcc/9.2.0
+#module load cuda-toolkit/10.2
+#module load cuda-toolkit/11.1
+#source cuda11.1
+#sh cuda11.1
+source cuda11.7
+export PATH=/usr/local/cuda-11.7/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH
+
+# - set up rbenv, ruby-build, & ruby
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+export PATH="$HOME/.ruby-build/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# - conda, todo: move to miniconda & have it be $HOME so local lfs home
+#export PATH=$PATH:$HOME/my_bins
+#export PATH="$HOME/miniconda/bin:$PATH"
+#source ~/miniconda/bin/activate
+#conda activate metalearning_gpu
+
+# using this since dec 9 2022 lfs, full anaconda @ dfs (want to move to lfs since it's faster, dfs is to slow, even just for installing stuff)
+# ln -s file1 link1
+ln -s /dfs/scratch0/brando9/anaconda $HOME/anaconda
+export PATH="$DFS/anaconda/bin:$PATH"
+source $DFS/anaconda/bin/activate
+# conda activate metalearning_gpu
+conda activate iit_synthesis
+
+export WANDB_API_KEY=secret
+export SU_PASSWORD=secret
+
+# opam configuration
+# test -r /dfs/scratch0/brando9/.opam/opam-init/init.sh && . /dfs/scratch0/brando9/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+eval $(opam env)
+#opam init --disable-sandboxing
+#opam update --all
+#eval $(opam env)
+
+#tr ':' '\n' <<< "$PATH"
+
+# - link git repos to local lfs. ref: https://unix.stackexchange.com/questions/728040/why-is-my-ln-command-trying-to-create-a-sym-link-with-a-duplicate-name
+# echo $HOME
+# ln -s file1 link1
+ln -s /afs/cs.stanford.edu/u/brando9/ultimate-utils $HOME/ultimate-utils
+ln -s /afs/cs.stanford.edu/u/brando9/diversity-for-predictive-success-of-meta-learning $HOME/diversity-for-predictive-success-of-meta-learning
+ln -s /afs/cs.stanford.edu/u/brando9/pycoq $HOME/pycoq
+ln -s /afs/cs.stanford.edu/u/brando9/iit-term-synthesis $HOME/iit-term-synthesis
+#ln -s /dfs/scratch0/brando9/data $HOME/data
+ln -s /afs/cs.stanford.edu/u/brando9/proverbot9001 $HOME/proverbot9001
+
+# - mds
+mkdir -p $HOME/data/mds
+export MDS_DATA_PATH=$HOME/data/mds
+mkdir -p $MDS_DATA_PATH/records
+mkdir -p $MDS_DATA_PATH/splits
+export RECORDS=$MDS_DATA_PATH/records
+export SPLITS=$MDS_DATA_PATH/splits

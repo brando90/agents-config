@@ -1,0 +1,3 @@
+# Historical dotfiles are byte-for-byte imports, verified by legacy-manifest.json.
+# Preserve original whitespace instead of rewriting frozen migration evidence.
+dotfiles/legacy/** -whitespace

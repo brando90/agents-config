@@ -1,5 +1,9 @@
 # Koyejo STAIR Lab — Cluster Setup & Resources
 
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/koyejo_stair_cluster_guide.md>
+
+**TLDR:** Reference copy of lab cluster onboarding; migrated shell configuration references now point to `agents-config/dotfiles/legacy/`.
+
 Reference copy of the shared lab onboarding doc for agent visibility.
 
 **Source:** [Google Doc](https://docs.google.com/document/d/1PSTLJdtG3AymDGKPO-bHtzSnDyPmJPpJWXLmnJKzdfU/edit?tab=t.0#heading=h.r4k6tejzm5jy)
@@ -198,8 +202,8 @@ No matter what setup you use, you need to decide:
 
 **Reference configs:**
 - `.bashrc.lfs`: https://gist.github.com/brando90/729370f23345b1c46a063ab3ee540a3d
-- `.bashrc.user`: https://github.com/brando90/.dotfiles/blob/master/.bashrc.user
-- Past `.bashrc.dfs`: https://github.com/brando90/.dotfiles/blob/master/.bashrc.dfs
+- `.bashrc.user`: https://github.com/brando90/agents-config/blob/main/dotfiles/legacy/.bashrc.user
+- Past `.bashrc.dfs`: historical reference only; this file was absent from the migrated `.dotfiles` revision. See the [legacy inventory](https://github.com/brando90/agents-config/blob/main/dotfiles/legacy-manifest.json).
 - Detailed setup repo: https://github.com/brando90/snap-cluster-setup
 
 ### Always Put This at the Top of Your Scripts

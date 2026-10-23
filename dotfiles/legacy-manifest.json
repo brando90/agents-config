@@ -1,0 +1,20 @@
+{
+  "source": "https://github.com/brando90/.dotfiles",
+  "revision": "86f080658c572fcaa09b15fe1930c084332b93cf",
+  "files": {
+    ".bash_profile": "57faecf30f06bce5c0e024c1001d0fab5c3cf797b7f091c05ecd54769a8564fd",
+    ".bashrc": "9998eafa1a98fed229a212531cabae56c57961c876ce061d2690a325fff268c1",
+    ".bashrc.lfs.conda_at_dfs": "6d77a05bf05be00306c19f588e026e778996bd79a861eb222871f258e020d57f",
+    ".bashrc.user": "656724f27ed975154ac15d55fb8bd57fef4934a3bc83c8fc2c4056155fdec2f3",
+    ".bashrc_ccc": "0cc499077658f96728415d0dd20717e453e612d975180f6f1df02fb2fd10db4d",
+    ".emacs": "31f729ff5c6b79daf1740592634c68b2b8f749007c0bdb143bd9454d213a4799",
+    ".tmux.conf": "1a36ab74c9e5eba5f0b8988058a02acb3a4ecfc00ec1186e549fefe5e348e9d1",
+    ".vimrc": "fb7b267d8247ef9a01a9a20edd64bdbe1784c6f8c6eb38145e239c9ca6ed132c",
+    ".zshrc": "c486b07c9a13edbe354a6a7317587ff4bd308c8e15fd8fa4bd2f8f0051105804",
+    "LICENSE.md": "923497df9b0c92de85ced8b5c5049cb0eba7b8f3060df33acba0309f77eaaafa",
+    "README.md": "ed425b812780144c2feedd6af6d87318dbf555881df3bfe2d34a5a88715a89c4",
+    "init.lua": "6a5a1eae3a03daad20023ee7ed13a1051af7cf7bf63fbcb6956281322d00ca5d",
+    "setup_my_mac.sh": "4a45d256460ec99d72001d12cf89839f003882b39e8a82e1b26f8aeee3401ef1",
+    "setup_my_ubuntu.sh": "019775f1cf41a0cb969172649f95ff1613b96f64d85cb082b4512a7680531abd"
+  }
+}

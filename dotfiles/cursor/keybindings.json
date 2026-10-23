@@ -1,0 +1,8 @@
+[
+  {"key": "ctrl+cmd+down", "command": "workbench.action.splitEditorDown"},
+  {"key": "ctrl+cmd+right", "command": "workbench.action.splitEditorRight"},
+  {"key": "ctrl+alt+cmd+left", "command": "workbench.action.focusLeftGroup"},
+  {"key": "ctrl+alt+cmd+down", "command": "workbench.action.focusBelowGroup"},
+  {"key": "ctrl+alt+cmd+up", "command": "workbench.action.focusAboveGroup"},
+  {"key": "ctrl+alt+cmd+right", "command": "workbench.action.focusRightGroup"}
+]

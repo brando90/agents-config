@@ -1,0 +1,4 @@
+# - source the setup you want to have for snap
+#source /afs/cs.stanford.edu/u/brando9/.bashrc.dfs
+#source /afs/cs.stanford.edu/u/brando9/.bashrc.lfs.conda_at_dfs
+source /afs/cs.stanford.edu/u/brando9/.bashrc.lfs

@@ -16,6 +16,10 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 
 [Rule 16](rules/responses.md#trigger-rule-16) keeps substantial research knowledge in both its reproducible Markdown record and the relevant Google Doc or Slides deck. Reuse the destination humans already read, preserve its audience, and verify the update. [Daily research slides](workflows/daily-research-slides.md) keeps Vals and Sanmi updates separate, with 2–3 dated slides per audience per day.
 
+## Dotfiles and shared app shortcuts
+
+This repository is also the canonical home for [dotfiles and shared pane shortcuts](dotfiles/README.md). The former `brando90/.dotfiles` content is preserved under `dotfiles/legacy/`; new shared configuration belongs here, not in the retired repository.
+
 ## Client compatibility
 
 | Client | Instruction discovery and practical guidance |
@@ -54,6 +58,7 @@ Preserve existing profile instructions and add routing to `~/agents-config/INDEX
 - `rules/`: detailed shared policy; preserve established rule identifiers.
 - `machine/`, `workflows/`, `writing/`: focused guides loaded when relevant.
 - `scripts/`, `tests/`: working utilities and deterministic checks.
+- `dotfiles/`: shared app shortcuts, safe installer and preserved legacy dotfiles; keep credentials outside Git.
 - `experiments/`, `reports/`, `reviews/`: project records and historical evidence.
 - `docs/`: human setup reference, architecture audit, and background material.
 

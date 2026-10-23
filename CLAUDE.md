@@ -34,4 +34,6 @@ All clients share this index. **Before acting**, read the Hard Rule details and 
 
 ## Maintain this repository
 
+Dotfiles/shortcuts live here: `~/agents-config/dotfiles/README.md`; `brando90/.dotfiles` is retired. Preserve host settings; exclude secrets.
+
 Keep `AGENTS.md` and `CLAUDE.md` behavior identical, long procedures in linked files, and rule numbers/routes stable. Before publishing, run `python3 scripts/check_instruction_docs.py` and `git diff --check`. Verify global instruction files and reload state on each configured host; a pull does not reload clients. See `~/agents-config/docs/instruction-audit/README.md` for loading and size limits.
