@@ -1,0 +1,27 @@
+{
+  "date": "10-22-2026",
+  "machine": "Apple M1 Max / 64 GiB RAM",
+  "model": "qwen3.5:9b-q4_K_M",
+  "model_manifest_id": "56671c2ab938",
+  "baseline": {
+    "passed": 2,
+    "failed": 8,
+    "total": 10
+  },
+  "verified": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10
+  },
+  "pi_exit_code": 0,
+  "agent_elapsed_seconds": 40.98422208300326,
+  "independent_test_exit_code": 0,
+  "verification_seconds": 0.05851650005206466,
+  "tests_unchanged": true,
+  "single_run": true,
+  "test_sha256": "5d05a33051dcda10e09f7ae00c87c493a11ca464b61f1e9be8e2c3ec1817e979",
+  "source_before": "def chunked(items, size):\n    \"\"\"Return consecutive list chunks, including the tail; reject size <= 0.\"\"\"\n    return [items[i:i + size] for i in range(0, len(items) - size, size)]\n",
+  "source_after": "def chunked(items, size):\n    \"\"\"Return consecutive list chunks, including the tail; reject size <= 0.\"\"\"\n    if size <= 0:\n        raise ValueError(\"size must be > 0\")\n    return [items[i:i + size] for i in range(0, len(items), size)]\n",
+  "test_source": "import unittest\nfrom chunks import chunked\n\nclass ChunkTests(unittest.TestCase):\n    def test_empty(self): self.assertEqual(chunked([], 2), [])\n    def test_exact(self): self.assertEqual(chunked([1, 2, 3, 4], 2), [[1, 2], [3, 4]])\n    def test_tail(self): self.assertEqual(chunked([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]])\n    def test_short(self): self.assertEqual(chunked([1], 3), [[1]])\n    def test_single(self): self.assertEqual(chunked([1], 1), [[1]])\n    def test_ones(self): self.assertEqual(chunked([1, 2, 3], 1), [[1], [2], [3]])\n    def test_zero(self):\n        with self.assertRaises(ValueError): chunked([1], 0)\n    def test_negative(self):\n        with self.assertRaises(ValueError): chunked([1], -1)\n    def test_empty_negative(self):\n        with self.assertRaises(ValueError): chunked([], -2)\n    def test_preserve_input(self):\n        items = [1, 2, 3]\n        self.assertEqual(chunked(items, 2), [[1, 2], [3]])\n        self.assertEqual(items, [1, 2, 3])\n\nif __name__ == '__main__': unittest.main()\n",
+  "scope": "One disposable functional repair, not the MacBook Air benchmark; no speed comparison inferred."
+}

@@ -1,0 +1,11 @@
+{
+  "defaultProvider": "google",
+  "defaultModel": "gemini-3-flash-preview",
+  "defaultThinkingLevel": "minimal",
+  "retry": {
+    "enabled": false,
+    "provider": {
+      "maxRetries": 0
+    }
+  }
+}

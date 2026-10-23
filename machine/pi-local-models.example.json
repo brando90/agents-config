@@ -1,0 +1,36 @@
+{
+  "providers": {
+    "ollama-local": {
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "models": [
+        {
+          "id": "qwen3.5:9b-q4_K_M",
+          "name": "Qwen3.5 9B Q4_K_M (local)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 32768,
+          "maxTokens": 8192,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false,
+            "supportsReasoningEffort": true
+          },
+          "samplingParams": {
+            "temperature": 0.6,
+            "reasoning_effort": "none"
+          }
+        }
+      ]
+    }
+  }
+}
