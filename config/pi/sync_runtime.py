@@ -101,7 +101,8 @@ def package_location(source, agent_dir):
         return 'npm', agent_dir/'npm/node_modules'/npm[1], npm[2]
     git = re.fullmatch(r'git:([\w.-]+)/([\w./-]+)@([a-fA-F0-9]{40})', source)
     if git and '..' not in git[2].split('/'):
-        return 'git', agent_dir/'git'/git[1]/git[2].removesuffix('.git'), git[3].lower()
+        repository = git[2][:-4] if git[2].endswith('.git') else git[2]
+        return 'git', agent_dir/'git'/git[1]/repository, git[3].lower()
     if Path(source).is_absolute():
         return 'local', Path(source), None
     raise ValueError('Packages must use exact npm versions, full git commit hashes, or ${CONFIG_DIR} local paths')
@@ -156,7 +157,7 @@ def fingerprint(manifest, manifest_path):
     digest = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode())
     for relative in manifest.get('trackedFiles', []):
         path = (manifest_path.parent/relative).resolve()
-        if not path.is_relative_to(manifest_path.parent.resolve()) or not path.is_file():
+        if manifest_path.parent.resolve() not in path.parents or not path.is_file():
             raise ValueError('trackedFiles must name existing files under config/pi')
         digest.update(relative.encode())
         digest.update(path.read_bytes())
