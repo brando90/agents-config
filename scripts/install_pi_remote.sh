@@ -25,7 +25,10 @@ import datetime
 from pathlib import Path
 home = Path.home()
 block = '\n# Pi user-level command path\ncase ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac\n'
-for name in ['.bashrc', '.bash_profile']:
+# Preserve Bash's existing login-file precedence; do not create .bash_profile
+# over an existing .profile or .bash_login.
+login = next((n for n in ['.bash_profile', '.bash_login', '.profile'] if (home / n).exists()), '.profile')
+for name in ['.bashrc', login]:
     path = home / name
     original = path.read_text() if path.exists() else ''
     if '# Pi user-level command path' not in original:

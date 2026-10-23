@@ -58,6 +58,20 @@ class PiRemoteTest(unittest.TestCase):
         self.assertEqual(result.returncode, 127)
         self.assertIn("Pi coding agent is missing", result.stderr)
 
+    def test_installer_preserves_login_precedence_and_is_repeatable(self):
+        package = self.cli.parents[2] / "package.json"
+        package.write_text('{"version":"1.4.0"}')
+        profile = self.home / ".profile"
+        profile.write_text('# Existing login configuration\n')
+        installer = self.script.with_name("install_pi_remote.sh")
+        for _ in range(2):
+            result = subprocess.run(["bash", str(installer)], env=self.env,
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse((self.home / ".bash_profile").exists())
+        self.assertTrue(profile.read_text().startswith('# Existing login configuration\n'))
+        self.assertEqual(profile.read_text().count('# Pi user-level command path'), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

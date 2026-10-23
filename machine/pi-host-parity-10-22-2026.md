@@ -30,7 +30,7 @@ Two tunnel implementation errors were repaired: an overlong Unix control-socket 
 | Sherlock | Unverified | SSH host-key verification failed; no retry; runner offline |
 | FarmShare | Unverified | SSH host-key verification failed; no retry |
 
-Five offline launcher tests pass: version/help/catalog checks do not require SSH, explicit other providers and literal arguments survive, and a missing package fails clearly. Syntax and instruction-link checks pass.
+Six offline launcher/installer tests pass: version/help/catalog checks do not require SSH, explicit other providers and literal arguments survive, a missing package fails clearly, and repeated installation preserves the existing login-file precedence. Syntax and instruction-link checks pass.
 
 The first skampere3 repair changed only a disposable Python implementation; independent verification passed 3/3 unchanged tests. Pi did not exit within 90.016 seconds and was stopped. That run proves file editing and test correctness, not successful completion. An isolated follow-up disables unrelated context discovery and Model Context Protocol (MCP) connections for this disposable test only; it exited successfully in 54.733 seconds, and an independent rerun passed 3/3 unchanged tests. Native Pi logs confirmed the actual provider/model `snap-coder/qwen3-coder-30b`, file-tool calls and normal completion. This is one small disposable repair, not a broad coding benchmark.
 
