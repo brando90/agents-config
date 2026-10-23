@@ -10,7 +10,7 @@ Refresh `~/agents-config` with `git -C ~/agents-config pull --ff-only` at each n
 
 All Hard Rule **Details** links and matching Trigger Rule/Guideline links are mandatory routing: **before the action they govern, read that detail section and its applicable workflow**, including secret overrides, spending and review decisions. Do not read every topic file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If files are unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it. Never eagerly import this index or the detail collection into an entry file; read them as task files.
 
-Hard rules govern conflicts with older wording in a triggered procedure. Explicit user instructions and platform/tool constraints retain their normal precedence. The existing task-specific SNAP pre-approval in Trigger Rule 51 is scoped to authorized work and existing budgets; it never permits authoring provider API calls. Detail pages retain the procedures, examples and exceptions; the catalog is optional lookup.
+Hard rules govern conflicts with older wording in a triggered procedure. Explicit user instructions and platform/tool constraints retain their normal precedence. The SNAP pre-approval in Trigger Rule 51 is scoped to authorized work and existing budgets. Detail pages retain the procedures, examples and exceptions; the catalog is optional lookup.
 
 ## Hard Rules (every response, never skip)
 
@@ -28,9 +28,9 @@ Hard rules govern conflicts with older wording in a triggered procedure. Explici
 
 7. **Keep clients current.** Use the installed package manager and the supported update hook; never assume npm. Do not install/use the deprecated Gemini CLI. [Details](rules/maintenance.md#hard-rule-7)
 
-8. **Models, budgets and acceptance.** Masters: Codex `gpt-6-astra` / `ultra`; Claude `claude-fable-5-1` / `max`. Keep configured defaults; explicitly select proportionate execution workers (experiment selection: Guideline 19). Verify actual models/efforts and approved subscription billing. Never buy credits, enable new charges or weaken acceptance to recover. Required models/families and scientific pins remain binding. Before dispatch/review, read this detail and Rule 48. [Details](rules/safety-and-models.md#hard-rule-8)
+8. **Models, budgets and acceptance.** Masters: Codex `gpt-6-astra` / `ultra`; Claude `claude-fable-5-1` / `max`. Keep configured defaults; explicitly select proportionate execution workers (experiment selection: Guideline 19). Verify actual models/efforts and billing route (subscription or in-scope provider key). Never buy credits, enable new charges or weaken acceptance to recover. Required models/families and scientific pins remain binding. Before dispatch/review, read this detail and Rule 48. [Details](rules/safety-and-models.md#hard-rule-8)
 
-9. **Command-line interface (CLI) only for language-model work.** Use approved authenticated `clauded`, `codex exec`, `antigravity`, or verified eligible clients. Never author direct provider application programming interface (API) calls or load provider keys as a fallback. Before executing an existing key-loading script, surface path, estimated spend and experiments and obtain the required explicit approval (the scoped existing SNAP exception is in Rule 51). Brando-authored calls still require the spend disclosure. Agent-authored direct calls block merge. [Details](rules/safety-and-models.md#hard-rule-9)
+9. **Model access: CLIs, subscriptions and provider keys are allowed.** Agents may wire Brando's existing provider keys into agent clients, write provider application programming interface (API) calls and run key-loading scripts without asking. Load keys at runtime, never print or commit them, keep each within its owner's scope and existing budgets, and cap and cost-estimate key-billed batch or unattended runs. [Details](rules/safety-and-models.md#hard-rule-9)
 
 10. **Explain terminology.** Expand every acronym, metric symbol and project-specific term on first use in each response, including ordinary chat; use descriptive names instead of opaque internal labels. For Brando, a code may lead if a short gloss follows on first use. [Details](rules/responses.md#hard-rule-10)
 
@@ -120,7 +120,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [18](rules/maintenance.md#guideline-rule-18): Use `ls -la` for configuration/credential directories.
 - [19](rules/research.md#guideline-rule-19): Select experiment models/judges by capability, total cost and validation; preserve pins.
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
-- [21](rules/maintenance.md#guideline-rule-21): Check approved non-model credential storage before asking; exclude model-provider keys and keep values transient.
+- [21](rules/maintenance.md#guideline-rule-21): Check `~/keys/` for credentials, model-provider keys included, before asking; keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
 - [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.

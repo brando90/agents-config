@@ -204,7 +204,7 @@ The watcher uses `os.link()` not `os.rename()`. `rename()` is *not* reliably ato
 - **Daemon lifecycle logs** on start, stop, crash; email only when explicitly configured for a tracked job.
 - **GPU-idle kill:** default 4 h of ≤1 % GPU util → kill. `--gpu-idle-timeout` seconds (0 = disable), `--gpu-idle-threshold` (default 1.0).
 - **Wall-clock safety net:** default 48 h hard timeout. `--timeout`.
-- **Environment inheritance.** Direct jobs inherit the host environment. Set `CUDA_VISIBLE_DEVICES` for any Python workload and use authenticated agent commands under Hard Rule 9; do not add provider-key exports.
+- **Environment inheritance.** Direct jobs inherit the host environment. Set `CUDA_VISIBLE_DEVICES` for any Python workload and provider keys follow Hard Rule 9: runtime loading, owner scope and a cost cap.
 - **Job types:** `.sh` / `.bash` run with bash; `.py` runs with the current Python.
 - **FIFO ordering** by mtime (oldest first).
 - **Submit-tool deduplication:** `O_CREAT | O_EXCL` prevents concurrent overwrite.

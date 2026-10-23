@@ -69,7 +69,7 @@
 
 ## Guideline Rule 21
 
-21. **Check `~/keys/` for non-LLM credentials.** Before asking the user for non-LLM credentials, always check `~/keys/` first (`ls -la ~/keys/`). Common non-LLM files: `master_hf_token.txt` (HuggingFace), `brandos_wandb_key.txt` (W&B), `.brando90_github_token.txt` (GitHub), `push-pypi-all.txt` (PyPI), `gmail_app_password.txt` (Gmail SMTP). Load them transiently into the authorized tool or environment without printing secret values. **LLM-provider keys (`anthropic_*`, `openai_*`, `gemini_*`, `aristotle_*`) are excluded from this guideline** — per Hard Rule 9, agents may not load or use them; route LLM work through `clauded` / `codex` instead.
+21. **Check `~/keys/` for credentials.** Before asking the user for credentials, always check `~/keys/` first (`ls -la ~/keys/`). Common non-LLM files: `master_hf_token.txt` (HuggingFace), `brandos_wandb_key.txt` (W&B), `.brando90_github_token.txt` (GitHub), `push-pypi-all.txt` (PyPI), `gmail_app_password.txt` (Gmail SMTP). Load them transiently into the authorized tool or environment without printing secret values. Model-provider keys (`anthropic_*`, `openai_*`, `gemini_*`, `aristotle_*`, Mistral and others) are included; use them under Hard Rule 9's secret, owner-scope and budget limits.
 
 ## Guideline Rule 22
 

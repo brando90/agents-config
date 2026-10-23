@@ -63,12 +63,10 @@ Google-model coding-agent work uses `agy` signed into a Google account. Do not i
 
 ### Vibe (Mistral) + Leanstral
 
-Historical Vibe/Leanstral setup used Mistral provider keys and a direct Python client.
-It is not an approved agent workflow under Hard Rule 9 in
-[`~/agents-config/INDEX_RULES.md`](../INDEX_RULES.md). Route new large language model
-(LLM) experiment work through the authenticated `clauded` or `codex exec`
-command-line interfaces (CLIs), using Hard Rule 8's workload tier. Do not restore
-provider-key exports or write direct provider calls from this old setup.
+Vibe/Leanstral uses Mistral provider keys and a direct Python client. Hard Rule 9 in
+[`~/agents-config/INDEX_RULES.md`](../INDEX_RULES.md) allows it: load the key at
+runtime, keep it within its owner's scope and budget, and cap and cost-estimate
+unattended runs.
 
 ### Agent board (which agent is in which tmux window)
 

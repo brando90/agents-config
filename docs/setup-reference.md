@@ -51,13 +51,10 @@ Full design + decision tree: [`experiments/01_self_hosted_openclaw/MASTER_PLAN.m
 
 ### OpenClaw on a new SNAP / Linux node — fast path
 
-> **Historical recipe — not authorized execution.** This retained setup uses an
-> Anthropic provider key and predates the current command-line-only policy.
-> Hard Rule 9 forbids agents from treating these instructions as permission to
-> run direct model-provider calls. Preserve the historical reference; use the
-> maintained client/dispatch workflows for current work. Any user-owned legacy
-> script that loads provider keys requires the rule's explicit spending review
-> and confirmation before execution.
+> **Historical recipe.** This setup uses an Anthropic provider key, which Hard
+> Rule 9 allows: load the key at runtime, keep it within its owner's scope and
+> budget, and cap and cost-estimate unattended runs. Check the commands against
+> the maintained client workflows before reuse.
 
 <details>
 <summary>Earlier OpenClaw Linux procedure (historical only)</summary>
