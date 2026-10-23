@@ -1,4 +1,4 @@
 interface:
-  display_name: "Local Pi and Herdr"
-  short_description: "Local coding fallback and saved machine access"
-  default_prompt: "Use $pi-local-herdr to resume a saved coding task with the local model."
+  display_name: "Pi, Gemini and Herdr"
+  short_description: "VeriBench Gemini, local fallback and Herdr access"
+  default_prompt: "Use $pi-local-herdr to run authorized VeriBench work with Gemini or continue a saved task with the free local fallback."

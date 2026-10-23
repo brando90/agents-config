@@ -1,0 +1,11 @@
+{
+  "providers": {
+    "google": {
+      "modelOverrides": {
+        "gemini-3-flash-preview": {
+          "maxTokens": 8192
+        }
+      }
+    }
+  }
+}

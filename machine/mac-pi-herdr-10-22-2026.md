@@ -1,32 +1,37 @@
-# MacBook Pro: local Pi and Herdr — 10-22-2026
+# MacBook Pro: Pi and Herdr — 10-22-2026
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/codex/mac-pi-herdr-10-22-2026/machine/mac-pi-herdr-10-22-2026.md>
 
 **Google Doc:** <https://docs.google.com/document/d/1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4/edit>
 
-**TLDR:** Free local Pi works: Qwen3.5 9B repaired a disposable Python project in **41.0 seconds**, with **10/10 tests independently passing**. Herdr has six saved profiles; remote access has the limitations below.
+**TLDR:** `pi-gemini` is installed for VeriBench with Allen's existing key; `pi-local` remains the free fallback. Gemini connectivity, local repair and 17 Herdr integrations are verified; remote-control limits remain.
 
 ## Install and use
 
-1. Verified **Apple M1 Max, 64 GiB RAM**. With permission, removed an unused 2023 model-download cache (21,113,714,475 bytes; no open files), recovering about 19.7 GiB from an initial 5.3 GiB free.
-2. Installed Pi **1.4.0** using `npm install -g --prefix ~/.local @earendil-works/pi-coding-agent@1.4.0`; installed official [Ollama 0.40.8](https://github.com/ollama/ollama/releases/tag/v0.40.8) and [Herdr 0.9.5](https://github.com/herdrdev/herdr/releases/tag/v0.9.5) ARM64 releases under `~/.local`, with verified release checksums and no sudo.
-3. Configured Ollama's user LaunchAgent on loopback, cloud disabled, 32,768-token context; installed `qwen3.5:9b-q4_K_M` (6.6 GB). Its local identity file was explicitly approved. No provider keys, paid services, subscriptions or charges were added; passwords, keytabs and login prompts were untouched.
-4. From a repository: `pi-local`. Saved-task handoff: `pi-takeover CHECKPOINT.md -p`. Quota recovery: `pi-resilient CHECKPOINT.md --error-log quota.log -p`. Stop the previous writer first; `--previous-pid PID` checks a known process. Recovery starts a fresh checkpoint-based local session and saves a hash receipt.
+1. Verified **M1 Max / 64 GiB RAM**. Approved removal of an unused 2023 model cache recovered 19.7 GiB from 5.3 GiB free.
+2. Installed **Pi 1.4.0**, **Ollama 0.40.8** and **Herdr 0.9.5** under `~/.local`, without sudo. Pi uses `npm install -g --prefix ~/.local @earendil-works/pi-coding-agent@1.4.0`; official Ollama/Herdr release checksums were verified.
+3. `pi-local` uses Qwen3.5 9B Q4_K_M (6.6 GB), a loopback-only Ollama LaunchAgent, disabled cloud features and 32,768-token context. Ollama's local identity file was approved.
+4. `pi-gemini` loads `~/keys/gemini_allen_key.txt` only at runtime and uses a separate profile. Default: Gemini 3 Flash Preview, minimal thinking, 8,192 output tokens. Use `PI_GEMINI_MODEL=gemini-3.1-pro-preview pi-gemini` to select another Gemini model. Brando authorized VeriBench use; prompts/context go to Google and usage follows the key's project. No key was copied or created; billing settings were not changed.
+5. From a repository, run either launcher. For local handoff: `pi-takeover CHECKPOINT.md -p`; quota recovery: `pi-resilient CHECKPOINT.md --error-log quota.log -p`. Stop the previous writer first. Switching is explicit; these start fresh checkpoint-based sessions.
 
 ## Verification and timings
 
-The repair baseline was **2/10 passing**. Pi fixed tail-chunk handling and nonpositive-size validation in **40.984 s**; an independent rerun passed **10/10** in **0.059 s**, with tests unchanged. Eight launcher checks passed. This is one small functional test, not the Air benchmark or a performance comparison. [Frozen proof and test source](pi-local-proof-10-22-2026.json).
+Local repair: **2/10 → 10/10 passing**, Pi **40.984 s**, independent rerun **0.059 s**, tests unchanged. This single disposable task is not the Air benchmark. [Frozen local proof](pi-local-proof-10-22-2026.json).
 
-Download-to-registration took **48.9 minutes** (30-second polling resolution). Ollama's multipart download repeatedly stalled and rolled back progress; a resumable single-stream official-registry download completed in **4:30**, passed SHA-256 verification, then `ollama pull` finalized it. A 27B download was abandoned before inference. Install durations were not separately measured.
+Gemini's prior live Pi test returned **PONG in 1.58 s**, **53 input / 2 output tokens**; connectivity only. The new wrappers passed **15 deterministic checks**. Both installed launchers emitted session/idle events through the Herdr hook to a local test socket, without generation. [Gemini proof](pi-gemini-proof-10-22-2026.json).
 
-## Remote outcome
+Model download/registration: **48.9 min** (30-second polling resolution). Multipart stalls were recovered with a **4:30** single-stream download, verified by SHA-256. A 27B download was abandoned before inference. Install durations were not separately measured.
 
-Existing Secure Shell (SSH) aliases already supplied whale jumps for **skampere1/2 and mercury1/2**, plus Sherlock ControlMaster; preserved them. All four initial Herdr setup/status checks passed. A later skampere1 agent-list probe timed out, so agent control remains unverified.
+## Herdr and remote outcome
 
-**Sherlock** refused one SSH attempt (1.08 s); its existing private command bridge successfully executed `hostname` and found Herdr. **FarmShare** refused one attempt (4.80 s). Neither refusal was retried; their profiles remain unverified. One sequencing mistake briefly overlapped mercury2 setup and the Sherlock probe; later calls were serialized.
+All **17 requested integrations** now report current, including the initially missing clients. Both Pi launchers load Herdr's Pi hook. Full session restore was not tested. [Integration receipts](herdr-integrations-proof-10-22-2026.json).
 
-Local Herdr startup/listing passed. All six profiles are now disabled; final `herdr machine status --json` confirms this. Enable one selected profile for a one-shot command, then disable it. Human authentication is still needed for the refused SSH routes.
+Existing Secure Shell (SSH) aliases preserve whale jumps for **skampere1/2, mercury1/2** and Sherlock ControlMaster. Four initial Herdr status checks passed; later skampere1 agent-list control timed out. **Sherlock** refused once (**1.08 s**), but its private command bridge worked. **FarmShare** refused once (**4.80 s**). During the initial manual phase, refusals were not retried; one brief mercury2/Sherlock overlap was recorded. A subsequent explicit skampere1 agent-list check succeeded and reported Pi idle; sending work and full remote control through Herdr remain unverified.
 
-**Artifacts:** [launcher](../scripts/pi_local.py), [profile](pi-local-models.example.json), [installed skill source](../skills/pi-local-herdr/SKILL.md), [unmerged PR #87](https://github.com/brando90/agents-config/pull/87); prior Pi note: [PR #86](https://github.com/brando90/agents-config/pull/86). Step logs and receipts: `~/.local/share/pi-local-setup/10-22-2026/`.
+Brando subsequently authorized **all six profiles enabled for automatic connection**, superseding the initial one-at-a-time mode. Added skampere3 on the follow-up request and verified it reachable: **seven saved profiles, five SNAP nodes reachable**; Sherlock and FarmShare still return authentication errors. [Latest machine receipt](herdr-machines-proof-10-22-2026.json). Passwords, keytabs and login prompts were untouched.
 
-**TLDR-end:** [agents-config: local Pi and Herdr] Local fallback verified; remote profiles saved with authentication and control limits.
+Persistent Herdr mouse capture and copy-on-select are enabled; validation passed and the live server accepted reload without diagnostics. iTerm2 profile and live gesture checks remain unverified because computer control denied iTerm2 access. [Mouse/clipboard setup and agent error/fix guide](herdr-mouse-agent-repairs-10-22-2026.md).
+
+**Artifacts:** [launchers](../scripts/pi_gemini.py), [skill](../skills/pi-local-herdr/SKILL.md), [unmerged PR #87](https://github.com/brando90/agents-config/pull/87). Local steps/receipts: `~/.local/share/pi-local-setup/10-22-2026/`.
+
+**TLDR-end:** [VeriBench: Pi and Herdr] Gemini launcher installed; free local fallback preserved; integrations installed and remote limitations documented.

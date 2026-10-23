@@ -42,8 +42,11 @@ def local_command(args):
                'This is a free local-only coding fallback. Use this local model for all '
                'language-model work. Do not invoke paid agents, provider services or '
                'provider keys; do not change passwords, keytabs or login state. '
-               'Preserve task budgets, failed gates, and other owners\' work.', *args]
-    return command, env
+               'Preserve task budgets, failed gates, and other owners\' work.']
+    integration = home / '.pi/agent/extensions/herdr-agent-state.ts'
+    if integration.is_file():
+        command += ['--extension', str(integration)]
+    return command + args, env
 
 
 def main():

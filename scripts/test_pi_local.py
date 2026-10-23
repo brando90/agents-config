@@ -39,6 +39,14 @@ class LauncherTests(unittest.TestCase):
     def test_provider_override_rejected(self):
         with self.assertRaises(ValueError): module.local_command(['--provider=paid'])
 
+    def test_herdr_extension_preserves_local_provider(self):
+        hook = self.home / '.pi/agent/extensions/herdr-agent-state.ts'
+        hook.parent.mkdir(parents=True); hook.write_text('// test fixture\n')
+        cmd, env = module.local_command([])
+        self.assertEqual(cmd[cmd.index('--extension')+1], str(hook))
+        self.assertEqual(cmd[cmd.index('--provider')+1], 'ollama-local')
+        self.assertNotIn('GEMINI_API_KEY', env)
+
     def test_prompt_literal_not_mistaken_for_option(self):
         cmd, _ = module.local_command(['--', '--provider=example'])
         self.assertEqual(cmd[-1], '--provider=example')
