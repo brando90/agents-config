@@ -14,6 +14,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/skampere1.md`](machine/skampere1.md) — SNAP skampere1 node
 - [`machine/skampere2.md`](machine/skampere2.md) — SNAP skampere2 node
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
+- [`machine/snap-nodes.md`](machine/snap-nodes.md) — SNAP nodes Brando can access, per node status and Slurm need
 - [`machine/snap-init.md`](machine/snap-init.md) — first-time setup & verification prompt for a new SNAP node
 - [`machine/sherlock.md`](machine/sherlock.md) — Stanford Sherlock HPC; [reusable agent access](machine/sherlock-agent-access.md)
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
