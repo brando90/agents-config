@@ -42,6 +42,13 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 - Local images: Save to Temp File and Paste Path, optionally remember choice. Remote images: `keys.remote_image_paste = "ctrl+v"` works specifically in supported `herdr --remote` attachments; verify transfer. A Mac temporary path is not accessible on SNAP merely because it was pasted there.
 - Follow `machine/herdr-mouse-agent-repairs-10-22-2026.md` for persistence acceptance checks and observed agent repairs. Do not claim input “always works” from configuration validation alone.
 
+## Reuse before reinstalling
+
+- Before recovery, inspect the existing versions, model store, machine catalog and integration status. Reuse healthy installations and connections; repair only observed drift. Do not create another Google Doc, pull request or duplicate machine profile.
+- Preferred saved machine order: skampere1, skampere2, skampere3, mercury1, mercury2, Sherlock, FarmShare. `~/.local/bin/herdr-order` checks it; `herdr-order --apply` changes only order, backs up the catalog, and preserves all profiles/selection. Local remains first. The command is not a scheduled watcher.
+- Canonical setup branch is `codex/mac-pi-herdr-10-22-2026`, unmerged PR #87 in brando90/agents-config. Until merged, main alone does not contain these files. Reuse Google Doc ID `1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4` in Agent Archive; preserve sharing and update the matching section.
+- Keep configuration and recovery instructions in GitHub, the readable guide in Google Drive, and credentials in each application's protected storage. Existing Codex connections do not automatically authorize Devin. Expired authentication calls for reconnecting that service, not reinstalling every client. No credentials belong in Git or the Google Doc.
+
 ## Reproduction and evidence
 
 Read the dated receipt in `~/agents-config/machine/mac-pi-herdr-10-22-2026.md` once its pull request lands; before then, use the installed copy at `~/.local/share/pi-local-setup/10-22-2026/`. Launcher source is `scripts/pi_local.py` in the same pull request. Local logs are not automatically published.

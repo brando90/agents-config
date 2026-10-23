@@ -73,4 +73,26 @@ Devin Local visibly showed **Bypass Permissions** on 10-22-2026; this is agent p
 
 Initialization proves adapter startup, not provider entitlement or a successful coding task. Preserve failed attempts; make one evidence-based repair and verify it, then record a remaining blocker rather than retrying indefinitely. All times above are local PDT on 10-22-2026.
 
+## Saved order and recovery without repeating setup
+
+Herdr 0.9.5 appends new profiles to its saved `ssh` array; adding skampere3 last placed it last. On 10-22-2026, reordered `~/.local/state/herdr/client/endpoints.json` to **skampere1, skampere2, skampere3, mercury1, mercury2, Sherlock, FarmShare**, with Local preceding the saved machines. Profile IDs, targets, sessions, enabled flags and selection were preserved. The catalog is watched live and loaded again on launch. No server restart or reconnect is needed for this change. Saved ordering and a no-change second run were verified; the iTerm2 sidebar itself was not visually inspected because tool access remains denied.
+
+`herdr-order` checks the order without writing; `herdr-order --apply` restores it with an atomic replacement and dated backup. Installed script: `~/.local/share/pi-local-setup/herdr_machine_order.py`; versioned source: `scripts/herdr_machine_order.py`. It never adds missing profiles, drops unknown profiles, changes their fields or initiates SSH. Unknown profiles stay after the listed group in their existing relative order. This is a repeatable repair command, not a background watcher or a promise that an external edit cannot change the order.
+
+**Recovery contract:** read the installed `pi-local-herdr` skill and this guide first; inspect current state; repair only what differs. Reuse the same repository, document, profile IDs and service connections. Installation, configuration, authentication and a successful model task are separate checks. Record failures and exact working versions so an agent does not start from scratch after a handoff.
+
+| Durable record | Authority and reuse rule | Verification before changing anything |
+|---|---|---|
+| GitHub configuration | `brando90/agents-config`, draft PR #87, branch `codex/mac-pi-herdr-10-22-2026`; main does not yet contain this setup. Continue this PR; do not make a duplicate. | Check PR state/head, inspect the relevant files and diff. Keep it unmerged until authorized. |
+| Google Drive write-up | Agent Archive; reuse native document ID `1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4`. | Read the existing document, update its matching section, read back. Preserve its sharing. |
+| Herdr machines | Existing endpoint catalog plus `~/.ssh/config`; preferred order is encoded in `herdr-order`. | `herdr machine list --json`, then `herdr-order`; avoid re-adding existing profiles. |
+| Herdr integrations/input | `~/.config/herdr/config.toml`, installed official hooks and the saved iTerm2 profile. | `herdr integration status`, `herdr config check`; install only missing/outdated hooks. Test gestures after terminal changes. |
+| Pi launchers and models | Existing `~/.local/bin/pi-*` wrappers, separate local/Gemini profiles and Ollama model store. | Inspect versions, `ollama list`, launcher contract checks; do not redownload a present working model. |
+| Devin adapters | `~/.windsurf/acp/registry.json`, enabled-agent settings and unique executable aliases. | Check executable resolution and latest handshake logs; enabled does not imply authenticated. |
+| Service authentication | Each application's existing authorized connection and protected local credential store. GitHub in Devin is connected; Google/Notion setup has unresolved requirements described above. | Reuse a healthy connection. Reauthenticate only the failed service through its supported flow; never copy tokens between apps or publish them. |
+
+GitHub stores reproducible, non-secret configuration and fixes; Google Drive stores the readable runbook; the actual application and a fresh health check establish whether a connection works now. Tokens can expire, permissions can be revoked, and upgrades can break adapters, so “never touch setup again” cannot be guaranteed. A new computer restores software/configuration from these records, then reuses or authorizes its own credentials as required. Secrets, private keys, browser sessions and authentication tokens are deliberately excluded from repository/Google backups.
+
+Sources: [Herdr 0.9.5 catalog](https://github.com/herdrdev/herdr/blob/v0.9.5/src/client/endpoint/catalog.rs), [live catalog reload](https://github.com/herdrdev/herdr/blob/v0.9.5/src/client/catalog_reload.rs).
+
 **TLDR-end:** [agents-config: Herdr input and agent repair] Persistent Herdr input settings are applied; the iTerm2 profile and live input acceptance check remain pending. Agent failures and concrete recovery results are retained for the next machine.
