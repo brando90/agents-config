@@ -1,6 +1,12 @@
 {
   "version": 1,
   "settings": {
+    "defaultProvider": "koyejolab-openai-bm",
+    "defaultModel": "gpt-6.1-sol",
+    "defaultThinkingLevel": "medium",
+    "modelThinkingLevels": {
+      "koyejolab-openai-bm/gpt-6.1-sol": "medium"
+    },
     "enableSkillCommands": true,
     "packages": ["${CONFIG_DIR}/claude-accounts"],
     "extensions": ["${CONFIG_DIR}/extensions/config-sync.ts"],

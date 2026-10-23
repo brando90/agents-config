@@ -6,6 +6,10 @@
 
 ## Sync settings, extensions and packages
 
+Brando's selected everyday default is **GPT-6.1 Sol, medium thinking, through the Koyejo Lab OpenAI key** (10-23-2026). Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
+
+The credential stays in each machine's private key store; only the named route and preferences are shared. On a machine without that provider, run the full installer with its existing authorized key before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
+
 `runtime.json` is the portable source of truth. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
 
 Run this on each machine after publishing your configuration changes:
@@ -22,7 +26,7 @@ A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime
 
 ### What is managed
 
-- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. Other settings, including existing default model/provider choices, remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
+- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. The shared ordinary-Pi default is `koyejolab-openai-bm/gpt-6.1-sol` with `medium` thinking, including its per-model thinking setting. Other undeclared settings remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
 - **Resource arrays:** `packages`, `extensions`, `skills`, `prompts` and `themes` are authoritative arrays. Apply replaces those lists (with a private timestamped backup), so add experiments you want to keep to the manifest or a host override before applying. Removing a package declaration stops loading it; its cached installation remains on disk.
 - **Shared extension code:** keep it under `config/pi/extensions/`, list its `${CONFIG_DIR}` path in `settings.extensions`, and add the relative filename to `trackedFiles`. Paths expand separately on each machine. The receipt hashes these files, so edits require a new apply even when paths stay the same.
 - **Packages:** use `npm:@scope/name@1.2.3`, `git:github.com/owner/repo@<full-40-character-commit>`, or `${CONFIG_DIR}/your-local-package`. npm ranges and moving Git branches are rejected. Missing or wrong versions are installed using the selected `pi` executable, in an empty working directory, under the selected profile. Git packages with local edits are preserved and reported instead of overwritten. Local package dependencies remain your responsibility, as in Pi itself.
@@ -63,7 +67,7 @@ Name every route `<sponsor>-<service>-<key-nickname>` so `/model` identifies the
 ## Files and standard workflow
 
 - `providers.json`: non-secret route manifest: sponsor, service, key filename, intended scope, optional model allowlist.
-- `install.py`: generates named providers from the installed Pi catalog, preserving model pricing/protocol/context metadata. Merges into the default profile without changing the current model, auth, settings, or unrelated providers. Backs up an existing models file. Checks private key-file permissions without reading secrets.
+- `install.py`: generates named providers from the installed Pi catalog, preserving model pricing/protocol/context metadata. Merges named providers without changing auth or unrelated providers, then applies the shared runtime settings (including startup model defaults). It does not change a running session's model. Backs up an existing models file. Checks private key-file permissions without reading secrets.
 - `test_install.py`: deterministic tests with fake keys and temporary catalogs.
 
 ```bash

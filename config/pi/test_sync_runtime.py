@@ -51,6 +51,37 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(before, {p.name: p.stat().st_mtime_ns for p in self.agent.iterdir()})
         self.assertEqual((self.agent/'auth.json').read_text(), 'do not read or write')
 
+    def test_shared_model_defaults_replace_local_choices_and_preserve_auth(self):
+        shared = sync.read_json(Path(__file__).with_name('runtime.json'))['settings']
+        expected = {
+            'defaultProvider': 'koyejolab-openai-bm',
+            'defaultModel': 'gpt-6.1-sol',
+            'defaultThinkingLevel': 'medium',
+            'modelThinkingLevels': {'koyejolab-openai-bm/gpt-6.1-sol': 'medium'},
+        }
+        for key, value in expected.items():
+            self.assertEqual(shared[key], value)
+        self.spec['settings'].update(expected)
+        self.save()
+        self.agent.mkdir()
+        sync.write_json(self.agent/'settings.json', {
+            'defaultProvider': 'old', 'defaultModel': 'old',
+            'defaultThinkingLevel': 'high', 'theme': 'dark',
+            'modelThinkingLevels': {'koyejolab-openai-bm/gpt-6.1-sol': 'high',
+                                    'other/model': 'low'},
+        })
+        auth = self.agent/'auth.json'
+        auth.write_text('private fixture: unchanged')
+        self.assertEqual(self.run_sync(), 0)
+        actual = sync.read_json(self.agent/'settings.json')
+        for key in ('defaultProvider', 'defaultModel', 'defaultThinkingLevel'):
+            self.assertEqual(actual[key], expected[key])
+        self.assertEqual(actual['modelThinkingLevels'], {
+            'koyejolab-openai-bm/gpt-6.1-sol': 'medium', 'other/model': 'low'})
+        self.assertEqual(actual['theme'], 'dark')
+        self.assertEqual(auth.read_text(), 'private fixture: unchanged')
+        self.assertEqual(self.run_sync(check=True), 0)
+
     def test_setting_drift_and_source_drift(self):
         self.run_sync()
         data = sync.read_json(self.agent/'settings.json')
