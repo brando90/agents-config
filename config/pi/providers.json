@@ -1,0 +1,10 @@
+{
+  "providers": [
+    {"id": "personal-openai-brando", "provider": "openai", "sponsor": "personal", "keyFile": "openai_api_brandos_personal_key.txt", "scope": "Brando-authorized personal work"},
+    {"id": "koyejolab-openai-bm", "provider": "openai", "sponsor": "koyejolab", "keyFile": "openai_bm_key_koyejolab.txt", "scope": "Owner-authorized laboratory work"},
+    {"id": "koyejolab-anthropic-bm", "provider": "anthropic", "sponsor": "koyejolab", "keyFile": "anthropic_bm_key_koyejolab.txt", "scope": "Owner-authorized laboratory work"},
+    {"id": "allen-google-veribench", "provider": "google", "sponsor": "allen", "keyFile": "gemini_allen_key.txt", "scope": "VeriBench only; serial per-model usage", "models": ["gemini-3-flash-preview", "gemini-3.1-pro-preview"]},
+    {"id": "unassigned-mistral-main", "provider": "mistral", "sponsor": "unassigned", "keyFile": "mistral_api_key.txt", "scope": "Brando-authorized work; sponsor not verified"}
+  ],
+  "unsupported": {"aristotle_api_key.txt": "Specialized theorem-prover service, not a native Pi chat-model provider"}
+}
