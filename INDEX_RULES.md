@@ -70,7 +70,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [31](rules/writing.md#trigger-rule-31) | Lab paper blog/roundup → load lab-blog guide; draft in paper repo and obtain coauthor sign-off before publication. |
 | [32](rules/writing.md#trigger-rule-32) | Paper/release X thread → load thread guide; verify lengths, supported numbers and privacy gates. |
 | [33](rules/writing.md#trigger-rule-33) | Paper/release LinkedIn post → load LinkedIn guide; preserve numbers, author/privacy policies and review delivery. |
-| [34](rules/services.md#trigger-rule-34) | Browser/account/form task → finish mechanical work, verify account/files and sign in as authorized; preserve human-only and final-action boundaries. |
+| [34](rules/services.md#trigger-rule-34) | Browser/account/form task → finish forms, verify account/files, sign in; preserve human-only steps; clear message authorization permits Submit. |
 | [35](rules/writing.md#trigger-rule-35) | Semantic paper-source edit → compile and commit fresh PDFs beside active paper sources; verify build and references. |
 | [36](rules/workers.md#trigger-rule-36) | Handoff/reusable/scheduled prompt → use the appropriate summary format; selection advice stays outside, execution facts inside; preserve schedule settings. |
 | [37](rules/research.md#trigger-rule-37) | Long/dispatched run → maintain and publish live canonical results.md from launch; Markdown record + Google findings (Rule 16); dashboards opt-in. |
