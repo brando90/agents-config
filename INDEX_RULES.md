@@ -55,7 +55,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for findings; separate dated daily audience decks; verify. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
 | [18](rules/maintenance.md#trigger-rule-18) | Appendix/results-consistency/polish-only branch → inspect scope and land; substantive claims retain authorization requirements. |
-| [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts or merge branches → keep one canonical project and remove completed temporary copies. |
+| [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts, merge branches or write in `~` → one canonical project; remove temporary copies; no new `~` clutter. |
 | [20](rules/research.md#trigger-rule-20) | Lean proof/type-check task → discover pinned toolchain and actually compile; report observed output. |
 | [21](rules/writing.md#trigger-rule-21) | Paper introduction → load introduction and general research-writing guides. |
 | [22](rules/writing.md#trigger-rule-22) | Paper abstract → load abstract and general guides; preserve structural source comments. |
