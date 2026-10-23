@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "settings": {
+    "enableSkillCommands": true,
+    "packages": [],
+    "extensions": ["${CONFIG_DIR}/extensions/config-sync.ts"],
+    "skills": [],
+    "prompts": [],
+    "themes": []
+  },
+  "externalExtensions": ["herdr-agent-state.ts"],
+  "trackedFiles": ["extensions/config-sync.ts"]
+}

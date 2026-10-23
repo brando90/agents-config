@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install named Pi providers. Reads catalogs and key metadata, never key contents."""
+"""Sync Pi runtime configuration and named providers; --check reports runtime drift."""
 import argparse
 from datetime import datetime
 import json
@@ -8,6 +8,7 @@ from pathlib import Path
 import shlex
 import shutil
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parent
 
@@ -111,8 +112,19 @@ def main():
     parser.add_argument('--agent-dir', type=Path, default=Path.home()/'.pi/agent')
     parser.add_argument('--keys-dir', type=Path, default=Path.home()/'keys')
     parser.add_argument('--catalog-dir', type=Path)
+    parser.add_argument('--check', action='store_true', help='Read-only runtime drift check; exit 1 for differences')
+    parser.add_argument('--runtime-only', action='store_true', help='Sync settings/resources without changing model providers')
+    parser.add_argument('--runtime-manifest', type=Path, default=ROOT/'runtime.json')
+    parser.add_argument('--host-config', type=Path, default=os.environ.get('PI_SYNC_HOST_CONFIG'), help='Optional explicit machine/profile overrides')
     parser.add_argument('--devin-desktop', action='store_true', help='Also configure the existing Devin Desktop pi-acp connector (macOS)')
     args = parser.parse_args()
+    if (args.check or args.runtime_only) and args.devin_desktop:
+        parser.error('--check/--runtime-only cannot be combined with --devin-desktop')
+    from sync_runtime import sync
+    status = sync(args.runtime_manifest, args.agent_dir, check=args.check,
+                  host_config=args.host_config)
+    if args.check or args.runtime_only:
+        return status
     catalog_dir = args.catalog_dir.expanduser() if args.catalog_dir else find_catalog()
     install(json.loads((ROOT/'providers.json').read_text()), catalog_dir,
             args.keys_dir.expanduser(), args.agent_dir.expanduser())
@@ -122,7 +134,12 @@ def main():
             raise ValueError('Pi executable is not on PATH')
         configure_devin(Path.home()/'Library/Application Support/Devin/User/settings.json',
                         Path(pi), args.agent_dir.expanduser().resolve())
+    return status
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        sys.exit(main())
+    except (ValueError, OSError, subprocess.SubprocessError):
+        print('Pi setup failed: invalid configuration, missing dependency, or failed package operation. No secret values displayed.', file=sys.stderr)
+        sys.exit(2)

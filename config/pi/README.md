@@ -1,8 +1,52 @@
-# Pi: named sponsors, providers and credentials
+# Pi: shared configuration and named providers
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/README.md>
 
-**TLDR:** Brando explicitly authorizes named, key-backed Pi providers selectable together through `/model`. Store the setup here, credentials only in `~/keys/`, and install generated configuration into `~/.pi/agent/models.json`.
+**TLDR:** Keep shared Pi settings, extensions and pinned packages in this directory, then apply them on each machine with `install.py --runtime-only`; `install.py --check` or Pi’s `/config-sync` shows drift. The full installer also configures named providers for `/model`, keeping credentials outside Git.
+
+## Sync settings, extensions and packages
+
+`runtime.json` is the portable source of truth. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
+
+Run this on each machine after publishing your configuration changes:
+
+```bash
+git -C ~/agents-config pull --ff-only
+python3 ~/agents-config/config/pi/install.py --runtime-only
+python3 ~/agents-config/config/pi/install.py --check
+# In an existing ordinary Pi session: /reload
+# Then: /config-sync
+```
+
+A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime configuration and named model providers. `--check` is read-only, offline, and checks runtime configuration only: exit **0** means the declared files/settings/package versions match, **1** means differences, and **2** means the check could not complete. It never installs packages or calls a model. It compares against this machine's local checkout; pull first to compare against published changes. No background scheduler or automatic cross-machine push is installed.
+
+### What is managed
+
+- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. Other settings, including existing default model/provider choices, remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
+- **Resource arrays:** `packages`, `extensions`, `skills`, `prompts` and `themes` are authoritative arrays. Apply replaces those lists (with a private timestamped backup), so add experiments you want to keep to the manifest or a host override before applying. Removing a package declaration stops loading it; its cached installation remains on disk.
+- **Shared extension code:** keep it under `config/pi/extensions/`, list its `${CONFIG_DIR}` path in `settings.extensions`, and add the relative filename to `trackedFiles`. Paths expand separately on each machine. The receipt hashes these files, so edits require a new apply even when paths stay the same.
+- **Packages:** use `npm:@scope/name@1.2.3`, `git:github.com/owner/repo@<full-40-character-commit>`, or `${CONFIG_DIR}/your-local-package`. npm ranges and moving Git branches are rejected. Missing or wrong versions are installed using the selected `pi` executable, in an empty working directory, under the selected profile. Git packages with local edits are preserved and reported instead of overwritten. Local package dependencies remain your responsibility, as in Pi itself.
+- **External extensions:** Herdr's `herdr-agent-state.ts` remains owned by Herdr. Its presence is reported when found; it is not copied, version-checked or installed here. Other auto-discovered extension entries are reported as local-only drift until moved into the shared setup or explicitly listed in `externalExtensions`.
+
+The starter manifest adds the read-only `/config-sync` command, enables skill commands, and declares no third-party packages. Checks validate declared resource paths, tracked source content and npm versions/Git commits; they do not prove model access, arbitrary npm file integrity, running-session reload, or project-level `.pi` overrides. Shared instructions still load through the existing agents-config entry points.
+
+### Intentional machine/profile differences
+
+Supply a non-secret override file with `--host-config /path/to/host.json` or set `PI_SYNC_HOST_CONFIG` to that path. It recursively overrides the shared manifest; arrays replace rather than concatenate. Use the same override for apply and check; setting the environment variable also makes `/config-sync` use it. `${HOME}`, `${CONFIG_DIR}` and `${AGENT_DIR}` expand on the destination machine.
+
+For example, a host can retain a different theme while sharing everything else:
+
+```json
+{"settings": {"theme": "dark"}}
+```
+
+`pi-local` and `pi-gemini` use separate agent directories and launch flags that disable automatic extension loading. This installer does not rewrite those wrappers. An explicit `--agent-dir` can synchronize their files, but their launch flags still determine which resources load; use ordinary `pi` for the shared extension set.
+
+### Changing configuration and recovering
+
+Edit `runtime.json` and any tracked extension source, run the tests, commit/push, then pull/apply on each machine. A one-off `pi install` or `pi config` edit is local until promoted to the manifest; `--check` identifies a changed resource list or managed setting. Unmanaged scalar settings are listed as local information, not treated as failures.
+
+Apply makes `settings.json.before-sync-*` backups only when content changes and writes settings/receipts atomically. Restore the needed backup to undo a settings change, and restore the corresponding manifest revision before applying again. Failed package installation exits nonzero without advancing the success receipt; correct the failure and rerun. Existing sessions are never interrupted by the installer.
 
 ## Policy (Brando's explicit replacement, 10-23-2026)
 
