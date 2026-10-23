@@ -54,6 +54,10 @@ Apply makes `settings.json.before-sync-*` backups only when content changes and 
 
 ### Verified rollout — 10-23-2026
 
+**Sol-medium default update:** published to `main` and applied to ordinary Pi on this Mac plus skampere1, skampere2, skampere3, mercury1 and mercury2. All six runtime checks report IN SYNC; all five remote catalogs advertise `koyejolab-openai-bm/gpt-6.1-sol`. The 21 installer/runtime tests and instruction-document checks pass. Remote setup needs `--catalog-dir "$HOME/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data"` because the shared Pi wrapper is not colocated with its catalog. Credentials remained in existing private stores; no inference was used to verify this rollout. Other Macs, Sherlock and FarmShare were not verified in this rollout. Existing sessions were not reloaded or switched. The Claude subscription extension is installed remotely but reports login required there; that is separate from the Koyejo OpenAI-key default.
+
+The earlier extension-only rollout follows:
+
 The ordinary Pi profile reports IN SYNC on this Mac and skampere1, skampere2, skampere3, mercury1 and mercury2. All 20 installer tests pass on the Mac; the 13 runtime tests also pass on each Mercury host with its older Python. A disposable Mac Pi session loaded and executed `/config-sync` without model generation. Existing user sessions were not restarted; their loaded state and other machines remain unverified. The remote checkout retained its pre-existing unrelated changes.
 
 Human-readable companion: [existing Pi and Herdr guide](https://docs.google.com/document/d/1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4).
