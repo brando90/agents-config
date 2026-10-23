@@ -23,7 +23,7 @@ python3 ~/agents-config/config/pi/install.py
 # Ctrl+S saves a default; /scoped-models controls Ctrl+P cycling.
 ```
 
-If npm's current global root differs from the installed Pi package, supply `--catalog-dir /absolute/path/to/pi-ai/dist/providers/data`. On this Mac the installed catalog directory is `/Users/brandomiranda/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data`.
+The installer follows the selected Pi executable to find its catalog before consulting npm's global root. For an unusual wrapper, supply `--catalog-dir /absolute/path/to/pi-ai/dist/providers/data`. On this Mac the installed catalog directory is `/Users/brandomiranda/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data`.
 
 Pi reloads `models.json` on `/model`. Restart or `/reload` if a running selector remains stale. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
 

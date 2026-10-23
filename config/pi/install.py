@@ -72,16 +72,29 @@ def install(manifest, catalog_dir, keys_dir, agent_dir):
     print(f'Installed: {target}; open /model or restart Pi.')
 
 
+def find_catalog():
+    # Follow the selected Pi executable before consulting npm, which may belong
+    # to a different Node installation on this host.
+    executable = shutil.which('pi')
+    if executable:
+        for parent in Path(executable).resolve().parents:
+            candidate = parent/'node_modules/@earendil-works/pi-ai/dist/providers/data'
+            if (candidate/'openai.json').is_file():
+                return candidate
+    npm_root = subprocess.check_output(['npm', 'root', '-g'], text=True).strip()
+    candidate = Path(npm_root)/'@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data'
+    if not (candidate/'openai.json').is_file():
+        raise ValueError('Cannot locate installed Pi catalog; provide --catalog-dir')
+    return candidate
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--agent-dir', type=Path, default=Path.home()/'.pi/agent')
     parser.add_argument('--keys-dir', type=Path, default=Path.home()/'keys')
     parser.add_argument('--catalog-dir', type=Path)
     args = parser.parse_args()
-    catalog_dir = args.catalog_dir
-    if catalog_dir is None:
-        npm_root = subprocess.check_output(['npm', 'root', '-g'], text=True).strip()
-        catalog_dir = Path(npm_root)/'@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data'
+    catalog_dir = args.catalog_dir.expanduser() if args.catalog_dir else find_catalog()
     install(json.loads((ROOT/'providers.json').read_text()), catalog_dir,
             args.keys_dir.expanduser(), args.agent_dir.expanduser())
 

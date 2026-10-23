@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('named_pi_install', Path(__file__).with_name('install.py'))
 setup = importlib.util.module_from_spec(spec)
@@ -49,6 +50,18 @@ class InstallTests(unittest.TestCase):
         self.assertIn('existing', json.loads(first)['providers'])
         self.assertEqual(len(list(self.agent.glob('models.json.before-named-*'))), 2)
         self.assertEqual((self.agent/'models.json').stat().st_mode & 0o777, 0o600)
+
+    def test_catalog_follows_selected_pi(self):
+        package = self.root/'package'
+        cli = package/'dist/bundle/cli.js'
+        cli.parent.mkdir(parents=True)
+        cli.touch()
+        catalog = package/'node_modules/@earendil-works/pi-ai/dist/providers/data'
+        catalog.mkdir(parents=True)
+        (catalog/'openai.json').write_text('{}')
+        with patch.object(setup.shutil, 'which', return_value=str(cli)), patch.object(setup.subprocess, 'check_output') as npm:
+            self.assertEqual(setup.find_catalog(), catalog.resolve())
+            npm.assert_not_called()
 
     def test_missing_key_skipped(self):
         self.key.unlink()
