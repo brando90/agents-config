@@ -1,6 +1,6 @@
 # Pi coding agent on a local open-weight model (SNAP nodes)
 
-**TLDR:** Pi 1.4.0 installs with no sudo (`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent`) and runs well against a vLLM-served Qwen3-Coder-30B-A3B (FP8) on one idle A100. It finished a small real task (tests for `scripts/paper_watch.py`) in 38 s on skampere1 and 92 s on skampere2 through a tunnel, and pytest passed both times. It costs no credits. Quality is that of a solid mid-size model, not a frontier one. mercury1/2 have Pi installed, but no idle GPU to serve from. Tested Thu 10-22-2026.
+**TLDR:** Pi 1.4.0 installs with no sudo (`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent`) and works on skampere1, skampere2, mercury1 and mercury2 against a vLLM-served Qwen3-Coder-30B-A3B (FP8) on one idle A100. One small real task (pytest for `scripts/paper_watch.py`) took 38 s on skampere1, 92 s on skampere2, 176 s on mercury1 and 54 s on mercury2 (the last three through a tunnel to skampere1), and the tests passed on every node. No credits used. skampere3 was not tested. Tested Thu 10-22-2026.
 
 ## What Pi is
 Open-source (MIT) terminal coding agent (`@earendil-works/pi-coding-agent`). Built-in tools: read, bash, edit, write. It asks for no approval before tool calls. Custom endpoints go in `models.json` under `$PI_CODING_AGENT_DIR` (default `~/.pi/agent`). Docs: https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/models.md
@@ -20,14 +20,18 @@ From another node, forward the port first: `ssh -N -L 18200:127.0.0.1:18200 skam
 ## Results (task: write short pytest tests for `paper_dirs` and `snapshot` in `scripts/paper_watch.py`, run them, fix until green, do not edit the source)
 | Node | Pi | Model | Result |
 |---|---|---|---|
-| skampere1 | installed, runs | local, GPU 2 | works: 38 s, 2 tests pass; decode ~94 tok/s peak, KV cache 352k tokens |
-| skampere2 | installed, runs | tunnel to skampere1 | works: 92 s, 2 tests pass (system python has no pytest; Pi found one) |
-| mercury1 | installed (`pi --version` 1.4.0) | none | not run: no idle GPU, and no model reachable without a second hop |
-| mercury2 | installed (1.4.0) | none | not run: all 10 GPUs busy, disk 99% full |
+| skampere1 | 1.4.0 | local, GPU 2 | works: 38 s, 2 tests pass; decode up to ~94 tok/s, KV cache 352k tokens |
+| skampere2 | 1.4.0 | tunnel to skampere1 | works: 92 s, 2 tests pass |
+| mercury1 | 1.4.0 | tunnel to skampere1 | works: 176 s, 2 tests pass (node load average ~115, so slow) |
+| mercury2 | 1.4.0 | tunnel to skampere1 | works: 54 s, 2 tests pass |
+| skampere3 | not installed | none | not tested: outside the stored login, no idle GPU |
 
-Quality: tests were correct and ran green, but generic (few edge cases, no failure paths). Needs a reviewer for anything subtle. No paid agent was run for comparison (no paid API calls were allowed), so "vs paid" is an expectation: a local 30B-A3B coder handles small, well-specified edits and test writing; for multi-file or ambiguous work use a paid model.
+Tunnel from a node: `ssh -N -L 18200:127.0.0.1:18200 skampere1.stanford.edu &`, closed after each run. Times are wall clock for the whole agent run including the model; the model sits on skampere1 either way, so differences come from node load and tunnel latency.
+
+Quality: the tests were correct and ran green on every node (I re-ran pytest myself in a fresh venv), but generic: few edge cases, no failure paths, and one run's tests were looser than the others. A reviewer is needed for anything subtle. "Vs a paid agent" is an expectation, not a measurement (no paid agent was run): a local 30B-A3B coder handles small, well-specified edits and test writing; use a paid model for multi-file or ambiguous work.
 
 ## Gotchas
 - mercury nodes: driver 570 (CUDA 12.8), so the default vLLM wheel (CUDA 13 torch) fails with "driver too old". Use the cu129 build the judge-search env uses (`vllm-0.30.0+cu129`, `--torch-backend=cu129`).
 - mercury A4000 has 16 GB: a 30B model needs 4-bit weights and 2 GPUs. Small coder models (7B to 14B AWQ) fit one GPU.
-- Take only idle GPUs and pin them with `CUDA_VISIBLE_DEVICES`. Stop the server when done (it holds about 65 GB).
+- Take only idle GPUs and pin them with `CUDA_VISIBLE_DEVICES`. Stop the server when done (it holds about 65 GB). The test server on skampere1 GPU 2 and its 38 GB of weights and caches were removed after the tests.
+- System python on mercury1 is 3.8 and breaks pytest; make a venv (`uv venv --python 3.12 vt && uv pip install pytest`).
