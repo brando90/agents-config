@@ -35,3 +35,6 @@ ai-for-lean-site/
 # Claude Code per-cwd runtime state (scheduled_tasks.lock, etc.)
 .claude/
 __pycache__/
+
+# Personal skill content is synchronized privately, never published
+config/pi/private-skills/

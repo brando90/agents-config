@@ -114,6 +114,7 @@ def main():
     parser.add_argument('--catalog-dir', type=Path)
     parser.add_argument('--check', action='store_true', help='Read-only runtime drift check; exit 1 for differences')
     parser.add_argument('--runtime-only', action='store_true', help='Sync settings/resources without changing model providers')
+    parser.add_argument('--adopt-skill-copies', action='store_true', help='Back up existing client skill copies and replace them with canonical links')
     parser.add_argument('--runtime-manifest', type=Path, default=ROOT/'runtime.json')
     parser.add_argument('--host-config', type=Path, default=os.environ.get('PI_SYNC_HOST_CONFIG'), help='Optional explicit machine/profile overrides')
     parser.add_argument('--devin-desktop', action='store_true', help='Also configure the existing Devin Desktop pi-acp connector (macOS)')
@@ -129,7 +130,7 @@ def main():
         subprocess.run([sys.executable, str(ROOT/'claude-accounts/install.py'),
                         '--agent-dir', str(args.agent_dir.expanduser().resolve())], check=True)
     status = sync(args.runtime_manifest, args.agent_dir, check=args.check,
-                  host_config=args.host_config)
+                  host_config=args.host_config, adopt_skills=args.adopt_skill_copies)
     if args.check or args.runtime_only:
         return status
     catalog_dir = args.catalog_dir.expanduser() if args.catalog_dir else find_catalog()

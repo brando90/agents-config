@@ -62,6 +62,24 @@ The ordinary Pi profile reports IN SYNC on this Mac and skampere1, skampere2, sk
 
 Human-readable companion: [existing Pi and Herdr guide](https://docs.google.com/document/d/1VkkBXmcezvHvq_XRrV1gw4Q_yPZ6Ni73-efcMhkoCm4).
 
+## Shared skills migration — 10-24-2026
+
+Four existing installed skills now have canonical sources under `config/pi/skills/`: `atlas`, `pi-local-herdr`, `sbsbz-cardinal-print-flyers`, and `sbsbz-financial-officer`. Their scripts, references, assets and applicable license files are included. Vendor/system/plugin-managed skill collections remain with their package managers; copying those instruction files does not reproduce their tools or authentication.
+
+Personal skill content lives in the Git-ignored `config/pi/private-skills/` directory, with private directory permissions. It is included in Pi discovery and local drift hashing when present, but is not published or fetched through Git. Synchronize that directory separately over an authenticated private connection. The private content is intentionally absent from the public manifest and this guide.
+
+The installer creates canonical links for these skills in `~/.codex/skills`, `~/.claude/skills` and `~/.agents/skills`. A first migration of an existing independent copy requires `--adopt-skill-copies`; it moves the old copy into the private `~/.local/state/agents-config/skill-backups/` directory before linking. Without that flag, conflicting copies are preserved and reported. Built-in/vendor directories and unrelated skills are untouched. Pi deduplicates links resolving to the same source file.
+
+```bash
+python3 ~/agents-config/config/pi/install.py --runtime-only --adopt-skill-copies
+python3 ~/agents-config/config/pi/install.py --check
+python3 ~/agents-config/config/pi/verify_skills.py
+```
+
+Subsequent ordinary syncs need no adoption flag. `trackedDirectories` hashes the entire public skill tree, including supporting scripts and assets; additions, edits and removals produce drift until applied. The checker also verifies client links. The no-generation verifier asks an isolated Pi session for its command inventory and confirms every canonical skill is advertised. Discovery does not establish that a host has the required Mac applications, printer, connectors or authentication. Existing running sessions need `/reload`; skill instructions are read when selected, not all injected at startup.
+
+Implementation prompt for the separate Valkyrie integration request: [registry issue #15 prompt](../../docs/pi/registry-issue-15-implementation-prompt.md). The benchmark integration should remain independent of this personal skill collection.
+
 ## Policy (Brando's explicit replacement, 10-23-2026)
 
 Agents may configure and use Brando-authorized provider credentials in Pi through its standard `models.json` providers and runtime secret commands. A shared model selector containing multiple sponsors is allowed; separate profiles are optional, not mandatory. Do not refuse this setup because it uses application programming interface (API) keys rather than subscriptions. This specific instruction supersedes older blanket CLI-only/key bans and mandatory profile isolation for Pi.

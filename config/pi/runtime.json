@@ -8,12 +8,38 @@
       "koyejolab-openai-bm/gpt-6.1-sol": "medium"
     },
     "enableSkillCommands": true,
-    "packages": ["${CONFIG_DIR}/claude-accounts"],
-    "extensions": ["${CONFIG_DIR}/extensions/config-sync.ts"],
-    "skills": [],
+    "packages": [
+      "${CONFIG_DIR}/claude-accounts"
+    ],
+    "extensions": [
+      "${CONFIG_DIR}/extensions/config-sync.ts"
+    ],
+    "skills": [
+      "${CONFIG_DIR}/skills"
+    ],
     "prompts": [],
     "themes": []
   },
-  "externalExtensions": ["herdr-agent-state.ts"],
-  "trackedFiles": ["extensions/config-sync.ts", "claude-accounts/index.ts", "claude-accounts/accounts.json", "claude-accounts/launch.py", "claude-accounts/install.py", "claude-accounts/patch_dependency.py", "claude-accounts/package.json", "claude-accounts/package-lock.json"]
+  "externalExtensions": [
+    "herdr-agent-state.ts"
+  ],
+  "trackedFiles": [
+    "extensions/config-sync.ts",
+    "claude-accounts/index.ts",
+    "claude-accounts/accounts.json",
+    "claude-accounts/launch.py",
+    "claude-accounts/install.py",
+    "claude-accounts/patch_dependency.py",
+    "claude-accounts/package.json",
+    "claude-accounts/package-lock.json"
+  ],
+  "trackedDirectories": [
+    "skills"
+  ],
+  "privateSkillsDirectory": "${CONFIG_DIR}/private-skills",
+  "skillLinkRoots": [
+    "${HOME}/.codex/skills",
+    "${HOME}/.claude/skills",
+    "${HOME}/.agents/skills"
+  ]
 }

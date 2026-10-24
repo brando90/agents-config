@@ -137,7 +137,7 @@ def load_plan(manifest_path, agent_dir, host_config=None):
     settings = manifest.setdefault('settings', {})
     if not isinstance(settings, dict):
         raise ValueError('settings must be an object')
-    for key in ('trackedFiles', 'externalExtensions'):
+    for key in ('trackedFiles', 'trackedDirectories', 'externalExtensions', 'skillLinkRoots'):
         entries = manifest.get(key, [])
         if not isinstance(entries, list) or not all(isinstance(e, str) for e in entries):
             raise ValueError(f'{key} must be an array of strings')
@@ -149,7 +149,54 @@ def load_plan(manifest_path, agent_dir, host_config=None):
             raise ValueError(f'{key} entries must be strings')
     for entry in settings['packages']:
         package_location(package_source(entry), agent_dir)
+    private = manifest.get('privateSkillsDirectory')
+    if private and Path(private).is_dir():
+        settings['skills'].append(private)
     return manifest
+
+
+def tree_files(root):
+    return sorted(p for p in root.rglob('*') if p.is_file()
+                  and not any(part.startswith('.') or part == '__pycache__' for part in p.relative_to(root).parts)
+                  and p.suffix != '.pyc')
+
+
+def skill_sources(manifest):
+    sources = {}
+    for entry in manifest['settings']['skills']:
+        root = Path(entry).expanduser()
+        if not root.is_absolute() or not root.is_dir():
+            continue
+        for skill in sorted(root.rglob('SKILL.md')):
+            name = skill.parent.name
+            if name in sources and sources[name] != skill.parent.resolve():
+                raise ValueError('Duplicate shared skill name; reconcile sources before installing links')
+            sources[name] = skill.parent.resolve()
+    return sources
+
+
+def sync_skill_links(manifest, check, adopt=False):
+    problems = []
+    sources = skill_sources(manifest)
+    for root in manifest.get('skillLinkRoots', []):
+        for name, source in sources.items():
+            target = Path(root)/name
+            if target.is_symlink() and target.resolve() == source:
+                continue
+            if check:
+                problems.append('skill link differs or missing: ' + str(target))
+                continue
+            if target.exists() or target.is_symlink():
+                if not adopt:
+                    raise ValueError('Existing skill copy differs; use --adopt-skill-copies to back it up and link')
+                backup_root = Path.home()/'.local/state/agents-config/skill-backups'
+                backup_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+                backup_root.chmod(0o700)
+                backup = backup_root/(name + '-' + datetime.now().strftime('%m-%d-%Y-%H%M%S-%f'))
+                shutil.move(str(target), str(backup))
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.symlink_to(source, target_is_directory=True)
+    return problems
 
 
 def fingerprint(manifest, manifest_path):
@@ -161,6 +208,21 @@ def fingerprint(manifest, manifest_path):
             raise ValueError('trackedFiles must name existing files under config/pi')
         digest.update(relative.encode())
         digest.update(path.read_bytes())
+    roots = []
+    for relative in manifest.get('trackedDirectories', []):
+        root = (manifest_path.parent/relative).resolve()
+        if manifest_path.parent.resolve() not in root.parents or not root.is_dir():
+            raise ValueError('trackedDirectories must exist under config/pi')
+        roots.append(root)
+    private = manifest.get('privateSkillsDirectory')
+    if private and Path(private).is_dir():
+        roots.append(Path(private).resolve())
+    for root in roots:
+        for path in tree_files(root):
+            if root not in path.resolve().parents:
+                raise ValueError('Tracked skill files must not link outside their source directory')
+            digest.update(str(path.relative_to(root)).encode())
+            digest.update(path.read_bytes())
     return digest.hexdigest()
 
 
@@ -169,6 +231,7 @@ def inspect(manifest, manifest_path, agent_dir):
     actual = read_json(agent_dir/'settings.json')
     state = read_json(agent_dir/STATE)
     drift, notes = [], []
+    drift.extend(sync_skill_links(manifest, check=True))
     for path, desired in leaves(expected):
         if lookup(actual, path) != desired:
             drift.append('settings.' + '.'.join(path) + ': differs or missing')
@@ -205,13 +268,14 @@ def inspect(manifest, manifest_path, agent_dir):
     return drift, notes
 
 
-def sync(manifest_path, agent_dir, check=False, host_config=None, pi_command='pi'):
+def sync(manifest_path, agent_dir, check=False, host_config=None, pi_command='pi', adopt_skills=False):
     agent_dir = agent_dir.expanduser().resolve()
     manifest_path = manifest_path.expanduser().resolve()
     manifest = load_plan(manifest_path, agent_dir, host_config)
     desired = manifest['settings']
     digest = fingerprint(manifest, manifest_path)  # validate before any mutation
     if not check:
+        sync_skill_links(manifest, check=False, adopt=adopt_skills)
         for entry in desired['packages']:
             if package_problem(package_source(entry), agent_dir) == 'installed checkout has local changes':
                 raise ValueError('Managed Git package has local edits; preserve them before reinstalling')

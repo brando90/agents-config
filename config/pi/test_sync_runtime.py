@@ -184,6 +184,57 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(sync.read_json(backups[0])['extensions'], ['local.ts'])
         self.assertEqual(sync.read_json(settings)['theme'], 'dark')
 
+    def test_shared_skill_links_and_tree_drift(self):
+        skill = self.root/'skills/example'
+        skill.mkdir(parents=True)
+        (skill/'SKILL.md').write_text('---\nname: example\ndescription: Example\n---\n')
+        links = self.root/'client-skills'
+        self.spec['settings']['skills'] = ['${CONFIG_DIR}/skills']
+        self.spec['trackedDirectories'] = ['skills']
+        self.spec['skillLinkRoots'] = [str(links)]
+        self.save()
+        self.assertEqual(self.run_sync(check=True), 1)
+        self.assertFalse(links.exists())
+        self.assertEqual(self.run_sync(), 0)
+        self.assertEqual((links/'example').resolve(), skill)
+        (skill/'helper.py').write_text('print(1)')
+        self.assertEqual(self.run_sync(check=True), 1)
+        self.assertEqual(self.run_sync(), 0)
+        (skill/'helper.py').unlink()
+        self.assertEqual(self.run_sync(check=True), 1)
+
+    def test_local_skill_copy_requires_explicit_adoption(self):
+        skill = self.root/'skills/example'
+        skill.mkdir(parents=True)
+        (skill/'SKILL.md').write_text('canonical')
+        links = self.root/'client-skills'
+        (links/'example').mkdir(parents=True)
+        (links/'example/SKILL.md').write_text('local edits')
+        self.spec['settings']['skills'] = ['${CONFIG_DIR}/skills']
+        self.spec['skillLinkRoots'] = [str(links)]
+        self.save()
+        with self.assertRaises(ValueError):
+            self.run_sync()
+        self.assertEqual((links/'example/SKILL.md').read_text(), 'local edits')
+        with patch.object(sync.Path, 'home', return_value=self.root):
+            self.assertEqual(self.run_sync(adopt_skills=True), 0)
+        backups = list((self.root/'.local/state/agents-config/skill-backups').glob('*/SKILL.md'))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].read_text(), 'local edits')
+
+    def test_optional_private_skill_directory_is_local_and_hashed(self):
+        self.spec['privateSkillsDirectory'] = '${CONFIG_DIR}/private-skills'
+        self.save()
+        self.assertEqual(self.run_sync(), 0)
+        private = self.root/'private-skills/example'
+        private.mkdir(parents=True)
+        (private/'SKILL.md').write_text('private instructions')
+        self.assertEqual(self.run_sync(check=True), 1)
+        self.assertEqual(self.run_sync(), 0)
+        self.assertIn(str(private.parent), sync.read_json(self.agent/'settings.json')['skills'])
+        (private/'SKILL.md').write_text('private changed')
+        self.assertEqual(self.run_sync(check=True), 1)
+
     def test_invalid_tracked_file_does_not_mutate(self):
         self.spec['trackedFiles'] = ['missing.ts']
         self.save()

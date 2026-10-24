@@ -1,0 +1,45 @@
+{
+  "_comment": "Fictional example. Real facts files hold payee contact details and live only in events/<MM-DD-YYYY>-<task>/private/.",
+  "payee": {
+    "name": "Jordan Example",
+    "email": "jordan@example.com",
+    "stanford_affiliation": "none",
+    "w9_on_file": true,
+    "ongoing_instructor": true,
+    "nonstudent_registration_done": true
+  },
+  "invoice": {
+    "number": "SBSBZ-JE-01",
+    "date": "2026-11-05",
+    "billed_to": "Stanford Bachata Sensual & Brazilian Zouk (SBSBZ), VSO account 5089",
+    "payment_instructions": "",
+    "lines": [
+      {
+        "service_date": "2026-11-05",
+        "description": "Guest instructor, weekly Bachata class",
+        "qty": 1,
+        "rate": 150,
+        "amount": 150
+      }
+    ],
+    "total": 150
+  },
+  "agreement": {
+    "rate_per_session": 150,
+    "source": "email quote 10-10-2026, accepted 10-11-2026",
+    "written_agreement": true,
+    "rate_settled": true
+  },
+  "funding": {
+    "status": "approved",
+    "source": "GSC Quick Grant, November classes",
+    "application_id": "GSC-000000",
+    "account": "Honoraria - VSO"
+  },
+  "evidence": {
+    "attendance_list": "sign-up sheet scan, 32 names with emails",
+    "announcement_matches_instructor": true
+  },
+  "paid_out_of_pocket": null,
+  "description": "Guest instructor, SBSBZ weekly Bachata class, 11-05-2026"
+}
