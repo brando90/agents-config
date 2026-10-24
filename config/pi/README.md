@@ -68,6 +68,16 @@ Four existing installed skills now have canonical sources under `config/pi/skill
 
 Personal skill content lives in the Git-ignored `config/pi/private-skills/` directory, with private directory permissions. It is included in Pi discovery and local drift hashing when present, but is not published or fetched through Git. Synchronize that directory separately over an authenticated private connection. The private content is intentionally absent from the public manifest and this guide.
 
+For the current Mac → shared SNAP checkout, after editing private skills on the Mac, copy them with backups over Secure Shell (SSH), then run the installer/check on each node. The five SNAP nodes share this source directory:
+
+```bash
+rsync -a --chmod=D700,F600 --backup --backup-dir="/dfs/scratch0/brando9/.local/state/agents-config/private-skill-backups/$(date +%m-%d-%Y-%H%M%S)" \
+  "$HOME/agents-config/config/pi/private-skills/" \
+  skampere1:/dfs/scratch0/brando9/agents-config/config/pi/private-skills/
+```
+
+The backup directory is on the destination. This copy does not delete remote-only files. Reconcile deletions or conflicting edits deliberately. Git pull and the local drift check cannot establish that a private copy on another machine is current.
+
 The installer creates canonical links for these skills in `~/.codex/skills`, `~/.claude/skills` and `~/.agents/skills`. A first migration of an existing independent copy requires `--adopt-skill-copies`; it moves the old copy into the private `~/.local/state/agents-config/skill-backups/` directory before linking. Without that flag, conflicting copies are preserved and reported. Built-in/vendor directories and unrelated skills are untouched. Pi deduplicates links resolving to the same source file.
 
 ```bash
