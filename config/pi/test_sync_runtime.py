@@ -184,6 +184,13 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(sync.read_json(backups[0])['extensions'], ['local.ts'])
         self.assertEqual(sync.read_json(settings)['theme'], 'dark')
 
+    def test_profile_host_override_is_used_by_default(self):
+        self.agent.mkdir()
+        (self.agent/'agents-config-host.json').write_text('{"settings":{"retry":{"maxRetries":7}}}')
+        self.assertEqual(self.run_sync(), 0)
+        self.assertEqual(sync.read_json(self.agent/'settings.json')['retry']['maxRetries'], 7)
+        self.assertEqual(self.run_sync(check=True), 0)
+
     def test_shared_skill_links_and_tree_drift(self):
         skill = self.root/'skills/example'
         skill.mkdir(parents=True)

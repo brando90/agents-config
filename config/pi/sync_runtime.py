@@ -128,6 +128,8 @@ def load_plan(manifest_path, agent_dir, host_config=None):
     manifest = read_json(manifest_path)
     if manifest.get('version') != 1:
         raise ValueError('Runtime manifest requires version 1')
+    if host_config is None and (agent_dir/'agents-config-host.json').is_file():
+        host_config = agent_dir/'agents-config-host.json'
     if host_config:
         host_config = host_config.expanduser()
         if not host_config.is_file():

@@ -36,7 +36,7 @@ The shared manifest adds the read-only `/config-sync` command, enables skill com
 
 ### Intentional machine/profile differences
 
-Supply a non-secret override file with `--host-config /path/to/host.json` or set `PI_SYNC_HOST_CONFIG` to that path. It recursively overrides the shared manifest; arrays replace rather than concatenate. Use the same override for apply and check; setting the environment variable also makes `/config-sync` use it. `${HOME}`, `${CONFIG_DIR}` and `${AGENT_DIR}` expand on the destination machine.
+Supply a non-secret override file with `--host-config /path/to/host.json` or set `PI_SYNC_HOST_CONFIG` to that path. With neither specified, the installer and checker automatically use `agents-config-host.json` in the selected agent directory when present. It recursively overrides the shared manifest; arrays replace rather than concatenate. Use the same override for apply and check; setting the environment variable also makes `/config-sync` use it. `${HOME}`, `${CONFIG_DIR}` and `${AGENT_DIR}` expand on the destination machine.
 
 For example, a host can retain a different theme while sharing everything else:
 
