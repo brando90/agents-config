@@ -57,11 +57,19 @@ def save(path, value):
 
 
 @contextlib.contextmanager
-def lock(path):
+def lock(path, wait=0):
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     with path.open('a') as stream:
         os.chmod(path, 0o600)
-        fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        deadline = time.monotonic()+wait
+        while True:
+            try:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.05)
         yield
 
 
@@ -149,7 +157,7 @@ def exchange(hub, request):
         raise ValueError('Invalid baseline')
     hub.mkdir(parents=True, exist_ok=True, mode=0o700)
     hub.chmod(0o700)
-    with lock(hub/'lock'):
+    with lock(hub/'lock', wait=20):
         path = hub/'state.json'
         state = runtime.read_json(path)
         remote = state.get('values', {})

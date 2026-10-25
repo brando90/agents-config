@@ -140,7 +140,8 @@ class AutoSyncTests(unittest.TestCase):
         auto.once(self.a);auto.once(self.b)
         self.assertEqual(runtime.read_json(self.hub/'state.json')['revision'],before)
         with auto.lock(self.hub/'lock'):
-            with self.assertRaises(BlockingIOError): auto.once(self.a)
+            with self.assertRaises(BlockingIOError):
+                with auto.lock(self.hub/'lock', wait=0.1): pass
 
     def test_manifest_edit_becomes_shared(self):
         self.setup_pair()
