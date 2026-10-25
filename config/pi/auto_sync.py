@@ -308,7 +308,13 @@ def apply(root, profile, state, before, desired, state_dir):
     with settings_lock(profile):
         current, source = snapshot(root, profile, state)
         if current != before:
-            raise ValueError('Files changed during sync; retrying without overwrite')
+            # Cluster profiles share the resource tree. Another enrolled client
+            # may already have applied exactly this hub revision while we waited.
+            # Accept that convergence, but never overwrite a different new edit.
+            if any(current.get(k) != before.get(k) and current.get(k) != desired.get(k)
+                   for k in set(current) | set(before)):
+                raise ValueError('Files changed during sync; retrying without overwrite')
+            before = current
         changed = sorted(k for k in set(before)|set(desired) if before.get(k) != desired.get(k))
         backup_root = state_dir/'backups'/str(time.time_ns())
         for key in changed:

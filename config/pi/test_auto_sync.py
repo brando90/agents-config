@@ -151,6 +151,18 @@ class AutoSyncTests(unittest.TestCase):
         self.assertEqual(auto.once(self.b),0)
         self.assertEqual(self.value(self.b),'light')
 
+    def test_peer_already_applied_identical_update(self):
+        self.setup_pair()
+        self.edit(self.a,'theme','light');auto.once(self.a)
+        original=auto.transport
+        def peer_write(config,request):
+            result=original(config,request)
+            self.edit(self.b,'theme','light')
+            return result
+        with patch.object(auto,'transport',side_effect=peer_write):
+            self.assertEqual(auto.once(self.b),0)
+        self.assertEqual(self.value(self.b),'light')
+
     def test_malicious_paths_symlinks_and_unknown_settings_rejected(self):
         for key in ('file/skills/../../auth.json','file/skills/.env','setting/apiKey'):
             with self.assertRaises(ValueError): auto.validate({key:None})
