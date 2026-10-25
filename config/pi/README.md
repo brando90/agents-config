@@ -2,17 +2,56 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/README.md>
 
-**TLDR:** Keep shared Pi settings, extensions and pinned packages in this directory, then apply them on each machine with `install.py --runtime-only`; `install.py --check` or Pi’s `/config-sync` shows drift. The full installer also configures named providers for `/model`, keeping credentials outside Git.
+**TLDR:** Automatic sync captures portable ordinary-Pi settings and canonical skill/resource edits through a private hub, checks for conflicting edits, and applies updates in the background. `install.py --check` and Pi’s `/config-sync` report drift; the full installer also configures named providers, keeping credentials outside Git.
 
-## Sync settings, extensions and packages
+## Automatic sync — 10-24-2026
+
+`auto_sync.py` synchronizes the ordinary Pi profile every 60 seconds using native macOS LaunchAgent / Linux user-service processes. The private hub is an owner-only directory on the existing shared cluster filesystem. Cluster clients use that directory directly; the Mac uses its existing authenticated Secure Shell (SSH) route to skampere1. Cluster synchronization can continue while the Mac sleeps; the Mac catches up after waking and reconnecting. Failed connections back off to at most one attempt every 30 minutes. No model calls or Codex scheduled-agent runs are used.
+
+**What happens after an edit:** changes through an existing Codex/Claude skill symlink, or directly under `config/pi/skills` / `private-skills`, are detected and propagated. The same applies to `extensions`, `prompts` and `themes` beneath `config/pi`, portable keys in the ordinary Pi `settings.json`, and changes to `runtime.json`'s portable settings. Package declarations propagate; installed mutable npm references are normalized to their installed version. Missing pinned packages are installed. Authentication, `models.json`, sessions, machine identifiers, shell/proxy paths, vendor skills and dependency caches are excluded. New personal skills belong in the canonical skill directories; unrelated new copies elsewhere are not silently adopted. Arbitrary local package source directories are not copied by this service; distribute their source through Git or a package manager.
+
+**Conflict behavior:** the hub compares each item with that client's last accepted version. Non-overlapping edits merge; two differing edits to the same file or top-level setting stop that client with a `conflict` status. Nothing is silently chosen by timestamp. File deletions propagate and replaced/deleted files have private backups. A settings edit racing with apply is preserved and retried. The service uses Pi's settings lock and a separate per-profile lock. Offline edits remain local until connectivity returns.
+
+**Privacy and Git:** transport and history are private. There is no automatic Git commit, push, stash, reset or pull of the working checkout. This deliberately makes ordinary skill/setting synchronization independent of Git publication, so private text and newly entered values cannot accidentally be published to the public repository. Canonical source edits appear as normal working-tree changes; tested public changes can still be committed normally. Published installer/code changes require the normal software update workflow. Remote settings are stored in the private profile file `agents-config-auto-settings.json`, applied before intentional `agents-config-host.json` overrides. Enrollment removes only redundant host overrides identical to the shared manifest; actual differences stay local.
+
+**Running sessions:** new Pi sessions load synchronized files. Existing sessions still need `/reload` for newly discovered skills/extensions and may retain their selected model/settings. The service never interrupts an active turn. Editing the contents of an already discovered skill changes the canonical file, but discovery is not evidence that its external applications or credentials are available.
+
+Enrollment (once per new machine, ordinary profile):
+
+```bash
+# On the initial source only, add --seed. Other clients enroll from the hub.
+python3 ~/agents-config/config/pi/install_auto_sync.py \
+  --hub /path/to/private/shared/pi-sync-hub \
+  --ssh-host existing-host-alias \
+  --remote-script /path/to/agents-config/config/pi/auto_sync.py
+# On a cluster node with direct access to the hub, omit --ssh-host/--remote-script.
+```
+
+The installer refuses to discard an existing baseline on reinstallation. Linux uses `pi-config-sync.service` and requests user lingering for logout/reboot persistence; verify it on each host. macOS uses `com.brando.pi-config-sync`, starting at user login and restarting after failure. Sleep/network outages cannot provide instantaneous delivery. These services target the enrolled ordinary profile; specialized `pi-local`, `pi-gemini`, project overrides, other laptops and un-enrolled machines remain separate.
+
+Status and recovery:
+
+```bash
+python3 ~/agents-config/config/pi/auto_sync.py status
+python3 ~/agents-config/config/pi/install.py --check
+# Optional immediate sync; normally the background service does this:
+python3 ~/agents-config/config/pi/auto_sync.py once
+# For a reported conflict, choose only after reviewing both versions:
+python3 ~/agents-config/config/pi/auto_sync.py resolve --prefer local
+# Or: resolve --prefer remote
+```
+
+`/config-sync` includes automatic-sync status. Status reports the last checked time, hub revision, change count and errors/conflict paths without file or setting contents; an otherwise successful receipt older than three minutes is reported stale. Local state/backups live in `~/.pi/agent/auto-sync/`; hub history is private too. A conflict resolution only selects the listed conflicting items; unrelated hub changes still merge. Pause/resume with `launchctl bootout/bootstrap` for the installed plist on macOS, or `systemctl --user stop/start pi-config-sync.service` on Linux. Do not restore an old baseline to resolve a conflict; restore the desired source/settings and use the resolution command.
+
+## Manual installer and shared defaults
 
 Brando's selected everyday default is **GPT-6.1 Sol, medium thinking, through the Koyejo Lab OpenAI key** (10-23-2026). Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
 
 The credential stays in each machine's private key store; only the named route and preferences are shared. On a machine without that provider, run the full installer with its existing authorized key before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
 
-`runtime.json` is the portable source of truth. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
+`runtime.json` supplies the portable baseline; enrolled profiles layer privately synchronized preferences over it. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
 
-Run this on each machine after publishing your configuration changes:
+For machines without automatic sync, or for publishing installer/code updates, use:
 
 ```bash
 git -C ~/agents-config pull --ff-only
@@ -22,7 +61,7 @@ python3 ~/agents-config/config/pi/install.py --check
 # Then: /config-sync
 ```
 
-A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime configuration and named model providers. `--check` is read-only, offline, and checks runtime configuration only: exit **0** means the declared files/settings/package versions match, **1** means differences, and **2** means the check could not complete. It never installs packages or calls a model. It compares against this machine's local checkout; pull first to compare against published changes. No background scheduler or automatic cross-machine push is installed.
+A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime configuration and named model providers. `--check` is read-only, offline, and checks runtime configuration only: exit **0** means the declared files/settings/package versions match, **1** means differences, and **2** means the check could not complete. It never installs packages or calls a model. It compares against this machine's local checkout; pull first to compare against published changes. Automatic-sync enrollment and its private propagation layer are described above.
 
 ### What is managed
 
@@ -48,7 +87,7 @@ For example, a host can retain a different theme while sharing everything else:
 
 ### Changing configuration and recovering
 
-Edit `runtime.json` and any tracked extension source, run the tests, commit/push, then pull/apply on each machine. A one-off `pi install` or `pi config` edit is local until promoted to the manifest; `--check` identifies a changed resource list or managed setting. Unmanaged scalar settings are listed as local information, not treated as failures.
+On enrolled machines, edit canonical skills/resources or portable ordinary-Pi settings and let the service synchronize them. Use the manual workflow for code publication or un-enrolled profiles. `--check` identifies runtime drift; unsupported or intentionally host-local settings remain local.
 
 Apply makes `settings.json.before-sync-*` backups only when content changes and writes settings/receipts atomically. Restore the needed backup to undo a settings change, and restore the corresponding manifest revision before applying again. Failed package installation exits nonzero without advancing the success receipt; correct the failure and rerun. Existing sessions are never interrupted by the installer.
 
@@ -66,9 +105,9 @@ Human-readable companion: [existing Pi and Herdr guide](https://docs.google.com/
 
 Four existing installed skills now have canonical sources under `config/pi/skills/`: `atlas`, `pi-local-herdr`, `sbsbz-cardinal-print-flyers`, and `sbsbz-financial-officer`. Their scripts, references, assets and applicable license files are included. Vendor/system/plugin-managed skill collections remain with their package managers; copying those instruction files does not reproduce their tools or authentication.
 
-Personal skill content lives in the Git-ignored `config/pi/private-skills/` directory, with private directory permissions. It is included in Pi discovery and local drift hashing when present, but is not published or fetched through Git. Synchronize that directory separately over an authenticated private connection. The private content is intentionally absent from the public manifest and this guide.
+Personal skill content lives in the Git-ignored `config/pi/private-skills/` directory, with private directory permissions. It is included in Pi discovery and local drift hashing when present, but is not published or fetched through Git. The automatic service synchronizes that directory privately on enrolled machines. Without enrollment, transfer it separately over an authenticated private connection. The private content is intentionally absent from the public manifest and this guide.
 
-For the current Mac → shared SNAP checkout, after editing private skills on the Mac, copy them with backups over Secure Shell (SSH), then run the installer/check on each node. The five SNAP nodes share this source directory:
+For manual recovery on the current Mac → shared SNAP checkout, private skills can be copied with backups over Secure Shell (SSH), then applied/checked on each node. The five SNAP nodes share this source directory:
 
 ```bash
 rsync -a --chmod=D700,F600 --backup --backup-dir="/dfs/scratch0/brando9/.local/state/agents-config/private-skill-backups/$(date +%m-%d-%Y-%H%M%S)" \

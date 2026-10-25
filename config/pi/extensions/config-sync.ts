@@ -1,4 +1,4 @@
-/** Read-only configuration drift check; no model calls or network requests. */
+/** Read-only configuration and background-sync status; no model calls. */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -13,8 +13,10 @@ export default function (pi: ExtensionAPI) {
       const args = [installer, "--runtime-only", "--check", "--agent-dir", profile];
       if (process.env.PI_SYNC_HOST_CONFIG) args.push("--host-config", process.env.PI_SYNC_HOST_CONFIG);
       const result = await pi.exec("python3", args, { timeout: 15000 });
-      ctx.ui.notify(result.stdout || "Configuration check failed; run install.py --check in a terminal.",
-        result.code === 0 ? "info" : "warning");
+      const automatic = resolve(dirname(installer), "auto_sync.py");
+      const status = await pi.exec("python3", [automatic, "status", "--config", resolve(profile, "auto-sync/config.json")], { timeout: 5000 });
+      ctx.ui.notify((result.stdout || "Configuration check failed; run install.py --check in a terminal.") + "\nAutomatic sync: " + (status.stdout || "not configured"),
+        result.code === 0 && status.code === 0 ? "info" : "warning");
     },
   });
 }

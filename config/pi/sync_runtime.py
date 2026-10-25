@@ -128,6 +128,12 @@ def load_plan(manifest_path, agent_dir, host_config=None):
     manifest = read_json(manifest_path)
     if manifest.get('version') != 1:
         raise ValueError('Runtime manifest requires version 1')
+    automatic = agent_dir/'agents-config-auto-settings.json'
+    if automatic.is_file():
+        overlay = read_json(automatic)
+        for key in overlay.get('managedKeys', []):
+            manifest.setdefault('settings', {}).pop(key, None)
+        manifest.setdefault('settings', {}).update(overlay.get('settings', {}))
     if host_config is None and (agent_dir/'agents-config-host.json').is_file():
         host_config = agent_dir/'agents-config-host.json'
     if host_config:
@@ -153,7 +159,8 @@ def load_plan(manifest_path, agent_dir, host_config=None):
         package_location(package_source(entry), agent_dir)
     private = manifest.get('privateSkillsDirectory')
     if private and Path(private).is_dir():
-        settings['skills'].append(private)
+        if private not in settings['skills']:
+            settings['skills'].append(private)
     return manifest
 
 
@@ -181,6 +188,15 @@ def sync_skill_links(manifest, check, adopt=False):
     problems = []
     sources = skill_sources(manifest)
     for root in manifest.get('skillLinkRoots', []):
+        canonical = [Path(p).resolve() for p in manifest['settings']['skills'] if Path(p).is_absolute()]
+        if Path(root).is_dir():
+            for target in Path(root).iterdir():
+                if (target.is_symlink() and any(p in target.resolve().parents for p in canonical)
+                        and not (target/'SKILL.md').is_file()):
+                    if check:
+                        problems.append('retired skill link: ' + str(target))
+                    else:
+                        target.unlink()
         for name, source in sources.items():
             target = Path(root)/name
             if target.is_symlink() and target.resolve() == source:
