@@ -2,6 +2,7 @@ import base64
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -159,6 +160,13 @@ class AutoSyncTests(unittest.TestCase):
         with self.assertRaises(ValueError): auto.once(self.a)
         profile=Path(self.a['profile']);(profile/'settings.json.lock').mkdir()
         with self.assertRaises(FileExistsError): auto.once(self.a,seed=True)
+
+    def test_abandoned_settings_lock_recovers(self):
+        profile=Path(self.a['profile']);directory=profile/'settings.json.lock'
+        directory.mkdir();os.utime(directory,(0,0))
+        with auto.settings_lock(profile):
+            self.assertTrue(directory.exists())
+        self.assertFalse(directory.exists())
 
 
 if __name__=='__main__': unittest.main()

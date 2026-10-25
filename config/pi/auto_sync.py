@@ -69,7 +69,15 @@ def lock(path):
 def settings_lock(profile):
     # Same lock directory and heartbeat convention as Pi's proper-lockfile.
     directory = profile/'settings.json.lock'
-    directory.mkdir(mode=0o700)  # busy/stale locks are retried, never stolen
+    try:
+        directory.mkdir(mode=0o700)
+    except FileExistsError:
+        # Pi refreshes active lock timestamps; recover abandoned empty locks
+        # after a conservative two minutes (e.g. SIGKILL or a reboot).
+        if time.time()-directory.stat().st_mtime <= 120:
+            raise
+        directory.rmdir()
+        directory.mkdir(mode=0o700)
     stop = threading.Event()
     def heartbeat():
         while not stop.wait(2):
@@ -188,7 +196,7 @@ def pin_packages(entries, profile):
     for entry in entries:
         source = runtime.package_source(entry)
         if source.startswith('npm:'):
-            match = re.fullmatch(r'npm:((?:@[^/]+/)?[^@]+)(?:@.*)?', source)
+            match = re.fullmatch(r'npm:((?:@[\w.-]+/)?[\w.-]+)(?:@.*)?', source)
             if not match:
                 raise ValueError('Invalid npm package declaration')
             installed = runtime.read_json(profile/'npm/node_modules'/match[1]/'package.json')
