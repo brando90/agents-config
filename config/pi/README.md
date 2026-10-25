@@ -43,6 +43,8 @@ python3 ~/agents-config/config/pi/auto_sync.py resolve --prefer local
 
 `/config-sync` includes automatic-sync status. Status reports the last checked time, hub revision, change count and errors/conflict paths without file or setting contents; an otherwise successful receipt older than three minutes is reported stale. Local state/backups live in `~/.pi/agent/auto-sync/`; hub history is private too. A conflict resolution only selects the listed conflicting items; unrelated hub changes still merge. Pause/resume with `launchctl bootout/bootstrap` for the installed plist on macOS, or comment/uncomment only the marked `agents-config-pi-auto-sync` crontab line on Linux. Do not restore an old baseline to resolve a conflict; restore the desired source/settings and use the resolution command.
 
+Verified installation and two-way scheduled propagation on all six machines: [10-24-2026 rollout receipt](auto-sync-rollout-10-24-2026.md).
+
 ## Manual installer and shared defaults
 
 Brando's selected everyday default is **GPT-6.1 Sol, medium thinking, through the Koyejo Lab OpenAI key** (10-23-2026). Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
