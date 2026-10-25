@@ -66,23 +66,23 @@ def main():
         subprocess.run(['launchctl','bootstrap',domain,str(target)],check=True)
         subprocess.run(['launchctl','print',domain+'/'+LABEL],check=True,capture_output=True)
     else:
-        target=Path.home()/'.config/systemd/user/pi-config-sync.service'
-        target.parent.mkdir(parents=True,exist_ok=True)
-        # systemd uses its own quoting; JSON strings supply compatible quoting for these paths.
-        quote=lambda s: json.dumps(str(s)).replace('%','%%')
-        text='\n'.join(['[Unit]','Description=Private automatic Pi configuration sync','After=network-online.target',
-             '[Service]','Type=simple','ExecStart='+' '.join(quote(s) for s in command),
-             'Environment='+quote('HOME='+str(Path.home())),
-             'Environment='+quote('PATH='+stable_path),
-             'Restart=always','RestartSec=60','UMask=0077',
-             '[Install]','WantedBy=default.target',''])
-        target.write_text(text)
-        subprocess.run(['systemctl','--user','daemon-reload'],check=True)
-        subprocess.run(['systemctl','--user','enable','--now','pi-config-sync.service'],check=True)
-        subprocess.run(['systemctl','--user','is-active','pi-config-sync.service'],check=True)
-        linger=subprocess.run(['loginctl','enable-linger',str(os.getuid())],capture_output=True)
-        if linger.returncode:
-            print('Linger unavailable: user service persistence after logout must be verified separately.')
+        # SNAP's user manager cannot access its AFS home; its existing per-user
+        # cron works across logout and reboot and does not need lingering.
+        marker='# agents-config-pi-auto-sync'
+        existing=subprocess.run(['crontab','-l'],capture_output=True,text=True)
+        if existing.returncode not in (0,1):
+            raise RuntimeError('Cannot read existing crontab')
+        rows=[row for row in existing.stdout.splitlines() if marker not in row]
+        tick=[sys.executable,str(root/'auto_sync.py'),'once','--config',str(config_path)]
+        shell='HOME='+shlex.quote(str(Path.home()))+' PATH='+shlex.quote(stable_path)+' '+shlex.join(tick)
+        # crontab treats percent specially even inside shell quotes.
+        if '%' in shell or '\n' in shell:
+            raise ValueError('Unsupported cron path')
+        rows.append('* * * * * '+shell+' >/dev/null 2>&1 '+marker)
+        subprocess.run(['crontab','-'],input='\n'.join(rows)+'\n',text=True,check=True)
+        check=subprocess.check_output(['crontab','-l'],text=True)
+        if marker not in check:
+            raise RuntimeError('Cron registration did not persist')
     print('Installed automatic Pi sync: every 60 seconds; offline retry up to 30 minutes; no model requests.')
     print('Status: '+str(folder/'status.json'))
     return 0

@@ -6,7 +6,7 @@
 
 ## Automatic sync — 10-24-2026
 
-`auto_sync.py` synchronizes the ordinary Pi profile every 60 seconds using native macOS LaunchAgent / Linux user-service processes. The private hub is an owner-only directory on the existing shared cluster filesystem. Cluster clients use that directory directly; the Mac uses its existing authenticated Secure Shell (SSH) route to skampere1. Cluster synchronization can continue while the Mac sleeps; the Mac catches up after waking and reconnecting. Failed connections back off to at most one attempt every 30 minutes. No model calls or Codex scheduled-agent runs are used.
+`auto_sync.py` synchronizes the ordinary Pi profile every 60 seconds using native macOS LaunchAgent / Linux per-user cron jobs. The private hub is an owner-only directory on the existing shared cluster filesystem. Cluster clients use that directory directly; the Mac uses its existing authenticated Secure Shell (SSH) route to skampere1. Cluster synchronization can continue while the Mac sleeps; the Mac catches up after waking and reconnecting. Failed connections back off to at most one attempt every 30 minutes. No model calls or Codex scheduled-agent runs are used.
 
 **What happens after an edit:** changes through an existing Codex/Claude skill symlink, or directly under `config/pi/skills` / `private-skills`, are detected and propagated. The same applies to `extensions`, `prompts` and `themes` beneath `config/pi`, portable keys in the ordinary Pi `settings.json`, and changes to `runtime.json`'s portable settings. Package declarations propagate; installed mutable npm references are normalized to their installed version. Missing pinned packages are installed. Authentication, `models.json`, sessions, machine identifiers, shell/proxy paths, vendor skills and dependency caches are excluded. New personal skills belong in the canonical skill directories; unrelated new copies elsewhere are not silently adopted. Arbitrary local package source directories are not copied by this service; distribute their source through Git or a package manager.
 
@@ -27,7 +27,7 @@ python3 ~/agents-config/config/pi/install_auto_sync.py \
 # On a cluster node with direct access to the hub, omit --ssh-host/--remote-script.
 ```
 
-The installer refuses to discard an existing baseline on reinstallation. Linux uses `pi-config-sync.service` and requests user lingering for logout/reboot persistence; verify it on each host. macOS uses `com.brando.pi-config-sync`, starting at user login and restarting after failure. Sleep/network outages cannot provide instantaneous delivery. These services target the enrolled ordinary profile; specialized `pi-local`, `pi-gemini`, project overrides, other laptops and un-enrolled machines remain separate.
+The installer refuses to discard an existing baseline on reinstallation. Linux installs one marked `agents-config-pi-auto-sync` line in the existing per-user crontab, preserving all other jobs; it runs across logout and reboot. macOS uses `com.brando.pi-config-sync`, starting at user login and restarting after failure. Sleep/network outages cannot provide instantaneous delivery. These services target the enrolled ordinary profile; specialized `pi-local`, `pi-gemini`, project overrides, other laptops and un-enrolled machines remain separate.
 
 Status and recovery:
 
@@ -41,7 +41,7 @@ python3 ~/agents-config/config/pi/auto_sync.py resolve --prefer local
 # Or: resolve --prefer remote
 ```
 
-`/config-sync` includes automatic-sync status. Status reports the last checked time, hub revision, change count and errors/conflict paths without file or setting contents; an otherwise successful receipt older than three minutes is reported stale. Local state/backups live in `~/.pi/agent/auto-sync/`; hub history is private too. A conflict resolution only selects the listed conflicting items; unrelated hub changes still merge. Pause/resume with `launchctl bootout/bootstrap` for the installed plist on macOS, or `systemctl --user stop/start pi-config-sync.service` on Linux. Do not restore an old baseline to resolve a conflict; restore the desired source/settings and use the resolution command.
+`/config-sync` includes automatic-sync status. Status reports the last checked time, hub revision, change count and errors/conflict paths without file or setting contents; an otherwise successful receipt older than three minutes is reported stale. Local state/backups live in `~/.pi/agent/auto-sync/`; hub history is private too. A conflict resolution only selects the listed conflicting items; unrelated hub changes still merge. Pause/resume with `launchctl bootout/bootstrap` for the installed plist on macOS, or comment/uncomment only the marked `agents-config-pi-auto-sync` crontab line on Linux. Do not restore an old baseline to resolve a conflict; restore the desired source/settings and use the resolution command.
 
 ## Manual installer and shared defaults
 
