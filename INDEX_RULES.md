@@ -16,7 +16,7 @@ Hard rules govern conflicts with older wording in a triggered procedure. Explici
 
 1. **Protect secrets.** Never commit credentials; inspect the exact staged diff and filenames before committing or pushing. Do not print secret values. Stop on a suspected leak and rotate exposed credentials; references/env vars replace embedded secrets. [Details](rules/safety-and-models.md#hard-rule-1)
 
-2. **Verify before pushing.** Never fabricate unavailable source content; mark it unresolved. Inspect the diff and run the relevant deterministic checks. Report actual evidence and limitations, not an untested success claim. [Details](rules/maintenance.md#hard-rule-2)
+2. **Sync, then verify before pushing.** `git fetch` first; if upstream moved, rebase and re-test; never force-push a shared branch. Never fabricate unavailable source content; mark it unresolved. Inspect the diff and run the relevant deterministic checks. Report actual evidence and limitations, not an untested success claim. [Details](rules/maintenance.md#hard-rule-2)
 
 3. **Quality assurance (QA) is opt-in.** Only a tier Brando explicitly requests or sets for this work in a runbook, `[qa]`/`[light-qa]`/`[mega-qa]` commit tag or environment flag starts a model reviewer. Hooks, project files and older “QA required” text are not opt-in. “Do QA”/“light QA” means one opposite-company round; apply findings and verify without automatic re-review. Mega QA follows Trigger Rule 10. Hooks cannot impose unsolicited QA; do not mention QA when unrequested. Benchmark-reference acceptance (43) remains separate. [Details](rules/safety-and-models.md#hard-rule-3)
 
