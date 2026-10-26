@@ -127,7 +127,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
 - [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC all four inboxes, sender and To included; visible CC only if he asks; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
-- [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best. "Harsh metric", N tasks, ASCII, harness. vb-priv: SYNC.md.
+- [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best. "Harsh metric", N tasks, ASCII, harness. vb-priv: SYNC.md. Any metric ≥~0.98: solved (heuristic).
 
 ## Authorized sign-in and verification codes
 
