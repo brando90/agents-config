@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pi, Gemini and Herdr"
+  short_description: "VeriBench Gemini, local fallback and Herdr access"
+  default_prompt: "Use $pi-local-herdr to run authorized VeriBench work with Gemini or continue a saved task with the free local fallback."

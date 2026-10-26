@@ -19,6 +19,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/agent-clis.md`](machine/agent-clis.md) — shared Cursor Agent / Grok Build / Antigravity CLI install, PATH, and login playbook for both Macs and SNAP (`scripts/install_agent_clis.sh`)
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install; § Agent board — the per-machine dashboard of every Claude/Codex/SNAP agent session and its tmux window, installed via `scripts/agent_board_install.sh`)
+- [`machine/mac-pi-herdr-10-22-2026.md`](machine/mac-pi-herdr-10-22-2026.md) — Mac local Pi/Ollama fallback, Pi-on-SNAP parity, Herdr machine profiles and verification (10-22-2026); [loadable skill](skills/pi-local-herdr/SKILL.md).
 - [`machine/mac-never-sleep-lid.md`](machine/mac-never-sleep-lid.md) — reusable prompt/workflow for configuring a Mac to stay awake when the lid closes; load via `machine/mac.md` when Brando asks for never-sleep lid behavior.
 - [`machine/macos-chrome-zombie-leak.md`](machine/macos-chrome-zombie-leak.md) — Cursor-terminal stall / hot Mac from a wedged Google Chrome zombie leak; diagnose + SIGKILL parent + tripwire. **Loaded by Trigger Rule 59.**
 - [`machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) — reusable shell-automatable trusted-agent setup for Codex, Claude Code, Cursor, ChatGPT, and Manus on macOS

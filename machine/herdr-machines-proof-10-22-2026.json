@@ -1,0 +1,45 @@
+[
+  {
+    "id": "df15e4d13b571e8b90e003aa7bcce955",
+    "label": "skampere1",
+    "status": "reachable",
+    "error": null
+  },
+  {
+    "id": "e862842d5a7c302cf13eaacda6f1d6d0",
+    "label": "skampere2",
+    "status": "reachable",
+    "error": null
+  },
+  {
+    "id": "99e8fa18be5c70c15682bae938005fc2",
+    "label": "mercury1",
+    "status": "reachable",
+    "error": null
+  },
+  {
+    "id": "fef2593d28b1b4b128d006232627a680",
+    "label": "mercury2",
+    "status": "reachable",
+    "error": null
+  },
+  {
+    "id": "c27f312d1fad46959429603e07a92257",
+    "label": "Sherlock",
+    "status": "error",
+    "error": "remote platform detection failed: ** WARNING: connection is not using a post-quantum key exchange algorithm.\r\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\r\n** The server may need to be upgraded. See https://openssh.com/pq.html\r\nbrando9@login.sherlock.stanford.edu: Permission denied (gssapi-with-mic,password)."
+  },
+  {
+    "id": "e3976461afe44d98b37ff24c3ac31aed",
+    "label": "FarmShare",
+    "status": "error",
+    "error": "remote platform detection failed: brando9@login.farmshare.stanford.edu: Permission denied (gssapi-keyex,gssapi-with-mic,password)."
+  },
+  {
+    "id": "12533914ee00ec29a7d85bcd55f6364f",
+    "label": "skampere3",
+    "status": "reachable",
+    "error": null,
+    "scope": "Later explicit-target add/status on 10-22-2026"
+  }
+]

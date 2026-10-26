@@ -1,0 +1,16 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 1.578337165992707,
+  "provider": "google",
+  "model": "gemini-3-flash-preview",
+  "max_output_tokens": 256,
+  "agent_retries": 0,
+  "provider_retries": 0,
+  "date": "10-22-2026",
+  "response": "PONG",
+  "input_tokens": 53,
+  "output_tokens": 2,
+  "total_tokens": 55,
+  "stop_reason": "stop",
+  "scope": "Prior live Pi connectivity test with runtime-loaded key; not a coding evaluation or a measurement of the new launcher."
+}
