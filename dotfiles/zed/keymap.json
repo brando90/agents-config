@@ -1,0 +1,29 @@
+// Cursor-like bindings (base_keymap = Cursor):
+//   cmd-b       -> toggle left dock (file tree), like Cursor
+//   cmd-alt-s   -> toggle Threads Sidebar (agent threads), like Cursor's unified sidebar
+//   cmd-alt-b   -> toggle right dock (agent chat)
+//   cmd-shift-e -> focus file tree (project panel)
+//   cmd-j       -> integrated terminal (Zed default)
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-b": "workspace::ToggleLeftDock",
+      "cmd-alt-s": "multi_workspace::ToggleWorkspaceSidebar",
+      "cmd-shift-e": "project_panel::ToggleFocus",
+      "cmd-alt-b": "workspace::ToggleRightDock"
+    }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-b": "workspace::ToggleLeftDock"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-b": "workspace::ToggleLeftDock"
+    }
+  }
+]

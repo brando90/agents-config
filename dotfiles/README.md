@@ -36,3 +36,7 @@ All 14 files tracked at `.dotfiles` revision `86f080658c572fcaa09b15fe1930c08433
 **Legacy does not mean active:** these older scripts include machine-specific paths and historical package choices. Preserve them as references; do not source or install them wholesale over the current Mac or remote hosts. New maintained configuration belongs under `~/agents-config/dotfiles/` (or an existing app-specific `config/` directory), with an explicit installer and host verification. Secrets stay outside Git.
 
 Only this Mac's Cursor/Ghostty configuration is installed by this task. Remote hosts and other Macs are not implicitly changed, and running agents do not reload their instruction files merely because this repository is updated.
+
+## Zed — 10-26-2026
+
+`dotfiles/zed/` holds `settings.json` (base keymap Cursor, panel docks) and `keymap.json` (Cursor-like: Cmd+B toggles the left dock/file tree, Cmd+Alt+S the Threads sidebar, Cmd+Alt+B the right dock, Cmd+Shift+E focuses the file tree). Not covered by `install_dotfiles.py`; to use on a Mac, copy or symlink both files into `~/.config/zed/` (back up existing ones first). Secrets stay outside Git.
