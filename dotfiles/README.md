@@ -39,6 +39,10 @@ Only this Mac's Cursor/Ghostty configuration is installed by this task. Remote h
 
 ## Zed — 10-26-2026
 
-`dotfiles/zed/` holds `settings.json` (base keymap Cursor, panel docks) and `keymap.json` (Cursor-like: Cmd+B targets the project file tree via `project_panel::Toggle` (shows/focuses it; another press hides it), Cmd+Alt+S the Threads sidebar, Cmd+Alt+B the right dock, Cmd+Shift+E focuses the file tree). Not covered by `install_dotfiles.py`; to use on a Mac, copy or symlink both files into `~/.config/zed/` (back up existing ones first). Secrets stay outside Git.
+`dotfiles/zed/` holds the shared Cursor preset, keyboard bindings and panel layout. Cmd+B toggles the left file sidebar immediately, regardless of whether the editor or tree has focus. Cmd+Shift+E focuses the project tree. Cmd+Alt+B toggles the right agent dock; Cmd+Alt+S toggles Zed's separate Threads sidebar.
 
-Cmd+B deliberately uses the project-panel action rather than `workspace::ToggleLeftDock`, which can expose the agent panel, or `project_panel::ToggleFocus`, which can leave the tree visible. The shared settings place the project panel on the left. Keep existing Vim preferences when installing only these bindings. Verify with an opened folder: Cmd+B shows/focuses its tree, another press hides it, and another shows it again, without toggling the Threads sidebar. An empty workspace has no directory tree to display.
+**Install the bindings and layout together.** Cmd+B uses `workspace::ToggleLeftDock`, with `project_panel.dock` set to `left` and `agent.dock` set to `right`. `agent.threads_sidebar.auto_open` is `false` so opening another project does not automatically expose the extra Threads column. If that column is already visible, hide it once with Cmd+Alt+S; it is separate from the left dock. Keep Vim mode and unrelated host preferences when merging these settings.
+
+These files are not covered by `install_dotfiles.py`. Back up existing `~/.config/zed/` files, copy or merge `keymap.json`, and merge the `base_keymap`, panel dock and Threads sidebar settings from `settings.json`. Do not replace unrelated local preferences merely to install shortcuts. Secrets stay outside Git.
+
+Verify with a real folder and a file open: focus the editor, press Cmd+B once to hide the tree and once to restore it; then repeat while the tree has focus. Every press must change sidebar visibility, with no intermediate focus-only step. `project_panel::Toggle` and `project_panel::ToggleFocus` do not reproduce this behavior. An empty workspace has no directory tree to display.
