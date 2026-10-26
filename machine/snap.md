@@ -248,7 +248,7 @@ be permanently gone. Filesystem state on a gated node can be tested only from in
 | `ampere1`–`ampere9` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `turing1`–`turing3` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `blackwell1` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
-| `trinity`, `furiosa`, `madmax2–6`, `hyperion3` | open | OK | ❌ Ubuntu 16 / Python 3.5 — too old for uutils (f-strings) |
+| `trinity`, `furiosa`, `madmax2–4,6,7`, `hyperion1`, `hyperion3` | **Slurm-gated by 10-22-2026** (`il-cpu` / `il`); were open Ubuntu 16 / Python 3.5 boxes | test in allocation | via `srun`/`sbatch`; see [`snap-nodes.md`](snap-nodes.md) |
 | `madmax1`, `madmax5`, `rambino` | unreachable | — | ❌ |
 
 **Symptoms to recognize:**
@@ -586,3 +586,12 @@ or change running jobs to free a device.
 - **Use `byobu`** for persistent sessions that survive SSH disconnects. Status bar shows hostname.
 - **Prefer `uv`** over conda for new Python environments.
 - **Choose GPUs before new jobs:** [check all five nodes and set a task-specific device selection](#choose-gpus-for-new-work), including `skampere3`; do not blindly inherit an old single-GPU pin.
+- **Which nodes Brando can reach and which need Slurm:** [`snap-nodes.md`](snap-nodes.md) (verified 10-22-2026).
+
+---
+
+## Related Clusters
+
+- [Stanford Sherlock HPC](sherlock.md) — SRCC Slurm cluster (Duo + ControlMaster, `normal`/`bigmem`/`gpu`/`dev` partitions, 90-day `$SCRATCH` purge); agent routes in [sherlock-agent-access.md](sherlock-agent-access.md).
+- [Stanford FarmShare](farmshare.md) — free Slurm cluster for coursework and unsponsored research, 4x L40S per user.
+- Slurm mail on any cluster: [Trigger Rule 82](../rules/hosts.md#trigger-rule-82). A run blocked on one cluster: [Trigger Rule 75](../rules/workers.md#trigger-rule-75).
