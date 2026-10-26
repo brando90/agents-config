@@ -19,6 +19,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/marlowe.md`](machine/marlowe.md) — Stanford Marlowe cluster
 - [`machine/agent-clis.md`](machine/agent-clis.md) — shared Cursor Agent / Grok Build / Antigravity CLI install, PATH, and login playbook for both Macs and SNAP (`scripts/install_agent_clis.sh`)
 - [`machine/mac.md`](machine/mac.md) — local macOS dev machine (incl. Vibe/Leanstral install; § Agent board — the per-machine dashboard of every Claude/Codex/SNAP agent session and its tmux window, installed via `scripts/agent_board_install.sh`)
+- [`machine/mac-pi-herdr-10-22-2026.md`](machine/mac-pi-herdr-10-22-2026.md) — Mac local Pi/Ollama fallback, Pi-on-SNAP parity, Herdr machine profiles and verification (10-22-2026); [loadable skill](skills/pi-local-herdr/SKILL.md).
 - [`machine/mac-never-sleep-lid.md`](machine/mac-never-sleep-lid.md) — reusable prompt/workflow for configuring a Mac to stay awake when the lid closes; load via `machine/mac.md` when Brando asks for never-sleep lid behavior.
 - [`machine/macos-chrome-zombie-leak.md`](machine/macos-chrome-zombie-leak.md) — Cursor-terminal stall / hot Mac from a wedged Google Chrome zombie leak; diagnose + SIGKILL parent + tripwire. **Loaded by Trigger Rule 59.**
 - [`machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) — reusable shell-automatable trusted-agent setup for Codex, Claude Code, Cursor, ChatGPT, and Manus on macOS
@@ -47,6 +48,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/vb-sets.md`](workflows/vb-sets.md) — the only names for VeriBench task sets (VeriBench 896, VB-Core 614, VB-Industry 282, TinyVeriBench-256, Tiny96, VB-Infinity, VB private) with sizes, manifest locations and rules of use; "Small" is not a set. **Linked from Guideline 25.**
 - [`workflows/question-screenshot-ingest.md`](workflows/question-screenshot-ingest.md) — `Q go` screenshot-to-question workflow: save images, transcribe, create `questions/<NN>_<slug>/`, open issue, Mega QA, push `main`
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
+- [`workflows/research-launch-stack.md`](workflows/research-launch-stack.md) — Kesh-style paper launch bundle: project page, tweprint, blog draft, saved links, asset manifest; [loadable skill](skills/research-launch-stack/SKILL.md). Pairs with Trigger Rules 32/33.
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style research lab blog post format; use `writing/blog/` instead for Brando's personal site
 - [`workflows/repo-init.md`](workflows/repo-init.md) — migrating a project to the agents-config pattern
 - [`workflows/research-repo-layout.md`](workflows/research-repo-layout.md) — four-bucket research repo root (`experiments/`, `paper_latex_and_notes/`, `src/`, optional data bucket), the "where does X go?" decision procedure, and the staged migration procedure for reorganizing a repo with live branches (Trigger Rule 49).
