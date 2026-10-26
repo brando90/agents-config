@@ -144,6 +144,18 @@ Next task uses the improved config automatically
 
 ---
 
+## Untracked ideas from the same post (ported 10-26-2026 from branch `claude/ai-coding-agents-productivity-jpGAu`, drafted 04-12-2026)
+
+Items not covered by the phases above. Rule numbers in the original draft were pre-restructure and are dropped; none of these is adopted until Brando decides.
+
+- [ ] **Vocabulary mapping in `README.md`** — a 5-row table: Garry's term (thin harness, fat skills, resolvers, latent vs. deterministic, diarization) → agents-config equivalent (`AGENTS.md`/`CLAUDE.md` entry points, `workflows/` + `writing/` skills, `INDEX_RULES.md` trigger routing, not yet explicit, not yet present).
+- [ ] **Parameterized skill files** — invokable procedures with explicit parameters (Name, Parameters with types/examples, numbered Steps, Output format), e.g. a parameterized `qa-correctness` (`REPO_PATH`, `BRANCH`, `BUILDER_AGENT`); keep `workflows/` for non-parameterized reference docs. Several `writing/ml_research/write-*.md` skills already follow this shape.
+- [ ] **"Codify repeated work" guideline** — first occurrence do it manually; second occurrence propose a skill/workflow file; never let the same multi-step process stay ad hoc. (Relates to Trigger Rule 36 reusable prompts.)
+- [ ] **Latent vs. deterministic guideline** — LLM judgment for synthesis, interpretation, experimental design and review; deterministic tooling (scripts, SQL, compiled code) for parsing, computation and aggregation; split mixed tasks so deterministic steps produce structured data and latent steps interpret it. (Hard Rule 3's "deterministic checks always apply" is the current partial form.)
+- [ ] **Diarization skill** — parameters `SUBJECT`, `SOURCES`, `FOCUS_QUESTION`; output a structured profile (SUMMARY, KEY FINDINGS, CONTRADICTIONS, TIMELINE, GAPS) for codebase onboarding, paper-cluster synthesis or dataset profiling. Compare `workflows/broad-investigation.md` before adding.
+
+---
+
 ## References
 
 - [Garry Tan: Thin Harness, Fat Skills](https://x.com/garrytan/status/2042925773300908103)
