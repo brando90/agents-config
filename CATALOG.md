@@ -39,6 +39,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/qa-correctness.md`](workflows/qa-correctness.md) — QA tiers: deterministic checks (always), reviewer QA and Mega QA (only on request)
 - [`workflows/qa-structural.md`](workflows/qa-structural.md) — structural QA reference: anti-degradation checks and metrics
 - [`workflows/git-worktrees.md`](workflows/git-worktrees.md) — worktree isolation for parallel agents
+- [`workflows/agent-sync.md`](workflows/agent-sync.md) — shared `SYNC.md` state across Codex, Claude Code and ultimate_brando9, conflict check (`scripts/agent_sync.py`) and `[PUSH]` inbox pings (Trigger Rule 71)
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and Markdown-first results reporting; external dashboards only on explicit request
 - [`workflows/statistics-reporting.md`](workflows/statistics-reporting.md) — what statistics to report and why: Hard Rule 11's cheap minimum for every project, the judge-human agreement checklist (free vs costly rows, ICC notation, honest data reuse), paper/experiment consistency, a worked VeriBench example
 - [`workflows/question-screenshot-ingest.md`](workflows/question-screenshot-ingest.md) — `Q go` screenshot-to-question workflow: save images, transcribe, create `questions/<NN>_<slug>/`, open issue, Mega QA, push `main`
