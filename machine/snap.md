@@ -103,6 +103,8 @@ clone. It exits nonzero for actionable failures. Useful modes are `--fix` (conse
 repairs only), `--node <host>`, `--json`, and `--smoke`. Never add `--smoke` to routine dispatch: it
 makes paid/subscription-backed one-line model calls.
 
+For new GPU work, also follow [device selection across all five nodes](#choose-gpus-for-new-work).
+
 ### Canonical command-line tool policy
 
 - `claude`, `codex`, and `node` have one canonical install under the dynamically selected
@@ -246,7 +248,7 @@ be permanently gone. Filesystem state on a gated node can be tested only from in
 | `ampere1`–`ampere9` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `turing1`–`turing3` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
 | `blackwell1` | **Slurm-gated; present** | test in allocation | via `srun`/`sbatch` |
-| `trinity`, `furiosa`, `madmax2–6`, `hyperion3` | open | OK | ❌ Ubuntu 16 / Python 3.5 — too old for uutils (f-strings) |
+| `trinity`, `furiosa`, `madmax2–4,6,7`, `hyperion1`, `hyperion3` | **Slurm-gated by 10-22-2026** (`il-cpu` / `il`); were open Ubuntu 16 / Python 3.5 boxes | test in allocation | via `srun`/`sbatch`; see [`snap-nodes.md`](snap-nodes.md) |
 | `madmax1`, `madmax5`, `rambino` | unreachable | — | ❌ |
 
 **Symptoms to recognize:**
@@ -299,6 +301,42 @@ nproc && free -h
 - **CUDA:** 12.4 (check with `nvcc --version`)
 - **OS:** Ubuntu 24.04 on `skampere1`–`skampere3`; Ubuntu 20.04 on `mercury1`–`mercury2` as audited 2026-09-03. Always verify at runtime.
 - **System Python:** `/usr/bin/python3` (version varies per node — check `python3 --version`)
+
+### Choose GPUs for new work
+
+Before choosing a host for a **new** graphics processing unit (GPU) workload, inspect all five
+direct-access nodes: **`skampere1`, `skampere2`, `skampere3`, `mercury1`, and `mercury2`**.
+Include `skampere3` even if an older task used only the other four. Use fresh read-only observations
+over reused SSH connections; follow [gateway backoff](#do-not-flood-the-gateway-10-15-2026) on failure
+and report an unreachable node as unknown. Respect the task's requested host, hardware and resources.
+
+1. On each reachable node, inspect `nvidia-smi` for device model, memory, utilization and running
+   processes. Map its process identifiers (PIDs) to owners with `ps -p <pid-list> -o pid,ppid,user,etime,comm`.
+   An idle candidate has no GPU workload, negligible baseline memory use and zero sampled utilization;
+   **zero utilization alone does not mean free** when another process holds device memory. Check any
+   existing reservation/allocation and recheck the chosen devices immediately before launch. A snapshot
+   does not reserve a GPU. Slurm-gated nodes still require an allocation; stay within its assigned devices.
+2. Inspect the new launcher's inherited `CUDA_VISIBLE_DEVICES` (NVIDIA CUDA's device-visibility setting).
+   A single-device value may belong to an older task; it is not a fresh placement decision or proof of
+   GPU use. For an existing own process, read only the relevant visibility variables, never its entire
+   environment. Do not overwrite an explicit task pin or scheduler/container assignment based on apparent
+   idleness. [NVIDIA's visibility reference](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/environment-variables.html#cuda-visible-devices).
+3. Choose compatible idle devices for the new task's authorized device count and memory needs. Set
+   `CUDA_VISIBLE_DEVICES` explicitly **for that new command only**, using verified GPU UUIDs (unique device
+   identifiers) or correctly mapped indices. Do not blindly inherit a stale single-device pin, unset the
+   variable globally, or claim every idle GPU. Requesting multiple devices also requires application support
+   for using them; changing visibility alone does not distribute the work.
+4. Record the chosen node, device identifiers, observation time and selection reason. Leave running jobs,
+   their masks, shared shell configuration and other users' processes unchanged.
+
+Read-only inspection on each node:
+
+```bash
+printf 'Inherited CUDA_VISIBLE_DEVICES=%s\n' "${CUDA_VISIBLE_DEVICES-<unset>}"
+nvidia-smi --query-gpu=index,uuid,name,memory.total,memory.used,utilization.gpu --format=csv,noheader
+nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory --format=csv,noheader
+nvidia-smi
+```
 
 ---
 
@@ -536,7 +574,9 @@ For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench
 
 ### GPU contention
 **Symptom:** OOM or slow training despite "free" GPUs.
-**Fix:** `nvidia-smi` — check for zombie processes from other users. Use `CUDA_VISIBLE_DEVICES` to pin to free GPUs.
+**Fix for new work:** follow [GPU selection across all five nodes](#choose-gpus-for-new-work), checking
+process ownership as well as memory and utilization. Do not assume another user's quiet process is a zombie
+or change running jobs to free a device.
 
 ---
 
@@ -545,4 +585,13 @@ For **first-time-ever cluster setup** (fresh user, no DFS yet), see `~/veribench
 - **Use DFS for repos, LFS for speed.** Repos on DFS are accessible from all nodes. Symlink into LFS home for short paths.
 - **Use `byobu`** for persistent sessions that survive SSH disconnects. Status bar shows hostname.
 - **Prefer `uv`** over conda for new Python environments.
-- **Check GPU availability** before starting jobs: `nvidia-smi --query-gpu=index,memory.used,memory.free,utilization.gpu --format=csv,noheader`.
+- **Choose GPUs before new jobs:** [check all five nodes and set a task-specific device selection](#choose-gpus-for-new-work), including `skampere3`; do not blindly inherit an old single-GPU pin.
+- **Which nodes Brando can reach and which need Slurm:** [`snap-nodes.md`](snap-nodes.md) (verified 10-22-2026).
+
+---
+
+## Related Clusters
+
+- [Stanford Sherlock HPC](sherlock.md) — SRCC Slurm cluster (Duo + ControlMaster, `normal`/`bigmem`/`gpu`/`dev` partitions, 90-day `$SCRATCH` purge); agent routes in [sherlock-agent-access.md](sherlock-agent-access.md).
+- [Stanford FarmShare](farmshare.md) — free Slurm cluster for coursework and unsponsored research, 4x L40S per user.
+- Slurm mail on any cluster: [Trigger Rule 82](../rules/hosts.md#trigger-rule-82). A run blocked on one cluster: [Trigger Rule 75](../rules/workers.md#trigger-rule-75).
