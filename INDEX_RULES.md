@@ -111,6 +111,8 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 | [75](rules/workers.md#trigger-rule-75) | Run pending, capped or failed on one cluster → try every reachable cluster yourself on empty GPUs, free hardware, no Duo; release idle. |
 | [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
+| [76](rules/research.md#trigger-rule-76) | Design, launch or interpret an experiment, benchmark, agent eval, scorer or parser feeding a reported number, or a surprising number → load `workflows/ml-research-practice.md`: predict every metric (incl. literal compliance) before running, trace one item, controls, look at the data. |
+| [77](rules/research.md#trigger-rule-77) | Build, select, validate or deploy an LLM judge/grader/reward model, or a claim it "agrees with humans" → load `workflows/llm-judge-recipe.md`: input audit, label-reproduction test, controls, test once, ICC. |
 
 ## Guidelines (best practices)
 
