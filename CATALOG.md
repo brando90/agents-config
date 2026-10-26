@@ -47,6 +47,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/statistics-reporting.md`](workflows/statistics-reporting.md) — what statistics to report and why: Hard Rule 11's cheap minimum for every project, the judge-human agreement checklist (free vs costly rows, ICC notation, honest data reuse), paper/experiment consistency, a worked VeriBench example
 - [`workflows/question-screenshot-ingest.md`](workflows/question-screenshot-ingest.md) — `Q go` screenshot-to-question workflow: save images, transcribe, create `questions/<NN>_<slug>/`, open issue, Mega QA, push `main`
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
+- [`workflows/research-launch-stack.md`](workflows/research-launch-stack.md) — Kesh-style paper launch bundle: project page, tweprint, blog draft, saved links, asset manifest; [loadable skill](skills/research-launch-stack/SKILL.md). Pairs with Trigger Rules 32/33.
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style research lab blog post format; use `writing/blog/` instead for Brando's personal site
 - [`workflows/repo-init.md`](workflows/repo-init.md) — migrating a project to the agents-config pattern
 - [`workflows/research-repo-layout.md`](workflows/research-repo-layout.md) — four-bucket research repo root (`experiments/`, `paper_latex_and_notes/`, `src/`, optional data bucket), the "where does X go?" decision procedure, and the staged migration procedure for reorganizing a repo with live branches (Trigger Rule 49).

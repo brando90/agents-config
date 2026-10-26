@@ -36,9 +36,13 @@ A "tweprint" is a tweet thread (typically 4–8 tweets) that announces a researc
 
 ## Reference Examples
 
+- **Kesh HourVideo:** https://x.com/keshigeyan/status/1863652813668225040 — benchmark/dataset hook pattern: named artifact, concrete scale, compact score block, named capability gap, visual/thread opener.
+- **Kesh GPIC:** https://x.com/keshigeyan/status/2060398262591668315 — dataset launch pattern: named corpus/benchmark, stacked scale numbers, license/hosting claims, visual first.
 - **ZIP-FIT tweprint:** 8-tweet thread announcing compression-based data selection. Hook: core question + best number. Threads through problem → method → results (Code Gen) → results (AutoFormalization) → insight (alignment thresholds) → future work + credits.
 - **Putnam Axiom tweprint:** https://x.com/BrandoHablando/status/1945920434521923652
 - **Additional thread:** https://x.com/BrandoHablando/status/1946281237435568579
+
+For a full launch bundle (project website, thread, blog draft, link archive, asset manifest), use [`research-launch-stack.md`](research-launch-stack.md).
 
 ---
 

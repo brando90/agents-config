@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Launch Stack"
+  short_description: "Paper launch stack: site, tweprint, blog"
+  default_prompt: "Use $research-launch-stack to create a Kesh-style launch stack for this paper."
