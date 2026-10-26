@@ -17,7 +17,8 @@
   "agent": {
     "dock": "right",
     "threads_sidebar": {
-      "position": "left"
+      "position": "left",
+      "auto_open": false
     }
   },
   "project_panel": {

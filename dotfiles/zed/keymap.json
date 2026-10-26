@@ -1,5 +1,5 @@
 // Cursor-like bindings (base_keymap = Cursor):
-//   cmd-b       -> show/focus project tree; press again to hide
+//   cmd-b       -> toggle file sidebar immediately, independent of focus
 //   cmd-alt-s   -> toggle Threads Sidebar (agent threads), like Cursor's unified sidebar
 //   cmd-alt-b   -> toggle right dock (agent chat)
 //   cmd-shift-e -> focus file tree (project panel)
@@ -8,7 +8,7 @@
   {
     "context": "Workspace",
     "bindings": {
-      "cmd-b": "project_panel::Toggle",
+      "cmd-b": "workspace::ToggleLeftDock",
       "cmd-alt-s": "multi_workspace::ToggleWorkspaceSidebar",
       "cmd-shift-e": "project_panel::ToggleFocus",
       "cmd-alt-b": "workspace::ToggleRightDock"
@@ -17,13 +17,13 @@
   {
     "context": "Editor",
     "bindings": {
-      "cmd-b": "project_panel::Toggle"
+      "cmd-b": "workspace::ToggleLeftDock"
     }
   },
   {
     "context": "Terminal",
     "bindings": {
-      "cmd-b": "project_panel::Toggle"
+      "cmd-b": "workspace::ToggleLeftDock"
     }
   }
 ]
