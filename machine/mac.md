@@ -17,6 +17,8 @@
 
 ## Setup
 
+For a new Mac, use the [setup prompt and interaction checklist](new-mac-setup.md). It combines the maintained installers and shared settings, preserves existing files, and verifies the resulting workspace. Prefer the [README quick start](../README.md#quick-start) when installing instruction entry points into an existing profile.
+
 ```bash
 # Clone agents-config if not present
 git clone git@github.com:brando90/agents-config.git ~/agents-config 2>/dev/null || true
