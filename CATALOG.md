@@ -44,6 +44,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`workflows/agent-sync.md`](workflows/agent-sync.md) — shared `SYNC.md` state across Codex, Claude Code and ultimate_brando9, conflict check (`scripts/agent_sync.py`) and `[PUSH]` inbox pings (Trigger Rule 71)
 - [`workflows/expts-and-results.md`](workflows/expts-and-results.md) — experiment structure and Markdown-first results reporting; external dashboards only on explicit request
 - [`workflows/statistics-reporting.md`](workflows/statistics-reporting.md) — what statistics to report and why: Hard Rule 11's cheap minimum for every project, the judge-human agreement checklist (free vs costly rows, ICC notation, honest data reuse), paper/experiment consistency, a worked VeriBench example
+- [`workflows/vb-sets.md`](workflows/vb-sets.md) — the only names for VeriBench task sets (VeriBench 896, VB-Core 614, VB-Industry 282, TinyVeriBench-256, Tiny96, VB-Infinity, VB private) with sizes, manifest locations and rules of use; "Small" is not a set. **Linked from Guideline 25.**
 - [`workflows/question-screenshot-ingest.md`](workflows/question-screenshot-ingest.md) — `Q go` screenshot-to-question workflow: save images, transcribe, create `questions/<NN>_<slug>/`, open issue, Mega QA, push `main`
 - [`workflows/tweprints.md`](workflows/tweprints.md) — tweet thread format for research announcements
 - [`workflows/blog-posts.md`](workflows/blog-posts.md) — SAIL-style research lab blog post format; use `writing/blog/` instead for Brando's personal site

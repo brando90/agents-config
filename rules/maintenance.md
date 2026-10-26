@@ -6,7 +6,7 @@
 
 ## Hard Rule 2
 
-2. **Verify before pushing.** Review diffs for secrets, unintended changes, broken imports.
+2. **Sync before pushing; verify before pushing.** Before any `git push`: (a) `git fetch` and check whether the upstream branch has advanced (`git fetch origin && git status -sb`). When several agents or machines share a repo (for example Codex on another machine pushing to `main`), your local copy can be behind: a blind push is rejected (non-fast-forward) or, worse, you built on stale state. If upstream moved, integrate first (`git pull --rebase`, or rebase your branch onto the updated base) and re-run the relevant tests before pushing; **never force-push a shared branch** to paper over divergence. (b) Also `git fetch` at the *start* of a task so you branch from current `main`, not a stale local copy; this is how you catch that another agent already did, or is doing, the same work before you duplicate it. (c) Then review the diff for secrets, unintended changes and broken imports; never fabricate unavailable source content, mark it unresolved; run the relevant deterministic checks and report actual evidence and limitations, not an untested success claim. For your own feature branch, push it and open a PR rather than pushing to `main`. **Why (Brando, 06-28-2026):** parallel agents and machines routinely diverge from the remote; syncing first turns a messy merge or duplicated-work problem into a clean rebase.
 
 ## Hard Rule 6
 
