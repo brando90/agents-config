@@ -90,7 +90,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
 | [52](rules/workers.md#trigger-rule-52) | Board-visible job → run-bound fresh receipts, ordinary-code liveness and verified board row; separate coordinator and execution state. |
 | [53](rules/responses.md#trigger-rule-53) | Human-facing dates/new dated names → MM-DD-YYYY; preserve machine formats, existing names and frozen records. |
-| [54](rules/responses.md#trigger-rule-54) | Mention experiment → full canonical folder name on first section mention, each table row and closing summary. |
+| [54](rules/responses.md#trigger-rule-54) | Experiment → full folder name (first mention per section, each table row, summary). Paper no. → add title. |
 | [55](rules/hosts.md#trigger-rule-55) | Run experiment/batch/long job → execute on SNAP with named full-access worker; verify execution through owner. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
 | [57](rules/workers.md#trigger-rule-57), [74](rules/workers.md#trigger-rule-74) | Would stall on scope, routing, approval or a click → decide (no-human route), record it; no self-made gates; to-dos only Brando's own. Grade next steps /10; do ≥9 now. |
