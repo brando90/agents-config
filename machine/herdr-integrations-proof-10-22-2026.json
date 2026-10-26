@@ -1,0 +1,165 @@
+{
+  "date": "10-22-2026",
+  "version": "0.9.5",
+  "installers": [
+    {
+      "target": "pi",
+      "exit_code": 0,
+      "seconds": 0.008881916990503669,
+      "stdout": "installed pi integration to /Users/brandomiranda/.pi/agent/extensions/herdr-agent-state.ts\n",
+      "stderr": ""
+    },
+    {
+      "target": "claude",
+      "exit_code": 0,
+      "seconds": 0.007315249997191131,
+      "stdout": "installed claude integration hook to /Users/brandomiranda/.claude/hooks/herdr-agent-state.sh\nensured claude settings at /Users/brandomiranda/.claude/settings.json\n",
+      "stderr": ""
+    },
+    {
+      "target": "codex",
+      "exit_code": 0,
+      "seconds": 0.012580542010255158,
+      "stdout": "installed codex integration hook to /Users/brandomiranda/.codex/herdr-agent-state.sh\nensured codex hooks at /Users/brandomiranda/.codex/hooks.json\nensured codex config at /Users/brandomiranda/.codex/config.toml\n",
+      "stderr": ""
+    },
+    {
+      "target": "cursor",
+      "exit_code": 0,
+      "seconds": 0.013141583069227636,
+      "stdout": "installed cursor integration hook to /Users/brandomiranda/.cursor/herdr-agent-state.sh\nupdated cursor hooks at /Users/brandomiranda/.cursor/hooks.json\n",
+      "stderr": ""
+    },
+    {
+      "target": "antigravity-cli",
+      "exit_code": 0,
+      "seconds": 0.012119874940253794,
+      "stdout": "installed antigravity-cli integration hook to /Users/brandomiranda/.gemini/config/hooks/herdr-agent-state.sh\nensured antigravity-cli hooks at /Users/brandomiranda/.gemini/config/hooks.json\n",
+      "stderr": ""
+    },
+    {
+      "target": "grok",
+      "exit_code": 0,
+      "seconds": 0.00806708401069045,
+      "stdout": "installed grok integration hook to /Users/brandomiranda/.grok/hooks/herdr-agent-state.sh\nregistered grok hook config at /Users/brandomiranda/.grok/hooks/herdr.json\n",
+      "stderr": ""
+    }
+  ],
+  "pi_hook_tests": [
+    {
+      "launcher": "pi-local",
+      "methods": [
+        "pane.report_agent_session",
+        "pane.report_agent"
+      ],
+      "states": [
+        "idle"
+      ],
+      "passed": true,
+      "model_requests": 0,
+      "scope": "Installed launcher TUI startup against a local test socket; no generation and no actual Herdr pane was controlled."
+    },
+    {
+      "launcher": "pi-gemini",
+      "methods": [
+        "pane.report_agent_session",
+        "pane.report_agent"
+      ],
+      "states": [
+        "idle"
+      ],
+      "passed": true,
+      "model_requests": 0,
+      "scope": "Installed launcher TUI startup against a local test socket; no generation and no actual Herdr pane was controlled."
+    }
+  ],
+  "scope": "17 requested integration statuses current; local Pi hook startup verified; full session restore and remote agent control not established.",
+  "additional_install_attempts": [
+    {
+      "target": "omp",
+      "exit_code": 1,
+      "seconds": 0.158,
+      "output": "omp extension directory not found at /Users/brandomiranda/.omp/agent/extensions. install omp first\n"
+    },
+    {
+      "target": "copilot",
+      "exit_code": 0,
+      "seconds": 0.135,
+      "output": "installed copilot integration hook to /Users/brandomiranda/.copilot/hooks/herdr-agent-state.sh\nensured copilot settings at /Users/brandomiranda/.copilot/settings.json\n"
+    },
+    {
+      "target": "devin",
+      "exit_code": 0,
+      "seconds": 0.054,
+      "output": "installed devin integration hook to /Users/brandomiranda/.config/devin/herdr-agent-state.sh\nensured devin settings at /Users/brandomiranda/.config/devin/config.json\n"
+    },
+    {
+      "target": "droid",
+      "exit_code": 0,
+      "seconds": 0.036,
+      "output": "installed droid integration hook to /Users/brandomiranda/.factory/hooks/herdr-agent-state.sh\nensured droid hooks at /Users/brandomiranda/.factory/settings.json\n"
+    },
+    {
+      "target": "kimi",
+      "exit_code": 0,
+      "seconds": 0.866,
+      "output": "installed kimi integration hook to /Users/brandomiranda/.kimi-code/hooks/herdr-agent-state.sh\nensured kimi config at /Users/brandomiranda/.kimi-code/config.toml\nrequires kimi code 0.14.0 or newer\n"
+    },
+    {
+      "target": "opencode",
+      "exit_code": 0,
+      "seconds": 0.095,
+      "output": "installed opencode integration plugin to /Users/brandomiranda/.config/opencode/plugins/herdr-agent-state.js\ninstalled opencode tui integration plugin to /Users/brandomiranda/.config/opencode/herdr-tui-session.js\nensured opencode tui plugin config at /Users/brandomiranda/.config/opencode/tui.jsonc\n"
+    },
+    {
+      "target": "kilo",
+      "exit_code": 0,
+      "seconds": 0.019,
+      "output": "installed kilo integration plugin to /Users/brandomiranda/.config/kilo/plugin/herdr-agent-state.js\n"
+    },
+    {
+      "target": "qodercli",
+      "exit_code": 0,
+      "seconds": 0.035,
+      "output": "installed qodercli integration hook to /Users/brandomiranda/.qoder/hooks/herdr-agent-state.sh\nensured qodercli settings at /Users/brandomiranda/.qoder/settings.json\n"
+    },
+    {
+      "target": "qwen",
+      "exit_code": 0,
+      "seconds": 0.045,
+      "output": "installed qwen integration hook to /Users/brandomiranda/.qwen/hooks/herdr-agent-session.sh\nensured qwen settings at /Users/brandomiranda/.qwen/settings.json\n"
+    },
+    {
+      "target": "mastracode",
+      "exit_code": 0,
+      "seconds": 0.037,
+      "output": "installed mastracode integration hook to /Users/brandomiranda/.mastracode/hooks/herdr-agent-state.sh\nensured mastracode hooks at /Users/brandomiranda/.mastracode/hooks.json\n"
+    }
+  ],
+  "final_status": [
+    "pi: current (v9) (/Users/brandomiranda/.pi/agent/extensions/herdr-agent-state.ts)",
+    "omp: current (v10) (/Users/brandomiranda/.omp/agent/extensions/herdr-omp-agent-state.ts)",
+    "claude: current (v11) (/Users/brandomiranda/.claude/hooks/herdr-agent-state.sh)",
+    "codex: current (v10) (/Users/brandomiranda/.codex/herdr-agent-state.sh)",
+    "copilot: current (v4) (/Users/brandomiranda/.copilot/hooks/herdr-agent-state.sh)",
+    "devin: current (v3) (/Users/brandomiranda/.config/devin/herdr-agent-state.sh)",
+    "droid: current (v4) (/Users/brandomiranda/.factory/hooks/herdr-agent-state.sh)",
+    "kimi: current (v8) (/Users/brandomiranda/.kimi-code/hooks/herdr-agent-state.sh)",
+    "opencode: current (v13) (/Users/brandomiranda/.config/opencode/plugins/herdr-agent-state.js)",
+    "kilo: current (v4) (/Users/brandomiranda/.config/kilo/plugin/herdr-agent-state.js)",
+    "hermes: current (v5) (/Users/brandomiranda/.hermes/plugins/herdr-agent-state/__init__.py)",
+    "qodercli: current (v4) (/Users/brandomiranda/.qoder/hooks/herdr-agent-state.sh)",
+    "qwen: current (v2) (/Users/brandomiranda/.qwen/hooks/herdr-agent-session.sh)",
+    "cursor: current (v2) (/Users/brandomiranda/.cursor/herdr-agent-state.sh)",
+    "mastracode: current (v3) (/Users/brandomiranda/.mastracode/hooks/herdr-agent-state.sh)",
+    "antigravity-cli: current (v4) (/Users/brandomiranda/.gemini/config/hooks/herdr-agent-state.sh)",
+    "grok: current (v3) (/Users/brandomiranda/.grok/hooks/herdr-agent-state.sh)",
+    "letta (experimental): not installed (/Users/brandomiranda/.letta/hooks/herdr-agent-session.sh)"
+  ],
+  "mouse_clipboard": {
+    "config_check": "ok",
+    "reload_status": "applied",
+    "diagnostics": [],
+    "iterm_profile_and_live_gestures": "unverified: computer-use access denied"
+  }
+}

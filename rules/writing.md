@@ -34,7 +34,7 @@
 
 ## Trigger Rule 32
 
-32. **Load `write-tweet-thread.md` for X/Twitter announcement threads about a paper.** _Trigger: the user asks for a tweet thread, X thread, or tweprint announcing a paper or release._ Read [`writing/ml_research/write-tweet-thread.md`](../writing/ml_research/write-tweet-thread.md) before acting: CoDaPO-style 6–9 tweet structure, ≤280 chars per tweet programmatically verified, numbers-only-from-paper with hedges preserved, author handles omitted by default, anonymity/private-repo warnings, delivery = repo file + PR + one review email per paper. Format/voice reference: [`workflows/tweprints.md`](../workflows/tweprints.md). Usually launches together with Trigger Rule 33's LinkedIn post — offer both.
+32. **Load `write-tweet-thread.md` for X/Twitter announcement threads about a paper.** _Trigger: the user asks for a tweet thread, X thread, or tweprint announcing a paper or release._ Read [`writing/ml_research/write-tweet-thread.md`](../writing/ml_research/write-tweet-thread.md) before acting: CoDaPO-style 6–9 tweet structure, ≤280 chars per tweet programmatically verified, numbers-only-from-paper with hedges preserved, author handles omitted by default, anonymity/private-repo warnings, delivery = repo file + PR + one review email per paper. Format/voice reference: [`workflows/tweprints.md`](../workflows/tweprints.md). Usually launches together with Trigger Rule 33's LinkedIn post — offer both. For a full launch bundle (project page, thread, blog, links), also load [`workflows/research-launch-stack.md`](../workflows/research-launch-stack.md).
 
 ## Trigger Rule 33
 
