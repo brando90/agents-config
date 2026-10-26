@@ -113,7 +113,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
 | [76](rules/research.md#trigger-rule-76) | Design, launch or interpret an experiment, benchmark, agent eval, scorer or parser feeding a reported number, or a surprising number → load `workflows/ml-research-practice.md`: predict every metric (incl. literal compliance) before running, trace one item, controls, look at the data. |
 | [77](rules/research.md#trigger-rule-77) | Build, select, validate or deploy an LLM judge/grader/reward model, or a claim it "agrees with humans" → load `workflows/llm-judge-recipe.md`: input audit, label-reproduction test, controls, test once, ICC. |
-| [82](rules/hosts.md#trigger-rule-82) | Write/submit an `sbatch` script on any Slurm cluster → `--mail-type=END,FAIL` to brandojazz + brando.science; `BEGIN` only if long/key; one mail per array. |
+| [78](rules/hosts.md#trigger-rule-78) | Write/submit an `sbatch` script on any Slurm cluster → `--mail-type=END,FAIL` to brandojazz + brando.science; `BEGIN` only if long/key; one mail per array. |
 
 ## Guidelines (best practices)
 

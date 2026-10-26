@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/farmshare.md>
 
-**TLDR:** FarmShare is Stanford's free Slurm cluster for coursework and unsponsored research: 24 NVIDIA L40S graphics processing units (GPUs, 46 GB each) on six `oat` nodes, at most 4 GPUs per user at a time. Connect with `ssh farmshare` (ControlMaster alias), submit all compute with `sbatch`, install with pip into a virtual environment (venv) in `$HOME` (there is no module system), and set Slurm mail per [Trigger Rule 82](../rules/hosts.md#trigger-rule-82). Verified 10-20-2026 (CPU job 1860187, GPU job 1860189, vLLM job 1860269).
+**TLDR:** FarmShare is Stanford's free Slurm cluster for coursework and unsponsored research: 24 NVIDIA L40S graphics processing units (GPUs, 46 GB each) on six `oat` nodes, at most 4 GPUs per user at a time. Connect with `ssh farmshare` (ControlMaster alias), submit all compute with `sbatch`, install with pip into a virtual environment (venv) in `$HOME` (there is no module system), and set Slurm mail per [Trigger Rule 78](../rules/hosts.md#trigger-rule-78). Verified 10-20-2026 (CPU job 1860187, GPU job 1860189, vLLM job 1860269).
 
 ---
 

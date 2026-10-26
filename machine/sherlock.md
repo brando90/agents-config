@@ -2,7 +2,7 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/sherlock.md>
 
-**TLDR:** Stanford's shared Slurm cluster, run by Stanford Research Computing (SRCC): Duo login reused through one SSH ControlMaster socket, every computation through Slurm, `$SCRATCH` purged after 90 days, no Anaconda, sponsored research only. For unattended agent commands and the distinction between fresh Duo login and existing authenticated access, start with [reusable agent access](sherlock-agent-access.md); for Slurm mail follow [Trigger Rule 82](../rules/hosts.md#trigger-rule-82).
+**TLDR:** Stanford's shared Slurm cluster, run by Stanford Research Computing (SRCC): Duo login reused through one SSH ControlMaster socket, every computation through Slurm, `$SCRATCH` purged after 90 days, no Anaconda, sponsored research only. For unattended agent commands and the distinction between fresh Duo login and existing authenticated access, start with [reusable agent access](sherlock-agent-access.md); for Slurm mail follow [Trigger Rule 78](../rules/hosts.md#trigger-rule-78).
 
 Load-balanced login nodes, Slurm for all compute, Lustre (parallel filesystem) `$SCRATCH`, NFS (Network File System) `$HOME`/`$GROUP_HOME`. Account: `brando9`, PI (principal investigator) group: Sanmi Koyejo. Account created 10-15-2026. **Shell: bash** (`~/.bashrc`).
 
@@ -152,7 +152,7 @@ python my_script.py
 #SBATCH -C GPU_MEM:80GB            # optional; check sh_node_feat -p gpu first
 #SBATCH --output=%x_%j.out
 #SBATCH --error=%x_%j.err
-#SBATCH --mail-type=BEGIN,END,FAIL  # BEGIN only for long or important runs (Rule 82)
+#SBATCH --mail-type=BEGIN,END,FAIL  # BEGIN only for long or important runs (Rule 78)
 #SBATCH --mail-user=brandojazz@gmail.com,brando.science@gmail.com
 
 set -euo pipefail

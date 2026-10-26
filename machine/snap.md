@@ -594,4 +594,4 @@ or change running jobs to free a device.
 
 - [Stanford Sherlock HPC](sherlock.md) — SRCC Slurm cluster (Duo + ControlMaster, `normal`/`bigmem`/`gpu`/`dev` partitions, 90-day `$SCRATCH` purge); agent routes in [sherlock-agent-access.md](sherlock-agent-access.md).
 - [Stanford FarmShare](farmshare.md) — free Slurm cluster for coursework and unsponsored research, 4x L40S per user.
-- Slurm mail on any cluster: [Trigger Rule 82](../rules/hosts.md#trigger-rule-82). A run blocked on one cluster: [Trigger Rule 75](../rules/workers.md#trigger-rule-75).
+- Slurm mail on any cluster: [Trigger Rule 78](../rules/hosts.md#trigger-rule-78). A run blocked on one cluster: [Trigger Rule 75](../rules/workers.md#trigger-rule-75).
