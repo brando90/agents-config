@@ -109,6 +109,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, BCC all four inboxes. |
 | [71](rules/services.md#trigger-rule-71) | Session start, shared state, or need the assistant → `agent_sync.py check` the SYNC.md, name conflicts; read `[FROM-UB9]` in the repo's inbox issue (#68); ask with `[TO-UB9]` + email. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
+| [75](rules/workers.md#trigger-rule-75) | Run pending, capped or failed on one cluster → try every reachable cluster yourself on empty GPUs, free hardware, no Duo; release idle. |
 | [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
 
 ## Guidelines (best practices)
