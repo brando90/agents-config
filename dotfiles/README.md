@@ -39,4 +39,6 @@ Only this Mac's Cursor/Ghostty configuration is installed by this task. Remote h
 
 ## Zed — 10-26-2026
 
-`dotfiles/zed/` holds `settings.json` (base keymap Cursor, panel docks) and `keymap.json` (Cursor-like: Cmd+B toggles the left dock/file tree, Cmd+Alt+S the Threads sidebar, Cmd+Alt+B the right dock, Cmd+Shift+E focuses the file tree). Not covered by `install_dotfiles.py`; to use on a Mac, copy or symlink both files into `~/.config/zed/` (back up existing ones first). Secrets stay outside Git.
+`dotfiles/zed/` holds `settings.json` (base keymap Cursor, panel docks) and `keymap.json` (Cursor-like: Cmd+B targets the project file tree via `project_panel::Toggle` (shows/focuses it; another press hides it), Cmd+Alt+S the Threads sidebar, Cmd+Alt+B the right dock, Cmd+Shift+E focuses the file tree). Not covered by `install_dotfiles.py`; to use on a Mac, copy or symlink both files into `~/.config/zed/` (back up existing ones first). Secrets stay outside Git.
+
+Cmd+B deliberately uses the project-panel action rather than `workspace::ToggleLeftDock`, which can expose the agent panel, or `project_panel::ToggleFocus`, which can leave the tree visible. The shared settings place the project panel on the left. Keep existing Vim preferences when installing only these bindings. Verify with an opened folder: Cmd+B shows/focuses its tree, another press hides it, and another shows it again, without toggling the Threads sidebar. An empty workspace has no directory tree to display.
