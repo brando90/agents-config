@@ -96,20 +96,33 @@ restart_gateway() {
   esac
 }
 
+# rm -rf can fail with "Directory not empty" when openclaw-node is still
+# racing to recreate files. Fall back to mv-aside (works even when rm fails);
+# a moved-aside dir is harmless and can be garbage-collected later.
+clear_plugin_cache() {
+  local cache="$HOME/.openclaw/plugin-runtime-deps"
+  [ -e "$cache" ] || return 0
+  if ! rm -rf "$cache" 2>/dev/null; then
+    log "WARN: rm of plugin-runtime-deps failed; mv-aside fallback"
+    mv "$cache" "$cache.broken.$(date +%s)" 2>/dev/null \
+      || log "WARN: mv-aside also failed; gateway boot may still fail"
+  fi
+}
+
 full_reset() {
   case "$PLAT" in
     Darwin)
       launchctl unload "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist" 2>/dev/null || true
       pkill -f 'openclaw gateway run' 2>/dev/null || true
       sleep 3
-      rm -rf "$HOME/.openclaw/plugin-runtime-deps"
+      clear_plugin_cache
       launchctl load "$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist"
       ;;
     Linux)
       tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
       pkill -f 'openclaw gateway run' 2>/dev/null || true
       sleep 3
-      rm -rf "$HOME/.openclaw/plugin-runtime-deps"
+      clear_plugin_cache
       start_gateway
       ;;
     *)

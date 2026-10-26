@@ -83,9 +83,9 @@
 
 ## Big follow-ups proposed but not yet built
 
-- [ ] **Connection Instructions Appendix G** — web-researched 2026-current OAuth flows / API tiers / fallbacks for X / IG / FB / LinkedIn / Outlook (Stanford email / Microsoft Graph) / SuperCare. ~400 new lines. *Q2 from Brando 2026-05-08 — biggest gap.*
-- [ ] **`coding_dispatch.md` standing order** — extend `experiment_dispatch.md` for general "update agents-config repo / brandomiranda blog" coding tasks via `claude --headless` or `codex --full-auto`. ~80 lines.
-- [ ] **CI workflow** — `.github/workflows/openclaw-lint.yml` for markdown/YAML lint. *(Optional; "CI checks unavailable" message Brando saw is just because no workflow exists yet — not a gh-auth issue.)*
+- [x] **Connection Instructions Appendix G** — web-researched 2026-current OAuth flows / API tiers / fallbacks for X / IG / FB / LinkedIn / Outlook (Stanford email / Microsoft Graph) / SuperCare. *Q2 from Brando 2026-05-08 — biggest gap.* Landed in `MASTER_PLAN.md` Appendix G (ported 10-26-2026 from PR #49; facts verified as of 05-09-2026, re-check pricing/tiers before wiring).
+- [x] **`coding_dispatch.md` standing order** — extend `experiment_dispatch.md` for general "update agents-config repo / brandomiranda blog" coding tasks. Skeleton landed in `standing_orders/coding_dispatch.md` (ported 10-26-2026 from PR #49); its setup questions (`config/repos.yml`, runner defaults) remain open.
+- [ ] **CI workflow** — `.github/workflows/openclaw-lint.yml` for markdown/YAML lint. *(Optional; "CI checks unavailable" message Brando saw is just because no workflow exists yet — not a gh-auth issue.)* A draft exists on PR #49; held 10-26-2026 for Brando's call (adds a blocking link/YAML check to PRs; needs `pip install pyyaml` under `setup-python`).
 - [ ] **Outlook notification silence** — Brando does the 30-second System Settings fix when convenient. (See `MASTER_PLAN.md` Appendix F.2.)
 
 ## Hygiene (do alongside, not blocking)
