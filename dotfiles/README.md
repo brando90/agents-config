@@ -19,7 +19,7 @@ Cursor's existing Control+Command+Down shortcut is the anchor. Ghostty translate
 ## Install and reload
 
 ```bash
-python3 ~/agents-config/scripts/install_dotfiles.py          # preview
+python3 ~/agents-config/scripts/install_dotfiles.py --diff   # preview exact changes
 python3 ~/agents-config/scripts/install_dotfiles.py --apply  # install
 ```
 

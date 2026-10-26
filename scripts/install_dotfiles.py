@@ -2,6 +2,7 @@
 """Install shared macOS pane shortcuts; dry-run by default, preserve other settings."""
 import argparse
 import datetime
+import difflib
 import hashlib
 import json
 import os
@@ -57,6 +58,7 @@ def verify_legacy():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply', action='store_true')
+    parser.add_argument('--diff', action='store_true', help='Show pending unified diffs without unrelated context')
     parser.add_argument('--home', type=Path, default=Path.home(), help='Override target home for tests')
     args = parser.parse_args()
     if sys.platform != 'darwin' and args.home == Path.home():
@@ -77,10 +79,18 @@ def main():
     stamp = datetime.datetime.now().strftime('%m-%d-%Y_%H-%M-%S-%f')
     backup = home / '.local/state/agents-config/dotfiles/backups' / stamp
     for path, content in changes.items():
-        if path.exists() and path.read_text() == content:
+        previous = path.read_text() if path.exists() else ''
+        if path.exists() and previous == content:
             print(f'Unchanged: {path}')
             continue
         print(f"{'Apply' if args.apply else 'Would update'}: {path}")
+        if args.diff:
+            for line in difflib.unified_diff(
+                    previous.splitlines(keepends=True), content.splitlines(keepends=True),
+                    fromfile=str(path) if path.exists() else '/dev/null', tofile=str(path), n=0):
+                sys.stdout.write(line)
+                if not line.endswith('\n'):
+                    print('\n\\ No newline at end of file')
         if args.apply:
             if path.exists():
                 target = backup / path.relative_to(home)

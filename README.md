@@ -74,7 +74,7 @@ Use [broad investigation](workflows/broad-investigation.md), [Valkyrie diagnosis
 
 ## Reusable macOS AI App Setup
 
-See the [macOS setup guide](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md).
+For a new computer, start with the [copy-ready Mac setup prompt and verification checklist](machine/new-mac-setup.md). It installs the coding tools, previews configuration changes, and tests the actual keyboard and window behavior. The [advanced macOS agent-access guide](machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) covers the separate, broader trusted-agent setup.
 
 ## New Server Setup
 

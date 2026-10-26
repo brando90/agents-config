@@ -20,7 +20,7 @@ this whole document into an agent's startup context.
 
 ## Reusable macOS AI App Setup
 
-For each Mac, first use [`~/agents-config/machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md`](../machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md) to configure shell-automatable trusted-agent setup, then use [`~/agents-config/machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md`](../machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) for the macOS Privacy & Security toggles that require manual approval.
+For a new Mac's coding workspace, start with the [setup prompt and verification checklist](../machine/new-mac-setup.md). For separately requested trusted-agent setup, use the [advanced setup guide](../machine/macos-ai-apps/ai_agent_automatable_setup_codex_clauded.md), then its [manual permissions checklist](../machine/macos-ai-apps/manual_macos_permissions_checklist_ai_apps.md) for the relevant macOS Privacy & Security approvals.
 
 ---
 
