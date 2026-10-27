@@ -55,12 +55,15 @@ Preserve existing profile instructions and add routing to `~/agents-config/INDEX
 
 ## Directory Structure
 
-- `rules/`: detailed shared policy; preserve established rule identifiers.
-- `machine/`, `workflows/`, `writing/`: focused guides loaded when relevant.
-- `scripts/`, `tests/`: working utilities and deterministic checks.
-- `dotfiles/`: shared app shortcuts, safe installer and preserved legacy dotfiles; keep credentials outside Git.
-- `experiments/`, `reports/`, `reviews/`: project records and historical evidence.
-- `docs/`: human setup reference, architecture audit, and background material.
+Pi-agent-style layout: a small core, skills each in their own folder, and machine, personal and project material kept apart.
+
+- **Core (loaded first):** `AGENTS.md`, `CLAUDE.md`, `INDEX_RULES.md`, `CATALOG.md`; `rules/` holds the detailed shared policy (preserve established rule identifiers).
+- **Skills:** `skills/` (loadable skill folders with `SKILL.md`; the index [skills/README.md](skills/README.md) also lists the Pi-synced skills that still live in `config/pi/skills/`).
+- **Machines:** `machine/` (hosts, clusters, setup guides) and `config/` (Pi runtime, accounts and sync).
+- **Guides:** `workflows/` and `writing/` (focused guides loaded when relevant).
+- **Personal:** `personal/` (contacts and email signature).
+- **Tools:** `scripts/`, `tests/`, and `dotfiles/` (shared app shortcuts, safe installer and preserved legacy dotfiles; keep credentials outside Git).
+- **Records:** `experiments/`, `archive/` (dated reports, reviews and QA reports; historical evidence), `docs/` (human setup reference, audit, background) and `docs/todo/` (open to-do notes).
 
 Keep useful task-scoped references intact. Add procedures to their topic and routing entry, not every startup file.
 
@@ -102,7 +105,7 @@ See the [migration procedure](docs/setup-reference.md#migrating-from-a-monolithi
 
 ## Initialization Guides
 
-See [passwordless host access](init_no_passwords_snap_kinit.md) and [server-side credential renewal](todo_infinite_reauth_kinit_server_side.md).
+See [passwordless host access](machine/init_no_passwords_snap_kinit.md) and [server-side credential renewal](docs/todo/todo_infinite_reauth_kinit_server_side.md).
 
 ## Security
 

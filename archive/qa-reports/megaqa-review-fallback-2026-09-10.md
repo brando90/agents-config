@@ -32,7 +32,7 @@ The coordinator verified actual model and effort from local `turn_context` metad
 
 ## Findings and fixes
 
-All three fixes are in [the canonical review workflow](../qa-correctness.md#review-fallback-and-acceptance):
+All three fixes are in [the canonical review workflow](../../workflows/qa-correctness.md#review-fallback-and-acceptance):
 
 1. **Reassess risk after findings or fixes.** A smaller review becomes advisory when the change becomes critical. Obtain eligible acceptance within the remaining original attempt budget or leave acceptance pending.
 2. **Verify required effort as well as model identity.** Missing, unverifiable, or inadequate actual settings leave the corresponding acceptance requirement unmet. Explicit user requirements remain binding.

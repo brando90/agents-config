@@ -25,14 +25,14 @@ ssh <user>@<hostname>.stanford.edu
 - **Access:** Direct Secure Shell (SSH) from Stanford network or virtual private network (VPN), or the institution-documented `whale.stanford.edu` SSH gateway from an external network. Prefer the verified gateway route for internet-only laptop dispatch; a direct-node timeout does not establish a cluster outage. See the verified route below.
 - **Port:** 22
 - **Persistent sessions:** Agents may launch and inspect named detached `tmux`/`byobu` sessions through the supported dispatch scripts (Rule 42). These survive SSH disconnects, not automatically node reboot. Config is shared across nodes via DFS (`BYOBU_CONFIG_DIR` set in `.bashrc`).
-- **Kerberos auto-renewal:** Server-side tickets are auto-renewed every 4h by `krenew.sh` (DFS keytab + `.bashrc` background loop + cron). `krbtmux`/`reauth` are no longer needed for ticket renewal. See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for details. Fallback: `/afs/cs/software/bin/krbtmux` and `/afs/cs/software/bin/reauth` still work if auto-renewal is not set up. Ref: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
+- **Kerberos auto-renewal:** Server-side tickets are auto-renewed every 4h by `krenew.sh` (DFS keytab + `.bashrc` background loop + cron). `krbtmux`/`reauth` are no longer needed for ticket renewal. See `~/agents-config/docs/todo/todo_infinite_reauth_kinit_server_side.md` for details. Fallback: `/afs/cs/software/bin/krbtmux` and `/afs/cs/software/bin/reauth` still work if auto-renewal is not set up. Ref: https://ilwiki.stanford.edu/doku.php?id=hints:long-jobs.
 
 
 ### Internet-only laptop dispatch through the official gateway
 
 Stanford documents SSH to `whale.stanford.edu`, then to the desired server, as an external-network alternative to VPN ([SNAP introduction](https://ilops.stanford.edu/wiki/lib/exe/fetch.php?media=wiki%3Asnap-intro-20250925.pdf), [remote-access documentation](https://snap.stanford.edu/moin/SshAccessFromOutsideGates)). This is normal authenticated institutional access, not an allocation bypass. Preserve Slurm gates and never run research workloads on the gateway.
 
-The MacBook Air route was verified on 10-07-2026 with Cisco VPN **disconnected**: the gateway authenticated with the existing Kerberos ticket, `skampere2` was reachable, and a named detached ordinary-code job completed with exit zero after its submitting SSH connection ended. A fresh connection retrieved its persisted output. This proves the tested route and short-job completion, not uninterrupted long experiments or access to every configured host. [Receipt and limitations](../reports/snap-vpn-free-dispatch-10-07-2026.md).
+The MacBook Air route was verified on 10-07-2026 with Cisco VPN **disconnected**: the gateway authenticated with the existing Kerberos ticket, `skampere2` was reachable, and a named detached ordinary-code job completed with exit zero after its submitting SSH connection ended. A fresh connection retrieved its persisted output. This proves the tested route and short-job completion, not uninterrupted long experiments or access to every configured host. [Receipt and limitations](../archive/reports/snap-vpn-free-dispatch-10-07-2026.md).
 
 Install or refresh the route on any Mac with one idempotent command:
 
@@ -268,7 +268,7 @@ be permanently gone. Filesystem state on a gated node can be tested only from in
    The first refreshes Kerberos+AFS via the DFS keytab (no password prompt — see "How keytab reauth works" below). The second waits for DFS to come up after boot, runs `krenew.sh`, then re-launches the watcher in tmux. Boot wrapper logs to `/tmp/start_watcher_at_reboot_<host>.log`.
 
 **How keytab reauth works (and why no password is ever entered after one-time setup):**
-- The "secret" is `/dfs/scratch0/brando9/.keytab` — a 83-byte file derived once from your Stanford password via `ktutil` (see [`../init_no_passwords_snap_kinit.md`](../init_no_passwords_snap_kinit.md) Part A). It is chmod 600, on shared DFS, so every node and every cron job can read it.
+- The "secret" is `/dfs/scratch0/brando9/.keytab` — a 83-byte file derived once from your Stanford password via `ktutil` (see [`../init_no_passwords_snap_kinit.md`](init_no_passwords_snap_kinit.md) Part A). It is chmod 600, on shared DFS, so every node and every cron job can read it.
 - `krenew.sh` runs `kinit -kt $KEYTAB brando9@CS.STANFORD.EDU && aklog`. The keytab acts as proof-of-password to the KDC. **No interactive prompt, no env var, no agent ever has to type or store the password itself.**
 - If you change your Stanford password, regenerate the keytab — until you do, all 7 watchers' auth will start failing within ~10h.
 
@@ -395,7 +395,7 @@ Never print it or put it in a command argument, repository, log, or message.
   purchased-credit requirement and returned an individual spending-limit error. Do not interpret
   that as all Vals models being exhausted or change spending limits to make it run.
 - Fresh per-node test results and access restrictions are in
-  [the setup report](../reports/vals-snap-20260914/results.md). Installation on one node does not
+  [the setup report](../archive/reports/vals-snap-20260914/results.md). Installation on one node does not
   prove another node's access or budget. Use full `.stanford.edu` hostnames from the Mac.
 
 Example bounded one-shot check: `clauded-vals --model claude-sonnet-5 --effort low -p "Reply OK"`.

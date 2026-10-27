@@ -7,7 +7,7 @@ tmux/byobu/Cursor sessions never lose access. Eliminates the need for `krbtmux` 
 
 ## Why this is needed
 
-The Mac-side keytab + launchd setup (see `init_no_passwords_snap_kinit.md`) handles SSH login —
+The Mac-side keytab + launchd setup (see `machine/init_no_passwords_snap_kinit.md`) handles SSH login —
 you never type a password to connect. But once on the server, the delegated Kerberos ticket
 expires after ~10h. When it expires:
 
@@ -51,7 +51,7 @@ No krbtmux, no reauth, no manual intervention ever
 ## Dependencies
 
 - Keytab already exists on skampere1 at `/lfs/skampere1/0/brando9/.keytab` (created 2026-04-09)
-- Mac-side setup is complete (see `init_no_passwords_snap_kinit.md`)
+- Mac-side setup is complete (see `machine/init_no_passwords_snap_kinit.md`)
 
 ## Security notes
 

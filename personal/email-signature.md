@@ -17,7 +17,7 @@
 
 ## Closing summary
 
-Every drafted or sent email ends its substantive body with `TLDR-end: [proj: task]` and 1–2 sentences, following [Hard Rule 4](rules/responses.md#hard-rule-4). State the outcome and any real decision/deadline; do not invent an action or deadline. Put the summary after any decisions, links or verification evidence and immediately before the drafted-with sign-off and signature. For internal notifications that omit a signature under Rule 70, it is the final body text.
+Every drafted or sent email ends its substantive body with `TLDR-end: [proj: task]` and 1–2 sentences, following [Hard Rule 4](../rules/responses.md#hard-rule-4). State the outcome and any real decision/deadline; do not invent an action or deadline. Put the summary after any decisions, links or verification evidence and immediately before the drafted-with sign-off and signature. For internal notifications that omit a signature under Rule 70, it is the final body text.
 
 Before sending, check that the closing summary is present, matches the final body and precedes any sign-off/signature. An opening status sentence does not replace it. Keep existing send triggers; do not resend old emails just to change their format.
 
@@ -26,9 +26,9 @@ Before sending, check that the closing summary is present, matches the final bod
 _Trigger: an agent emails collaborators about experiment or research results._ Collaborators asked for these to be interpretable, with less jargon and a slide (Varun, relayed by Brando, 10-16-2026).
 
 - **Takeaway first, in plain words.** The first 2-3 sentences say what was tested, what was found and why it matters for the project. A collaborator who missed the last few meetings should get the point from them alone.
-- **No internal labels in the body.** Do not put experiment slugs, run IDs, branch or folder names (e.g. `the-difficulty-confound`) in the collaborator-facing body; describe the idea in words. Expand every acronym and define every term of art on first use (Hard Rule 10). The full experiment folder name that [Trigger Rule 54](rules/responses.md#trigger-rule-54) requires goes in the linked doc or report, and in the `TLDR-end:` line, which Brando reads.
+- **No internal labels in the body.** Do not put experiment slugs, run IDs, branch or folder names (e.g. `the-difficulty-confound`) in the collaborator-facing body; describe the idea in words. Expand every acronym and define every term of art on first use (Hard Rule 10). The full experiment folder name that [Trigger Rule 54](../rules/responses.md#trigger-rule-54) requires goes in the linked doc or report, and in the `TLDR-end:` line, which Brando reads.
 - **Short.** After the takeaway: at most 5 bullets of key numbers, each against its baseline and with its uncertainty (Hard Rule 11), then one line on the next step. Methods and extra tables go in the linked doc, not the body.
-- **One summary slide when there are results.** Make a one-slide Google Slides deck: a title that states the finding, the key plot or table, a one-line caption. Share it by link ([Trigger Rule 68](rules/services.md#trigger-rule-68)) and put the link right after the takeaway. No results, no slide.
+- **One summary slide when there are results.** Make a one-slide Google Slides deck: a title that states the finding, the key plot or table, a one-line caption. Share it by link ([Trigger Rule 68](../rules/services.md#trigger-rule-68)) and put the link right after the takeaway. No results, no slide.
 
 ## Drafted-with sign-off
 

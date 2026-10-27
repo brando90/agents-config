@@ -310,7 +310,7 @@ ps -p $(cat /tmp/krenew_brando9.pid)  # process alive
 tail -3 /tmp/krenew_brando9.log    # recent OK entries
 ```
 
-See `~/agents-config/todo_infinite_reauth_kinit_server_side.md` for full details.
+See `~/agents-config/docs/todo/todo_infinite_reauth_kinit_server_side.md` for full details.
 
 ---
 

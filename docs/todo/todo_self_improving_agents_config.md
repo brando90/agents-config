@@ -136,7 +136,7 @@ Next task uses the improved config automatically
 
 - **QA gating (Hard Rule 3)** already captures pass/fail signals — /improve builds on this
 - **Trigger Rule 6** (commit + push after agents-config edits) ensures improvements propagate
-- **Todo files** (`cursor_ssh_kerberos_todo.md`, `todo_codex_qa_on_snap.md`, etc.) are
+- **Todo files** (`docs/todo/cursor_ssh_kerberos_todo.md`, `docs/todo/todo_codex_qa_on_snap.md`, etc.) are
   manual versions of what /improve would automate — they capture lessons learned but require
   a human to read them and update rules
 - **Mega QA (Trigger Rule 10)** is a deeper review pass — /improve could use mega QA
@@ -162,7 +162,7 @@ Items not covered by the phases above. Rule numbers in the original draft were p
   Key quote: "If I have to ask you for something twice, you failed." The /improve skill
   is the mechanism that ensures the system learns from every interaction.
 - Existing todo files in this repo:
-  - [`cursor_ssh_kerberos_todo.md`](cursor_ssh_kerberos_todo.md)
-  - [`codex_remote_control_todo.md`](codex_remote_control_todo.md)
-  - [`todo_codex_qa_on_snap.md`](todo_codex_qa_on_snap.md)
-  - [`todo_infinite_reauth_kinit_server_side.md`](todo_infinite_reauth_kinit_server_side.md)
+  - [`docs/todo/cursor_ssh_kerberos_todo.md`](cursor_ssh_kerberos_todo.md)
+  - [`docs/todo/codex_remote_control_todo.md`](codex_remote_control_todo.md)
+  - [`docs/todo/todo_codex_qa_on_snap.md`](todo_codex_qa_on_snap.md)
+  - [`docs/todo/todo_infinite_reauth_kinit_server_side.md`](todo_infinite_reauth_kinit_server_side.md)

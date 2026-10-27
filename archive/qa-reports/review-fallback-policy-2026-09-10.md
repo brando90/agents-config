@@ -7,7 +7,7 @@
 
 ## Scope and decision
 
-Eight policy/cleanup files changed, plus this record. [Hard Rule 8](../../INDEX_RULES.md) governs defaults and acceptance; [the review workflow](../qa-correctness.md#review-fallback-and-acceptance) holds the single decision procedure. Entry points and setup guidance link to it. Obsolete launcher guidance is marked as such; the existing direct-dispatch workaround remains necessary, and no runtime launcher or global model setting was changed.
+Eight policy/cleanup files changed, plus this record. [Hard Rule 8](../../INDEX_RULES.md) governs defaults and acceptance; [the review workflow](../../workflows/qa-correctness.md#review-fallback-and-acceptance) holds the single decision procedure. Entry points and setup guidance link to it. Obsolete launcher guidance is marked as such; the existing direct-dispatch workaround remains necessary, and no runtime launcher or global model setting was changed.
 
 The design advice supported the ordinary/critical distinction. The implementation uses a stricter three-invocation stage limit: primary, at most one repair or smaller candidate, and one strongest-model substitute. It preserves the existing one-round default, manual-only expanded reviews, subscription-only model execution, explicit model requirements, and both-family reference-data acceptance. Company diversity is useful scrutiny, not a guarantee of independence or unchanged review quality.
 
