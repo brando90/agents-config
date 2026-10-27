@@ -17,12 +17,16 @@
 
 Personal skills with private content go in the Git-ignored `config/pi/private-skills/` and are never committed.
 
-## Re-install on each host (optional)
+## Rolling this out to the hosts
 
-No re-install is needed for the move. `config/pi/skills` is a link to this folder, so the live links (for example `~/.claude/skills/atlas` pointing at `~/agents-config/config/pi/skills/atlas`) still resolve after `git pull`. To make the links point at the new path and to pick up `research-launch-stack` and `review-paper`, run once per host (the Mac and the five SNAP nodes) after pulling:
+No re-install is needed. `config/pi/skills` is a link to this folder, so live links (for example `~/.claude/skills/atlas` pointing at `~/agents-config/config/pi/skills/atlas`) keep resolving after `git pull` and are not rewritten. Enrolled hosts link the two skills that are new to the sync (`research-launch-stack`, `review-paper`) through the auto-sync service by themselves.
+
+Order matters: pull on every enrolled host (the Mac and the SNAP shared checkout) at about the same time. A host that has not pulled yet receives the new skill files from the auto-sync hub into its old real `config/pi/skills/` folder, and its next `git pull` then stops with "config/pi/skills ... Aborting" (the refresh hook prints a warning). Recovery on that host:
 
 ```
-python3 ~/agents-config/config/pi/install.py --runtime-only --adopt-skill-copies
+git -C ~/agents-config status --short config/pi/skills
+# move the listed files into ~/Desktop/skills-aside/ (they are copies of files that now live in skills/), then:
+git -C ~/agents-config pull --ff-only
 ```
 
-If the installer reports a duplicate skill name, run `ls -l ~/.claude/skills ~/.codex/skills ~/.agents/skills` and remove the stale copy it names.
+If the installer ever reports a duplicate skill name, run `ls -l ~/.claude/skills ~/.codex/skills ~/.agents/skills` and remove the stale copy it names.

@@ -48,7 +48,7 @@ Left in place because live code or core docs read them: `dotfiles/legacy/` (read
 - One skills folder: `config/pi/skills/{atlas,sbsbz-cardinal-print-flyers,sbsbz-financial-officer}` moved to `skills/` with `git mv`. The two `pi-local-herdr` copies were merged into `skills/pi-local-herdr/SKILL.md` (Pi copy for the Sherlock/FarmShare state, the `skills/` copy for lines 57 and 62, which carry the merged-PR text); the other copy's files were identical apart from `SKILL.md`, and the old text stays in git history.
 - `config/pi/skills` is now a relative link to `../../skills`, so live links on the Mac and SNAP nodes keep resolving. `config/pi/auto_sync.py` and `config/pi/sync_runtime.py` accept that one link (`shared_skills_link`) and still refuse every other symlink; `config/pi/test_auto_sync.py` and `test_sync_runtime.py` cover it.
 - The 17 `scripts/test_*.py` files moved to `scripts/tests/` (with `git mv`); path lookups point at `scripts/`, and `scripts/tests/_path.py` puts `scripts/` on `sys.path`. Run all: `python3 -m unittest discover -s scripts/tests -p 'test_*.py'`.
-- Optional per-host re-install steps are in [skills/README.md](../skills/README.md).
+- Rollout order and recovery for hosts that have not pulled yet are in [skills/README.md](../skills/README.md); `scripts/refresh-agents-config.sh` now warns when a real `config/pi/skills` folder blocks the pull. `docs/instruction-audit/inventory.tsv` keeps the old test paths (dated receipt).
 
 ## Proposed, not done (needs Brando's word)
 

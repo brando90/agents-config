@@ -7,7 +7,8 @@
 # marker file; safe offline (pull failure is silent and still stamps the
 # marker so we don't retry on every prompt). If the repo has local commits
 # that block the fast-forward pull, a bounded warning is emitted instead of
-# wedging silently.
+# wedging silently. A config/pi/skills folder holding files that block the move to the
+# skills/ link gets its own warning.
 set -uo pipefail
 
 AC_DIR="${HOME}/agents-config"
@@ -33,6 +34,10 @@ if ! GIT_TERMINAL_PROMPT=0 git -C "$AC_DIR" -c http.lowSpeedLimit=1000 -c http.l
   case "$ahead" in (*[!0-9]*|'') ahead=0;; esac
   if [ "$ahead" -gt 0 ]; then
     echo "WARNING: ~/agents-config has ${ahead} local commit(s) not on origin — auto-refresh is wedged until they are pushed or rebased (Trigger Rule 6)."
+  fi
+  if [ -d "${AC_DIR}/config/pi/skills" ] && [ ! -L "${AC_DIR}/config/pi/skills" ] \
+      && [ -n "$(git -C "$AC_DIR" status --porcelain -- config/pi/skills 2>/dev/null | head -1)" ]; then
+    echo "WARNING: ~/agents-config/config/pi/skills holds untracked or edited files, which blocks the pull that turns it into a link to skills/. Move them aside (git -C ~/agents-config status --short config/pi/skills), then pull again (see skills/README.md)."
   fi
   exit 0
 fi

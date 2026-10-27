@@ -80,7 +80,7 @@ An orientation map; the linked files are authoritative. `Kind` separates what ag
 | [`machine/`](machine/) | Host notes | Live per-host and cluster notes and setup guides |
 | [`config/`](config/pi/README.md) | Runtime config | Pi installer, accounts, sync |
 | [`dotfiles/`](dotfiles/README.md) | Runtime config | Shared app shortcuts and safe installer |
-| [`scripts/`](scripts/), [`tests/`](tests/) | Tools | Dispatch, sync and check scripts with their tests |
+| [`scripts/`](scripts/) (tests in `scripts/tests/`), [`tests/`](tests/) | Tools | Dispatch, sync and check scripts with their tests |
 | [`claude-code-settings.json`](claude-code-settings.json) | Runtime config | Claude Code hook config |
 | [`personal/`](personal/) | Personal data | Contacts and email signature |
 | [`jobs-inbox/`](jobs-inbox/README.md) | Queue | Pending and dispatched job files |
