@@ -54,8 +54,8 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [15](rules/responses.md#trigger-rule-15) | Substantive question → answer in chat; email only when explicitly requested. |
 | [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for findings; separate dated daily audience decks; verify. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
-| [18](rules/maintenance.md#trigger-rule-18) | Appendix/results-consistency/polish-only branch → inspect scope and land; substantive claims retain authorization requirements. |
-| [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts, merge branches or write in `~` → one canonical project; remove temporary copies; no new `~` clutter. |
+| [18](rules/maintenance.md#trigger-rule-18) | Appendix/results/polish-only branch → inspect scope and land; substantive claims keep authorization. |
+| [19](rules/maintenance.md#trigger-rule-19) | Create/finish checkouts, merge branches or write in `~` → one canonical project; remove temp copies; no `~` clutter. |
 | [20](rules/research.md#trigger-rule-20) | Lean proof/type-check task → discover pinned toolchain and actually compile; report observed output. |
 | [21](rules/writing.md#trigger-rule-21) | Paper introduction → load introduction and general research-writing guides. |
 | [22](rules/writing.md#trigger-rule-22) | Paper abstract → load abstract and general guides; preserve structural source comments. |
@@ -80,11 +80,11 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [41](rules/responses.md#trigger-rule-41) | End substantive replies with a ranked `[p N/10]` list; start 9-10 items without spending or rule violations. |
 | [42](rules/workers.md#trigger-rule-42) | Dispatch beyond short lookup → owned checkout, named persistent session, verified launch/live records and completion watch; an agent in a numbered/stale session renames it to `<client>-<project>-<role>-<task>`. |
 | [43](rules/safety-and-models.md#trigger-rule-43) | Benchmark reference edit → strongest-tier Claude AND Codex acceptance for every landed change; preserve attribution. |
-| [44](rules/workers.md#trigger-rule-44) | Long run, account/context/turn limit, or end of any session in an experiment folder → durable timestamped `CKPT_<task>.md`; update only on events: edit the ≤30-line state block, append one dated log line, never rewrite; exact continuation and verified handoff. |
+| [44](rules/workers.md#trigger-rule-44) | Long run, account/context/turn limit, or session end in an experiment folder → durable timestamped `CKPT_<task>.md`; update only on events: edit the ≤30-line state block, append one dated log line, never rewrite; exact continuation, verified handoff. |
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
-| [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision verification, requested review, immediate authorized merge, receipt and safe synchronization. |
+| [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision checks, requested review, immediate merge, receipt, safe sync. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
-| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound and verify handoff, preserving one writer and scientific limits. “ac-scheduler” → host watch, master check-in, authorized notifications. |
+| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound/verify handoff; keep one writer and scientific limits. “ac-scheduler” → host watch, master check-in, authorized notifications. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
@@ -105,7 +105,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [66](rules/services.md#trigger-rule-66) | Brando's AI meeting notes (Fathom link/ID, "get my notes") → verbatim transcript first, then summary and action items; script-written byte-exact copies with provenance in the named folder; never retype or reconstruct. |
 | [67](rules/workers.md#trigger-rule-67) | Brief a worker, write a prompt or describe what an agent may do → default to allowed; state only binding limits, no precautionary bans or reassurance. |
 | [68](rules/services.md#trigger-rule-68) | Create or copy a Google Doc/Sheet/Slides/Drive file → share "Anyone with the link" at creation: Viewer by default, Editor when readers fill it in; restricted only for secrets, sealed or private data. |
-| [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58); never a success-file-only watch. |
+| [69](rules/workers.md#trigger-rule-69) | Dispatch or wait on a worker → watch for death too (`scripts/watch_worker.sh`: done, dead, credit/limit-blocked, idle, timeout); on failure recover at once on the next eligible account (Rule 58). |
 | [70](rules/services.md#trigger-rule-70) | Launch or finish an experiment or long job (training/eval, cluster/background job, or >~15 min; never chat turns) → `[RUN START] <name>` then `[RUN DONE] <name>: <status>` email to brando.science, BCC all four inboxes. |
 | [71](rules/services.md#trigger-rule-71) | Session start, shared state, or need the assistant → `agent_sync.py check` the SYNC.md, name conflicts; read `[FROM-UB9]` in the repo's inbox issue (#68); ask with `[TO-UB9]` + email. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
@@ -114,7 +114,8 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [76](rules/research.md#trigger-rule-76) | Design, launch or interpret an experiment, benchmark, agent eval, scorer or parser feeding a reported number, or a surprising number → load `workflows/ml-research-practice.md`: predict every metric (incl. literal compliance) before running, trace one item, controls, look at the data. |
 | [77](rules/research.md#trigger-rule-77) | Build, select, validate or deploy an LLM judge/grader/reward model, or a claim it "agrees with humans" → load `workflows/llm-judge-recipe.md`: input audit, label-reproduction test, controls, test once, ICC. |
 | [78](rules/hosts.md#trigger-rule-78) | Write/submit an `sbatch` script on any Slurm cluster → `--mail-type=END,FAIL` to brandojazz + brando.science; `BEGIN` only if long/key; one mail per array. |
-| [79](rules/responses.md#trigger-rule-79) | About to send/post/save anything a person reads (message, email, slide, Doc, README, PR) → spell-check the final text; Brando's surname is Miranda; check names against a source; quotes, identifiers and code keep their spelling. |
+| [79](rules/responses.md#trigger-rule-79) | Sending/posting/saving anything a person reads (message, email, slide, Doc, README, PR) → spell-check it; Brando's surname is Miranda; check names against a source; quotes, identifiers and code keep their spelling. |
+| [81](rules/maintenance.md#trigger-rule-81) | Verified work, any Brando repo → land on `origin/main` now; never park on a branch. |
 | [80](rules/hosts.md#trigger-rule-80) | Launch/queue/size any GPU run, or free GPUs on mercury1/2 → use mercury as much as possible, whole node OK; empty GPUs only, never touch running jobs, shard big models over 4-5 A4000s, release when done. |
 
 ## Guidelines (best practices)
