@@ -14,7 +14,7 @@ Where the binding comes from: **Zed** = Zed's default, **preset** = Zed's Cursor
 
 | Cursor shortcut | Cursor action | Zed binding and action | From |
 |---|---|---|---|
-| Cmd+I, Cmd+L | Toggle side panel | agent::ToggleFocus; inside the chat input, workspace::ToggleRightDock | preset, here |
+| Cmd+I, Cmd+L (and Cmd+Shift+L inside the chat input) | Toggle side panel | agent::ToggleFocus; inside the chat input, workspace::ToggleRightDock | preset, here |
 | Cmd+L, Cmd+Shift+L in a file | Add selection to chat | agent::AddSelectionToThread | preset |
 | Cmd+Shift+I | Toggle side panel (Zed's preset; not on Cursor's page) | agent::ToggleFocus; inside the chat input, workspace::ToggleRightDock | preset, here |
 | Cmd+K | Inline edit (editor and terminal). Cursor's page lists Cmd+K next to Cmd+L (side panel, add selection); Zed's preset keeps the inline edit that Cursor is known for, and this file does not change that | assistant::InlineAssist | preset |
@@ -44,10 +44,9 @@ Where the binding comes from: **Zed** = Zed's default, **preset** = Zed's Cursor
 | Cursor shortcut | Cursor action | Zed binding and action | From |
 |---|---|---|---|
 | Cmd+B | Toggle left sidebar | workspace::ToggleLeftDock, repeated for editor and terminal focus | Zed, here |
-| Cmd+Opt+B | Toggle right sidebar | workspace::ToggleRightDock | Zed |
-| Cmd+Shift+E | Explorer | project_panel::ToggleFocus; in a full editor Zed's own binding reveals the file in the tree instead, left as it is | Zed |
+| Cmd+Opt+B | Toggle right sidebar | workspace::ToggleRightDock | Zed, here |
+| Cmd+Shift+E | Explorer | project_panel::ToggleFocus; in a full editor Zed's own binding reveals the file in the tree instead, left as it is | Zed, here |
 | Cmd+J | Toggle bottom panel | workspace::ToggleBottomDock | Zed |
-| Ctrl+` | Toggle terminal | terminal_panel::Toggle | Zed |
 | Cmd+P | Quick open | file_finder::Toggle | Zed |
 | Cmd+Shift+F | Search in files | pane::DeploySearch | Zed |
 | Cmd+Shift+H | Replace in files | pane::DeploySearch with replace | Zed |
@@ -109,9 +108,9 @@ Where the binding comes from: **Zed** = Zed's default, **preset** = Zed's Cursor
 - **Tab, cycle to next chat message:** no Zed action found (only scrolling to the next message).
 - **Esc, unfocus the chat field:** not bound. `workspace::FocusCenterPane` exists, but Esc is also Zed's key for other chat actions, so it is left alone.
 - **Cmd+Enter, search codebase in chat:** no Zed action found.
-- **Cmd+K chords (Cmd+K Cmd+F, Cmd+K Z, Cmd+K F12):** Cursor itself uses Cmd+K for inline edit, so these VS Code chords do not work in either editor. With the Cursor preset Zed's own Cmd+K chords (including Cmd+K Cmd+S) are shadowed in the editor too, which is why Cmd+R then Cmd+S is bound.
+- **Cmd+K chords (Cmd+K Cmd+F, Cmd+K F12):** Cursor's page shows Keyboard Shortcuts on Cmd+R then Cmd+S instead of VS Code's Cmd+K Cmd+S, so the Cmd+K chords are not Cursor's. Only Cmd+R then Cmd+S is documented and bound here; whether Cursor moved the other chords under Cmd+R was not checked. With the Cursor preset Zed's own Cmd+K chords (including Cmd+K Cmd+S) are shadowed in the editor too.
 - **Alt+F12, peek definition:** Zed has no inline peek; its Alt+F12 opens the definition in a split.
-- **Cmd+K Z, Zen Mode:** no Zed equivalent (`workspace::ToggleCenteredLayout` only centers the editor).
+- **Zen Mode (VS Code Cmd+K Z):** no Zed equivalent (`workspace::ToggleCenteredLayout` only centers the editor).
 - **Cmd+Shift+B, run build task:** Zed's key opens the outline panel; not changed.
 - **Cursor features without a key** (Agents Window, Design Mode, Bugbot, Cloud Agents) are not shortcuts and are not mapped.
 
