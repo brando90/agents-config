@@ -56,8 +56,8 @@ def ghostty_config(text, fragment):
     return text.rstrip() + f'\n\n{begin}\nconfig-file = {fragment}\n{end}\n'
 
 
-# Zed settings this installer owns; every other live setting (vim_mode, theme, fonts, servers) is left alone.
-ZED_MANAGED = [('base_keymap',), ('agent', 'dock'), ('agent', 'threads_sidebar'),
+# Zed settings this installer owns; every other live setting (vim_mode, fonts, servers) is left alone.
+ZED_MANAGED = [('base_keymap',), ('theme',), ('icon_theme',), ('profiles', 'Gruvbox Dark Soft'), ('agent', 'dock'), ('agent', 'threads_sidebar'),
                ('project_panel', 'dock'), ('git_panel', 'dock'), ('outline_panel', 'dock')]
 
 

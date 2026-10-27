@@ -65,13 +65,17 @@ class DotfilesTests(unittest.TestCase):
 
     def test_zed_settings_merge_preserves_and_is_idempotent(self):
         shared = module.parse_jsonc((module.ROOT / 'dotfiles/zed/settings.json').read_text())
-        source = ('// mine\n{\n  "vim_mode": false, // keep\n  "theme": "Foo",\n'
+        source = ('// mine\n{\n  "vim_mode": false, // keep\n  "ui_font_size": 20,\n'
+                  '  "profiles": {"veribench": {"settings": {"buffer_font_size": 14}}},\n'
                   '  "agent": {"dock": "left", "default_model": {"model": "y"}},\n}\n')
         result = module.zed_settings(source, shared)
         live = module.parse_jsonc(result)
         self.assertIn('// mine', result)
         self.assertIn('// keep', result)
-        self.assertEqual((live['vim_mode'], live['theme']), (False, 'Foo'))
+        self.assertEqual((live['vim_mode'], live['ui_font_size']), (False, 20))
+        self.assertEqual(live['theme'], {'mode': 'light', 'light': 'Gruvbox Light', 'dark': 'One Dark'})
+        self.assertEqual(live['profiles']['veribench'], {'settings': {'buffer_font_size': 14}})
+        self.assertEqual(live['profiles']['Gruvbox Dark Soft']['settings']['theme']['light'], 'Gruvbox Dark Soft')
         self.assertEqual(live['agent']['dock'], 'right')
         self.assertEqual(live['agent']['default_model'], {'model': 'y'})
         self.assertFalse(live['agent']['threads_sidebar']['auto_open'])
@@ -99,6 +103,7 @@ class DotfilesTests(unittest.TestCase):
             run('--apply')
             live = module.parse_jsonc((zed / 'settings.json').read_text())
             self.assertEqual((live['agent']['dock'], live['vim_mode']), ('right', True))
+            self.assertEqual((live['theme']['mode'], live['theme']['light']), ('light', 'Gruvbox Light'))
             self.assertIn('workspace::ToggleLeftDock', (zed / 'keymap.json').read_text())
             backups = list((Path(home) / '.local/state/agents-config/dotfiles/backups').glob('*/.config/zed/settings.json'))
             self.assertEqual(len(backups), 1)
