@@ -110,6 +110,31 @@ class DotfilesTests(unittest.TestCase):
             result = module.cursor_config(source, bindings)
             self.assertEqual(module.cursor_config(result, bindings), result)
 
+    def test_keymap_comment_after_last_entry(self):
+        bindings = [{'context': 'Editor', 'bindings': {'cmd-b': 'x'}}]
+        result = module.cursor_config('[\n  {"bindings": {"a": "b"}} // mine\n]\n', bindings)
+        self.assertIn('// mine', result)
+        self.assertEqual(len(module.parse_jsonc(result)), 2)
+        self.assertEqual(module.cursor_config(result, bindings), result)
+
+    def test_crlf_and_broken_symlink_in_cli(self):
+        script = str(module.ROOT / 'scripts/install_dotfiles.py')
+        with tempfile.TemporaryDirectory() as home:
+            zed = Path(home) / '.config/zed'
+            zed.mkdir(parents=True)
+            (zed / 'keymap.json').write_bytes(b'[\r\n  {"bindings": {"a": "b"}}\r\n]\r\n')
+            subprocess.run([sys.executable, script, '--home', home, '--apply'], check=True, capture_output=True)
+            data = (zed / 'keymap.json').read_bytes()
+            self.assertEqual(data.count(b'\n'), data.count(b'\r\n'))
+        with tempfile.TemporaryDirectory() as home:
+            zed = Path(home) / '.config/zed'
+            zed.mkdir(parents=True)
+            missing = module.ROOT / 'dotfiles/zed/does-not-exist.json'
+            (zed / 'keymap.json').symlink_to(missing)
+            result = subprocess.run([sys.executable, script, '--home', home, '--apply'], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(missing.exists())
+
     def test_symlink_into_repo_is_refused(self):
         script = str(module.ROOT / 'scripts/install_dotfiles.py')
         with tempfile.TemporaryDirectory() as home:

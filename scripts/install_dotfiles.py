@@ -38,11 +38,10 @@ def cursor_config(text, bindings):
     end = blank_comments(text).rfind(']')
     if end < 0:
         raise ValueError('Cursor keybindings must be an array')
-    head = text[:end].rstrip()
-    tail = without_comments(head).rstrip()
-    separator = '' if tail.endswith(('[', ',')) else ','
+    idx = len(blank_comments(text[:end]).rstrip())
+    separator = '' if text[idx - 1] in '[,' else ','
     block = json.dumps(bindings, indent=2)[2:-2]
-    result = head + separator + '\n  ' + BEGIN + '\n' + block + '\n  ' + END + '\n' + text[end:]
+    result = text[:idx] + separator + text[idx:end].rstrip() + '\n  ' + BEGIN + '\n' + block + '\n  ' + END + '\n' + text[end:]
     # Accept JSON-with-comments and a trailing comma in existing user bindings.
     clean = without_comments(result)
     clean = re.sub(r',\s*([}\]])', r'\1', clean)
@@ -190,7 +189,7 @@ def main():
     zed_keymap_live = zed / 'keymap.json'
     zed_settings_live = zed / 'settings.json'
     for live in (zed_settings_live, zed_keymap_live):
-        if live.exists() and ROOT in live.resolve().parents:
+        if (live.is_symlink() or live.exists()) and ROOT in live.resolve().parents:
             parser.error(f'{live} is a link into this repository; replace it with a real file so the installer can merge into it')
     changes = {
         zed_settings_live: zed_settings(read_text(zed_settings_live) if zed_settings_live.exists() else '', zed_shared),
@@ -202,6 +201,8 @@ def main():
     backup = home / '.local/state/agents-config/dotfiles/backups' / stamp
     for path, content in changes.items():
         previous = read_text(path) if path.exists() else ''
+        if '\r\n' in previous:
+            content = content.replace('\r\n', '\n').replace('\n', '\r\n')
         if path.exists() and previous == content:
             print(f'Unchanged: {path}')
             continue
