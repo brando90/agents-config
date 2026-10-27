@@ -33,6 +33,28 @@ class DotfilesTests(unittest.TestCase):
         self.assertIn('font-size = 14', result)
         self.assertEqual(module.ghostty_config(result, Path('/repo/keybindings.conf')), result)
 
+    def test_zed_keymap_matches_cursor_shortcuts(self):
+        text = (module.ROOT / 'dotfiles/zed/keymap.json').read_text()
+        duplicates = []
+
+        def no_duplicates(pairs):
+            keys = [key for key, _ in pairs]
+            duplicates.extend(key for key in keys if keys.count(key) > 1)
+            return dict(pairs)
+
+        blocks = json.loads(module.without_comments(text).replace(',]', ']'), object_pairs_hook=no_duplicates)
+        self.assertEqual(duplicates, [])
+        bound = {(block['context'], key): action for block in blocks for key, action in block['bindings'].items()}
+        # Cursor: Cmd+Opt+S is Save All, Cmd+E the agent layout, Cmd+Opt+F Replace; Brando's Cursor split and focus keys.
+        self.assertEqual(bound[('Workspace', 'cmd-alt-s')], 'workspace::SaveAll')
+        self.assertEqual(bound[('Workspace', 'cmd-e')], 'multi_workspace::ToggleWorkspaceSidebar')
+        self.assertEqual(bound[('Editor && mode == full', 'cmd-alt-f')], 'buffer_search::DeployReplace')
+        self.assertEqual(bound[('Pane', 'ctrl-cmd-down')], 'pane::SplitDown')
+        self.assertEqual(bound[('Pane', 'ctrl-cmd-right')], 'pane::SplitRight')
+        self.assertEqual(bound[('Workspace', 'ctrl-alt-cmd-left')], 'workspace::ActivatePaneLeft')
+        cursor = json.loads(module.without_comments((module.ROOT / 'dotfiles/cursor/keybindings.json').read_text()))
+        self.assertEqual(len(cursor), 6)
+
     def test_migration_checksums(self):
         module.verify_legacy()
 

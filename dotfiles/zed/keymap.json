@@ -1,29 +1,93 @@
-// Cursor-like bindings (base_keymap = Cursor):
+// Cursor parity for Zed (base_keymap = Cursor, so Zed's Cursor preset supplies Cmd+I/L/K, Cmd+Shift+L, Cmd+Shift+J and the
+// accept/reject bindings). This file adds what the preset lacks or gets wrong. Table and gaps: dotfiles/zed/README.md.
 //   cmd-b       -> toggle file sidebar immediately, independent of focus
-//   cmd-alt-s   -> toggle Threads Sidebar (agent threads), like Cursor's unified sidebar
-//   cmd-alt-b   -> toggle right dock (agent chat)
+//   cmd-e       -> Cursor's "Toggle Agent layout" = Zed's Threads sidebar (cmd-alt-s is Save All, as in Cursor)
+//   cmd-alt-b   -> toggle right dock (agent chat), as VS Code's secondary side bar
 //   cmd-shift-e -> focus file tree (project panel)
-//   cmd-j       -> integrated terminal (Zed default)
+//   cmd-j       -> toggle bottom panel (terminal); ctrl-` also toggles the terminal (Zed default)
 [
   {
     "context": "Workspace",
     "bindings": {
       "cmd-b": "workspace::ToggleLeftDock",
-      "cmd-alt-s": "multi_workspace::ToggleWorkspaceSidebar",
+      "cmd-alt-b": "workspace::ToggleRightDock",
       "cmd-shift-e": "project_panel::ToggleFocus",
-      "cmd-alt-b": "workspace::ToggleRightDock"
+      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar",
+      "cmd-alt-s": "workspace::SaveAll",
+      // Cursor opens Keyboard Shortcuts with Cmd+R then Cmd+S; plain Cmd+R is only "new chat" inside the chat.
+      "cmd-r": null,
+      "cmd-r cmd-s": "zed::OpenKeymap",
+      "ctrl-alt-cmd-left": "workspace::ActivatePaneLeft",
+      "ctrl-alt-cmd-down": "workspace::ActivatePaneDown",
+      "ctrl-alt-cmd-up": "workspace::ActivatePaneUp",
+      "ctrl-alt-cmd-right": "workspace::ActivatePaneRight"
+    }
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      // Brando's Cursor splits (dotfiles/cursor/keybindings.json)
+      "ctrl-cmd-down": "pane::SplitDown",
+      "ctrl-cmd-right": "pane::SplitRight"
     }
   },
   {
     "context": "Editor",
     "bindings": {
-      "cmd-b": "workspace::ToggleLeftDock"
+      "cmd-b": "workspace::ToggleLeftDock",
+      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar",
+      "alt-shift-f": "editor::Format",
+      "alt-shift-i": "editor::SplitSelectionIntoLines",
+      "alt-z": "editor::ToggleSoftWrap",
+      "cmd-shift-space": "editor::ShowSignatureHelp",
+      "ctrl-shift-cmd-right": "editor::SelectLargerSyntaxNode",
+      "ctrl-shift-cmd-left": "editor::SelectSmallerSyntaxNode",
+      "cmd-/": ["editor::ToggleComments", { "advance_downwards": false, "comment_empty_lines": false }],
+      "cmd-shift-\\": "editor::MoveToEnclosingBracket",
+      "shift-f12": "editor::FindAllReferences",
+      "cmd-f12": "editor::GoToImplementation"
+    }
+  },
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar",
+      // Zed's own Cmd+Alt+F opens its text finder; VS Code and Cursor open Replace.
+      "cmd-alt-f": "buffer_search::DeployReplace"
+    }
+  },
+  {
+    // Cursor's chat shortcuts while the chat input has focus.
+    "context": "AcpThread > Editor",
+    "bindings": {
+      "cmd-i": "workspace::ToggleRightDock",
+      "cmd-shift-i": "workspace::ToggleRightDock",
+      "cmd-l": "workspace::ToggleRightDock",
+      "cmd-shift-l": "workspace::ToggleRightDock",
+      "cmd-w": "workspace::ToggleRightDock",
+      "cmd-.": "agent::ToggleProfileSelector",
+      "cmd-/": "agent::CycleFavoriteModels",
+      "cmd-alt-/": "agent::ToggleModelSelector",
+      "cmd-n": "agent::NewThread",
+      "cmd-r": "agent::NewThread",
+      "cmd-[": "multi_workspace::PreviousThread",
+      "cmd-]": "multi_workspace::NextThread",
+      "cmd-enter": "agent::SendImmediately"
+    }
+  },
+  {
+    // Cursor: Cmd+Enter accepts all suggested changes, Cmd+Shift+Backspace rejects all (the preset binds reject to Cmd+Backspace).
+    "context": "Editor && editor_agent_diff",
+    "bindings": {
+      "cmd-enter": "agent::KeepAll",
+      "cmd-shift-backspace": "agent::RejectAll"
     }
   },
   {
     "context": "Terminal",
     "bindings": {
-      "cmd-b": "workspace::ToggleLeftDock"
+      "cmd-b": "workspace::ToggleLeftDock",
+      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar"
     }
   }
 ]
