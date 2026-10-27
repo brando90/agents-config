@@ -138,7 +138,12 @@ Agents may configure and use Brando-authorized provider credentials in Pi throug
 Name every route `<sponsor>-<service>-<key-nickname>` so `/model` identifies the model, actual provider and funding credential without displaying the secret.
 **Persistent naming preference (Brando, 10-27-2026):** show the verified sponsor (for example, Koyejo Lab, Stanford or Vals), not just a generic `openai` or `anthropic` label; preserve this preference in the shared provider manifest and startup defaults.
 Do not relabel a generic route as a sponsor without verifying its credential source, and do not invent a sponsor route without matching credentials.
-The named provider ID and model display name both carry the sponsor; upstream model IDs remain unchanged. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
+The named provider ID and model display name both carry the sponsor; upstream model IDs remain unchanged.
+**No duplicate generic routes (Brando, 10-27-2026):** the shared `extensions/sponsor-routes.ts` extension compares a generic route's resolved key with installed sponsor-key files, without logging either value.
+When they match, it exposes that chat catalog only under the verified sponsor, includes newly discovered upstream models, and migrates an existing session to the same model and credential automatically at startup or `/reload`.
+Different sponsor accounts remain distinct choices; a generic route with different credentials, subscription authentication, or no usable named replacement is retained rather than silently changing payer.
+Image and classifier operations are preserved, and neither credentials on disk nor shell environment variables are deleted.
+This behavior is declared in `runtime.json`, so it persists across ordinary sessions and configuration installs; `--no-extensions` intentionally bypasses it. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
 
 ## Files and standard workflow
 
@@ -194,6 +199,7 @@ Sources: [Devin Desktop ACP](https://docs.devin.ai/desktop/acp.md), [custom agen
 
 ```bash
 python3 -m unittest discover -s ~/agents-config/config/pi -p 'test_*.py' -v
+node --test ~/agents-config/config/pi/test_sponsor_routes.mjs
 pi --offline --no-extensions --no-mcp --list-models personal-openai-brando
 pi --offline --no-extensions --no-mcp --list-models allen-google-veribench
 ```

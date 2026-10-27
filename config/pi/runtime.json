@@ -13,7 +13,8 @@
       "${CONFIG_DIR}/codex-accounts"
     ],
     "extensions": [
-      "${CONFIG_DIR}/extensions/config-sync.ts"
+      "${CONFIG_DIR}/extensions/config-sync.ts",
+      "${CONFIG_DIR}/extensions/sponsor-routes.ts"
     ],
     "skills": [
       "${CONFIG_DIR}/skills"
@@ -26,6 +27,7 @@
   ],
   "trackedFiles": [
     "extensions/config-sync.ts",
+    "extensions/sponsor-routes.ts",
     "claude-accounts/index.ts",
     "claude-accounts/accounts.json",
     "claude-accounts/launch.py",
