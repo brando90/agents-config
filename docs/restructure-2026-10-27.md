@@ -29,13 +29,13 @@ New: `skills/README.md` (index of every skill and where it lives), a rewritten D
 
 ## Left in place on purpose
 
-- `claude-code-settings.json`, `bm-agents-config.code-workspace`: wired from `scripts/refresh-agents-config.sh` and `.gitignore`.
+- `claude-code-settings.json` and `bm-agents-config.code-workspace`: `claude-code-settings.json` is the Claude Code hook config (its hook calls `scripts/refresh-agents-config.sh`) and is symlinked to `~/.claude/settings.json` per `machine/mac.md`; the workspace file is whitelisted in `.gitignore`.
 - `config/pi/skills/` (atlas, pi-local-herdr, sbsbz-cardinal-print-flyers, sbsbz-financial-officer): the Pi installer, `runtime.json` and live symlinks on enrolled machines point there. Moving them into `skills/` needs a re-install on each host.
-- Other agents outside this repo may still read `~/agents-config/contacts.md` or `~/agents-config/email-signature.md` by the old path; the in-repo routes are updated.
+- Other agents outside this repo may still read `~/agents-config/contacts.md` or `~/agents-config/email-signature.md` by the old path (`contacts.md`, `email-signature.md`, `init_no_passwords_snap_kinit.md`, `todo_infinite_reauth_kinit_server_side.md`); the in-repo routes are updated. A few `../` link simplifications in `workflows/broad-investigation.md` are incidental and resolve the same.
 
 ## Proposed, not done (needs Brando's word)
 
-1. **Reconcile, then delete** `skills/pi-local-herdr/`: it duplicates `config/pi/skills/pi-local-herdr/` and the two have diverged. The `skills/` copy is newer (10-26-2026, Mac Pi/Ollama port) and says Sherlock/FarmShare need human login; the `config/pi/skills/` copy (10-24-2026, the one the installer links) says they are persistently enabled. Merge the newer text into the Pi copy, then remove the `skills/` one and repoint the two `CATALOG.md` links.
+1. **Reconcile, then delete** `skills/pi-local-herdr/`: it duplicates `config/pi/skills/pi-local-herdr/` and only `SKILL.md` differs (lines 8, 34, 57, 62). The `skills/` copy has the newer commit (10-26-2026, a port of a 10-22 branch) but partly older content; the Pi copy (10-24-2026, the one the installer links) carries the later Sherlock/FarmShare state (`machine/herdr-stanford-access.md`). Reconcile line by line with the Pi copy authoritative for that state, then remove the `skills/` one and repoint the links in `CATALOG.md` line 25 and `machine/mac-pi-herdr-10-22-2026.md` line 35.
 2. **Move** `config/pi/skills/*` into `skills/` and point `config/pi/runtime.json` at it, then run the installer with `--adopt-skill-copies` on the Mac and the five SNAP nodes.
 3. **Stale candidates:** `experiments/01_self_hosted_openclaw/` (his earlier OpenClaw assistant attempt, superseded), `dotfiles/legacy/`, `machine/*-10-22-2026.*` proof files, `docs/instruction-audit/` (one-time receipt), `workflows/jazz-playalongs/` (not agent config), `workflows/assets/` (talk transcript).
 4. **Remote branches:** 60+ merged or abandoned remote branches; list with `git branch -r --merged origin/main` for his review before any deletion.

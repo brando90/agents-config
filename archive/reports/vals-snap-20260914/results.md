@@ -1,6 +1,6 @@
 # Vals Claude Code cluster setup
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/reports/vals-snap-20260914/results.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/archive/reports/vals-snap-20260914/results.md>
 
 **TLDR-start:** [snap: vals-login] Vals Claude Code now works on four reachable nodes with a separate protected grant, fast local executable/session storage, and tested job dispatch. Three requested nodes remain blocked by host or scheduler access.
 

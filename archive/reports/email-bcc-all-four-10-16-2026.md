@@ -1,6 +1,6 @@
 # Universal four-inbox blind copies
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/reports/email-bcc-all-four-10-16-2026.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/archive/reports/email-bcc-all-four-10-16-2026.md>
 
 **TLDR:** Every outgoing agent email must explicitly BCC all four Brando inboxes, including the sending account and any address already in To. Policy and active templates are published; this is not a claim that every already-running agent has reloaded them.
 

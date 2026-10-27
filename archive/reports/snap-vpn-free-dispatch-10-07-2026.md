@@ -1,6 +1,6 @@
 # SNAP internet-only dispatch verification
 
-**Doc link:** https://github.com/brando90/agents-config/blob/main/reports/snap-vpn-free-dispatch-10-07-2026.md
+**Doc link:** https://github.com/brando90/agents-config/blob/main/archive/reports/snap-vpn-free-dispatch-10-07-2026.md
 
 **TLDR:** The MacBook Air reached the official whale gateway and skampere2 without an active Cisco VPN, launched an ordinary-code detached job, and retrieved its successful completion record after the submitting connection ended. This verifies a working authenticated route and short persistent job, not all-host or long-study reliability.
 

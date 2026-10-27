@@ -1,6 +1,6 @@
 # Independent authentication review
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/reports/vals-snap-20260914/review.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/archive/reports/vals-snap-20260914/review.md>
 
 **TLDR:** Final scripts passed a fresh Codex review after the builder fixed credential-read failure and executable-symlink handling.
 

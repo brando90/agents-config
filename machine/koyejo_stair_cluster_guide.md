@@ -1,6 +1,6 @@
 # Koyejo STAIR Lab — Cluster Setup & Resources
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/koyejo_stair_cluster_guide.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/koyejo_stair_cluster_guide.md>
 
 **TLDR:** Reference copy of lab cluster onboarding; migrated shell configuration references now point to `agents-config/dotfiles/legacy/`.
 

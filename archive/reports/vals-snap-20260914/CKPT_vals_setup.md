@@ -1,6 +1,6 @@
 # Vals setup checkpoint
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/reports/vals-snap-20260914/CKPT_vals_setup.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/archive/reports/vals-snap-20260914/CKPT_vals_setup.md>
 
 **TLDR:** Four nodes are verified ready; retain the protected grant and restore access to the remaining three before continuing setup.
 
