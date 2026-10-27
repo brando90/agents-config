@@ -17,6 +17,8 @@
 
 Personal skills with private content go in the Git-ignored `config/pi/private-skills/` and are never committed.
 
+The old Pi copy of `pi-local-herdr` is kept in [`archive/pi-local-herdr-pi-copy-2026-10-27/`](../archive/pi-local-herdr-pi-copy-2026-10-27/); deleting it is part of Stage 3 and waits on Brando's word.
+
 ## Rolling this out to the hosts
 
 No re-install is needed. `config/pi/skills` is a link to this folder, so live links (for example `~/.claude/skills/atlas` pointing at `~/agents-config/config/pi/skills/atlas`) keep resolving after `git pull` and are not rewritten. Enrolled hosts link the two skills that are new to the sync (`research-launch-stack`, `review-paper`) through the auto-sync service by themselves.

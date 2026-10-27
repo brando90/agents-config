@@ -45,14 +45,14 @@ Left in place because live code or core docs read them: `dotfiles/legacy/` (read
 
 ## Stage 2 (AT-1626, Brando said go on 10-27-2026)
 
-- One skills folder: `config/pi/skills/{atlas,sbsbz-cardinal-print-flyers,sbsbz-financial-officer}` moved to `skills/` with `git mv`. The two `pi-local-herdr` copies were merged into `skills/pi-local-herdr/SKILL.md` (Pi copy for the Sherlock/FarmShare state, the `skills/` copy for lines 57 and 62, which carry the merged-PR text); the other copy's files were identical apart from `SKILL.md`, and the old text stays in git history.
+- One skills folder: `config/pi/skills/{atlas,sbsbz-cardinal-print-flyers,sbsbz-financial-officer}` moved to `skills/` with `git mv`. The two `pi-local-herdr` copies were merged into `skills/pi-local-herdr/SKILL.md` (Pi copy for the Sherlock/FarmShare state, the `skills/` copy for lines 57 and 62, which carry the merged-PR text); the other copy's files were identical apart from `SKILL.md`. The old Pi copy is kept in `archive/pi-local-herdr-pi-copy-2026-10-27/` (SKILL.md and agents/openai.yaml); removing it is part of Stage 3 and waits on Brando's word.
 - `config/pi/skills` is now a relative link to `../../skills`, so live links on the Mac and SNAP nodes keep resolving. `config/pi/auto_sync.py` and `config/pi/sync_runtime.py` accept that one link (`shared_skills_link`) and still refuse every other symlink; `config/pi/test_auto_sync.py` and `test_sync_runtime.py` cover it.
 - The 17 `scripts/test_*.py` files moved to `scripts/tests/` (with `git mv`); path lookups point at `scripts/`, and `scripts/tests/_path.py` puts `scripts/` on `sys.path`. Run all: `python3 -m unittest discover -s scripts/tests -p 'test_*.py'`.
 - Rollout order and recovery for hosts that have not pulled yet are in [skills/README.md](../skills/README.md); `scripts/refresh-agents-config.sh` now warns when a real `config/pi/skills` folder blocks the pull. `docs/instruction-audit/inventory.tsv` keeps the old test paths (dated receipt).
 
 ## Proposed, not done (needs Brando's word)
 
-1. ~~Reconcile, then delete the `pi-local-herdr` duplicate~~ Reconciled into one folder in Stage 2 above.
+1. ~~Reconcile the `pi-local-herdr` duplicate~~ Reconciled into one folder in Stage 2 above. **Still to do (Stage 3):** delete the archived old Pi copy, `archive/pi-local-herdr-pi-copy-2026-10-27/`.
 2. ~~Move `config/pi/skills/*` into `skills/`~~ Done in Stage 2 above.
 3. **Stale candidates:** `archive/experiments/01_self_hosted_openclaw/` (his earlier OpenClaw assistant attempt, superseded), `dotfiles/legacy/`, `machine/*-10-22-2026.*` proof files, `docs/instruction-audit/` (one-time receipt), `archive/non-agent/jazz-playalongs/` (not agent config), `workflows/assets/` (talk transcript).
 4. **Remote branches:** 60+ merged or abandoned remote branches; list with `git branch -r --merged origin/main` for his review before any deletion.
