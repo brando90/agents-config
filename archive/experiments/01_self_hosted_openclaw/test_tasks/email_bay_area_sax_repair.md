@@ -75,7 +75,7 @@ Brando picks 3–5 to email (probably skip the most premium / most distant unles
 ## Prereqs (must be true before this can run)
 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working)
-- [x] Brando email routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26
+- [x] Brando email routing rule landed in [`INDEX_RULES.md`](../../../../INDEX_RULES.md) Trigger Rule 26
 - [ ] Brando's saxophone brand + model (e.g. "Yamaha YAS-62 alto", "Selmer Mark VI tenor") — populates the SAX_BRAND_MODEL placeholder in subject + body
 - [ ] Brando picks which 3–5 shops to email (default: Saxology + Best Instrument Repair + Anthony's Woodwind — geographically closer, mid-tier pricing band)
 - [ ] Verified email addresses for each picked shop — agent does the contact-page scrape if shop site has a contact form / email listed; otherwise prompt Brando

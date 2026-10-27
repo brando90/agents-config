@@ -57,7 +57,7 @@ Email only (no Discord, no Telegram channel post). Outbound is `gog gmail send`.
 ## Prereqs (must be true before this can run)
 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working)
-- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26
+- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../../INDEX_RULES.md) Trigger Rule 26
 - [ ] Alex Aiken's current PhD student list resolved (Brando provides, OR Claude looks up from `theory.stanford.edu/~aiken/` if asked)
 - [ ] Stepan Nesterov's email resolved (Brando provides; check Stanford CS directory or `aiforlean.org` member list)
 - [ ] VeriVeribench project name confirmed — is it "VeriBench" (existing benchmark) or "VeriVeribench" (typo or distinct project)?

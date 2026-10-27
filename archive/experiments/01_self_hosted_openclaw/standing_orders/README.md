@@ -71,7 +71,7 @@ Sensitive fields (full draft text, recipient phone, etc.) are NOT in the audit l
 7. **Screenshot before submit on web forms** — DM the screenshot, wait for `post`.
 8. **Notify on completion without mailbox spam** — on a successful Execute, emit:
    - **(a) Telegram reply in the originating chat** with `✅ <one-line summary> — <relevant URL>`.
-   - **(b) Email to Brando only when explicitly requested/tracked** per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 14: user-triggered big/mega QA or explicit "email me when done." Send to `brando.science@gmail.com` with no CC by default; subject `OpenClaw: <workflow> done — <summary>`; body lists what was done + links + audit-log row.
+   - **(b) Email to Brando only when explicitly requested/tracked** per [`INDEX_RULES.md`](../../../../INDEX_RULES.md) Trigger Rule 14: user-triggered big/mega QA or explicit "email me when done." Send to `brando.science@gmail.com` with no CC by default; subject `OpenClaw: <workflow> done — <summary>`; body lists what was done + links + audit-log row.
    - **Exception:** if the executed action was itself sending an email *to* Brando, skip (b) (circular). Telegram reply alone is sufficient.
    - **Failure handling:** if a required notification path fails, retry once, then post `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action.
 

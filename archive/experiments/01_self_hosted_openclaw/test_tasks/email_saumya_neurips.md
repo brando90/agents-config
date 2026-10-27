@@ -9,7 +9,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 ## Recipient
 
 - **To:** Saumya `<full email TBD by Brando>`
-- **CC:** `brando.science@gmail.com`, per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26. Add `brando9@stanford.edu` or `brandojazz@gmail.com` only if Brando explicitly asks.
+- **CC:** `brando.science@gmail.com`, per [`INDEX_RULES.md`](../../../../INDEX_RULES.md) Trigger Rule 26. Add `brando9@stanford.edu` or `brandojazz@gmail.com` only if Brando explicitly asks.
 
 ## Drafted message
 
@@ -40,7 +40,7 @@ Email only (no Discord, no Telegram channel post). The agent's outbound is `gog 
 - [x] `gog` skill exposed to agent and Ready ✓ (per [`MASTER_PLAN.md`](../MASTER_PLAN.md) Appendix E "Current pickup state" — Gmail row marked ✅ working — already working on the Air)
 - [ ] Saumya's full email captured (Brando provides, ideally added to a contacts roster file)
 - [ ] Paper ID / submission identifier confirmed (which paper is this for?)
-- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../INDEX_RULES.md) (so the agent knows the CC behavior is canonical, not just for this task)
+- [x] Brando routing rule landed in [`INDEX_RULES.md`](../../../../INDEX_RULES.md) (so the agent knows the CC behavior is canonical, not just for this task)
 
 ## Open questions
 

@@ -105,7 +105,7 @@ For bulk operations (>3 recipients, mailing-list blasts, multi-platform social p
   - `experiments_dispatched.jsonl`, `paper_announcements.jsonl`
 - **Completion notifications** — every successfully executed task (anything that went through a `post` approval) gets a Telegram receipt; email is optional and only for explicitly tracked workflows:
   1. **Telegram reply in the originating chat** — the same DM thread where Brando issued / approved the task. One-line summary + relevant URLs (sent-message link, FB event URL, PR URL, etc.). E.g. `✅ sent reply to registrar@stanford.edu — gmail.com/threads/<id>`. This is the *primary* signal because it ties the result to the conversation.
-  2. **Optional email to Brando** — only when Brando explicitly asked for email/notification/tracking per [`INDEX_RULES.md`](../../INDEX_RULES.md) Trigger Rule 14. Send to `brando.science@gmail.com` with no CC by default per Trigger Rule 26. Subject: `OpenClaw: <workflow> done — <one-line summary>`. Body: what was done, links, audit-log entry.
+  2. **Optional email to Brando** — only when Brando explicitly asked for email/notification/tracking per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 14. Send to `brando.science@gmail.com` with no CC by default per Trigger Rule 26. Subject: `OpenClaw: <workflow> done — <one-line summary>`. Body: what was done, links, audit-log entry.
   - **Exception:** if the executed action was itself sending an email *to* Brando (e.g. email-triage replied to a sender on his behalf), skip step 2 (would be circular) and rely on the Telegram reply + the Sent folder + the `triaged-by-claw` Gmail label as the audit trail.
   - **Failure mode:** if the required notification path fails (Telegram down, or Gmail only when email tracking was explicitly requested), retry once and then DM `🚨 [${HOSTNAME}] notify failed: <reason>` to `openclaw-ops`. Don't roll back the executed action — it's already done; the audit trail is the recovery path.
 - **Cross-instance audit aggregation** — deferred to Phase 6 (weekly summary report DM'd to Brando).
@@ -741,8 +741,8 @@ Filing these is good open-source citizenship and forces upstream to think about 
 - Test tasks (one-shot validation): [`test_tasks/`](./test_tasks/) — see [`test_tasks/README.md`](./test_tasks/README.md)
 - Chatops / fleet management (future): [`chatops.md`](./chatops.md) — bots.yaml registry + DM-driven commands
 - Operational artifacts: [`config/`](./config/) (`admin-filter.txt`, `agent-prompt.md`, `openclaw.json.template`), [`scripts/`](./scripts/) (`install_openclaw_instance.sh`, etc.)
-- SNAP playbook: [`~/agents-config/machine/snap.md`](../../machine/snap.md)
-- Mac playbook: [`~/agents-config/machine/mac.md`](../../machine/mac.md)
+- SNAP playbook: [`~/agents-config/machine/snap.md`](../../../machine/snap.md)
+- Mac playbook: [`~/agents-config/machine/mac.md`](../../../machine/mac.md)
 - Redirect stub: [`PLAN.md`](./PLAN.md) (points here)
 - Project history — prior `cc_prompt.md` / `setup-tutorial.md` / `todos.md` / `wishlist.md` content is now absorbed into **Appendices A–F** at the bottom of this file.
 

@@ -59,7 +59,7 @@ Specific instance of the `meeting / grant-broadcast` flow above. Lives here rath
 
 **Channels.**
 1. Discord — leadership channel of Lean AI Club server (channel name TBD by Brando).
-2. Email — to Fred / Henry B / Eric Pineda (full emails TBD), BCC `brando.science@gmail.com` for auditability per [`INDEX_RULES.md`](../../../INDEX_RULES.md) Trigger Rule 26; add Stanford/personal blind copies only if Brando explicitly asks.
+2. Email — to Fred / Henry B / Eric Pineda (full emails TBD), BCC `brando.science@gmail.com` for auditability per [`INDEX_RULES.md`](../../../../INDEX_RULES.md) Trigger Rule 26; add Stanford/personal blind copies only if Brando explicitly asks.
 
 **Discord draft.**
 

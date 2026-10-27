@@ -33,9 +33,19 @@ New: `skills/README.md` (index of every skill and where it lives), a rewritten D
 - `config/pi/skills/` (atlas, pi-local-herdr, sbsbz-cardinal-print-flyers, sbsbz-financial-officer): the Pi installer, `runtime.json` and live symlinks on enrolled machines point there. Moving them into `skills/` needs a re-install on each host.
 - Other agents outside this repo may still read `~/agents-config/contacts.md` or `~/agents-config/email-signature.md` by the old path (`contacts.md`, `email-signature.md`, `init_no_passwords_snap_kinit.md`, `todo_infinite_reauth_kinit_server_side.md`); the in-repo routes are updated. A few `../` link simplifications in `workflows/broad-investigation.md` are incidental and resolve the same.
 
+## Round 2 (Brando approved the refactoring on 10-27-2026, minimal deletions)
+
+Moved with `git mv` (nothing deleted, links rewritten, relative links inside moved files fixed):
+- `machine/*-10-22-2026.*` (8 dated proof files) to `archive/machine-proofs/`.
+- `experiments/01_self_hosted_openclaw/` to `archive/experiments/`.
+- `workflows/jazz-playalongs/` to `archive/non-agent/`.
+- README gained a file map with a Kind column.
+
+Left in place because live code or core docs read them: `dotfiles/legacy/` (read by `tests/test_install_dotfiles.py`), `docs/instruction-audit/` (read by `scripts/check_instruction_docs.py` and the startup docs), `workflows/assets/` (linked from many guides).
+
 ## Proposed, not done (needs Brando's word)
 
-1. **Reconcile, then delete** `skills/pi-local-herdr/`: it duplicates `config/pi/skills/pi-local-herdr/` and only `SKILL.md` differs (lines 8, 34, 57, 62). The `skills/` copy has the newer commit (10-26-2026, a port of a 10-22 branch) but partly older content; the Pi copy (10-24-2026, the one the installer links) carries the later Sherlock/FarmShare state (`machine/herdr-stanford-access.md`). Reconcile line by line with the Pi copy authoritative for that state, then remove the `skills/` one and repoint the links in `CATALOG.md` line 25 and `machine/mac-pi-herdr-10-22-2026.md` line 35.
+1. **Reconcile, then delete** `skills/pi-local-herdr/`: it duplicates `config/pi/skills/pi-local-herdr/` and only `SKILL.md` differs (lines 8, 34, 57, 62). The `skills/` copy has the newer commit (10-26-2026, a port of a 10-22 branch) but partly older content; the Pi copy (10-24-2026, the one the installer links) carries the later Sherlock/FarmShare state (`machine/herdr-stanford-access.md`). Reconcile line by line with the Pi copy authoritative for that state, then remove the `skills/` one and repoint the links in `CATALOG.md` line 25 and `archive/machine-proofs/mac-pi-herdr-10-22-2026.md` line 35.
 2. **Move** `config/pi/skills/*` into `skills/` and point `config/pi/runtime.json` at it, then run the installer with `--adopt-skill-copies` on the Mac and the five SNAP nodes.
-3. **Stale candidates:** `experiments/01_self_hosted_openclaw/` (his earlier OpenClaw assistant attempt, superseded), `dotfiles/legacy/`, `machine/*-10-22-2026.*` proof files, `docs/instruction-audit/` (one-time receipt), `workflows/jazz-playalongs/` (not agent config), `workflows/assets/` (talk transcript).
+3. **Stale candidates:** `archive/experiments/01_self_hosted_openclaw/` (his earlier OpenClaw assistant attempt, superseded), `dotfiles/legacy/`, `machine/*-10-22-2026.*` proof files, `docs/instruction-audit/` (one-time receipt), `archive/non-agent/jazz-playalongs/` (not agent config), `workflows/assets/` (talk transcript).
 4. **Remote branches:** 60+ merged or abandoned remote branches; list with `git branch -r --merged origin/main` for his review before any deletion.

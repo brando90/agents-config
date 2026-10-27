@@ -63,7 +63,30 @@ Pi-agent-style layout: a small core, skills each in their own folder, and machin
 - **Guides:** `workflows/` and `writing/` (focused guides loaded when relevant).
 - **Personal:** `personal/` (contacts and email signature).
 - **Tools:** `scripts/`, `tests/`, and `dotfiles/` (shared app shortcuts, safe installer and preserved legacy dotfiles; keep credentials outside Git).
-- **Records:** `experiments/`, `archive/` (dated reports, reviews and QA reports; historical evidence), `docs/` (human setup reference, audit, background) and `docs/todo/` (open to-do notes).
+- **Records:** `experiments/` (active experiments), `archive/` (dated or superseded material: reports, reviews, QA reports, `machine-proofs/`, retired experiments, non-agent files; historical evidence), `docs/` (human setup reference, audit, background) and `docs/todo/` (open to-do notes).
+
+### File map
+
+An orientation map; the linked files are authoritative. `Kind` separates what agents execute from what only records history.
+
+| Path | Kind | Purpose |
+| --- | --- | --- |
+| [`AGENTS.md`](AGENTS.md), [`CLAUDE.md`](CLAUDE.md) | Executable policy | Always-loaded startup rules (identical; budgeted) |
+| [`INDEX_RULES.md`](INDEX_RULES.md) | Executable policy | Rule router and rule ids |
+| [`CATALOG.md`](CATALOG.md) | Index | Where every guide lives |
+| [`rules/`](rules/) | Executable policy | Detailed shared rules by topic |
+| [`skills/`](skills/README.md) | Executable workflows | On-demand skills, one folder each (Pi-synced ones in `config/pi/skills/`) |
+| [`workflows/`](workflows/), [`writing/`](writing/) | Guides | Focused procedures loaded when relevant |
+| [`machine/`](machine/) | Host notes | Live per-host and cluster notes and setup guides |
+| [`config/`](config/pi/README.md) | Runtime config | Pi installer, accounts, sync |
+| [`dotfiles/`](dotfiles/README.md) | Runtime config | Shared app shortcuts and safe installer |
+| [`scripts/`](scripts/), [`tests/`](tests/) | Tools | Dispatch, sync and check scripts with their tests |
+| [`claude-code-settings.json`](claude-code-settings.json) | Runtime config | Claude Code hook config |
+| [`personal/`](personal/) | Personal data | Contacts and email signature |
+| [`jobs-inbox/`](jobs-inbox/README.md) | Queue | Pending and dispatched job files |
+| [`experiments/`](experiments/) | Records | Active experiments |
+| [`docs/`](docs/), [`docs/todo/`](docs/todo/) | Records | Setup reference, audit receipt, restructure notes, open to-dos |
+| [`archive/`](archive/) | History | Superseded or dated material, kept for evidence (moved, not deleted) |
 
 Keep useful task-scoped references intact. Add procedures to their topic and routing entry, not every startup file.
 

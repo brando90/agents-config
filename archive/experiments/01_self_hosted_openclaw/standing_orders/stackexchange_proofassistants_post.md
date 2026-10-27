@@ -90,7 +90,7 @@ Stack Exchange's `api.stackexchange.com` exposes read + edit + vote + comment en
 ### Phase 0 — Pre-flight
 - Re-verify SE has no public `POST /questions` endpoint; if changed, switch to API path and skip Phases 1–2 of the browser flow.
 - Confirm Brando's PA SE account + rep level.
-- Verify mercury2 has Chromium + Playwright installable: `pip install playwright && playwright install --with-deps chromium`. SNAP nodes may lack `apt-get` — fall back to `playwright install chromium` (no system deps) and `LD_LIBRARY_PATH` workarounds if needed. See [`machine/mercury2.md`](../../../machine/mercury2.md).
+- Verify mercury2 has Chromium + Playwright installable: `pip install playwright && playwright install --with-deps chromium`. SNAP nodes may lack `apt-get` — fall back to `playwright install chromium` (no system deps) and `LD_LIBRARY_PATH` workarounds if needed. See [`machine/mercury2.md`](../../../../machine/mercury2.md).
 
 ### Phase 1 — One-time auth
 - One-time interactive login on a Mac (X / GUI available): `python scripts/se_login.py --site proofassistants` → opens Chromium → Brando logs in (incl. SSO / 2FA) → script saves `storage_state.json`.
@@ -129,7 +129,7 @@ The standing order is "live" when, sustained for ≥4 weeks of real use:
 
 ## Hard rules for the executing agent
 
-(From [`~/agents-config/INDEX_RULES.md`](../../../INDEX_RULES.md).)
+(From [`~/agents-config/INDEX_RULES.md`](../../../../INDEX_RULES.md).)
 
 - Refresh agents-config first (`git -C ~/agents-config pull`); re-read `INDEX_RULES.md`.
 - **Never commit secrets** — `storage_state.json`, OAuth tokens, all live in `~/keys/` mode 600 (Hard Rule 1).
@@ -164,7 +164,7 @@ The standing order is "live" when, sustained for ≥4 weeks of real use:
 - Proof Assistants SE: https://proofassistants.stackexchange.com
 - Stack Exchange API docs: https://api.stackexchange.com/docs
 - Playwright (Python): https://playwright.dev/python/
-- Mercury2 machine doc: [`~/agents-config/machine/mercury2.md`](../../../machine/mercury2.md)
+- Mercury2 machine doc: [`~/agents-config/machine/mercury2.md`](../../../../machine/mercury2.md)
 
 ## Status
 

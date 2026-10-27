@@ -40,7 +40,7 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 - Check actual shells, not only Herdr reachability: `command -v pi; pi --version`. Five SNAP nodes have Pi 1.4.0; use the shared `/dfs/scratch0/brando9/bin/pi` launcher, with each `~/.local/bin/pi` pointing to it. It resolves the existing node-local package and loads the existing Node version manager when needed.
 - An already-open shell does not reread startup files. Immediate recovery: `export PATH="/dfs/scratch0/brando9/bin:$HOME/.local/bin:$PATH"; hash -r; pi --version`. Do not install Ubuntu's unrelated `apt` package named `pi`.
 - `pi --check-local` checks the configured local route without generation. For the existing `snap-coder` loopback profile, the launcher reuses the current service or makes one bounded SSH tunnel attempt to skampere1. It never starts GPU workloads, loads provider keys or rewrites model settings. Explicit other providers remain unchanged. Keep host-key checks and human authentication boundaries.
-- Current fresh-session provider/model: `snap-coder/qwen3-coder-30b`; skampere1 serves port 18201, other SNAP hosts forward loopback port 18127. The earlier 27B endpoint is unavailable. See `machine/pi-host-parity-10-22-2026.md` for proof and historical failures.
+- Current fresh-session provider/model: `snap-coder/qwen3-coder-30b`; skampere1 serves port 18201, other SNAP hosts forward loopback port 18127. The earlier 27B endpoint is unavailable. See `archive/machine-proofs/pi-host-parity-10-22-2026.md` for proof and historical failures.
 - Same command does not mean the same hardware or local model server. Sherlock/FarmShare require independent authentication and verification. Their pending user-level installer is `scripts/install_pi_remote.sh`; it installs Pi 1.4.0 with npm under the home directory, needs Node >=22.19.0, and preserves shell files with backups. Never infer successful installation from a copied script.
 
 ## Persistent mouse and clipboard
@@ -48,7 +48,7 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 - Keep `ui.mouse_capture = true` and `ui.copy_on_select = true` in Herdr configuration. `herdr config check` and `herdr server reload-config` verified this Mac's settings applied; iTerm2 profile and live gestures are still unverified because computer control denied access to iTerm2.
 - iTerm2's active saved profile must allow mouse reporting, wheel events, clicks and drags. Keep Command-C/Command-V as normal copy/paste; Option-drag temporarily gives native terminal selection. Do not disable mouse reporting to fix selection, because Herdr navigation needs it.
 - Local images: Save to Temp File and Paste Path, optionally remember choice. Remote images: `keys.remote_image_paste = "ctrl+v"` works specifically in supported `herdr --remote` attachments; verify transfer. A Mac temporary path is not accessible on SNAP merely because it was pasted there.
-- Follow `machine/herdr-mouse-agent-repairs-10-22-2026.md` for persistence acceptance checks and observed agent repairs. Do not claim input “always works” from configuration validation alone.
+- Follow `archive/machine-proofs/herdr-mouse-agent-repairs-10-22-2026.md` for persistence acceptance checks and observed agent repairs. Do not claim input “always works” from configuration validation alone.
 
 ## Reuse before reinstalling
 
@@ -59,6 +59,6 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 
 ## Reproduction and evidence
 
-Read the dated receipt in `~/agents-config/machine/mac-pi-herdr-10-22-2026.md` once its pull request lands; before then, use the installed copy at `~/.local/share/pi-local-setup/10-22-2026/`. Launcher source is `scripts/pi_local.py` in the same pull request. Local logs are not automatically published.
+Read the dated receipt in `~/agents-config/archive/machine-proofs/mac-pi-herdr-10-22-2026.md` once its pull request lands; before then, use the installed copy at `~/.local/share/pi-local-setup/10-22-2026/`. Launcher source is `scripts/pi_local.py` in the same pull request. Local logs are not automatically published.
 
 New local-model installation must inspect available disk space as well as memory. Ollama creates a local identity file on first startup; honor any task-specific prohibition on new key files. Keep the local route free. The separately authorized Gemini route uses the existing key and task budget; do not change billing or create credentials.

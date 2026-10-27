@@ -32,6 +32,6 @@ Brando subsequently authorized **all six profiles enabled for automatic connecti
 
 Persistent Herdr mouse capture and copy-on-select are enabled; validation passed and the live server accepted reload without diagnostics. iTerm2 profile and live gesture checks remain unverified because computer control denied iTerm2 access. [Mouse/clipboard setup and agent error/fix guide](herdr-mouse-agent-repairs-10-22-2026.md).
 
-**Artifacts:** [launchers](../scripts/pi_gemini.py), [skill](../skills/pi-local-herdr/SKILL.md), [PR #87](https://github.com/brando90/agents-config/pull/87) (ported to main). Local steps/receipts: `~/.local/share/pi-local-setup/10-22-2026/`.
+**Artifacts:** [launchers](../../scripts/pi_gemini.py), [skill](../../skills/pi-local-herdr/SKILL.md), [PR #87](https://github.com/brando90/agents-config/pull/87) (ported to main). Local steps/receipts: `~/.local/share/pi-local-setup/10-22-2026/`.
 
 **TLDR-end:** [VeriBench: Pi and Herdr] Gemini launcher installed; free local fallback preserved; integrations installed and remote limitations documented.

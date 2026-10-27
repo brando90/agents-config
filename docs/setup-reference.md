@@ -37,17 +37,17 @@ Brando's OpenClaw bots must be alive 24/7. `launchd KeepAlive` only catches proc
 ```bash
 # 1. Run the script every 5 min via launchd (macOS) or cron (Linux); see
 #    install instructions at the bottom of:
-sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
+sh ~/agents-config/archive/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
 #    The script: checks gateway is up + Telegram is `running, connected`
 #    + PONG round-trip works. On failure it escalates: restart → full
 #    reset (clear plugin-runtime-deps + reload) → DM openclaw-ops if it
 #    still can't recover.
 
 # 2. Pre-grant macOS TCC prompts once per host so the agent is fire-and-forget:
-sh ~/agents-config/experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-automation.sh
+sh ~/agents-config/archive/experiments/01_self_hosted_openclaw/scripts/pre-grant-tcc-automation.sh
 ```
 
-Full design + decision tree: [`experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](../experiments/01_self_hosted_openclaw/MASTER_PLAN.md) §A.0.5 (TCC pre-grants), §A.6 (gotchas), §A.8 (triage flow when bot stops replying).
+Full design + decision tree: [`archive/experiments/01_self_hosted_openclaw/MASTER_PLAN.md`](../archive/experiments/01_self_hosted_openclaw/MASTER_PLAN.md) §A.0.5 (TCC pre-grants), §A.6 (gotchas), §A.8 (triage flow when bot stops replying).
 
 ### OpenClaw on a new SNAP / Linux node — fast path
 
@@ -68,7 +68,7 @@ The Linux install path is automated. From a fresh SNAP node (after the standard 
 #    /revoke + /token to rotate before continuing.
 #    Why per-host: one bot can only be long-polled by one process. Sharing
 #    causes HTTP 409 conflicts that drop messages — see:
-#    experiments/01_self_hosted_openclaw/concepts.md Q1.
+#    archive/experiments/01_self_hosted_openclaw/concepts.md Q1.
 
 # 2. Drop the token on the host (mode 600):
 printf '%s\n' '<TOKEN-FROM-BOTFATHER>' > ~/keys/openclaw_telegram_bot_token.txt
@@ -82,7 +82,7 @@ chmod 600 ~/keys/openclaw_telegram_bot_token.txt
 #        as default model since openai-codex chatgpt-OAuth is currently flaky on Linux)
 
 # 4. Run the installer:
-bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance_linux.sh
+bash ~/agents-config/archive/experiments/01_self_hosted_openclaw/scripts/install_openclaw_instance_linux.sh
 #    What it does: npm install openclaw, install the @openclaw/codex plugin,
 #    render ~/.openclaw/openclaw.json from the template, write a tmux respawn
 #    wrapper + an @reboot wrapper (waits for DFS, runs krenew first), launch
@@ -108,7 +108,7 @@ tail -f ~/openclaw/gateway.log
 tmux kill-session -t openclaw-gateway
 
 # Manually re-run the health-watcher to trigger self-heal logic:
-bash ~/agents-config/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
+bash ~/agents-config/archive/experiments/01_self_hosted_openclaw/scripts/openclaw-health-watcher.sh
 
 # Hit gateway health directly (loopback only):
 curl -s http://127.0.0.1:18789/health
