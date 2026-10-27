@@ -16,7 +16,7 @@
 
 | Skill | What it does |
 |---|---|
-| [`atlas`](../config/pi/skills/atlas/SKILL.md) | Atlas data helper with CLI scripts. |
+| [`atlas`](../config/pi/skills/atlas/SKILL.md) | macOS AppleScript control of the ChatGPT Atlas desktop app (tabs, bookmarks, history). |
 | [`pi-local-herdr`](../config/pi/skills/pi-local-herdr/SKILL.md) | Local Pi (Gemini and Ollama) and Herdr machine profiles. |
 | [`sbsbz-cardinal-print-flyers`](../config/pi/skills/sbsbz-cardinal-print-flyers/SKILL.md) | Stanford Bachata flyer printing. |
 | [`sbsbz-financial-officer`](../config/pi/skills/sbsbz-financial-officer/SKILL.md) | Stanford Bachata financial-officer duties and invoice checks. |
