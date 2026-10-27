@@ -108,7 +108,7 @@ ssh skampere2 "tmux attach -t ssh_job_<name>_<stamp>"   # live view
 
 ### Gotchas
 
-- **Kerberos expires.** `klist` should show a valid ticket. If `ssh <node>` prompts for a password, `kinit` and retry. See [`../init_no_passwords_snap_kinit.md`](../init_no_passwords_snap_kinit.md).
+- **Kerberos expires.** `klist` should show a valid ticket. If `ssh <node>` prompts for a password, `kinit` and retry. See [`../machine/init_no_passwords_snap_kinit.md`](../machine/init_no_passwords_snap_kinit.md).
 - **Target node must have an agent binary** (`clauded`/`codex`/`claude`) on `PATH` for smart mode; otherwise the remote script falls back to direct mode with a warning.
 - **The job's working directory is `~/dfs/ssh_job_queue/<stamp>__<name>/`** when the agent executes it. If your script `cd`s elsewhere (e.g. `cd ~/harbor_jobs`), that's fine.
 

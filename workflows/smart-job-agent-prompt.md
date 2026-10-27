@@ -61,7 +61,7 @@ Instructions:
 {{NOTIFY_CC_INSTRUCTIONS}}
    Subject: [Job] {{ORIGINAL_NAME}} on {{HOSTNAME}} — <PASS|FAIL>
    Body: what happened, exit code, key log lines, what you tried.
-   Append signature from ~/agents-config/email-signature.md.
+   Append signature from ~/agents-config/personal/email-signature.md.
 
 4. Do NOT create drafts. If notification email is configured, send it once at
    the end only.

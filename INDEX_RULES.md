@@ -154,7 +154,7 @@ The [writing catalog](CATALOG.md#writing) routes paper, blog and announcement wo
 
 ## Collaborators / Contact roster
 
-Before addressing/assigning a person, resolve identity through [contacts](contacts.md) and the [roster route](rules/services.md#collaborators--contact-roster).
+Before addressing/assigning a person, resolve identity through [contacts](personal/contacts.md) and the [roster route](rules/services.md#collaborators--contact-roster).
 
 ## SNAP watcher reauth & reboot persistence (2026-04)
 

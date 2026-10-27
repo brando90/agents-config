@@ -97,7 +97,7 @@ have parallels in this repo:
   (`experiments/00_refactor_qa_gate/`). Look for evaluation patterns,
   hallucination-mitigation tactics, or human-in-the-loop checkpoints.
 - **Open-source health-tooling governance** → parallels to how this repo
-  manages its own self-improving config (`todo_self_improving_agents_config.md`).
+  manages its own self-improving config (`docs/todo/todo_self_improving_agents_config.md`).
 
 Re-read the transcript with the above hooks in mind and replace this section
 with specific, cited items.

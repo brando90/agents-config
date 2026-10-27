@@ -51,7 +51,7 @@ DFS job-queue watchers stay alive across the two failure modes (Kerberos/AFS tic
 0 */4 * * * /dfs/scratch0/brando9/bin/krenew.sh                  # keytab kinit + aklog
 @reboot     /dfs/scratch0/brando9/bin/start_watcher_at_reboot.sh # wait for DFS, krenew, relaunch
 ```
-**No password ever leaves your Mac.** The reauth credential is `/dfs/scratch0/brando9/.keytab` (chmod 600), generated once interactively via `ktutil`; `kinit -kt` proves identity from the keytab without prompting. Automation (Claude Code, cron, Codex) only needs read access to the keytab file. If you change your Stanford password, regenerate the keytab — see [`init_no_passwords_snap_kinit.md`](../init_no_passwords_snap_kinit.md) and [`README.md`](../README.md) § "Keeping watchers alive".
+**No password ever leaves your Mac.** The reauth credential is `/dfs/scratch0/brando9/.keytab` (chmod 600), generated once interactively via `ktutil`; `kinit -kt` proves identity from the keytab without prompting. Automation (Claude Code, cron, Codex) only needs read access to the keytab file. If you change your Stanford password, regenerate the keytab — see [`machine/init_no_passwords_snap_kinit.md`](../machine/init_no_passwords_snap_kinit.md) and [`README.md`](../README.md) § "Keeping watchers alive".
 
 ---
 
