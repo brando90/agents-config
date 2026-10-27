@@ -143,7 +143,7 @@ has no such race — use it when a node must run unattended for a long time.
 | `scripts/install_su_node.sh` | node | Node-local Claude runtime (content-addressed by sha256) + `claude-su` / `clauded-su` wrappers |
 | `scripts/su_remote_entry.sh` | DFS | Shared `/dfs/.../bin` dispatcher → node-local Claude wrapper |
 | `scripts/push_claude_su_snap.sh` | mac | Pushes the grant, runs the installer, installs dispatchers, smoke-tests each node |
-| `scripts/test_su_wrappers.py` | mac | Unit-tests the generated Claude wrapper: argument forwarding, the yolo flag, and that every bad-grant case fails closed (`python3 scripts/test_su_wrappers.py`) |
+| `scripts/tests/test_su_wrappers.py` | mac | Unit-tests the generated Claude wrapper: argument forwarding, the yolo flag, and that every bad-grant case fails closed (`python3 scripts/tests/test_su_wrappers.py`) |
 | `scripts/setup_personal_token.sh` | mac | Runs `claude setup-token` for the personal account in a 1000-column pty (a wrapped token is silently truncated) and saves it, mode 600, to `~/keys/claude_personal_oauth_token.txt` without echoing it |
 | `scripts/install_personal_node.sh` | node | Node-local runtime + `claude-personal` / `clauded-personal` wrappers reading the personal grant `/dfs/scratch0/brando9/.claude-personal-remote/oauth-token` |
 | `scripts/personal_remote_entry.sh` | DFS | Shared dispatcher installed as `clauded`, `clauded-personal` and `claude-personal` |
@@ -174,8 +174,8 @@ A new profile is invisible to the tooling until it is named in three places, bec
 
 Without the board entry, that account's sessions show up with a blank agent column and
 `--resume-dead` types the *wrong* wrapper (the personal one) into the recovery window — it would
-resume a Stanford conversation on the personal subscription. `python3 scripts/test_agent_board_resume.py`
-and `python3 scripts/test_dispatch_scripts.py` cover both mappings.
+resume a Stanford conversation on the personal subscription. `python3 scripts/tests/test_agent_board_resume.py`
+and `python3 scripts/tests/test_dispatch_scripts.py` cover both mappings.
 
 ## Verified end to end (09-16-2026)
 
@@ -207,7 +207,7 @@ writes the shared `keys/` copy that unattended SNAP jobs watch.
 
 | Probe | Where | Result |
 |---|---|---|
-| `python3 scripts/test_su_wrappers.py` | mac | 5/5 PASS — argument forwarding, insecure-grant rejected, failed/empty/missing grant rejected |
+| `python3 scripts/tests/test_su_wrappers.py` | mac | 5/5 PASS — argument forwarding, insecure-grant rejected, failed/empty/missing grant rejected |
 | `codexd-su exec --skip-git-repo-check -c model_reasoning_effort="low" 'Reply with exactly: PONG-SU-LOCAL'` | mac, codex-cli 0.154.0 | `PONG-SU-LOCAL`, 3,693 tokens, rc 0 |
 | same probe, `PONG-SU-SNAP` | skampere1 (DFS entry -> node-local runtime) | `PONG-SU-SNAP`, 7,706 tokens, rc 0, session `01a0ad46-32ff-7012-99bc-356addb5571c` |
 | `clauded-su -p 'Reply with exactly: PONG-SU-CLAUDE'` | skampere1 | `PONG-SU-CLAUDE`, rc 0 |

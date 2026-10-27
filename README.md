@@ -58,7 +58,7 @@ Preserve existing profile instructions and add routing to `~/agents-config/INDEX
 Pi-agent-style layout: a small core, skills each in their own folder, and machine, personal and project material kept apart.
 
 - **Core (loaded first):** `AGENTS.md`, `CLAUDE.md`, `INDEX_RULES.md`, `CATALOG.md`; `rules/` holds the detailed shared policy (preserve established rule identifiers).
-- **Skills:** `skills/` (loadable skill folders with `SKILL.md`; the index [skills/README.md](skills/README.md) also lists the Pi-synced skills that still live in `config/pi/skills/`).
+- **Skills:** `skills/` (loadable skill folders with `SKILL.md`; the index [skills/README.md](skills/README.md) lists them all; `config/pi/skills` is a link to this folder for the Pi installer).
 - **Machines:** `machine/` (hosts, clusters, setup guides) and `config/` (Pi runtime, accounts and sync).
 - **Guides:** `workflows/` and `writing/` (focused guides loaded when relevant).
 - **Personal:** `personal/` (contacts and email signature).
@@ -75,7 +75,7 @@ An orientation map; the linked files are authoritative. `Kind` separates what ag
 | [`INDEX_RULES.md`](INDEX_RULES.md) | Executable policy | Rule router and rule ids |
 | [`CATALOG.md`](CATALOG.md) | Index | Where every guide lives |
 | [`rules/`](rules/) | Executable policy | Detailed shared rules by topic |
-| [`skills/`](skills/README.md) | Executable workflows | On-demand skills, one folder each (Pi-synced ones in `config/pi/skills/`) |
+| [`skills/`](skills/README.md) | Executable workflows | On-demand skills, one folder each (the Pi installer reaches them through the `config/pi/skills` link) |
 | [`workflows/`](workflows/), [`writing/`](writing/) | Guides | Focused procedures loaded when relevant |
 | [`machine/`](machine/) | Host notes | Live per-host and cluster notes and setup guides |
 | [`config/`](config/pi/README.md) | Runtime config | Pi installer, accounts, sync |

@@ -1,6 +1,6 @@
 # SBSBZ finance rules and their sources
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/skills/sbsbz-financial-officer/references/policy.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/skills/sbsbz-financial-officer/references/policy.md>
 
 **TLDR:** Each rule the FO agent applies, with where it comes from.
 - **Official:** a current Stanford, ASSU (Associated Students of Stanford University), GSC (Graduate Student Council) or OSE (Office of Student Engagement) page. Quotes were checked against the raw page text on 10-09-2026 unless marked otherwise.

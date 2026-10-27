@@ -1,6 +1,6 @@
 # GSC Quick Grant: field values and answer templates
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/skills/sbsbz-financial-officer/references/gsc-quick-grant-answers.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/skills/sbsbz-financial-officer/references/gsc-quick-grant-answers.md>
 
 **TLDR:** Paste-ready answers for a Graduate Student Council (GSC) Quick Grant in GrantEd, adapted from Lorena's "Onboarding FO (Financial Officer)" guide (Drive, 02-2026). Replace every `[bracket]` with current facts. Do not reuse old attendance numbers.
 

@@ -17,7 +17,7 @@ class PiRemoteTest(unittest.TestCase):
         self.cli.write_text("console.log(JSON.stringify(process.argv.slice(2)))")
         self.env = dict(os.environ, HOME=str(self.home))
         self.env.pop("PI_CODING_AGENT_DIR", None)
-        self.script = Path(__file__).with_name("pi_remote.sh")
+        self.script = Path(__file__).resolve().parents[1].joinpath("pi_remote.sh")
         profile = self.home / ".pi/agent"
         profile.mkdir(parents=True)
         (profile / "settings.json").write_text('{"defaultProvider":"snap-coder"}')

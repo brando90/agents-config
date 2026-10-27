@@ -229,7 +229,9 @@ def fingerprint(manifest, manifest_path):
     roots = []
     for relative in manifest.get('trackedDirectories', []):
         root = (manifest_path.parent/relative).resolve()
-        if manifest_path.parent.resolve() not in root.parents or not root.is_dir():
+        # config/pi/skills may be the checked-in link to the repository's skills/ folder.
+        shared = (manifest_path.parent.parent.parent/'skills').resolve()
+        if (manifest_path.parent.resolve() not in root.parents and root != shared) or not root.is_dir():
             raise ValueError('trackedDirectories must exist under config/pi')
         roots.append(root)
     private = manifest.get('privateSkillsDirectory')

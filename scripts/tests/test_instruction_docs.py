@@ -3,6 +3,7 @@
 from pathlib import Path
 import tempfile
 import unittest
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import check_instruction_docs as checker
 
 

@@ -5,7 +5,7 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 
 # Local Pi and Herdr
 
-**TLDR:** Use `pi-gemini` for authorized VeriBench work and `pi-local` for free local inference; switching is explicit, not automatic. Qwen3.5 9B passed the disposable 10-test repair in 41.0 seconds on 10-22-2026; see the dated proof for scope. Herdr has seven saved profiles; five SNAP nodes have reachable receipts; after an earlier timeout, explicit-target skampere1 agent-list succeeded and reported Pi idle. Sherlock and FarmShare SSH need human authentication.
+**TLDR:** Use `pi-gemini` for authorized VeriBench work and `pi-local` for free local inference; switching is explicit, not automatic. Qwen3.5 9B passed the disposable 10-test repair in 41.0 seconds on 10-22-2026; see the dated proof for scope. Herdr has seven saved profiles; five SNAP nodes have reachable receipts; after an earlier timeout, explicit-target skampere1 agent-list succeeded and reported Pi idle. Sherlock and FarmShare are persistently enabled with dedicated aliases; Stanford authentication still needs a physical 1Password Touch ID step. See ~/agents-config/machine/herdr-stanford-access.md for the current partial-repair state and bounded allocation recovery.
 
 ## Gemini for VeriBench
 
@@ -31,7 +31,7 @@ description: Run Pi with Gemini for VeriBench or the free local Ollama fallback,
 
 ## Cross-machine control
 
-- Inspect `herdr machine list --json`. Brando explicitly authorized the original six profiles enabled for normal automatic connection on 10-22-2026, superseding the initial manual/no-retry mode. skampere3 was subsequently added and verified reachable; five SNAP nodes have reachable receipts. Sherlock/FarmShare are now temporarily disabled pending human login; the latest noninteractive checks stopped at host-key verification. Avoid adding redundant reconnect loops.
+- Inspect `herdr machine list --json`. Brando explicitly authorized the original six profiles enabled for normal automatic connection on 10-22-2026, superseding the initial manual/no-retry mode. skampere3 was subsequently added and verified reachable; five SNAP nodes have reachable receipts. Sherlock/FarmShare are now enabled under their existing IDs, targeting herdr-sherlock/herdr-farmshare. The current Mac checks stop at Stanford authentication, not disabled-profile or host-key errors. Sherlock uses an explicitly requested compute allocation and an expiry-checked ProxyCommand; follow ~/agents-config/machine/herdr-stanford-access.md before recovery. Avoid adding redundant reconnect loops.
 - SNAP aliases use the existing ProxyJump through whale; Sherlock uses the existing ControlMaster socket. Preserve normal host-key checks. Passwords, keytabs and login prompts remain outside this setup's scope; ask for an actual Duo step when required.
 - Reachability and installed hooks do not prove remote agent control; the earlier skampere1 agent-list probe timed out, but a subsequent explicit-target check succeeded and reported Pi idle.
 

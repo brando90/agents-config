@@ -5,11 +5,11 @@ description: Prepare the Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) Finan
 
 # Skill: SBSBZ Financial Officer prep agent
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/skills/sbsbz-financial-officer/SKILL.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/skills/sbsbz-financial-officer/SKILL.md>
 
 **TLDR:** Turn invoices, quotes and funding needs into packets an FO can submit in GrantEd (Stanford's student-group funding system) in minutes. The agent finds and copies the source files, extracts the facts, runs `scripts/invoice_check.py`, drafts the GrantEd fields, attachments, messages and ledger rows, and reports what blocks payment. The FO signs in and submits; nothing in this skill pays anyone.
 
-Copies: agents-config/config/pi/skills is canonical. Put a Drive copy in the Marketing folder's "Agent skills and prompts" folder (<https://drive.google.com/drive/folders/1U3EmA7i5W0O1hrDmYw37QiYi9aDxEG05>). Installed copies live in `~/.claude/skills/sbsbz-financial-officer/` and `~/.codex/skills/sbsbz-financial-officer/`; these are managed links to the canonical agents-config skill, not independent copies.
+Copies: agents-config/skills is canonical. Put a Drive copy in the Marketing folder's "Agent skills and prompts" folder (<https://drive.google.com/drive/folders/1U3EmA7i5W0O1hrDmYw37QiYi9aDxEG05>). Installed copies live in `~/.claude/skills/sbsbz-financial-officer/` and `~/.codex/skills/sbsbz-financial-officer/`; these are managed links to the canonical agents-config skill, not independent copies.
 
 ## Limits that bind
 - **The FO submits.** GrantEd needs the FO's own SUNet login and completed training, so agents prepare exact field values and attachments and stop there. Agents never sign in with someone's credentials. They never submit GrantEd funding or payment requests or assuepay payments, and never send money (Venmo, Zelle, bank). Brando or the FO does those steps.
@@ -24,7 +24,7 @@ As of 10-09-2026 the FO role is in transition. Read the newest "Team responsibil
 1. **A path Brando gives, or `~/Downloads`** (`ls -t ~/Downloads | head`). The same invoice often also sits in WhatsApp. Compare `shasum -a 256` and keep one copy.
 2. **WhatsApp desktop data**, read-only:
    ```bash
-   W=$(ls ~/agents-config/config/pi/skills/sbsbz-financial-officer/scripts/wa_finance_find.py ~/.claude/skills/sbsbz-financial-officer/scripts/wa_finance_find.py ~/.codex/skills/sbsbz-financial-officer/scripts/wa_finance_find.py 2>/dev/null | head -1)
+   W=$(ls ~/agents-config/skills/sbsbz-financial-officer/scripts/wa_finance_find.py ~/.claude/skills/sbsbz-financial-officer/scripts/wa_finance_find.py ~/.codex/skills/sbsbz-financial-officer/scripts/wa_finance_find.py 2>/dev/null | head -1)
    python3 $W --list-chats "<payee first name>"
    python3 $W --chat "Awesome <Name>" --chat "<Name> 1:1 chat name" --since YYYY-MM-DD --copy-to ~/sbsbz/events/MM-DD-YYYY-fo-<payee>/private/source
    ```
@@ -117,4 +117,4 @@ Write `private/status-MM-DD-YYYY.md` and send Brando or the FO a five-line summa
 
 ## Copy-paste prompt (Claude, Codex or ChatGPT agent on Brando's Mac)
 
-> Act as the prep agent for the Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) Financial Officer. Read `~/agents-config/config/pi/skills/sbsbz-financial-officer/SKILL.md`; use `~/sbsbz` as the work repository and follow it for: [the invoice/quote/funding task]. Find the source files (a path I give, `~/Downloads`, WhatsApp via `scripts/wa_finance_find.py`, email, Drive) and copy them into `events/MM-DD-YYYY-fo-<task>/private/`, which is gitignored. Extract the facts, run `scripts/invoice_check.py`, and write `private/packet.md` with the GrantEd field values, attachments, drafted messages and ledger rows. The FO signs in to GrantEd and submits; you never sign in, submit, pay or send messages unless I say send. Keep chat content and payee details out of git. Report the verdict, the fixes and the decisions I need to make.
+> Act as the prep agent for the Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) Financial Officer. Read `~/agents-config/skills/sbsbz-financial-officer/SKILL.md`; use `~/sbsbz` as the work repository and follow it for: [the invoice/quote/funding task]. Find the source files (a path I give, `~/Downloads`, WhatsApp via `scripts/wa_finance_find.py`, email, Drive) and copy them into `events/MM-DD-YYYY-fo-<task>/private/`, which is gitignored. Extract the facts, run `scripts/invoice_check.py`, and write `private/packet.md` with the GrantEd field values, attachments, drafted messages and ledger rows. The FO signs in to GrantEd and submits; you never sign in, submit, pay or send messages unless I say send. Keep chat content and payee details out of git. Report the verdict, the fixes and the decisions I need to make.

@@ -84,4 +84,4 @@ is named.
   the inbox within a minute, and the assistant files a task quoting it, with no message from Brando.
 - (b) The assistant writes a line in its section and posts `[FROM-UB9] <repo>: ...`: Codex's next session quotes it back.
 - (c) Make two agents' counts differ: `agent_sync.py check` and the `[PUSH]` comment name the conflict, and the next
-  agent says so instead of picking one. `scripts/test_agent_sync.py` runs (a) and (c) offline on throwaway repos.
+  agent says so instead of picking one. `scripts/tests/test_agent_sync.py` runs (a) and (c) offline on throwaway repos.

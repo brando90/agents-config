@@ -6,9 +6,9 @@ import subprocess
 import sys
 import tempfile
 
-source = Path(__file__).with_name('install_su_node.sh').read_text()
+source = Path(__file__).resolve().parents[1].joinpath('install_vals_node.sh').read_text()
 template = source.split('  cat > "$tmp" <<WRAPPER\n', 1)[1].split('\nWRAPPER', 1)[0]
-with tempfile.TemporaryDirectory(prefix='su-wrapper-test-') as d:
+with tempfile.TemporaryDirectory(prefix='vals-wrapper-test-') as d:
     root = Path(d)
     for name in ('runtime', 'profile', 'bin'):
         (root / name).mkdir()
@@ -26,16 +26,16 @@ with tempfile.TemporaryDirectory(prefix='su-wrapper-test-') as d:
     wrapper_text = subprocess.run(['bash', '-c', render], capture_output=True, text=True, check=True).stdout
     env = os.environ.copy()
     env['PATH'] = str(root / 'bin') + ':/usr/bin:/bin'
-    for name in ('claude-su', 'clauded-su'):
+    for name in ('claude-vals', 'clauded-vals'):
         wrapper = root / name
         wrapper.write_text(wrapper_text)
         args = ['space value', 'literal $HOME', '*', '']
         out = subprocess.run(['bash', str(wrapper), *args], capture_output=True, text=True, env=env)
         assert out.returncode == 0, out.stderr
-        expected = (['--dangerously-skip-permissions'] if name == 'clauded-su' else []) + args
+        expected = (['--dangerously-skip-permissions'] if name == 'clauded-vals' else []) + args
         assert out.stdout.splitlines() == expected
     print('PASS argument forwarding and permission flags')
-    wrapper = root / 'claude-su'
+    wrapper = root / 'claude-vals'
     def rejects():
         out = subprocess.run(['bash', str(wrapper)], capture_output=True, text=True, env=env)
         assert out.returncode != 0 and not out.stdout, (out.returncode, out.stdout, out.stderr)

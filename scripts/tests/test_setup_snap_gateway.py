@@ -8,7 +8,7 @@ import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import setup_snap_gateway as gw  # noqa: E402
 
 USER, GATEWAY = "brando9", "whale.stanford.edu"

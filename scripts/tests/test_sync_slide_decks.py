@@ -15,6 +15,7 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import sync_slide_decks as sync
 
 

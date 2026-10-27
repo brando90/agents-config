@@ -9,6 +9,7 @@ import time
 import unittest
 from unittest import mock
 
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import agent_board as board
 
 UUID = "{}-aaaa-4bbb-8ccc-{:012d}"

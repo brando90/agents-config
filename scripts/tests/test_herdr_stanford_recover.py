@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import patch
 
 
-HELPER = Path(__file__).with_name("herdr_stanford_recover.py")
+HELPER = Path(__file__).resolve().parents[1].joinpath("herdr_stanford_recover.py")
 spec = importlib.util.spec_from_file_location("recovery", HELPER)
 recovery = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(recovery)

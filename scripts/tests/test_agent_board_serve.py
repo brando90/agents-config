@@ -8,6 +8,7 @@ import unittest
 from urllib.error import HTTPError
 from urllib.request import ProxyHandler, Request, build_opener
 
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import agent_board_serve as serve
 
 

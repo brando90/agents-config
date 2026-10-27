@@ -110,11 +110,22 @@ def file_path(root, key):
         raise ValueError('Unsafe file path')
     target = root.joinpath(*parts[1:])
     # Do not follow even an in-tree symlink: avoid confusing ownership and races.
-    if any(p.is_symlink() for p in [target, *target.parents] if p != root.parent):
+    # The one exception is the checked-in config/pi/skills link to the repository's skills/ folder.
+    shared = shared_skills_link(root)
+    if any(p.is_symlink() for p in [target, *target.parents] if p != root.parent and p != shared):
         raise ValueError('Symlink in synchronized tree')
-    if root.resolve() not in target.resolve().parents:
+    allowed = [root.resolve()] + ([shared.resolve()] if shared else [])
+    if not any(a in target.resolve().parents for a in allowed):
         raise ValueError('Path escaped configuration')
     return target
+
+
+def shared_skills_link(root):
+    """Return root/skills when it is the sanctioned link to the repository's skills/ folder, else None."""
+    link = root/'skills'
+    if link.is_symlink() and link.resolve() == (root.parent.parent/'skills').resolve():
+        return link
+    return None
 
 
 def validate(values):

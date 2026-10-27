@@ -242,6 +242,34 @@ class RuntimeTests(unittest.TestCase):
         (private/'SKILL.md').write_text('private changed')
         self.assertEqual(self.run_sync(check=True), 1)
 
+    def test_skills_folder_may_be_a_link_to_the_repository_skills(self):
+        repo = self.root/'repo'
+        (repo/'config/pi').mkdir(parents=True)
+        (repo/'skills/example').mkdir(parents=True)
+        (repo/'skills/example/SKILL.md').write_text('---\nname: example\ndescription: Example\n---\n')
+        (repo/'config/pi/skills').symlink_to('../../skills')
+        links = self.root/'client-skills'
+        self.spec = {'version': 1, 'settings': {'skills': ['${CONFIG_DIR}/skills']},
+                     'trackedDirectories': ['skills'], 'skillLinkRoots': [str(links)]}
+        self.manifest = repo/'config/pi/runtime.json'
+        self.save()
+        self.assertEqual(self.run_sync(), 0)
+        self.assertEqual((links/'example').resolve(), repo/'skills/example')
+        self.assertEqual(self.run_sync(check=True), 0)
+        (repo/'skills/example/helper.py').write_text('print(1)')
+        self.assertEqual(self.run_sync(check=True), 1)
+
+    def test_tracked_directory_cannot_link_outside_the_repository(self):
+        repo = self.root/'repo'
+        (repo/'config/pi').mkdir(parents=True)
+        (self.root/'elsewhere').mkdir()
+        (repo/'config/pi/skills').symlink_to('../../../elsewhere')
+        self.spec = {'version': 1, 'settings': {}, 'trackedDirectories': ['skills']}
+        self.manifest = repo/'config/pi/runtime.json'
+        self.save()
+        with self.assertRaises(ValueError):
+            self.run_sync()
+
     def test_invalid_tracked_file_does_not_mutate(self):
         self.spec['trackedFiles'] = ['missing.ts']
         self.save()

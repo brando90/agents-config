@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).resolve().parent / "watch_worker.sh"
+SCRIPT = Path(__file__).resolve().parents[1] / "watch_worker.sh"
 
 
 @unittest.skipUnless(shutil.which("tmux"), "tmux not installed")

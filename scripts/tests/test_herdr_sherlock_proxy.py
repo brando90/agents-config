@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 
-spec = importlib.util.spec_from_file_location("sherlock_proxy", Path(__file__).with_name("herdr_sherlock_proxy.py"))
+spec = importlib.util.spec_from_file_location("sherlock_proxy", Path(__file__).resolve().parents[1].joinpath("herdr_sherlock_proxy.py"))
 proxy = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(proxy)
 

@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import agent_sync
 
 SYNC = 'experiments/vb-priv/SYNC.md'

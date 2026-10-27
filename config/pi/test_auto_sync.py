@@ -182,4 +182,57 @@ class AutoSyncTests(unittest.TestCase):
         self.assertFalse(directory.exists())
 
 
+class SharedSkillsLinkTests(unittest.TestCase):
+    """config/pi/skills may be a link to the repository's skills/ folder (the single skills folder)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.top = Path(self.tmp.name).resolve()
+        self.hub = self.top/'hub'
+        self.clients = []
+        for name in ('a', 'b'):
+            repo = self.top/name/'repo'
+            root = repo/'config/pi'
+            profile = self.top/name/'profile'
+            (repo/'skills/demo').mkdir(parents=True)
+            root.mkdir(parents=True)
+            profile.mkdir()
+            (repo/'skills/demo/SKILL.md').write_text('original')
+            (root/'skills').symlink_to('../../skills')
+            (root/'runtime.json').write_text(json.dumps({'version':1,'settings':{'skills':['${CONFIG_DIR}/skills'],'theme':'dark'},'trackedDirectories':['skills']}))
+            with contextlib.redirect_stdout(io.StringIO()):
+                runtime.sync(root/'runtime.json', profile)
+            self.clients.append({'root':str(root),'profile':str(profile),'hub':str(self.hub),'repo':repo})
+        self.a, self.b = self.clients
+
+    def test_skill_edit_travels_through_the_link(self):
+        self.assertEqual(auto.once(self.a, seed=True), 0)
+        self.assertEqual(auto.once(self.b, enroll=True), 0)
+        (self.b['repo']/'skills/demo/SKILL.md').write_text('edited on b')
+        (self.b['repo']/'skills/new').mkdir()
+        (self.b['repo']/'skills/new/SKILL.md').write_text('new skill')
+        self.assertEqual(auto.once(self.b), 0)
+        self.assertEqual(auto.once(self.a), 0)
+        self.assertEqual((self.a['repo']/'skills/demo/SKILL.md').read_text(), 'edited on b')
+        self.assertEqual((self.a['repo']/'skills/new/SKILL.md').read_text(), 'new skill')
+        self.assertTrue((Path(self.a['root'])/'skills').is_symlink())
+
+    def test_other_symlinks_in_the_tree_are_still_refused(self):
+        self.assertEqual(auto.once(self.a, seed=True), 0)
+        (self.a['repo']/'skills/demo/leak').symlink_to('/etc/hostname')
+        with self.assertRaises(ValueError):
+            auto.once(self.a)
+
+    def test_link_to_anywhere_else_is_not_sanctioned(self):
+        root = Path(self.a['root'])
+        elsewhere = self.top/'elsewhere'
+        (elsewhere/'demo').mkdir(parents=True)
+        (root/'skills').unlink()
+        (root/'skills').symlink_to(elsewhere)
+        self.assertIsNone(auto.shared_skills_link(root))
+        with self.assertRaises(ValueError):
+            auto.file_path(root, 'file/skills/demo/SKILL.md')
+
+
 if __name__=='__main__': unittest.main()

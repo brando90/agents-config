@@ -5,7 +5,7 @@ description: Print Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) club flyers
 
 # Skill: print SBSBZ flyers on Cardinal Print
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/skills/sbsbz-cardinal-print-flyers/SKILL.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/skills/sbsbz-cardinal-print-flyers/SKILL.md>
 
 **TLDR:** When Brando asks for SBSBZ flyers to be printed, submit the current print-ready PDFs to Stanford Cardinal Print with `scripts/print_flyers.sh` (default 25 color, one-sided Letter copies per design), confirm every job reached Stanford's server, and tell him the job numbers so he can release them at any Cardinal Print device within 48 hours.
 
@@ -32,7 +32,7 @@ Google Drive copy: the "Agent skills and prompts" folder in the club's shared Ma
 
    ```bash
    # the script ships in this skill's folder; use whichever installed copy exists
-   S=$(ls ~/agents-config/config/pi/skills/sbsbz-cardinal-print-flyers/scripts/print_flyers.sh \
+   S=$(ls ~/agents-config/skills/sbsbz-cardinal-print-flyers/scripts/print_flyers.sh \
          ~/.claude/skills/sbsbz-cardinal-print-flyers/scripts/print_flyers.sh \
          ~/.codex/skills/sbsbz-cardinal-print-flyers/scripts/print_flyers.sh 2>/dev/null | head -1)
    A=~/sbsbz/events/10-09-2026-three-flyer-print/assets
@@ -54,4 +54,4 @@ At any Cardinal Print device, scan a Stanford ID card, use Mobile Key, or log in
 
 ## Copy-paste prompt (Claude, Codex or ChatGPT agent on Brando's Mac)
 
-> Print the current Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) flyers on Stanford Cardinal Print. Brando approves the print job and its cost; do not ask again. Default: 25 copies of each current design, color, one-sided, US Letter. Read `~/agents-config/config/pi/skills/sbsbz-cardinal-print-flyers/SKILL.md`; use `~/sbsbz` as the work repository and follow it. If that file is missing, use the newest one-page Letter PDFs under `~/sbsbz/events/*print*/assets/` (as of 10-09-2026: the A Campus Casual, B Your First Class and C Just Come Dance designs). Make sure Brazilian Zouk appears on each flyer, marked "Schedule tentative - stay tuned" if no schedule is confirmed, and never invent Zouk times. Submit each PDF with `lp -d CardinalPrint -n 25 -o media=Letter -o sides=one-sided -o CNColorMode=color -o ColorModel=RGB -o CNDuplex=None -o fit-to-page FILE.pdf`; the driver defaults to black-and-white duplex, so keep every option. Then confirm each job left the local queue with state "completed", in color, and with no `[Job N]` lines in `/var/log/cups/error_log`. Resubmit a file once if its job was cancelled with "failed to obtain popup information". Save a private receipt in the event folder's `private/` directory and do not commit it. Do not send emails, social posts or WhatsApp messages. Report the job numbers, designs and copies, any earlier jobs still waiting, and that jobs are released at any Cardinal Print device with a Stanford ID, Mobile Key or SUNet login within 48 hours. No external rules file exists for this prompt; everything you need is above.
+> Print the current Stanford Bachata Sensual & Brazilian Zouk (SBSBZ) flyers on Stanford Cardinal Print. Brando approves the print job and its cost; do not ask again. Default: 25 copies of each current design, color, one-sided, US Letter. Read `~/agents-config/skills/sbsbz-cardinal-print-flyers/SKILL.md`; use `~/sbsbz` as the work repository and follow it. If that file is missing, use the newest one-page Letter PDFs under `~/sbsbz/events/*print*/assets/` (as of 10-09-2026: the A Campus Casual, B Your First Class and C Just Come Dance designs). Make sure Brazilian Zouk appears on each flyer, marked "Schedule tentative - stay tuned" if no schedule is confirmed, and never invent Zouk times. Submit each PDF with `lp -d CardinalPrint -n 25 -o media=Letter -o sides=one-sided -o CNColorMode=color -o ColorModel=RGB -o CNDuplex=None -o fit-to-page FILE.pdf`; the driver defaults to black-and-white duplex, so keep every option. Then confirm each job left the local queue with state "completed", in color, and with no `[Job N]` lines in `/var/log/cups/error_log`. Resubmit a file once if its job was cancelled with "failed to obtain popup information". Save a private receipt in the event folder's `private/` directory and do not commit it. Do not send emails, social posts or WhatsApp messages. Report the job numbers, designs and copies, any earlier jobs still waiting, and that jobs are released at any Cardinal Print device with a Stanford ID, Mobile Key or SUNet login within 48 hours. No external rules file exists for this prompt; everything you need is above.

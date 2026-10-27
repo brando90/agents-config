@@ -14,7 +14,7 @@ import unittest
 from unittest.mock import patch
 
 
-spec = importlib.util.spec_from_file_location("allocate", Path(__file__).with_name("herdr_sherlock_allocate.py"))
+spec = importlib.util.spec_from_file_location("allocate", Path(__file__).resolve().parents[1].joinpath("herdr_sherlock_allocate.py"))
 allocate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(allocate)
 

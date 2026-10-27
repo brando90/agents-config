@@ -15,10 +15,10 @@ Use the bundled CLI to control Atlas and inspect local browser data.
 Set a stable path to the CLI:
 
 ```bash
-export ATLAS_CLI="$HOME/agents-config/config/pi/skills/atlas/scripts/atlas_cli.py"
+export ATLAS_CLI="$HOME/agents-config/skills/atlas/scripts/atlas_cli.py"
 ```
 
-The shared source is `~/agents-config/config/pi/skills/atlas`; installed client paths link to it.
+The shared source is `~/agents-config/skills/atlas`; installed client paths link to it.
 
 Then run:
 
@@ -97,4 +97,4 @@ If history looks stale or empty, ask the user which Atlas install they are using
 
 ## References
 
-Read `references/atlas-data.md` in the skill folder (for example, `~/agents-config/config/pi/skills/atlas/references/atlas-data.md`) when adjusting data paths or timestamps.
+Read `references/atlas-data.md` in the skill folder (for example, `~/agents-config/skills/atlas/references/atlas-data.md`) when adjusting data paths or timestamps.

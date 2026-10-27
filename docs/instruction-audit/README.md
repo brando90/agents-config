@@ -81,7 +81,7 @@ Never eagerly import the index or detail collection into an entry; read them as 
 
 ```bash
 python3 scripts/check_instruction_docs.py
-python3 scripts/test_instruction_docs.py
+python3 scripts/tests/test_instruction_docs.py
 python3 docs/instruction-audit/verify_migration.py  # this migration only
 bash -n scripts/install_codex_su_node.sh scripts/setup_claude_vals_snap.sh scripts/refresh-agents-config.sh machine/snap_setup.sh
 git diff --check

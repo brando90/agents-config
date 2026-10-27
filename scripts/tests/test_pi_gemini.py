@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-spec = importlib.util.spec_from_file_location('pi_gemini', Path(__file__).with_name('pi_gemini.py'))
+spec = importlib.util.spec_from_file_location('pi_gemini', Path(__file__).resolve().parents[1].joinpath('pi_gemini.py'))
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

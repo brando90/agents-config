@@ -1,6 +1,6 @@
 # SBSBZ finance sources
 
-**Doc link:** <https://github.com/brando90/agents-config/blob/main/config/pi/skills/sbsbz-financial-officer/references/sources.md>
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/skills/sbsbz-financial-officer/references/sources.md>
 
 **TLDR:** Where each financial fact lives. The Google Drive files are access-controlled; read them with the Drive connector (`read_file_content` with the ID). Their contents (balances, payees, receipts) stay out of this public repository.
 

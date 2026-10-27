@@ -5,6 +5,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
+import _path  # noqa: F401  (puts scripts/ on sys.path)
 import agent_board as board
 import agent_board_remote_status as remote
 

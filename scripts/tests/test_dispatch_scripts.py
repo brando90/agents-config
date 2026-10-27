@@ -11,7 +11,7 @@ import termios
 import time
 import unittest
 
-SCRIPTS = Path(__file__).resolve().parent
+SCRIPTS = Path(__file__).resolve().parents[1]
 LAUNCH_MARKER = "deploy_fixture_launch"
 
 

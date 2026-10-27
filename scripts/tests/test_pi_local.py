@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-SOURCE = Path(__file__).with_name('pi_local.py')
+SOURCE = Path(__file__).resolve().parents[1].joinpath('pi_local.py')
 spec = importlib.util.spec_from_file_location('pi_local', SOURCE)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

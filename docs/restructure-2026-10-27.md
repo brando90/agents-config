@@ -43,9 +43,16 @@ Moved with `git mv` (nothing deleted, links rewritten, relative links inside mov
 
 Left in place because live code or core docs read them: `dotfiles/legacy/` (read by `tests/test_install_dotfiles.py`), `docs/instruction-audit/` (read by `scripts/check_instruction_docs.py` and the startup docs), `workflows/assets/` (linked from many guides).
 
+## Stage 2 (AT-1626, Brando said go on 10-27-2026)
+
+- One skills folder: `config/pi/skills/{atlas,sbsbz-cardinal-print-flyers,sbsbz-financial-officer}` moved to `skills/` with `git mv`. The two `pi-local-herdr` copies were merged into `skills/pi-local-herdr/SKILL.md` (Pi copy for the Sherlock/FarmShare state, the `skills/` copy for lines 57 and 62, which carry the merged-PR text); the other copy's files were identical apart from `SKILL.md`, and the old text stays in git history.
+- `config/pi/skills` is now a relative link to `../../skills`, so live links on the Mac and SNAP nodes keep resolving. `config/pi/auto_sync.py` and `config/pi/sync_runtime.py` accept that one link (`shared_skills_link`) and still refuse every other symlink; `config/pi/test_auto_sync.py` and `test_sync_runtime.py` cover it.
+- The 17 `scripts/test_*.py` files moved to `scripts/tests/` (with `git mv`); path lookups point at `scripts/`, and `scripts/tests/_path.py` puts `scripts/` on `sys.path`. Run all: `python3 -m unittest discover -s scripts/tests -p 'test_*.py'`.
+- Optional per-host re-install steps are in [skills/README.md](../skills/README.md).
+
 ## Proposed, not done (needs Brando's word)
 
-1. **Reconcile, then delete** `skills/pi-local-herdr/`: it duplicates `config/pi/skills/pi-local-herdr/` and only `SKILL.md` differs (lines 8, 34, 57, 62). The `skills/` copy has the newer commit (10-26-2026, a port of a 10-22 branch) but partly older content; the Pi copy (10-24-2026, the one the installer links) carries the later Sherlock/FarmShare state (`machine/herdr-stanford-access.md`). Reconcile line by line with the Pi copy authoritative for that state, then remove the `skills/` one and repoint the links in `CATALOG.md` line 25 and `archive/machine-proofs/mac-pi-herdr-10-22-2026.md` line 35.
-2. **Move** `config/pi/skills/*` into `skills/` and point `config/pi/runtime.json` at it, then run the installer with `--adopt-skill-copies` on the Mac and the five SNAP nodes.
+1. ~~Reconcile, then delete the `pi-local-herdr` duplicate~~ Reconciled into one folder in Stage 2 above.
+2. ~~Move `config/pi/skills/*` into `skills/`~~ Done in Stage 2 above.
 3. **Stale candidates:** `archive/experiments/01_self_hosted_openclaw/` (his earlier OpenClaw assistant attempt, superseded), `dotfiles/legacy/`, `machine/*-10-22-2026.*` proof files, `docs/instruction-audit/` (one-time receipt), `archive/non-agent/jazz-playalongs/` (not agent config), `workflows/assets/` (talk transcript).
 4. **Remote branches:** 60+ merged or abandoned remote branches; list with `git branch -r --merged origin/main` for his review before any deletion.
