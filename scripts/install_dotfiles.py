@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install shared macOS pane shortcuts; dry-run by default, preserve other settings."""
+"""Install shared Cursor, Ghostty and Zed shortcuts; dry-run by default, preserve other settings."""
 import argparse
 import datetime
 import difflib
@@ -46,6 +46,103 @@ def ghostty_config(text, fragment):
     return text.rstrip() + f'\n\n{begin}\nconfig-file = {fragment}\n{end}\n'
 
 
+# Zed settings this installer owns; every other live setting (vim_mode, theme, fonts, servers) is left alone.
+ZED_MANAGED = [('base_keymap',), ('agent', 'dock'), ('agent', 'threads_sidebar'),
+               ('project_panel', 'dock'), ('git_panel', 'dock'), ('outline_panel', 'dock')]
+
+
+def parse_jsonc(text):
+    # Accept comments and trailing commas, as Zed does.
+    return json.loads(re.sub(r',\s*([}\]])', r'\1', without_comments(text)))
+
+
+def skip_space(text, i):
+    while i < len(text):
+        if text[i].isspace():
+            i += 1
+        elif text.startswith('//', i):
+            i = text.find('\n', i)
+            i = len(text) if i < 0 else i
+        elif text.startswith('/*', i):
+            i = text.index('*/', i) + 2
+        else:
+            break
+    return i
+
+
+def string_end(text, i):
+    i += 1
+    while text[i] != '"':
+        i += 2 if text[i] == '\\' else 1
+    return i + 1
+
+
+def top_level_values(text):
+    """Map each top-level key of a JSON-with-comments object to its value's (start, end); also return the closing brace."""
+    spans = {}
+    i = skip_space(text, 0)
+    if text[i:i + 1] != '{':
+        raise ValueError('Zed settings must be an object')
+    i += 1
+    while True:
+        i = skip_space(text, i)
+        if text[i] == '}':
+            return spans, i
+        if text[i] == ',':
+            i += 1
+            continue
+        end = string_end(text, i)
+        key = json.loads(text[i:end])
+        i = skip_space(text, end)
+        i = skip_space(text, i + 1)  # past the colon
+        start, depth = i, 0
+        while depth > 0 or text[i] not in ',}':
+            if text[i] == '"':
+                i = string_end(text, i)
+                continue
+            if text.startswith(('//', '/*'), i):
+                i = skip_space(text, i)
+                continue
+            depth += text[i] in '{['
+            depth -= text[i] in '}]'
+            i += 1
+        spans[key] = (start, len(text[:i].rstrip()))
+
+
+def zed_settings(text, shared):
+    """Set the managed Zed values; rewrite only top-level values that differ, so comments elsewhere survive."""
+    text = text if text.strip() else '{}\n'
+    live = parse_jsonc(text)
+    if not isinstance(live, dict):
+        raise ValueError('Zed settings must be an object')
+    wanted = {}
+    for path in ZED_MANAGED:
+        value = shared
+        for part in path:
+            value = value[part]
+        if len(path) == 1:
+            wanted[path[0]] = value
+        else:
+            current = wanted.get(path[0], live.get(path[0]))
+            wanted[path[0]] = {**(current if isinstance(current, dict) else {}), path[1]: value}
+    for top, value in wanted.items():
+        if live.get(top) == value:
+            continue
+        spans, close = top_level_values(text)
+        rendered = json.dumps(value, indent=2).replace('\n', '\n  ')
+        if top in spans:
+            a, b = spans[top]
+            text = text[:a] + rendered + text[b:]
+        else:
+            head = text[:close].rstrip()
+            sep = '' if without_comments(head).rstrip().endswith(('{', ',')) else ','
+            text = head + sep + f'\n  {json.dumps(top)}: {rendered}\n' + text[close:]
+        live[top] = value
+    if parse_jsonc(text) != live:
+        raise ValueError('Zed settings merge changed unrelated content')
+    return text
+
+
 def verify_legacy():
     manifest = json.loads((ROOT / 'dotfiles/legacy-manifest.json').read_text())
     for name, digest in manifest['files'].items():
@@ -72,7 +169,14 @@ def main():
     if xdg.exists():
         ghostty = xdg
     bindings = json.loads((ROOT / 'dotfiles/cursor/keybindings.json').read_text())
+    zed = home / '.config/zed'
+    zed_keymap = parse_jsonc((ROOT / 'dotfiles/zed/keymap.json').read_text())
+    zed_shared = parse_jsonc((ROOT / 'dotfiles/zed/settings.json').read_text())
+    zed_keymap_live = zed / 'keymap.json'
+    zed_settings_live = zed / 'settings.json'
     changes = {
+        zed_settings_live: zed_settings(zed_settings_live.read_text() if zed_settings_live.exists() else '', zed_shared),
+        zed_keymap_live: cursor_config(zed_keymap_live.read_text() if zed_keymap_live.exists() else '[]\n', zed_keymap),
         user: cursor_config(user.read_text() if user.exists() else '[]\n', bindings),
         ghostty: ghostty_config(ghostty.read_text() if ghostty.exists() else '', ROOT / 'dotfiles/ghostty/keybindings.conf'),
     }
@@ -100,7 +204,7 @@ def main():
             path.write_text(content)
     if args.apply:
         print(f'Backups (if needed): {backup}')
-        print('Cursor watches keybindings. Reload Ghostty configuration with Command+Shift+comma.')
+        print('Cursor and Zed watch their config files. Reload Ghostty configuration with Command+Shift+comma.')
     else:
         print('Dry run only. Pass --apply to install.')
 
