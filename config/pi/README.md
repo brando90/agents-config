@@ -138,7 +138,7 @@ Agents may configure and use Brando-authorized provider credentials in Pi throug
 Name every route `<sponsor>-<service>-<key-nickname>` so `/model` identifies the model, actual provider and funding credential without displaying the secret.
 **Persistent naming preference (Brando, 10-27-2026):** show the verified sponsor (for example, Koyejo Lab, Stanford or Vals), not just a generic `openai` or `anthropic` label; preserve this preference in the shared provider manifest and startup defaults.
 Do not relabel a generic route as a sponsor without verifying its credential source, and do not invent a sponsor route without matching credentials.
-The named provider ID and model display name both carry the sponsor; upstream model IDs remain unchanged. Preserve the real upstream model ID. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
+The named provider ID and model display name both carry the sponsor; upstream model IDs remain unchanged. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
 
 ## Files and standard workflow
 
