@@ -52,6 +52,11 @@ class DotfilesTests(unittest.TestCase):
         self.assertEqual(bound[('Pane', 'ctrl-cmd-down')], 'pane::SplitDown')
         self.assertEqual(bound[('Pane', 'ctrl-cmd-right')], 'pane::SplitRight')
         self.assertEqual(bound[('Workspace', 'ctrl-alt-cmd-left')], 'workspace::ActivatePaneLeft')
+        for context in ('Editor', 'Editor && edit_prediction', 'Terminal'):
+            self.assertEqual(bound[(context, 'ctrl-cmd-down')], 'pane::SplitDown', context)
+        self.assertEqual(bound[('AgentPanel || AcpThread', 'cmd-r')], 'agent::NewThread')
+        self.assertEqual(bound[('AcpThread > Editor', 'cmd-enter')], 'agent::SendImmediately')
+        self.assertEqual(bound[('Editor && editor_agent_diff', 'cmd-shift-backspace')], 'agent::RejectAll')
         cursor = json.loads(module.without_comments((module.ROOT / 'dotfiles/cursor/keybindings.json').read_text()))
         self.assertEqual(len(cursor), 6)
 

@@ -4,7 +4,6 @@
 //   cmd-e       -> Cursor's "Toggle Agent layout" = Zed's Threads sidebar (cmd-alt-s is Save All, as in Cursor)
 //   cmd-alt-b   -> toggle right dock (agent chat), as VS Code's secondary side bar
 //   cmd-shift-e -> focus file tree (project panel)
-//   cmd-j       -> toggle bottom panel (terminal); ctrl-` also toggles the terminal (Zed default)
 [
   {
     "context": "Workspace",
@@ -24,6 +23,13 @@
     }
   },
   {
+    // Plain Cmd+R is "new chat" anywhere in the agent panel (the Cmd+R Cmd+S chord above must not delay it).
+    "context": "AgentPanel || AcpThread",
+    "bindings": {
+      "cmd-r": "agent::NewThread"
+    }
+  },
+  {
     "context": "Pane",
     "bindings": {
       // Brando's Cursor splits (dotfiles/cursor/keybindings.json)
@@ -32,10 +38,19 @@
     }
   },
   {
+    // Zed's editor binds these keys to syntax-node selection and edit-prediction accepts; Cursor's split keys win there.
+    "context": "Editor && edit_prediction",
+    "bindings": {
+      "ctrl-cmd-down": "pane::SplitDown",
+      "ctrl-cmd-right": "pane::SplitRight"
+    }
+  },
+  {
     "context": "Editor",
     "bindings": {
       "cmd-b": "workspace::ToggleLeftDock",
-      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar",
+      "ctrl-cmd-down": "pane::SplitDown",
+      "ctrl-cmd-right": "pane::SplitRight",
       "alt-shift-f": "editor::Format",
       "alt-shift-i": "editor::SplitSelectionIntoLines",
       "alt-z": "editor::ToggleSoftWrap",
@@ -43,7 +58,6 @@
       "ctrl-shift-cmd-right": "editor::SelectLargerSyntaxNode",
       "ctrl-shift-cmd-left": "editor::SelectSmallerSyntaxNode",
       "cmd-/": ["editor::ToggleComments", { "advance_downwards": false, "comment_empty_lines": false }],
-      "cmd-shift-\\": "editor::MoveToEnclosingBracket",
       "shift-f12": "editor::FindAllReferences",
       "cmd-f12": "editor::GoToImplementation"
     }
@@ -67,9 +81,10 @@
       "cmd-w": "workspace::ToggleRightDock",
       "cmd-.": "agent::ToggleProfileSelector",
       "cmd-/": "agent::CycleFavoriteModels",
-      "cmd-alt-/": "agent::ToggleModelSelector",
       "cmd-n": "agent::NewThread",
       "cmd-r": "agent::NewThread",
+      // Cursor: Cmd+Shift+Backspace cancels generation (Zed's own key here removes the first queued message).
+      "cmd-shift-backspace": "editor::Cancel",
       "cmd-[": "multi_workspace::PreviousThread",
       "cmd-]": "multi_workspace::NextThread",
       "cmd-enter": "agent::SendImmediately"
@@ -87,7 +102,9 @@
     "context": "Terminal",
     "bindings": {
       "cmd-b": "workspace::ToggleLeftDock",
-      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar"
+      "cmd-e": "multi_workspace::ToggleWorkspaceSidebar",
+      "ctrl-cmd-down": "pane::SplitDown",
+      "ctrl-cmd-right": "pane::SplitRight"
     }
   }
 ]
