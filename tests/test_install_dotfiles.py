@@ -79,6 +79,48 @@ class DotfilesTests(unittest.TestCase):
             self.assertNotIn('Would update: ' + str(zed), run('--apply'))
             self.assertIn('Unchanged: ' + str(zed / 'settings.json'), run())
 
+    def test_zed_settings_edge_cases(self):
+        shared = module.parse_jsonc((module.ROOT / 'dotfiles/zed/settings.json').read_text())
+        cases = {
+            'comment after last value': '{\n  "vim_mode": true // enable vim\n}\n',
+            'comma-brace inside string': '{"agent": {"dock": "left", "note": "a, }"}}',
+            'comment beside managed value': '{\n  "base_keymap": "VSCode" /* mine */,\n  "vim_mode": true\n}',
+            'trailing comment on managed value': '{\n  "vim_mode": true,\n  "base_keymap": "VSCode" // keep me\n}',
+            'crlf': '{\r\n  "vim_mode": true\r\n}\r\n',
+            'only comments': '// nothing yet\n',
+        }
+        for name, source in cases.items():
+            if name == 'only comments':
+                with self.assertRaises(ValueError):
+                    module.zed_settings(source, shared)
+                continue
+            result = module.zed_settings(source, shared)
+            live = module.parse_jsonc(result)
+            self.assertEqual(live['base_keymap'], 'Cursor', name)
+            self.assertEqual(module.zed_settings(result, shared), result, name)
+        self.assertIn('"a, }"', module.zed_settings(cases['comma-brace inside string'], shared))
+        self.assertIn('/* mine */', module.zed_settings(cases['comment beside managed value'], shared))
+        self.assertIn('// keep me', module.zed_settings(cases['trailing comment on managed value'], shared))
+        self.assertIn('// enable vim', module.zed_settings(cases['comment after last value'], shared))
+        self.assertNotIn('\n', module.zed_settings(cases['crlf'], shared).replace('\r\n', ''))
+
+    def test_keymap_empty_and_bracket_in_comment(self):
+        bindings = [{'context': 'Editor', 'bindings': {'cmd-b': 'x'}}]
+        for source in ['', '[]\n// old: [disabled]\n']:
+            result = module.cursor_config(source, bindings)
+            self.assertEqual(module.cursor_config(result, bindings), result)
+
+    def test_symlink_into_repo_is_refused(self):
+        script = str(module.ROOT / 'scripts/install_dotfiles.py')
+        with tempfile.TemporaryDirectory() as home:
+            zed = Path(home) / '.config/zed'
+            zed.mkdir(parents=True)
+            (zed / 'keymap.json').symlink_to(module.ROOT / 'dotfiles/zed/keymap.json')
+            before = (module.ROOT / 'dotfiles/zed/keymap.json').read_text()
+            result = subprocess.run([sys.executable, script, '--home', home, '--apply'], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual((module.ROOT / 'dotfiles/zed/keymap.json').read_text(), before)
+
 
 if __name__ == '__main__':
     unittest.main()

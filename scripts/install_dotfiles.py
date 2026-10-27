@@ -21,10 +21,21 @@ def without_comments(text):
                   lambda m: m.group(1) or '', text)
 
 
+def blank_comments(text):
+    # Same length as the input, so positions found here are valid in the original.
+    return re.sub(r'("(?:\\.|[^"\\])*")|//[^\n]*|/\*[\s\S]*?\*/',
+                  lambda m: m.group(1) or re.sub(r'[^\n]', ' ', m.group(0)), text)
+
+
+def read_text(path):
+    return path.read_bytes().decode()  # keep CRLF as is
+
+
 def cursor_config(text, bindings):
     # Remove only our own block; preserve all user bindings and comments.
     text = re.sub(r'\n?\s*' + re.escape(BEGIN) + r'[\s\S]*?' + re.escape(END), '', text)
-    end = text.rfind(']')
+    text = text if text.strip() else '[]\n'
+    end = blank_comments(text).rfind(']')
     if end < 0:
         raise ValueError('Cursor keybindings must be an array')
     head = text[:end].rstrip()
@@ -53,7 +64,8 @@ ZED_MANAGED = [('base_keymap',), ('agent', 'dock'), ('agent', 'threads_sidebar')
 
 def parse_jsonc(text):
     # Accept comments and trailing commas, as Zed does.
-    return json.loads(re.sub(r',\s*([}\]])', r'\1', without_comments(text)))
+    blank = blank_comments(text)
+    return json.loads(re.sub(r'("(?:\\.|[^"\\])*")|,(?=\s*[}\]])', lambda m: m.group(1) or ' ', blank))
 
 
 def skip_space(text, i):
@@ -95,10 +107,10 @@ def top_level_values(text):
         key = json.loads(text[i:end])
         i = skip_space(text, end)
         i = skip_space(text, i + 1)  # past the colon
-        start, depth = i, 0
+        start, depth, last = i, 0, i
         while depth > 0 or text[i] not in ',}':
             if text[i] == '"':
-                i = string_end(text, i)
+                i = last = string_end(text, i)
                 continue
             if text.startswith(('//', '/*'), i):
                 i = skip_space(text, i)
@@ -106,12 +118,15 @@ def top_level_values(text):
             depth += text[i] in '{['
             depth -= text[i] in '}]'
             i += 1
-        spans[key] = (start, len(text[:i].rstrip()))
+            if not text[i - 1].isspace():
+                last = i
+        spans[key] = (start, last)
 
 
 def zed_settings(text, shared):
     """Set the managed Zed values; rewrite only top-level values that differ, so comments elsewhere survive."""
     text = text if text.strip() else '{}\n'
+    crlf = '\r\n' in text
     live = parse_jsonc(text)
     if not isinstance(live, dict):
         raise ValueError('Zed settings must be an object')
@@ -134,13 +149,13 @@ def zed_settings(text, shared):
             a, b = spans[top]
             text = text[:a] + rendered + text[b:]
         else:
-            head = text[:close].rstrip()
-            sep = '' if without_comments(head).rstrip().endswith(('{', ',')) else ','
-            text = head + sep + f'\n  {json.dumps(top)}: {rendered}\n' + text[close:]
+            idx = len(blank_comments(text[:close]).rstrip())
+            sep = '' if text[idx - 1] in '{,' else ','
+            text = text[:idx] + sep + text[idx:close].rstrip() + f'\n  {json.dumps(top)}: {rendered}\n' + text[close:]
         live[top] = value
     if parse_jsonc(text) != live:
         raise ValueError('Zed settings merge changed unrelated content')
-    return text
+    return text.replace('\r\n', '\n').replace('\n', '\r\n') if crlf else text
 
 
 def verify_legacy():
@@ -174,16 +189,19 @@ def main():
     zed_shared = parse_jsonc((ROOT / 'dotfiles/zed/settings.json').read_text())
     zed_keymap_live = zed / 'keymap.json'
     zed_settings_live = zed / 'settings.json'
+    for live in (zed_settings_live, zed_keymap_live):
+        if live.exists() and ROOT in live.resolve().parents:
+            parser.error(f'{live} is a link into this repository; replace it with a real file so the installer can merge into it')
     changes = {
-        zed_settings_live: zed_settings(zed_settings_live.read_text() if zed_settings_live.exists() else '', zed_shared),
-        zed_keymap_live: cursor_config(zed_keymap_live.read_text() if zed_keymap_live.exists() else '[]\n', zed_keymap),
-        user: cursor_config(user.read_text() if user.exists() else '[]\n', bindings),
-        ghostty: ghostty_config(ghostty.read_text() if ghostty.exists() else '', ROOT / 'dotfiles/ghostty/keybindings.conf'),
+        zed_settings_live: zed_settings(read_text(zed_settings_live) if zed_settings_live.exists() else '', zed_shared),
+        zed_keymap_live: cursor_config(read_text(zed_keymap_live) if zed_keymap_live.exists() else '[]\n', zed_keymap),
+        user: cursor_config(read_text(user) if user.exists() else '[]\n', bindings),
+        ghostty: ghostty_config(read_text(ghostty) if ghostty.exists() else '', ROOT / 'dotfiles/ghostty/keybindings.conf'),
     }
     stamp = datetime.datetime.now().strftime('%m-%d-%Y_%H-%M-%S-%f')
     backup = home / '.local/state/agents-config/dotfiles/backups' / stamp
     for path, content in changes.items():
-        previous = path.read_text() if path.exists() else ''
+        previous = read_text(path) if path.exists() else ''
         if path.exists() and previous == content:
             print(f'Unchanged: {path}')
             continue
@@ -197,11 +215,11 @@ def main():
                     print('\n\\ No newline at end of file')
         if args.apply:
             if path.exists():
-                target = backup / path.relative_to(home)
+                target = backup / (path.relative_to(home) if home in path.parents else Path('outside-home') / path.name)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(path, target)
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content)
+            path.write_bytes(content.encode())
     if args.apply:
         print(f'Backups (if needed): {backup}')
         print('Cursor and Zed watch their config files. Reload Ghostty configuration with Command+Shift+comma.')
