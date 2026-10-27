@@ -5,6 +5,7 @@
 - **Every outgoing email:** explicitly BCC `brando.science@gmail.com`, `brando9@stanford.edu`, `brandojazz@gmail.com` and `brando@vals.ai`. Include all four even if an address is the sender or already in To; deduplicate only within BCC. This applies to every agent, project, external email and internal notification, with no project substitutions (Brando, 10-16-2026).
 - **Primary recipients:** preserve intended addressees and collaborators' requested copies. Internal notifications use `To: brando.science@gmail.com`; existing notification triggers remain unchanged.
 - **Visible copies:** CC requires an explicit request for that message and does not replace the four BCC entries unless Brando explicitly says so. Omit the former CC reply note; BCC does not automatically include recipients on later replies. Do not resend old emails merely to apply this policy. See Trigger Rule 26.
+- **Update, Brando, 10-27-2026:** BCC `brando.science@gmail.com`, `brandojazz@gmail.com` and `brando9@stanford.edu` on every email, and always CC his personal address (address still to be confirmed by him; see Trigger Rule 26). This supersedes the four-address BCC and the explicit-request CC lines above.
 - **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
 
 ## Voice rules for emails sent as Brando
