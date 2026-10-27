@@ -96,7 +96,21 @@ def find_catalog():
     # to a different Node installation on this host.
     executable = shutil.which('pi')
     if executable:
-        for parent in Path(executable).resolve().parents:
+        launcher = Path(executable).resolve()
+        # Managed Pi installs use a shell launcher, not a symlink to the package.
+        # Resolve its selected release before falling back to a global npm install.
+        managed_root = launcher.parent.parent/'install'
+        version_file = managed_root/'current-version'
+        if version_file.is_file():
+            version = version_file.read_text().strip()
+            if not version or version in ('.', '..') or any(
+                    c not in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz._+-'
+                    for c in version):
+                raise ValueError('Invalid managed Pi release version')
+            candidate = managed_root/'releases'/version/'node_modules/@earendil-works/pi-ai/dist/providers/data'
+            if (candidate/'openai.json').is_file():
+                return candidate
+        for parent in launcher.parents:
             candidate = parent/'node_modules/@earendil-works/pi-ai/dist/providers/data'
             if (candidate/'openai.json').is_file():
                 return candidate

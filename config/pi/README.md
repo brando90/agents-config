@@ -135,7 +135,10 @@ Implementation prompt for the separate Valkyrie integration request: [registry i
 
 Agents may configure and use Brando-authorized provider credentials in Pi through its standard `models.json` providers and runtime secret commands. A shared model selector containing multiple sponsors is allowed; separate profiles are optional, not mandatory. Do not refuse this setup because it uses application programming interface (API) keys rather than subscriptions. This specific instruction supersedes older blanket CLI-only/key bans and mandatory profile isolation for Pi.
 
-Name every route `<sponsor>-<service>-<key-nickname>` so `/model` identifies the model, actual provider and funding credential without displaying the secret. Preserve the real upstream model ID. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
+Name every route `<sponsor>-<service>-<key-nickname>` so `/model` identifies the model, actual provider and funding credential without displaying the secret.
+**Persistent naming preference (Brando, 10-27-2026):** show the verified sponsor (for example, Koyejo Lab, Stanford or Vals), not just a generic `openai` or `anthropic` label; preserve this preference in the shared provider manifest and startup defaults.
+Do not relabel a generic route as a sponsor without verifying its credential source, and do not invent a sponsor route without matching credentials.
+The named provider ID and model display name both carry the sponsor; upstream model IDs remain unchanged. Preserve the real upstream model ID. Keep key values out of Git, chat, logs and literal configuration. Use existing credentials, respect their owner's actual scope and existing budgets, and do not purchase credits or enable new charges. Cost-estimate and cap unattended runs; interactive selection and setup do not need repeated approval. Visibility is not authorization to use an owner's key outside its scope.
 
 ## Files and standard workflow
 
@@ -152,7 +155,10 @@ python3 ~/agents-config/config/pi/install.py
 
 The installer follows the selected Pi executable to find its catalog before consulting npm's global root. For an unusual wrapper, supply `--catalog-dir /absolute/path/to/pi-ai/dist/providers/data`. On this Mac the installed catalog directory is `/Users/brandomiranda/.local/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-ai/dist/providers/data`.
 
-Pi reloads `models.json` on `/model`. Restart or `/reload` if a running selector remains stale. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
+Pi reloads `models.json` on `/model`. Restart or `/reload` if a running selector remains stale.
+If only generic providers appear even though the runtime check passes, run the **full** `python3 ~/agents-config/config/pi/install.py`: `--runtime-only` and automatic sync intentionally do not install providers, and `--check` verifies runtime settings, not provider availability.
+The installer discovers the selected catalog for both package symlinks and managed Pi launchers (`install/current-version`); it does not require a separate global npm installation.
+Then choose `koyejolab-openai-bm/gpt-6.1-sol` in `/model` for the shared default; a resumed session retains its previous provider until explicitly switched. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
 
 Examples visible in `/model`:
 

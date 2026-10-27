@@ -78,6 +78,30 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(setup.find_catalog(), catalog.resolve())
             npm.assert_not_called()
 
+    def test_catalog_follows_managed_pi_release(self):
+        launcher = self.root/'agent/bin/pi'
+        launcher.parent.mkdir(parents=True)
+        launcher.write_text('#!/bin/sh\n')
+        managed = self.root/'agent/install'
+        catalog = managed/'releases/1.4.0/node_modules/@earendil-works/pi-ai/dist/providers/data'
+        catalog.mkdir(parents=True)
+        (catalog/'openai.json').write_text('{}')
+        (managed/'current-version').write_text('1.4.0\n')
+        with patch.object(setup.shutil, 'which', return_value=str(launcher)), patch.object(setup.subprocess, 'check_output') as npm:
+            self.assertEqual(setup.find_catalog(), catalog.resolve())
+            npm.assert_not_called()
+
+    def test_managed_pi_version_cannot_escape_release_directory(self):
+        launcher = self.root/'agent/bin/pi'
+        launcher.parent.mkdir(parents=True)
+        launcher.touch()
+        managed = self.root/'agent/install'
+        managed.mkdir()
+        (managed/'current-version').write_text('../../other')
+        with patch.object(setup.shutil, 'which', return_value=str(launcher)):
+            with self.assertRaises(ValueError):
+                setup.find_catalog()
+
     def test_missing_key_skipped(self):
         self.key.unlink()
         providers, notices = setup.build_providers(self.manifest, self.catalog, self.keys)
