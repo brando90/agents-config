@@ -1,10 +1,10 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { getModels, openAICodexResponsesApi } from '@earendil-works/pi-ai/compat';
 const { streamSimple } = openAICodexResponsesApi();
-import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { readSubscription } from './auth.mjs';
+import { readCatalog } from './catalog.mjs';
 
 export default function (pi: ExtensionAPI) {
   const accounts = [
@@ -15,9 +15,9 @@ export default function (pi: ExtensionAPI) {
     const path = join(homedir(), account.dir, 'auth.json');
     let slugs: Set<string>;
     try {
-      const cache = JSON.parse(readFileSync(join(homedir(), account.dir, 'models_cache.json'), 'utf8'));
-      slugs = new Set(cache.models.map((m: any) => m.slug));
-      readSubscription(path);
+      const { accountId } = readSubscription(path);
+      slugs = readCatalog(join(homedir(), account.dir),
+        process.env.PI_CODING_AGENT_DIR || join(homedir(), '.pi/agent'), account.id, accountId);
     } catch {
       // Missing or expired login must not prevent the other account loading.
       continue;

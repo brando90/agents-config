@@ -37,6 +37,8 @@
     "claude-accounts/package-lock.json",
     "codex-accounts/index.ts",
     "codex-accounts/auth.mjs",
+    "codex-accounts/catalog.mjs",
+    "codex-accounts/refresh-models.mjs",
     "codex-accounts/package.json"
   ],
   "trackedDirectories": [
