@@ -16,6 +16,8 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 
 [Rule 16](rules/responses.md#trigger-rule-16) keeps substantial research knowledge in both its reproducible Markdown record and the relevant Google Doc or Slides deck. Reuse the destination humans already read, preserve its audience, and verify the update. [Daily research slides](workflows/daily-research-slides.md) keeps Vals and Sanmi updates separate, with 2–3 dated slides per audience per day.
 
+[Result notifications (Rule 14)](rules/services.md#trigger-rule-14) apply to every agent and project: when new verified experiment, evaluation or analysis results are ready, ping Brando and email him, including `brandojazz@gmail.com` and `brando.science@gmail.com`. Verify delivery, keep one notification owner and avoid duplicate completion emails.
+
 ## Dotfiles and shared app shortcuts
 
 This repository is also the canonical home for [dotfiles and shared pane shortcuts](dotfiles/README.md). The former `brando90/.dotfiles` content is preserved under `dotfiles/legacy/`; new shared configuration belongs here, not in the retired repository.
