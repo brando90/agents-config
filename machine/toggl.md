@@ -2,17 +2,18 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/toggl.md>
 
-**TLDR:** Toggl is connected to Pipedream's hosted development service. Mac Codex and Claude Code are configured; workspace and current-day reads passed. Other agents, including UB9sc, must verify their own private authentication. Entry creation uses Pipedream's hosted API proxy because its Toggl MCP catalog currently lacks a create-entry action.
+**TLDR:** Toggl is connected to Pipedream's hosted development service. Mac Codex and Claude Code are configured; workspace and current-day reads passed. Other agents, including UB9sc, must verify their own private authentication. Entry creation uses Pipedream's hosted application programming interface (API) proxy because its Toggl MCP catalog currently lacks a create-entry action.
 
 ## Verified status (10-28-2026)
 
 - GitHub sign-in reached the existing Pipedream account. Brando approved Pipedream's terms; the existing Toggl credential was transferred privately from his signed-in profile to the hosted connection.
 - The requested existing Connect project uses **development**, as Brando selected for the Free plan. No demo, local server, self-hosted deployment, or paid upgrade was created.
 - Hosted Model Context Protocol (MCP) checks returned one workspace and zero entries for 10-28-2026 in `America/Los_Angeles` (midnight through the following midnight). No entry was created, edited, or deleted.
-- Codex configuration parses and uses dynamic authentication headers. `claude mcp get pipedream` reports `Connected` in user scope. Existing sessions may need to reconnect or restart to load the server.
+- A fresh Codex command-line interface (CLI) session successfully called both native MCP tools (`toggl-list-workspace-id-options` and `toggl-get-time-entries`) using the installed dynamic headers. It returned the same one workspace and zero entries. Existing sessions may need to reconnect or restart to load the server.
+- Claude Code reports `Connected` in user scope, including in a fresh runtime startup. Its independent tool check stopped at the account’s weekly model limit before any tool call; do not describe that as a successful Claude read test.
 - Pipedream reports the connected Toggl account healthy. Its hosted API proxy passed a workspace read. The application registry confirms proxy support for `api.track.toggl.com`.
 - The live MCP catalog has 13 Toggl actions plus `retrieve_options`; none creates, edits, or deletes time entries. Write requests were intentionally not tested because setup verification is read-only.
-- UB9sc's independent connection remains unverified. A shared URL or a successful Mac test does not authenticate another host.
+- UB9sc's independent connection remains unverified. Its original Scalable connection link reaches Pipedream consumer OAuth but stalls at “Redirecting to sign in”; the consumer Sign in controls also failed in Chrome and the in-app browser. UB9sc acknowledged the direct Slack request and is checking its runtime’s support for the project-based route. It confirmed setup tests remain read-only. A shared URL, acknowledgement, or successful Mac test does not authenticate another host.
 
 ## Current Mac setup
 
