@@ -25,11 +25,11 @@ if [ "$(uname)" = Darwin ]; then
   MAC_STAMP="$MAC_CACHE/agent-cli-update.stamp"
   MAC_LOCK="$MAC_CACHE/agent-cli-update.lock"
   if [ "$FORCE" -eq 0 ] && [ -f "$MAC_STAMP" ] &&
-     [ -n "$(find "$MAC_STAMP" -mmin -"$MAX_AGE_MINUTES" 2>/dev/null)" ]; then
+     [ -n "$(command -p find "$MAC_STAMP" -mmin -"$MAX_AGE_MINUTES" 2>/dev/null)" ]; then
     exit 0
   fi
   if ! mkdir "$MAC_LOCK" 2>/dev/null; then
-    if [ -n "$(find "$MAC_LOCK" -maxdepth 0 -mmin +20 2>/dev/null)" ]; then
+    if [ -n "$(command -p find "$MAC_LOCK" -maxdepth 0 -mmin +20 2>/dev/null)" ]; then
       rmdir "$MAC_LOCK" 2>/dev/null || true
       mkdir "$MAC_LOCK" 2>/dev/null || exit 0
     else
@@ -57,7 +57,7 @@ exec >>"$LOG_FILE" 2>&1
 printf '[%s] host=%s start force=%s\n' "$(date -Is)" "$(hostname -s)" "$FORCE"
 
 if [ "$FORCE" -eq 0 ] && [ -f "$STAMP_FILE" ] &&
-   [ -n "$(find "$STAMP_FILE" -mmin -"$MAX_AGE_MINUTES" 2>/dev/null)" ]; then
+   [ -n "$(command -p find "$STAMP_FILE" -mmin -"$MAX_AGE_MINUTES" 2>/dev/null)" ]; then
   printf '[%s] fresh stamp; skip (max_age=%sm)\n' "$(date -Is)" "$MAX_AGE_MINUTES"
   exit 0
 fi
@@ -77,7 +77,7 @@ else
     mkdir "$LOCK_DIR" 2>/dev/null && LOCK_ACQUIRED=1
     [ "$LOCK_ACQUIRED" -eq 0 ] || printf '[%s] reclaimed dead local updater lock\n' "$(date -Is)"
   elif [ ! -e "$LOCK_OWNER" ] &&
-       [ -n "$(find "$LOCK_DIR" -maxdepth 0 -mmin +20 2>/dev/null)" ]; then
+       [ -n "$(command -p find "$LOCK_DIR" -maxdepth 0 -mmin +20 2>/dev/null)" ]; then
     rmdir "$LOCK_DIR" 2>/dev/null || true
     mkdir "$LOCK_DIR" 2>/dev/null && LOCK_ACQUIRED=1
     [ "$LOCK_ACQUIRED" -eq 0 ] || printf '[%s] reclaimed legacy empty updater lock\n' "$(date -Is)"
