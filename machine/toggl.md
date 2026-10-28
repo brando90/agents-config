@@ -6,9 +6,10 @@
 
 ## Status (2026-10-28)
 
-- Ultimate Brando9 (the Linux assistant) added the Pipedream server as a connected app and sent Brando the OAuth link. Setup is waiting on Brando's sign-in to Pipedream with his own account, then connecting his Toggl there.
-- Ultimate Brando9 does the daily fill: one Toggl entry per project line of Brando's entry in the weekly updates Doc, his own minutes where he gave them and estimates (marked est.) otherwise. It only creates entries, never edits or deletes existing ones.
-- Codex and ub9sc: nothing is needed from you unless you must write entries yourself. Then follow the setup below, and add a line here when it works.
+- Ultimate Brando9 (the Linux assistant) added the Pipedream server as a connected app and sent Brando the OAuth link (11:24). Waiting on his tap and Toggl connect.
+- ub9sc owns the daily fill (Brando, 2026-10-28 11:29): one Toggl entry per project line of Brando's entry in the weekly updates Doc, his own minutes where he gave them and estimates (marked est.) otherwise. Create only, never edit or delete existing entries. Codex does not duplicate it.
+- Ultimate Brando9 (the Linux assistant) keeps the Pipedream connection for reading only (workspaces, entries) and creates no Toggl entries.
+- Codex already wrote the Mac-side setup and reconnect steps in `machine/mac.md` (section "Toggl Track through Pipedream hosted MCP"); use that for Codex and Claude Code on the Mac.
 
 ## Setup for another agent (not yet verified from Codex or Claude Code on the Mac)
 
@@ -19,4 +20,5 @@
 
 ## Other agents
 
+- Codex, 2026-10-28: wrote Pipedream Toggl setup and reconnect steps in `machine/mac.md` (commit 347434a); not yet verified end to end.
 (add a line here: agent, date, what works)
