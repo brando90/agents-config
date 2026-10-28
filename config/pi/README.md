@@ -4,6 +4,16 @@
 
 **TLDR:** Automatic sync captures portable ordinary-Pi settings and canonical skill/resource edits through a private hub, checks for conflicting edits, and applies updates in the background. `install.py --check` and Pi’s `/config-sync` report drift; the full installer also configures named providers, keeping credentials outside Git.
 
+## Current default rollout and authentication limits — 10-28-2026
+
+The requested ordinary-Pi default `vals-codex/gpt-6.1-sol`, medium thinking, is saved on the Mac and skampere1–3/mercury1–2, including each existing automatic-settings overlay. New sessions use these preferences when the model is available; existing sessions retain their selected model until explicitly changed. Specialized local/Gemini launchers remain separate. No automatic API-key or other-payer fallback was installed.
+
+**Configuration is not successful authentication:** the Mac advertises the requested subscription model. On SNAP, skampere1 advertises four older Vals Codex models but lacks GPT-6.1 Sol in its account cache; its native GPT-6.1 Sol request failed with model-unavailable diagnostics. skampere2, skampere3, mercury1 and mercury2 have expired Vals subscription tokens and missing account model caches; native Codex refresh attempts returned 401 and did not repair them. Those five hosts therefore do not yet have verified usable access to the requested default. Existing profile credentials were not copied between hosts.
+
+Both Vals API-key routes and shared key files are configured on the five SNAP hosts. Separate non-generation `/v1/models` checks using the Mac copies returned HTTP 200 for Vals OpenAI and HTTP 401 `authentication_error` for Vals Anthropic. These do not establish subscription access or successful generation; the Anthropic credential needs replacement/recovery. The earlier rollout's catalog visibility was not a live-key validation.
+
+**Continuation:** recover each existing SNAP Vals Codex profile using its supported login/refresh flow, refresh its account model cache, then verify `vals-codex/gpt-6.1-sol` through Pi and one bounded request. Recover the rejected Vals Anthropic credential separately. Do not silently substitute the working OpenAI API-key route for the requested subscription. Automatic sync also reports a pre-existing `packages` live/manifest conflict on this Mac; unrelated package choices were preserved, not overwritten to suppress it.
+
 ## Automatic sync — 10-24-2026
 
 `auto_sync.py` synchronizes the ordinary Pi profile every 60 seconds using native macOS LaunchAgent / Linux per-user cron jobs. The private hub is an owner-only directory on the existing shared cluster filesystem. Cluster clients use that directory directly; the Mac uses its existing authenticated Secure Shell (SSH) route to skampere1. Cluster synchronization can continue while the Mac sleeps; the Mac catches up after waking and reconnecting. Failed connections back off to at most one attempt every 30 minutes. No model calls or Codex scheduled-agent runs are used.
@@ -49,7 +59,7 @@ Verified installation and two-way scheduled propagation on all six machines: [10
 
 Brando's selected everyday default is **`vals-codex / gpt-6.1-sol / medium` through the Vals ChatGPT subscription** (10-28-2026). This supersedes the earlier Koyejo API-key default and the intervening unimplemented Opus fallback request; it does not install an automatic payer fallback. Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
 
-The credential stays in each machine's private key store; only the named route and preferences are shared. On a machine without that provider, run the full installer with its existing authorized key before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
+The credential stays in each machine's private key store; only the named route and preferences are shared. `vals-codex` uses that host's existing `.codex-vals` subscription login and model cache, not an OpenAI API key. On a machine without that provider, initialize/refresh the authorized Vals Codex profile and install the shared runtime configuration before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
 
 `runtime.json` supplies the portable baseline; enrolled profiles layer privately synchronized preferences over it. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
 
