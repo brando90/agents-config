@@ -32,8 +32,13 @@ class InstructionDocsTests(unittest.TestCase):
 
     def test_long_single_line_is_not_hidden_by_line_count(self):
         for name in ('AGENTS.md', 'CLAUDE.md'):
-            (self.root / name).write_text('x' * 6145)
+            (self.root / name).write_text('x' * (checker.BUDGETS[name][0] + 1))
         self.assertTrue(any('bytes exceeds' in e for e in self.errors()))
+
+    def test_entrypoint_byte_budget_boundary_is_allowed(self):
+        for name in ('AGENTS.md', 'CLAUDE.md'):
+            (self.root / name).write_text('x' * checker.BUDGETS[name][0])
+        self.assertEqual(self.errors(), [])
 
     def test_entrypoint_drift_is_detected(self):
         (self.root / 'CLAUDE.md').write_text('Contradictory instructions.\n')
