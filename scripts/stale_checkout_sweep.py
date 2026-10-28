@@ -11,10 +11,10 @@ worktrees stay behind. This sweep is the backstop any later agent (or a schedule
 
 A worktree is SAFE only when every check passes: not locked; no process has its working
 directory inside or names it on its command line; untouched for --min-age-hours; every path it
-changed (uncommitted, untracked or in commits on no remote) already has identical content on the
-remote default branch; ignored files are rebuildable caches or byte-identical copies of the main
-checkout's files. Anything else is KEEP with its reasons. Main checkouts and full clones are never
-removed. Claude desktop worktrees (<repo>/.claude/worktrees) are reported, not removed: the app's
+changed (uncommitted, untracked or in commits on no remote) has its exact content on the remote
+default branch, anywhere in that branch's history (so renamed or superseded files count), or in the
+main checkout; ignored files are rebuildable caches or copies found in those same places. Anything
+else is KEEP with its reasons. Main checkouts and full clones are never removed. Claude desktop worktrees (<repo>/.claude/worktrees) are reported, not removed: the app's
 own cleanup owns them. --apply runs `git worktree remove` (adding --force only when the dirty paths
 were verified identical on the default branch), deletes the local task branch when it is merged
 into the remote default branch, prunes registrations whose folder is gone, and removes empty
@@ -24,6 +24,7 @@ parent folders and empty container folders (or ones holding only a Codex
 from pathlib import Path
 import argparse
 import filecmp
+import functools
 import json
 import os
 import subprocess
@@ -140,15 +141,28 @@ def is_cache(rel):
     return any(p in CACHE_NAMES or p.endswith(CACHE_SUFFIXES) for p in Path(rel.rstrip('/')).parts)
 
 
+def reflog_time(gitdir):
+    """Timestamp of the newest HEAD reflog entry (its file mtime is unreliable: gc rewrites reflogs)."""
+    try:
+        with open(gitdir / 'logs' / 'HEAD', 'rb') as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 4096))
+            last = f.read().splitlines()[-1].decode(errors='replace')
+        return float(last.split('\t', 1)[0].split()[-2])
+    except (OSError, IndexError, ValueError):
+        return 0
+
+
 def last_activity(p, gitdir, files=()):
-    """Newest of the folder, HEAD, its reflog and the changed files (not the index, which any `git status` rewrites)."""
-    times = []
-    for f in (p, gitdir / 'HEAD', gitdir / 'logs' / 'HEAD', *(p / x for x in files)):
+    """Newest of the folder, HEAD, its reflog entry and the changed files (not the index, which any `git status`
+    rewrites, nor the reflog file, which gc rewrites)."""
+    times = [reflog_time(gitdir)]
+    for f in (p, gitdir / 'HEAD', *(p / x for x in files)):
         try:
             times.append(f.lstat().st_mtime)
         except OSError:
             pass
-    return max(times, default=0)
+    return max(times)
 
 
 def status_entries(p):
@@ -205,6 +219,23 @@ def not_on_base(p, base, paths):
         elif os.path.lexists(p / x) or on_base.get(x):  # symlink, directory or nested repo; or deleted here only
             diff.append(x)
     return diff
+
+
+@functools.lru_cache(maxsize=None)
+def history_objects(common, base):
+    """Every object id reachable from `base` in the repository at `common` (all paths, all history)."""
+    r = git(common, 'rev-list', '--objects', base)
+    return frozenset(l.split(' ', 1)[0] for l in r.stdout.splitlines())
+
+
+def in_history(p, common, base, paths):
+    """Paths whose exact current content appears anywhere in `base`'s history (renamed or later superseded)."""
+    present = [x for x in paths if (p / x).is_file() and not (p / x).is_symlink()]
+    if not (base and present):
+        return set()
+    seen = history_objects(str(common), base)
+    h = git(p, 'hash-object', '--stdin-paths', stdin=''.join(f'{x}\n' for x in present))
+    return {x for x, sha in zip(present, h.stdout.split()) if sha in seen}
 
 
 def same_in_main(p, main, rel):
@@ -293,6 +324,9 @@ def classify(p, busy, min_age_hours, now):
         diff = not_on_base(p, base, paths) if base else None
         if diff:
             diff = [x for x in diff if not same_in_main(p, main, x)]
+        if diff:
+            old = in_history(p, common, base, diff)
+            diff = [x for x in diff if x not in old]
         what = ', '.join([f'{len(changed)} uncommitted/untracked paths'] * bool(changed) +
                          [f'{n_ahead} commits on no remote'] * bool(n_ahead))
         if diff is None:
@@ -300,11 +334,14 @@ def classify(p, busy, min_age_hours, now):
         elif diff:
             why.append(f'{what}; {len(diff)} differ from {base}: {some(diff)}')
         else:
-            notes.append(f'{what}, all identical on {base} or in the main checkout')
+            notes.append(f'{what}, all on {base} (now or in its history) or in the main checkout')
             info['force'] = bool(changed)
     extra = [x for xy, x in entries if xy == '!!' and not is_cache(x)]
     if extra:
         diff = not_in_main(p, main, extra)
+        if diff:
+            old = in_history(p, common, base, diff)
+            diff = [x for x in diff if x not in old]
         if diff is None:
             why.append(f'ignored non-cache files (too many to compare): {some(extra)}')
         elif diff:

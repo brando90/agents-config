@@ -94,16 +94,35 @@ class StaleCheckoutSweepTest(unittest.TestCase):
         res, _ = self.sweep()
         self.assertEqual(res["copied-untracked"]["status"], "SAFE", res["copied-untracked"])
 
-    def test_age_survives_repeated_sweeps(self):
-        wt = self.worktree("old")
-        gitdir = Path(git(wt, "rev-parse", "--absolute-git-dir").strip())
+    def test_age_survives_repeated_sweeps_and_gc(self):
         two_days_ago = time.time() - 48 * 3600
-        for f in (wt, gitdir / "HEAD", gitdir / "logs" / "HEAD", gitdir / "index"):
+        path = self.wts / "proj" / "old"
+        env = {**os.environ, "GIT_COMMITTER_DATE": f"{int(two_days_ago)} +0000"}
+        subprocess.run(["git", "-C", str(self.main), "worktree", "add", "-q", "-b", "old", str(path), "origin/main"],
+                       check=True, capture_output=True, env=env)
+        gitdir = Path(git(path, "rev-parse", "--absolute-git-dir").strip())
+        for f in (path, gitdir / "HEAD", gitdir / "index"):
             os.utime(f, (two_days_ago, two_days_ago))
+        os.utime(gitdir / "logs" / "HEAD")  # gc rewrote the reflog file just now; its entries are still old
         for _ in range(2):  # the first sweep must not make the worktree look recent to the second
             res, _ = self.sweep("--min-age-hours", "24")
             self.assertEqual(res["old"]["status"], "SAFE", res["old"])
         self.assertLess(os.stat(gitdir / "index").st_mtime, time.time() - 47 * 3600)
+        fresh = self.worktree("fresh")
+        res, _ = self.sweep("--min-age-hours", "24")
+        self.assertEqual(res[fresh.name]["status"], "KEEP")
+
+    def test_renamed_on_main_is_safe(self):
+        wt = self.worktree("renamed")
+        (wt / "exp_121").mkdir()
+        (wt / "exp_121" / "r.md").write_text("result\n")
+        (self.main / "exp_07").mkdir()
+        (self.main / "exp_07" / "r.md").write_text("result\n")
+        git(self.main, "add", "exp_07")
+        git(self.main, "commit", "-qm", "land under the new experiment number")
+        git(self.main, "push", "-q", "origin", "main")
+        res, _ = self.sweep()
+        self.assertEqual(res["renamed"]["status"], "SAFE", res["renamed"])
 
     def test_apply_removes_empty_codex_containers(self):
         container = self.wts / "codex-id"
