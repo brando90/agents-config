@@ -117,6 +117,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [79](rules/responses.md#trigger-rule-79) | Sending/posting/saving anything a person reads (message, email, slide, Doc, README, PR) → spell-check it; Brando's surname is Miranda; check names against a source; quotes, identifiers and code keep their spelling. |
 | [81](rules/maintenance.md#trigger-rule-81) | Verified work, any Brando repo → land on `origin/main` now; never park on a branch. |
 | [80](rules/hosts.md#trigger-rule-80) | Launch/queue/size any GPU run, or free GPUs on mercury1/2 → use mercury as much as possible, whole node OK; empty GPUs only, never touch running jobs, shard big models over 4-5 A4000s, release when done. |
+| [82](rules/research.md#trigger-rule-82) | Plan, run, score or report anything on public VeriBench → use the current release (`veribench@1.3`, 896 tasks, 10-28-2026); before each run `git ls-remote` veribench `main` and read its README release section; name the version beside every number. |
 
 ## Guidelines (best practices)
 
