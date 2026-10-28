@@ -1,0 +1,13 @@
+{
+  "name": "pipedream-connect-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Small standalone Pipedream Connect demo: server-side connect-token endpoint plus a Connect page.",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test test.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": { "@pipedream/sdk": "^3.3.0" }
+}

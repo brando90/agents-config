@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pipedream Connect demo</title>
+<style>body{font:16px system-ui;max-width:36rem;margin:3rem auto}button{font:inherit;padding:.5rem 1rem;margin:.25rem}pre{background:#f4f4f4;padding:.75rem}</style>
+<h1>Connect an account</h1>
+<p>Each button asks the server for a short-lived Connect token, then opens Pipedream's hosted sign-in. Pipedream stores the login; this app never sees it.</p>
+<button data-app="toggl_track">Connect Toggl</button>
+<button data-app="google_sheets">Connect Google Sheets</button>
+<button id="list">List connected accounts</button>
+<pre id="out">Nothing yet.</pre>
+<script>
+const out = document.getElementById("out");
+for (const b of document.querySelectorAll("button[data-app]")) {
+  b.onclick = async () => {
+    const r = await fetch(`/api/connect-token?app=${b.dataset.app}`, { method: "POST" });
+    const j = await r.json();
+    if (!r.ok) { out.textContent = j.error; return; }
+    window.open(j.connectLinkUrl, "_blank");
+    out.textContent = "Finish sign-in in the new tab, then press List connected accounts.";
+  };
+}
+document.getElementById("list").onclick = async () => {
+  const j = await (await fetch("/api/accounts")).json();
+  out.textContent = JSON.stringify(j, null, 2);
+};
+</script>
