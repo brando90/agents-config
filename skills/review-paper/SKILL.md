@@ -1,6 +1,6 @@
 ---
 name: review-paper
-description: Review an ML paper the way Brando does: judge whether it matters and is good evidence, name the experiments that would move the score, and write a kind but direct review. Use when asked to review, referee or give feedback on a paper (ICLR, NeurIPS, ICML, TMLR, workshop) or to draft a reviewer response.
+description: "Review an ML paper the way Brando does: judge whether it matters and is good evidence, name the experiments that would move the score, and write a kind but direct review. Use when asked to review, referee or give feedback on a paper (ICLR, NeurIPS, ICML, TMLR, workshop) or to draft a reviewer response."
 ---
 
 # review-paper: Brando's way of reviewing an ML paper
