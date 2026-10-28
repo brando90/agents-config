@@ -11,6 +11,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/ampere1.md`](machine/ampere1.md) — SNAP ampere1 node (8x A100-80GB)
 - [`machine/mercury1.md`](machine/mercury1.md) — SNAP mercury1 node (10x A4000-16GB)
 - [`machine/mercury2.md`](machine/mercury2.md) — SNAP mercury2 node (10x RTX A4000-16GB)
+- [`machine/toggl.md`](machine/toggl.md) — Toggl Track through Pipedream MCP (shared by all agents; coordination note)
 - [`machine/skampere1.md`](machine/skampere1.md) — SNAP skampere1 node
 - [`machine/skampere2.md`](machine/skampere2.md) — SNAP skampere2 node
 - [`machine/snap.md`](machine/snap.md) — Stanford SNAP cluster
