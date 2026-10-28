@@ -1,11 +1,11 @@
 {
   "version": 1,
   "settings": {
-    "defaultProvider": "koyejolab-openai-bm",
+    "defaultProvider": "vals-codex",
     "defaultModel": "gpt-6.1-sol",
     "defaultThinkingLevel": "medium",
     "modelThinkingLevels": {
-      "koyejolab-openai-bm/gpt-6.1-sol": "medium"
+      "vals-codex/gpt-6.1-sol": "medium"
     },
     "enableSkillCommands": true,
     "packages": [

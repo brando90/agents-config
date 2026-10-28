@@ -47,7 +47,7 @@ Verified installation and two-way scheduled propagation on all six machines: [10
 
 ## Manual installer and shared defaults
 
-Brando's selected everyday default is **GPT-6.1 Sol, medium thinking, through the Koyejo Lab OpenAI key** (10-23-2026). Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
+Brando's selected everyday default is **`vals-codex / gpt-6.1-sol / medium` through the Vals ChatGPT subscription** (10-28-2026). This supersedes the earlier Koyejo API-key default and the intervening unimplemented Opus fallback request; it does not install an automatic payer fallback. Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
 
 The credential stays in each machine's private key store; only the named route and preferences are shared. On a machine without that provider, run the full installer with its existing authorized key before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
 
@@ -67,7 +67,7 @@ A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime
 
 ### What is managed
 
-- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. The shared ordinary-Pi default is `koyejolab-openai-bm/gpt-6.1-sol` with `medium` thinking, including its per-model thinking setting. Other undeclared settings remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
+- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. The shared ordinary-Pi default is `vals-codex/gpt-6.1-sol` with `medium` thinking, including its per-model thinking setting. Other undeclared settings remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
 - **Resource arrays:** `packages`, `extensions`, `skills`, `prompts` and `themes` are authoritative arrays. Apply replaces those lists (with a private timestamped backup), so add experiments you want to keep to the manifest or a host override before applying. Removing a package declaration stops loading it; its cached installation remains on disk.
 - **Shared extension code:** keep it under `config/pi/extensions/`, list its `${CONFIG_DIR}` path in `settings.extensions`, and add the relative filename to `trackedFiles`. Paths expand separately on each machine. The receipt hashes these files, so edits require a new apply even when paths stay the same.
 - **Packages:** use `npm:@scope/name@1.2.3`, `git:github.com/owner/repo@<full-40-character-commit>`, or `${CONFIG_DIR}/your-local-package`. npm ranges and moving Git branches are rejected. Missing or wrong versions are installed using the selected `pi` executable, in an empty working directory, under the selected profile. Git packages with local edits are preserved and reported instead of overwritten. Local package dependencies remain your responsibility, as in Pi itself.
@@ -163,7 +163,7 @@ The installer follows the selected Pi executable to find its catalog before cons
 Pi reloads `models.json` on `/model`. Restart or `/reload` if a running selector remains stale.
 If only generic providers appear even though the runtime check passes, run the **full** `python3 ~/agents-config/config/pi/install.py`: `--runtime-only` and automatic sync intentionally do not install providers, and `--check` verifies runtime settings, not provider availability.
 The installer discovers the selected catalog for both package symlinks and managed Pi launchers (`install/current-version`); it does not require a separate global npm installation.
-Then choose `koyejolab-openai-bm/gpt-6.1-sol` in `/model` for the shared default; a resumed session retains its previous provider until explicitly switched. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
+Then choose `vals-codex/gpt-6.1-sol` in `/model` for the shared default; a resumed session retains its previous provider until explicitly switched. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
 
 Examples visible in `/model`:
 
