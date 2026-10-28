@@ -2,52 +2,65 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/toggl.md>
 
-**TLDR:** Any agent with verified access may populate authorized Toggl entries; read existing entries and coordinate one writer per batch to avoid duplicates. Use Pipedream's hosted service, authenticate each client, and verify the required tools before claiming write access. Never put credentials in this repository.
+**TLDR:** Toggl is connected to Pipedream's hosted development service. Mac Codex and Claude Code are configured; workspace and current-day reads passed. Other agents, including UB9sc, must verify their own private authentication. Entry creation uses Pipedream's hosted API proxy because its Toggl MCP catalog currently lacks a create-entry action.
 
-## Status (10-28-2026)
+## Verified status (10-28-2026)
 
-- Ultimate Brando9 (the Linux assistant) added the Pipedream server as a connected app and sent Brando the OAuth link (11:24). Waiting on his tap and Toggl connect.
-- Any of Brando's agents may fill Toggl (Brando, 2026-10-28 11:36): ub9sc is not the exclusive writer. Whichever agent has verified access fills the day's entries from his entry in the weekly updates Doc: one entry per project line, his own minutes where he gave them and estimates (marked est.) otherwise. Create only, never edit or delete existing entries. Read today's entries first so nothing is duplicated if another agent already filled them.
-- Ultimate Brando9 (the Linux assistant) will fill once its Pipedream read-only test passes (workspaces, today's entries).
-- Codex already wrote the Mac-side setup and reconnect steps in `machine/mac.md` (section "Toggl Track through Pipedream hosted MCP"); use that for Codex and Claude Code on the Mac.
+- GitHub sign-in reached the existing Pipedream account. Brando approved Pipedream's terms; the existing Toggl credential was transferred privately from his signed-in profile to the hosted connection.
+- The requested existing Connect project uses **development**, as Brando selected for the Free plan. No demo, local server, self-hosted deployment, or paid upgrade was created.
+- Hosted Model Context Protocol (MCP) checks returned one workspace and zero entries for 10-28-2026 in `America/Los_Angeles` (midnight through the following midnight). No entry was created, edited, or deleted.
+- Codex configuration parses and uses dynamic authentication headers. `claude mcp get pipedream` reports `Connected` in user scope. Existing sessions may need to reconnect or restart to load the server.
+- Pipedream reports the connected Toggl account healthy. Its hosted API proxy passed a workspace read. The application registry confirms proxy support for `api.track.toggl.com`.
+- The live MCP catalog has 13 Toggl actions plus `retrieve_options`; none creates, edits, or deletes time entries. Write requests were intentionally not tested because setup verification is read-only.
+- UB9sc's independent connection remains unverified. A shared URL or a successful Mac test does not authenticate another host.
 
-## Setup for another agent (not yet verified from Codex or Claude Code on the Mac)
+## Current Mac setup
 
-- Claude Code: `claude mcp add --transport http --scope user pipedream https://mcp.pipedream.net/v2`, then `/mcp` to sign in.
-- Codex: `codex mcp add pipedream --url https://mcp.pipedream.net/v2`, then `codex mcp login pipedream`. Reconnect with the login command; see `machine/mac.md` for the equivalent configuration.
-- Pick Toggl in Pipedream and connect Brando's account. Test with a read-only call (workspaces, today's entries) before any write.
-- Never put a token or key in this repo.
+The private file `~/.config/pipedream/toggl-agents-oauth.json` has mode `0600` and contains a Pipedream client ID/secret plus `project_id`, `environment`, `external_user_id`, `app_slug`, and `account_id`. The Toggl token stays in Pipedream. Never print or commit the private file, bearer headers, or account-connection links.
 
-## Hosted connection routes
+The exact `~/.codex/config.toml` server section is:
 
-The [end-user service](https://pipedream.com/docs/connect/mcp/users) at
-`https://mcp.pipedream.net/v2` uses browser OAuth and does not configure an
-existing Connect project's production environment.
+```toml
+[mcp_servers.pipedream]
+url = "https://remote.mcp.pipedream.net/v3"
+http_headers_helper = "python3 -c 'import json,pathlib,urllib.request; c=json.loads((pathlib.Path.home()/\".config/pipedream/toggl-agents-oauth.json\").read_text()); p={k:c[k] for k in (\"client_id\",\"client_secret\")}; p[\"grant_type\"]=\"client_credentials\"; t=json.load(urllib.request.urlopen(urllib.request.Request(\"https://api.pipedream.com/v1/oauth/token\",data=json.dumps(p).encode(),headers={\"Content-Type\":\"application/json\"}),timeout=8)); print(json.dumps({\"Authorization\":\"Bearer \"+t[\"access_token\"],\"x-pd-project-id\":c[\"project_id\"],\"x-pd-external-user-id\":c[\"external_user_id\"],\"x-pd-environment\":c[\"environment\"],\"x-pd-app-slug\":c[\"app_slug\"],\"x-pd-account-id\":c[\"account_id\"]}))'"
+```
 
-To use a specified Connect project, follow the [developer remote-server guide](https://pipedream.com/docs/connect/mcp/developers):
-`https://remote.mcp.pipedream.net/v3`, a short-lived OAuth bearer token, and
-`x-pd-project-id`, `x-pd-environment`, `x-pd-external-user-id`, and
-`x-pd-app-slug` headers (`toggl` for Toggl Track). The project and external user
-must match the hosted account connection. Development and production accounts
-are separate; do not silently switch environments. The Free plan supports
-Connect in development only; production requires an eligible plan. See
-[Pipedream environments](https://pipedream.com/docs/connect/managed-auth/environments).
+This inline configuration command obtains a short-lived Pipedream access token when the client connects; it runs no server. Claude Code uses the same hosted endpoint and command under `headersHelper` in a user-scoped HTTP server. To reuse the installed Codex settings on this Mac:
 
-OAuth authenticates the agent to Pipedream. The current
-[Pipedream Toggl component](https://github.com/PipedreamHQ/pipedream/blob/master/components/toggl/toggl.app.mjs)
-uses a Toggl API token behind the hosted connection. Do not ask Brando to paste
-that token into chat or put it in the repository. Browser sign-in, a configured
-server, and authenticated agent tool access are separate verification steps.
+```bash
+python3 - <<'PYSETUP'
+import json, pathlib, subprocess, tomllib
+server = tomllib.loads((pathlib.Path.home()/'.codex/config.toml').read_text())['mcp_servers']['pipedream']
+config = {'type': 'http', 'url': server['url'], 'headersHelper': server['http_headers_helper']}
+subprocess.run(['claude', 'mcp', 'add-json', '--scope', 'user', 'pipedream', json.dumps(config)], check=True)
+PYSETUP
+```
 
-## Verified limits (10-28-2026)
+Reconnect by starting a fresh Codex session or reconnecting `pipedream` through Claude's `/mcp`. The helper obtains fresh credentials. If the Pipedream OAuth client was revoked, replace that client's private credentials through Pipedream's supported flow; do not rotate another application's client. If the Toggl connection expires, a read call returns a hosted account-connection link: complete it using the same project, environment, and external user, then repeat the read-only test.
 
-- GitHub sign-in reached the existing Pipedream Connect workspace. The consumer hosted sign-in stalled at its redirect; it is not yet authenticated in Codex.
-- The development project remote server initialized successfully and returned 14 tools: 13 Toggl actions plus `retrieve_options`. No create/update/delete time-entry action appeared. Creating projects or clients does not establish time-entry write capability.
-- The read-only workspace call returned an account-connection link, not workspace data. Toggl connection and today's entry test remain pending. Do not report this as a passed test.
-- The development connection reached Pipedream's terms acceptance screen. Browser confirmation is pending. No Toggl entries were created or changed.
-- For entry creation, investigate Pipedream's documented [Connect API proxy](https://pipedream.com/docs/connect/api-proxy) or an available hosted action; do not build or self-host a server. Verify the exact supported route before assigning a fill batch.
+## Another host or agent
 
-## Other agents
+Use the same project/environment/external-user/account mapping from the authorized private configuration and an authorized Pipedream OAuth client, provisioned through a private credential channel. Do not put these credentials in issue #68, email, prompts, or this repository. A remote agent needs its own runtime access to that private configuration and token refresh; copying only the endpoint is insufficient. UB9sc must report which authentication mechanism its runtime supports and prove its own read access before filling an entry batch.
 
-- Codex, 10-28-2026: configured the consumer server and verified the separate development server/tool catalog; see the limits above. Setup is not yet verified end to end.
-(add a line here: agent, date, what works)
+The separate [consumer server](https://pipedream.com/docs/connect/mcp/users) is `https://mcp.pipedream.net/v2`. Its browser sign-in stalled during this setup; this Mac uses the project-based route above. The original consumer setup is:
+
+```bash
+codex mcp add pipedream --url https://mcp.pipedream.net/v2
+codex mcp login pipedream
+```
+
+For that consumer route only, reconnect with `codex mcp login pipedream`; Claude Code can use the same server with `claude mcp add --transport http --scope user pipedream https://mcp.pipedream.net/v2`, then `/mcp`. Do not overwrite the working project-based configuration merely to retry the consumer route.
+
+## Creating authorized entries through the hosted proxy
+
+[Pipedream's Connect API proxy](https://pipedream.com/docs/connect/api-proxy) supplies the stored Toggl authentication. Use the Pipedream bearer token, `x-pd-environment`, the matching external user/account, and a URL-safe Base64 encoded Toggl endpoint:
+
+```text
+POST https://api.pipedream.com/v1/connect/{project_id}/proxy/{encoded_toggl_url}?external_user_id={external_user_id}&account_id={account_id}
+Toggl target: https://api.track.toggl.com/api/v9/workspaces/{workspace_id}/time_entries
+```
+
+The [Toggl create-entry documentation](https://engineering.toggl.com/docs/track/api/time_entries/) defines `created_with`, `start`, `duration`, `workspace_id`, and optional description/project fields. Read today's entries first, use Brando's supplied times or explicitly labeled estimates where he authorized them, and coordinate one writer per batch. Any verified agent may fill an authorized batch; UB9sc is not the exclusive writer. Existing-entry edits/deletions are outside the current fill instruction. Creating projects or clients is not an entry-creation test.
+
+Sources: [Pipedream developer server](https://pipedream.com/docs/connect/mcp/developers), [authentication](https://pipedream.com/docs/connect/api-reference/authentication), [development environments](https://pipedream.com/docs/connect/managed-auth/environments), [Claude dynamic headers](https://code.claude.com/docs/en/mcp#use-dynamic-headers-for-custom-authentication), and [Codex MCP](https://developers.openai.com/codex/mcp).

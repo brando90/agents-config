@@ -65,46 +65,19 @@ Google-model coding-agent work uses `agy` signed into a Google account. Do not i
 
 ### Toggl Track through Pipedream hosted MCP
 
-Use Pipedream's hosted Model Context Protocol (MCP) server; no local server or
-self-hosted deployment is needed. Run these supported Codex commands:
+The working Mac connection uses Pipedream's hosted project server at
+`https://remote.mcp.pipedream.net/v3` in free **development** mode. Codex and
+Claude Code use dynamic headers to refresh Pipedream credentials from a private
+mode-0600 file; no local server or demo is involved. See the exact configuration,
+reconnect steps, Claude reuse command, and other-agent requirements in
+[Toggl Track for Brando's agents](toggl.md).
 
-```bash
-codex mcp add pipedream --url https://mcp.pipedream.net/v2
-codex mcp login pipedream  # if the add command did not finish browser sign-in
-codex mcp get pipedream
-```
-
-The equivalent entry in `~/.codex/config.toml` is:
-
-```toml
-[mcp_servers.pipedream]
-url = "https://mcp.pipedream.net/v2"
-```
-
-Complete Pipedream's browser sign-in, select **Toggl Track**, and connect the
-intended Toggl account at the [Toggl app page](https://mcp.pipedream.com/app/toggl).
-Codex authenticates to Pipedream with OAuth; the current [Pipedream Toggl
-component](https://github.com/PipedreamHQ/pipedream/blob/master/components/toggl/toggl.app.mjs)
-uses a Toggl API token behind that connection. Keep credentials in the supported
-local credential store or hosted connection; never ask for tokens in chat or
-commit credentials to this repository.
-
-To reconnect, run `codex mcp logout pipedream` followed by
-`codex mcp login pipedream`, then check the Toggl connection on the app page.
-Start a fresh Codex session if its tool catalog does not include the new server.
-Verify with read-only workspace and current-day time-entry requests, using the
-user's timezone; configuration alone is not proof of authenticated access.
-
-Claude Code can use the same server: `claude mcp add --transport http --scope user pipedream https://mcp.pipedream.net/v2`, then authenticate through `/mcp`.
-
-Checked 10-28-2026 with Codex CLI 0.165.0: the server is configured, but browser
-sign-in returned “Please sign up with your work email address.” Authentication
-and the requested MCP data reads remain unverified until that account issue is
-resolved; a working Toggl browser session does not establish MCP access.
-
-Sources: [Pipedream end-user setup](https://pipedream.com/docs/connect/mcp/users),
-[Codex MCP configuration](https://developers.openai.com/codex/mcp), and
-[Claude Code MCP setup](https://code.claude.com/docs/en/mcp).
+Verified 10-28-2026: one workspace and zero current-day entries in Pacific time;
+no entries changed. Claude's user-scoped server reports `Connected`. The separate
+consumer URL `https://mcp.pipedream.net/v2` stalled during browser sign-in and is
+not the currently configured Mac route. Other agents need independent verified
+authentication. The hosted Toggl tool catalog lacks a create-entry action; use
+the documented hosted API proxy for authorized fills after checking for duplicates.
 
 ### Vibe (Mistral) + Leanstral
 
