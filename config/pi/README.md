@@ -175,7 +175,15 @@ gemini-3.1-pro-preview      [allen-google-veribench]
 <installed Mistral model>   [unassigned-mistral-main]
 ```
 
-The Mistral credential's sponsor is **unverified**, not assumed personal or laboratory. No Vals or Stanford route is invented without a matching credential and known funding identity. Add those to the manifest when verified. The specialized Aristotle theorem-prover API is not a native Pi chat-model route and cannot simply be listed as a chat model. Allen's third documented model, `gemini-3-pro-preview`, is absent from the installed catalog; its two available approved models are configured.
+### Vals API-key routes — 10-28-2026
+
+The shared provider manifest registers `vals-openai-bm` and `vals-anthropic-bm`, using the verified Vals key files `~/keys/openai_vals_ai_key.txt` and `~/keys/anthropic_vals_ai_key.txt`. These are direct provider API-key routes, separate from the `vals-claude-code` subscription route. Select them through `/model`; opening the picker reloads `models.json`. Registration preserves the current default model and other sponsors' routes.
+
+On each machine, run the full installer above after updating agents-config. The installer uses that machine's installed model catalog and private key files; it skips a route when its key is absent. Runtime-only installation and automatic settings sync do not register providers or transfer credentials. Existing enrolled Mac/SNAP installations need a provider installation too; Git publication alone does not update them. Specialized Pi profiles retain their separate configuration unless explicitly installed with `--agent-dir`.
+
+Keep key files owner-readable only (`600`), outside Git. Provider configuration contains only runtime file-reading commands, never key values. Vals routes remain restricted to Vals-authorized work and existing budgets; catalog visibility does not establish account funding or access to every model. Menu verification requires no paid inference.
+
+The Mistral credential's sponsor is **unverified**, not assumed personal or laboratory. No Stanford route is invented without a matching credential and known funding identity. Add other sponsor routes to the manifest only when verified. The specialized Aristotle theorem-prover API is not a native Pi chat-model route and cannot simply be listed as a chat model. Allen's third documented model, `gemini-3-pro-preview`, is absent from the installed catalog; its two available approved models are configured.
 
 Each `apiKey` is an idiomatic Pi secret command (`!cat '/absolute/key/path'`). Pi consumes its stdout internally; do not run the command in chat tools or use `auth --credentials` or `print-api-key`. Each alias has its own credential command and does not depend on the generic inherited `OPENAI_API_KEY`. Catalog entries are **configured**, not proof that every model is enabled or funded by that account. No paid inference is needed to verify menu visibility.
 

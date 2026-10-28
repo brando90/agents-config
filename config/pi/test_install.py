@@ -108,6 +108,29 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(providers)
         self.assertTrue(notices)
 
+    def test_vals_routes_use_separate_private_files_and_keep_metadata(self):
+        manifest = json.loads(Path(__file__).with_name('providers.json').read_text())
+        entries = {e['id']: e for e in manifest['providers']}
+        expected = {'vals-openai-bm': ('openai', 'openai_vals_ai_key.txt'),
+                    'vals-anthropic-bm': ('anthropic', 'anthropic_vals_ai_key.txt')}
+        for name, (service, filename) in expected.items():
+            self.assertEqual(entries[name]['sponsor'], 'vals')
+            self.assertEqual(entries[name]['provider'], service)
+            self.assertEqual(entries[name]['keyFile'], filename)
+            key = self.keys/filename
+            key.write_text('fake-vals-secret')
+            key.chmod(0o600)
+            (self.catalog/(service+'.json')).write_text(json.dumps({'api': {'chat:model': self.model}}))
+        manifest = {'providers': [entries[name] for name in expected]}
+        providers, notices = setup.build_providers(manifest, self.catalog, self.keys)
+        self.assertEqual(set(providers), set(expected))
+        self.assertFalse(notices)
+        self.assertNotIn('fake-vals-secret', json.dumps(providers))
+        for name, (_, filename) in expected.items():
+            self.assertIn(filename, providers[name]['apiKey'])
+            self.assertEqual(providers[name]['models'][0]['cost'], self.model['cost'])
+            self.assertIn(name, providers[name]['models'][0]['name'])
+
     def test_world_readable_key_rejected(self):
         self.key.chmod(0o644)
         with self.assertRaises(ValueError):
