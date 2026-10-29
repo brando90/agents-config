@@ -11,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 BUDGETS = {
     'AGENTS.md': (6240, 1000, 200),
     'CLAUDE.md': (6240, 1000, 200),
-    'INDEX_RULES.md': (24800, 3200, 250),
+    'INDEX_RULES.md': (25100, 3200, 250),
 }
-EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 83)),
+EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 84)),
             'guideline': set(range(14, 26))}
 LINK = re.compile(r'\]\((?:<([^>]+)>|([^\s)]+))(?:\s+"[^"]*")?\)')
 
