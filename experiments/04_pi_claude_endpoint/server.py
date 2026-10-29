@@ -58,10 +58,13 @@ def run_claude(args, model, messages):
     if system:
         cmd += ["--system-prompt", system]
     r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=args.timeout)
-    if r.returncode != 0:
+    try:
+        out = json.loads(r.stdout)
+    except ValueError:
+        out = None
+    if out is None:
         raise RuntimeError((r.stderr or r.stdout).strip()[-400:] or f"exit {r.returncode}")
-    out = json.loads(r.stdout)
-    if out.get("is_error"):
+    if out.get("is_error") or r.returncode != 0:
         raise RuntimeError(str(out.get("result"))[:400])
     u = out.get("usage") or {}
     return out.get("result", ""), u.get("input_tokens", 0), u.get("output_tokens", 0)

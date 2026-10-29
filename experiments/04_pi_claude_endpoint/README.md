@@ -28,6 +28,14 @@ Pi: merge `pi-models-snippet.json` into `~/.pi/agent/models.json` (`apiKey` is `
 - Pi 1.4.0 with a models.json holding the snippet, echo backend: `pi --offline --provider ultimate-claude-endpoint --model claude-opus-5-5 --no-tools --no-session -p "Say hello"` returned `ECHO: [user] Say hello` (server log: `POST /v1/chat/completions 200`). Without the token: 401.
 - Claude backend: not yet verified. Claude Code is signed out on skampere1 for all three accounts, so the server answers 502 `login check failed, no fallback`. Fix: sign in the account once, e.g. `CLAUDE_CONFIG_DIR=~/.claude-vals claude auth login` (Vals work only), then re-run the same Pi command.
 
+## Local on the coworker's own computer (10-29-2026)
+- Pi 1.4.0 installed in `~/pi-local` (`npm install --prefix ~/pi-local @earendil-works/pi-coding-agent`); `PI_CODING_AGENT_DIR=~/pi-local/agent` holds the snippet as `models.json`. Token at `~/.config/pi-claude-endpoint/token` (mode 600, not in Git).
+- Pi needs `NO_PROXY=127.0.0.1,localhost` when the shell sets an HTTP proxy, otherwise Pi reports `Connection error.`
+- Verified with the echo backend: no token 401, token 200, and `pi --offline --provider ultimate-claude-endpoint --model claude-opus-5-5 --no-tools --no-session -p "Say hello"` returned `ECHO: [user] Say hello` through the server.
+- Claude backend on this computer: not verified. A child `claude -p` of the coworker's run is not signed in (`Not logged in`), so the server answers 502 `Not logged in`; the coworker's own model access is not passed to child processes. It works once Claude Code is signed in on this computer (`claude auth login`, the account Brando picks).
+- Judge use: a judge call is a plain chat completion, so the same endpoint works as a judge (`model` + `messages`, no tools).
+- Carries: text in, text out, `stream: true`. Does not carry: Pi's tool calls (refused with 400), images, other models than the four listed.
+
 ## Technical report
 - Decision: stdlib-only server, text-only, token file, one `claude -p` per request with `--tools ""`, `--setting-sources ""`, `--strict-mcp-config`, no session persistence, so nothing from the host's settings, skills or MCP servers leaks into a call.
 - Why tools are refused: faithfully carrying Pi's tool calls needs the proposal-only transport that `config/pi/claude-accounts` already implements.
