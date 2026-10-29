@@ -1,0 +1,13 @@
+{
+  "providers": {
+    "ultimate-claude-endpoint": {
+      "baseUrl": "http://127.0.0.1:18300/v1",
+      "api": "openai-completions",
+      "apiKey": "!cat ~/.config/pi-claude-endpoint/token",
+      "models": [
+        { "id": "claude-opus-5-5", "contextWindow": 200000, "maxTokens": 8192 },
+        { "id": "claude-sonnet-5-5", "contextWindow": 200000, "maxTokens": 8192 }
+      ]
+    }
+  }
+}
