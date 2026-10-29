@@ -36,8 +36,9 @@
 
 ## Trigger Rule 78
 
-78. **Every Slurm job mails Brando when it ends or fails: `END,FAIL` to two inboxes, `BEGIN` only for long or important runs.** _Trigger: writing, editing or submitting an `sbatch` script or batch array on any Slurm cluster: [Sherlock](../machine/sherlock.md), [FarmShare](../machine/farmshare.md), SNAP's Slurm-gated nodes, Marlowe or any other. Interactive `srun --pty`/`salloc` shells need no mail._
-    - **Default, in every batch script:** `#SBATCH --mail-type=END,FAIL` and `#SBATCH --mail-user=brandojazz@gmail.com,brando.science@gmail.com`.
+78. **Every Slurm job mails Brando when it ends or fails: `END,FAIL` to brando.science, `BEGIN` only for long or important runs.** _Trigger: writing, editing or submitting an `sbatch` script or batch array on any Slurm cluster: [Sherlock](../machine/sherlock.md), [FarmShare](../machine/farmshare.md), SNAP's Slurm-gated nodes, Marlowe or any other. Interactive `srun --pty`/`salloc` shells need no mail._
+    - **Update, Brando, 10-29-2026:** job and alert mail goes to `brando.science@gmail.com` only (brandojazz gets the three digests); the address below replaces the earlier two-inbox list. Shells on SNAP/mercury and Sherlock/FarmShare export `SBATCH_MAIL_USER`/`NOTIFY_EMAIL` as that address. Credit: cc opus 5.5 xhigh.
+    - **Default, in every batch script:** `#SBATCH --mail-type=END,FAIL` and `#SBATCH --mail-user=brando.science@gmail.com`.
     - **BEGIN:** add it (`--mail-type=BEGIN,END,FAIL`) only for long runs (expected to run 6 hours or more) or important ones (a headline or paper result, a run Brando is waiting on, a Vals-paid run). Never `--mail-type=ALL`: with every cluster full it buries his inbox.
     - **Arrays:** without `ARRAY_TASKS`, Slurm sends one mail for the whole array, which is the default. `ARRAY_TASKS` (one mail per task) is allowed only for small arrays of 10 tasks or fewer, where per-task results help.
     - **With Rule 70:** this mail is the scheduler's own receipt and arrives even if the agent dies; it does not replace the [RUN START]/[RUN DONE] emails of [Trigger Rule 70](services.md#trigger-rule-70).

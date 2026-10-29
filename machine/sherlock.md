@@ -129,7 +129,7 @@ salloc -p normal -c 4 --mem=16G -t 2:00:00   # full Slurm options
 #SBATCH --output=%x_%j.out
 #SBATCH --error=%x_%j.err
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=brandojazz@gmail.com,brando.science@gmail.com
+#SBATCH --mail-user=brando.science@gmail.com
 
 set -euo pipefail
 ml python/3.12.1 uv
@@ -153,7 +153,7 @@ python my_script.py
 #SBATCH --output=%x_%j.out
 #SBATCH --error=%x_%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL  # BEGIN only for long or important runs (Rule 78)
-#SBATCH --mail-user=brandojazz@gmail.com,brando.science@gmail.com
+#SBATCH --mail-user=brando.science@gmail.com
 
 set -euo pipefail
 ml python/3.12.1 uv cuda           # pick versions with: ml spider cuda

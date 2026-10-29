@@ -79,7 +79,7 @@ Exact GPU flags (job 1860189, accepted on the first try): `-p gpu --qos=gpu --gr
 #SBATCH -t 0-12:00:00
 #SBATCH --output=%x_%j.out
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=brandojazz@gmail.com,brando.science@gmail.com
+#SBATCH --mail-user=brando.science@gmail.com
 
 source ~/venvs/fs_hf/bin/activate
 export HF_HOME=$HOME/hf_cache
