@@ -119,6 +119,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [80](rules/hosts.md#trigger-rule-80) | Launch/queue/size any GPU run, or free GPUs on mercury1/2 → use mercury as much as possible, whole node OK; empty GPUs only, never touch running jobs, shard big models over 4-5 A4000s, release when done. |
 | [82](rules/research.md#trigger-rule-82) | Plan, run, score or report anything on public VeriBench → use the current release (`veribench@1.3`, 896 tasks, 10-28-2026); before each run `git ls-remote` veribench `main` and read its README release section; name the version beside every number. |
 | [83](rules/research.md#trigger-rule-83) | Research/startup/eval with unknown need → ask if it should exist; run the quickest de-risking test locally, email results, write repo MD files; endpoints/logins in parallel; once it covers the main risk, push velocity. |
+| [84](rules/research.md#trigger-rule-84) | Run/score/report vb-priv (or new VeriBench runs) → int_ref is the most important metric: run it once, save per-task results, derive int from it, lead updates with it. |
 
 ## Guidelines (best practices)
 
