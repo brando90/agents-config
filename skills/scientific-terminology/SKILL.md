@@ -48,9 +48,22 @@ AI drafts use words ML readers do not use (often borrowed from biology, clinical
 | compact (of a model) | state the fact: "N-parameter", "five-coefficient", or "simple"; "compact" has a precise meaning in analysis |
 | frozen (of coefficients or a split) | "fixed before X, not refit"; say when it was fixed |
 | uniform mixture | equally weighted mixture |
-| envelope, audit, admitted/admission, stress test | error band; evaluation or check; unmasked or selected; test |
+| envelope, admitted/admission, stress test | error band; unmasked or selected; test |
+| audit (hide the largest scale, fit on cheaper ones, forecast it) | backtest (term of the ICLR 2026 scaling laws paper); other "audit" -> check |
+| holdout, untouched | held-out (hyphenated, as in the scaling laws paper's "held-out" use; the paper also says "target model") |
 
 If you meet any of these words in a draft, replace it with the standard term and keep that one term for the concept everywhere (rule 5).
+
+## House style: how Brando's own papers word things
+
+Source: the ICLR 2026 paper with Rylan Schaeffer (Pretraining Scaling Laws for Generative Evaluations of Language Models), his Google Docs and handwritten notes, Oct 31, 2026. A paper's own AGENTS.md term table still wins.
+
+- **Metric change:** forecast error is "relative error"; a change in a pass rate is a level with a trend ("from ≈ 2 → 0") or a named difference. The paper never says "points" or "pp". When pp is used, define it once: "percentage points (pp) of held-out pass@1".
+- **Words in that paper:** "covariates", "backtesting" (hide the target model, fit on cheaper models, forecast, measure error), "target model", "scaling law parameters" ("5-parameter scaling law"), "scaling coefficient" (β, γ), "compute-optimal".
+- **Contributions:** "we make the following contributions:" and a numbered list, each item a sentence starting "We" + verb. **Abstract:** setup, gap, then "First, ... Second, ... Third, ... Finally, ...". **Title:** one Title Case title, no acronym. **Questions:** plain, first person ("can we forecast ...?", "We study:"); never "a concrete decision".
+- **Captions:** "Figure N: <noun phrase> (<condition>). <what is plotted>. <panels>" and a bold "Takeaway:" when needed.
+- **Consistency rules from Sanmi's comments on that paper:** one of pass@k or pass-at-k; Eq. or Eqn.; "compute-optimal" hyphenated; say what hue or marker means once.
+- **Brando's taste:** short direct sentences, plain words ("amount" over "admitted mass"), bold the claim he wants noticed, cite every factual sentence about the field, no hype words ("frozen", "compact", "stress test").
 
 ## Why (Brando's words, 10-31-2026)
 
