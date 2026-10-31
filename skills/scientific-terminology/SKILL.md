@@ -9,7 +9,7 @@ description: "One term per concept in ML research writing: define a term once, r
 
 ## When to use this skill
 
-Load it whenever the work is ML research writing or editing: papers (`.tex`), appendices, tech reports, research Google Docs, result emails and chat updates, posters, slides, review text, and any AI-written draft someone asks you to check. It is also for Brando and Varun's shared papers, so it applies to every agent that touches them.
+Load it whenever the work is ML research writing or editing: papers (`.tex`), appendices, tech reports, research Google Docs, result emails and chat updates, posters, slides, review text, and any AI-written draft someone asks you to check. It is also for Brando and Varun's shared papers, so it applies to every agent that touches them. If the paper's repo has its own AGENTS.md with a term table, read it too: it holds that paper's chosen terms and wins over this list for that paper.
 
 ## Rule
 
@@ -30,14 +30,27 @@ Load it whenever the work is ML research writing or editing: papers (`.tex`), ap
 
 ## Dictionary: LLM wording to avoid, standard ML term
 
-AI drafts use words ML readers do not use (often borrowed from biology, clinical trials or spreadsheets). Brando, 10-31-2026: "arm" and "cell" "need to be in our dictionary to human, LLM to human translations so that I understand the language that you use, my AIs use." Use the standard term; this list grows, so add a row when Brando names a new word.
+AI drafts use words ML readers do not use (often borrowed from biology, clinical trials or spreadsheets). Brando, 10-31-2026: "arm" and "cell" "need to be in our dictionary to human, LLM to human translations so that I understand the language that you use, my AIs use." Use the standard term; this list grows, so add a row when Brando names a new word. Rows added Oct 31, 2026 (15:30) from his word list on the RL environment paper; that paper's own choices (quadrant, covariates, learning signal per token, mixed-group rate) are in its AGENTS.md at https://github.com/brando90/rl-env-scaling.
 
 | LLM wording | Use instead |
 |---|---|
 | arm (of an experiment) | variant, setting, condition, or the method's name |
 | cell (of a results grid) | table entry, quadrant, or option (name the row and column) |
+| contract (of a training setup) | configuration (verifier, loss mask, clipping, KL setting), or name the settings |
+| protocol (of a procedure) | procedure, algorithm, or evaluation setup; say what it does |
+| coordinates (of model inputs) | covariates or features (scaling-law papers say covariates) |
+| utility (of a training run) | gain, return or reward: name the quantity (for example "held-out pass@1 gain") |
+| points (of a metric change) | name the metric and unit: "percentage points (pp) of pass@1", or relative error |
+| signal (bare) | learning signal (name what it is a signal for) |
+| trainer (as the algorithm) | RL optimization algorithm, optimizer, or its name (GRPO); "trainer" is a library class |
+| untouched (data or scale) | held-out (prompts, scale, split) |
+| calibration (informal, "refit") | refit or re-estimate; "calibration" only for predicted probabilities or interval coverage matching outcomes |
+| compact (of a model) | state the fact: "N-parameter", "five-coefficient", or "simple"; "compact" has a precise meaning in analysis |
+| frozen (of coefficients or a split) | "fixed before X, not refit"; say when it was fixed |
+| uniform mixture | equally weighted mixture |
+| envelope, audit, admitted/admission, stress test | error band; evaluation or check; unmasked or selected; test |
 
-If you meet either word in a draft, replace it with the standard term and keep that one term for the concept everywhere (rule 5).
+If you meet any of these words in a draft, replace it with the standard term and keep that one term for the concept everywhere (rule 5).
 
 ## Why (Brando's words, 10-31-2026)
 
