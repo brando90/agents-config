@@ -12,6 +12,7 @@
 | [`pi-local-herdr`](pi-local-herdr/SKILL.md) | Local Pi (Gemini and Ollama) and Herdr machine profiles. |
 | [`research-launch-stack`](research-launch-stack/SKILL.md) | Kesh-style paper launch bundle: project page, tweprint, blog draft, links, asset manifest. |
 | [`review-paper`](review-paper/SKILL.md) | Paper review in Brando's words (moved here from `writing/ml_research/`). |
+| [`scientific-terminology`](scientific-terminology/SKILL.md) | One term per concept in ML research writing; define once, reuse exactly, no stylistic synonyms. Loaded by Trigger Rule 85. |
 | [`sbsbz-cardinal-print-flyers`](sbsbz-cardinal-print-flyers/SKILL.md) | Stanford Bachata flyer printing. |
 | [`sbsbz-financial-officer`](sbsbz-financial-officer/SKILL.md) | Stanford Bachata financial-officer duties and invoice checks. |
 
