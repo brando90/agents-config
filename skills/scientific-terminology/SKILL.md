@@ -28,6 +28,17 @@ Load it whenever the work is ML research writing or editing: papers (`.tex`), ap
 3. Before finishing, run the check: `grep -rniE "<candidate synonyms>"` over the paper sources for each key term, and read each hit. For a whole paper, also read the abstract, one table caption and the appendix side by side for drift.
 4. Report in the update: the terms used, any place where two words named one thing and which you kept, and any term you changed with the list of places.
 
+## Dictionary: LLM wording to avoid, standard ML term
+
+AI drafts use words ML readers do not use (often borrowed from biology, clinical trials or spreadsheets). Brando, 10-31-2026: "arm" and "cell" "need to be in our dictionary to human, LLM to human translations so that I understand the language that you use, my AIs use." Use the standard term; this list grows, so add a row when Brando names a new word.
+
+| LLM wording | Use instead |
+|---|---|
+| arm (of an experiment) | variant, setting, condition, or the method's name |
+| cell (of a results grid) | table entry, quadrant, or option (name the row and column) |
+
+If you meet either word in a draft, replace it with the standard term and keep that one term for the concept everywhere (rule 5).
+
 ## Why (Brando's words, 10-31-2026)
 
 - "in science, using variations randomly muddies a word and makes it unclear because our language is precise and we reuse the language precisely."
