@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
-"""Make every Claude Code profile (personal ~/.claude, Vals ~/.claude-vals, Stanford ~/.claude-su)
+"""Make every Claude Code profile (each ~/.claude and ~/.claude-<name> found on this machine)
 load the same agents-config: shared CLAUDE.md import, repo skills, and the two refresh hooks.
 
 Additive and idempotent. Never replaces an existing skill, hook or CLAUDE.md text; each file it
 edits is first copied to <file>.bak-ac-sync-<date>. Dry run unless --apply. Holds no credentials.
 """
-import argparse, json, os, shutil, time
+import argparse, glob, json, os, shutil, time
 
 HOME = os.path.expanduser("~")
-AC = os.path.join(HOME, "agents-config")
-PROFILES = [".claude", ".claude-vals", ".claude-su"]
-IMPORT = f"@{AC}/CLAUDE.md"
+AC = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
+
+
+def discover_profiles():
+    """Every ~/.claude or ~/.claude-<anything> directory that is a Claude Code config dir."""
+    out = []
+    extra = [os.environ["CLAUDE_CONFIG_DIR"]] if os.environ.get("CLAUDE_CONFIG_DIR") else []
+    for d in sorted(glob.glob(os.path.join(HOME, ".claude*"))) + extra:
+        if os.path.isdir(d) and os.path.basename(d) != ".claude-backups" and \
+           any(os.path.exists(os.path.join(d, m)) for m in (".claude.json", "settings.json", "projects", "CLAUDE.md")):
+            out.append(d if os.path.dirname(d) != HOME else os.path.basename(d))
+    return out
+
+
+PROFILES = discover_profiles()
+IMPORT = f"@{AC}/CLAUDE.md"  # path of the repo this script lives in
 HOOKS = {  # event -> (matcher-less command, extra fields); same commands the personal profile uses
     "SessionStart": {"type": "command", "command": "bash ~/agents-config/scripts/auto-update-tools.sh",
                      "timeout": 60, "async": True},
@@ -28,10 +41,12 @@ def backup(path, apply):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument("--profile-dir", action="append", default=[], help="extra Claude config dir (repeatable)")
     a = ap.parse_args()
+    profiles = PROFILES + [os.path.abspath(os.path.expanduser(d)) for d in a.profile_dir]
     skills = sorted(d for d in os.listdir(os.path.join(AC, "skills"))
                     if os.path.isfile(os.path.join(AC, "skills", d, "SKILL.md")))
-    for prof in PROFILES:
+    for prof in dict.fromkeys(profiles):
         root = os.path.join(HOME, prof)
         if not os.path.isdir(root):
             print(f"{prof}: missing, skipped"); continue

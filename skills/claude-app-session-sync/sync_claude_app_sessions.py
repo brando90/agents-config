@@ -3,7 +3,7 @@
 
 The app lists only sessions that have an index record
   ~/Library/Application Support/Claude/claude-code-sessions/<account>/<org>/local_<uuid>.json
-Terminal sessions (clauded, clauded-vals, clauded-su) write only a transcript under
+Terminal sessions (clauded, clauded-<name>, any ~/.claude* profile) write only a transcript under
 <profile>/projects/<slug>/<cliSessionId>.jsonl, so the app never lists them. This script adds
 the missing records (additive, never overwrites) and copies missing transcripts into ~/.claude
 so the app can resume them. Dry run unless --apply. Quit the app (Cmd+Q) afterwards and reopen.
@@ -13,7 +13,20 @@ import argparse, calendar, glob, json, os, shutil, subprocess, sys, time, uuid
 HOME = os.path.expanduser("~")
 APP = os.path.join(HOME, "Library/Application Support/Claude")
 STORE = os.path.join(APP, "claude-code-sessions")
-PROFILES = {"personal": ".claude", "vals": ".claude-vals", "stanford": ".claude-su"}
+
+
+def discover_profiles():
+    """label -> dir name for every ~/.claude and ~/.claude-<name> config dir that holds sessions."""
+    out = {}
+    extra = [os.environ["CLAUDE_CONFIG_DIR"]] if os.environ.get("CLAUDE_CONFIG_DIR") else []
+    for d in sorted(glob.glob(os.path.join(HOME, ".claude*"))) + extra:
+        b = os.path.basename(d)
+        if os.path.isdir(os.path.join(d, "projects")):
+            out["" if b == ".claude" else b[len(".claude-"):] if b.startswith(".claude-") else b.lstrip(".")] = b
+    return out
+
+
+PROFILES = discover_profiles()
 DEFAULT_PROFILE = ".claude"  # the app resumes sessions from this profile's projects/ dir
 
 
@@ -66,12 +79,22 @@ def main():
     ap.add_argument("--target", help="<account>/<org> dir to fill (default: signed-in account)")
     ap.add_argument("--include-headless", action="store_true",
                     help="also list sdk/-p worker runs (default: interactive sessions only)")
-    ap.add_argument("--no-tag", action="store_true", help="do not prefix titles with [Vals]/[Stanford]")
+    ap.add_argument("--all-accounts", action="store_true", help="fill every signed-in app account/org folder, not only the current one")
+    ap.add_argument("--no-tag", action="store_true", help="do not prefix titles with the profile name, e.g. [vals]")
     a = ap.parse_args()
 
-    target = a.target if a.target and os.path.isabs(a.target) else (os.path.join(STORE, a.target) if a.target else detect_target())
-    if not target or not os.path.isdir(target):
+    if a.all_accounts:
+        targets = [d for d in sorted(glob.glob(os.path.join(STORE, "*", "*"))) if os.path.isdir(d)]
+    else:
+        t = a.target if a.target and os.path.isabs(a.target) else (os.path.join(STORE, a.target) if a.target else detect_target())
+        targets = [t] if t and os.path.isdir(t) else []
+    if not targets:
         sys.exit("no target account dir found under " + STORE)
+    for target in targets:
+        run(target, a)
+
+
+def run(target, a):
     print("target:", target)
 
     records, have = {}, set()  # records: cliSessionId -> a source file in some other account dir
@@ -94,8 +117,8 @@ def main():
     seen = set(records) | have
 
     # 2) terminal-only transcripts from every profile
-    for label, prof in PROFILES.items():
-        for p in glob.glob(os.path.join(HOME, prof, "projects", "*", "*.jsonl")):
+    for label, prof in PROFILES.items():  # label "" = default profile (untagged)
+        for p in glob.glob(os.path.join(os.path.expanduser(os.path.join("~", prof)) if not os.path.isabs(prof) else prof, "projects", "*", "*.jsonl")):
             cid = os.path.basename(p)[:-6]
             if cid in seen:
                 continue
@@ -138,8 +161,8 @@ def main():
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
                 shutil.copy2(p, dst); t += 1
         title = info["title"] or info["first_user"] or "Untitled session"
-        if label != "personal" and not a.no_tag:
-            title = f"[{label.capitalize()}] {title}"
+        if label and not a.no_tag:
+            title = f"[{label}] {title}"
         rec = {"sessionId": "local_" + str(uuid.uuid4()), "cliSessionId": cid,
                "cwd": info["cwd"] or HOME, "originCwd": info["cwd"] or HOME,
                "createdAt": ms(info["t0"]), "lastActivityAt": ms(info["t1"]),
