@@ -50,7 +50,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [11](rules/maintenance.md#trigger-rule-11) | Requested QA passes and ultimate-utils reaches master → version, build and publish the package. |
 | [12](rules/workers.md#trigger-rule-12) | New session/background work → inspect existing workers; clean only >24-hour processes confirmed idle. |
 | [13](rules/writing.md#trigger-rule-13) | Research paper work or validity question → load research-writing guide; preserve evidence and source format. |
-| [14](rules/services.md#trigger-rule-14) | New verified results, any agent/duration → chat ping + email including brandojazz and brando.science; verify/deduplicate delivery. Tracked completions/recovery also notify; ordinary edits do not. |
+| [14](rules/services.md#trigger-rule-14) | New verified results, any agent/duration → chat ping + email including brandojazz and brando.science; verify/deduplicate delivery. Confirm routine pushes in chat. Email a push receipt only on request. |
 | [15](rules/responses.md#trigger-rule-15) | Substantive question → answer in chat; email only when explicitly requested. |
 | [16](rules/responses.md#trigger-rule-16) | Create/edit documents or save knowledge → headers; Google companion for findings; separate dated daily audience decks; verify. |
 | [17](rules/maintenance.md#trigger-rule-17) | Authorized task → finish relevant end-to-end work, verification and authorized publication; no smoke-only stopping. |
@@ -62,7 +62,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [23](rules/responses.md#trigger-rule-23) | Reader-facing prose → omit internal course/lab planning jargon. |
 | [24](rules/responses.md#trigger-rule-24) | Reader outside a subfield → translate ambiguous jargon and explain concepts first. |
 | [25](rules/writing.md#trigger-rule-25) | Personal blog → load personal-blog guides and reference posts; lab blogs use their separate route. |
-| [26](rules/services.md#trigger-rule-26) | Email → BCC three Brando inboxes, always CC his personal address; no ratings emails to collaborators without his yes; signature; plain takeaway. |
+| [26](rules/services.md#trigger-rule-26) | Email → BCC three Brando inboxes, use visible CC only on request; no ratings emails to collaborators without his yes; signature; plain takeaway. |
 | [27](rules/responses.md#trigger-rule-27) | Chat answer → plain direct first sentence, never an opening `A (TLDR)`/TLDR label (only `TLDR-end`); explainer-doc Q&A → `**A (TLDR):**` line. |
 | [28](rules/research.md#trigger-rule-28) | Attached image/transcription → preserve original and provenance in the canonical project/experiment location. |
 | [29](rules/writing.md#trigger-rule-29) | Exact “Q go” plus screenshots → numbered question packet, original images, issue, verification and publication; review still follows Hard Rule 3. |
@@ -133,7 +133,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 - [20](rules/responses.md#guideline-rule-20): Messages/drafts as Brando use his concise first-person voice; email includes required routing/signature.
 - [21](rules/maintenance.md#guideline-rule-21): Check `~/keys/` for credentials, model-provider keys included, before asking; keep values transient.
 - [22](rules/maintenance.md#guideline-rule-22): Let the Node version manager control its path; avoid hardcoded versioned PATH entries.
-- [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC three inboxes, sender and To included; always CC his personal address; `drafted with <agent>` sign-off; “send” means send.
+- [23](rules/maintenance.md#guideline-rule-23): Authorized email: Brando's signed-in account (mail connector, else uutils SMTP); BCC three inboxes, sender and To included; visible CC only on request; `drafted with <agent>` sign-off; “send” means send.
 - [24](rules/maintenance.md#guideline-rule-24): Paper PDFs follow mandatory Rule 35.
 - [25](rules/research.md#guideline-rule-25): VeriBench/VB private: >0.98 saturated; ≤0.9 good, ≤0.5 great, 0 best. "Harsh metric", N tasks, ASCII, harness. vb-priv: SYNC.md. Any metric ≥~0.98: solved (heuristic). [Set names](workflows/vb-sets.md).
 
