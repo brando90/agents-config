@@ -12,7 +12,7 @@
 ## Safety
 - No keys, tokens or private links in this repo. Binds `127.0.0.1` only by default.
 - Every `/v1` call needs `Authorization: Bearer <token>`; `/healthz` returns only `{"ok": true}`. Constant-time compare. The server refuses to start if the token file is not mode 600 or is under 32 characters.
-- Token lives outside Git. `gen_token.sh` writes it (mode 600, never printed). Locations (not the token): snap shared disk `/dfs/scratch0/brando9/.config/pi-claude-endpoint/token`, linked from `~/.config/pi-claude-endpoint/token`; copies go in the same path in the home on Sherlock and FarmShare (not shared with snap) and on the Macs once SSH works, mode 600 everywhere. Status 11-01-2026: the token is on snap (shared disk) and in the home on Sherlock, same path, mode 600; FarmShare and the Macs have none yet.
+- Token lives outside Git. `gen_token.sh` writes it (mode 600, never printed). Locations (not the token): snap shared disk `/dfs/scratch0/brando9/.config/pi-claude-endpoint/token`, linked from `~/.config/pi-claude-endpoint/token`; copies go in the same path in the home on Sherlock and FarmShare (not shared with snap) and on the Macs once SSH works, mode 600 everywhere. Status 11-01-2026: the token is on snap (shared disk) and in the home on Sherlock and on FarmShare, same path, mode 600 (same checksum on both); the Macs have none yet.
 
 ## Run
 ```bash
