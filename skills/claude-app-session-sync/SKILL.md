@@ -1,13 +1,22 @@
 ---
 name: claude-app-session-sync
-description: "Make every Claude Code session of every account (personal ~/.claude, Vals ~/.claude-vals, Stanford ~/.claude-su) appear in the Claude desktop app's session list. Use when Brando says sessions are missing from the Claude app, after using clauded-vals / clauded-su in a terminal, after signing in to a different account in the app, or on a new Mac."
+description: "Keep all Claude accounts in sync from agents-config (shared CLAUDE.md import, repo skills and refresh hooks in every profile), and make every Claude Code session of every account (personal ~/.claude, Vals ~/.claude-vals, Stanford ~/.claude-su) appear in the Claude desktop app's session list. Use when Brando says sessions are missing from the Claude app, after using clauded-vals / clauded-su in a terminal, after signing in to a different account in the app, or on a new Mac."
 ---
 
-# claude-app-session-sync: all accounts' sessions in one Claude app
+# claude-app-session-sync: all Claude accounts in sync
 
-**TLDR:** The Claude desktop app lists only sessions that have an index record. Terminal sessions (`clauded`, `clauded-vals`, `clauded-su`) leave only a transcript, so they never show up. Run `sync_claude_app_sessions.py`: it adds the missing records for the signed-in app account and copies missing transcripts into `~/.claude`, so each session can be opened and resumed. Quit the app (Cmd+Q) and reopen it afterwards.
+**TLDR:** Two scripts. `sync_claude_profiles.py` makes the personal, Vals and Stanford profiles load the same agents-config (CLAUDE.md import, every repo skill, the two refresh hooks). `sync_claude_app_sessions.py` lists all their sessions in the app. The Claude desktop app lists only sessions that have an index record. Terminal sessions (`clauded`, `clauded-vals`, `clauded-su`) leave only a transcript, so they never show up. Run `sync_claude_app_sessions.py`: it adds the missing records for the signed-in app account and copies missing transcripts into `~/.claude`, so each session can be opened and resumed. Quit the app (Cmd+Q) and reopen it afterwards.
 
-## Why Vals sessions were missing (found 11-02-2026)
+## Profiles: same agents-config everywhere
+
+```bash
+python3 ~/agents-config/skills/claude-app-session-sync/sync_claude_profiles.py          # dry run per profile
+python3 ~/agents-config/skills/claude-app-session-sync/sync_claude_profiles.py --apply
+```
+
+For `~/.claude`, `~/.claude-vals`, `~/.claude-su` it adds, if missing: the `@~/agents-config/CLAUDE.md` import, a symlink to every `skills/<name>` folder, and the `auto-update-tools.sh` / `refresh-agents-config.sh` hooks. Skills are symlinks into the repo, so a `git pull` updates all accounts at once. It never replaces an existing skill, hook or text, backs up each edited file as `<file>.bak-ac-sync-<date>`, and is idempotent. Rerun it after adding a skill to `skills/` (new sessions pick it up). Settings that are per account (model, effort, theme, the personal Herdr hook) stay as they are. Verified 11-02-2026: Vals had no hooks and no skills, Stanford had no CLAUDE.md import; all three now report "already in sync".
+
+## Sessions: why Vals sessions were missing (found 11-02-2026)
 
 - App index: `~/Library/Application Support/Claude/claude-code-sessions/<account uuid>/<org uuid>/local_<uuid>.json`, one folder per signed-in account/org. The app shows only the folder of the account it is signed in as.
 - Personal sessions were already copied into the Vals folder once by hand (75 records). The terminal sessions under `~/.claude-vals/projects` and `~/.claude-su/projects` have no record at all, and the app resumes only from `~/.claude/projects`.
