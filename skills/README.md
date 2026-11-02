@@ -9,6 +9,7 @@
 | Skill | What it does |
 |---|---|
 | [`atlas`](atlas/SKILL.md) | macOS AppleScript control of the ChatGPT Atlas desktop app (tabs, bookmarks, history). |
+| [`claude-app-session-sync`](claude-app-session-sync/SKILL.md) | Add every account's terminal sessions (personal, Vals, Stanford) to the Claude desktop app's session list. |
 | [`pi-local-herdr`](pi-local-herdr/SKILL.md) | Local Pi (Gemini and Ollama) and Herdr machine profiles. |
 | [`research-launch-stack`](research-launch-stack/SKILL.md) | Kesh-style paper launch bundle: project page, tweprint, blog draft, links, asset manifest. |
 | [`review-paper`](review-paper/SKILL.md) | Paper review in Brando's words (moved here from `writing/ml_research/`). |
