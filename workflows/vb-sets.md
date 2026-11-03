@@ -11,10 +11,10 @@
 | **VB-Industry** | The IndustrySet | 282 | `.../expt_v1/manifests/industry_282.json` |
 | **TinyVeriBench-256** (named by Brando 10-22-2026; formerly "Tiny256") | The same stratified 256 of the 614 VB-Core tasks (experiment 116): five source categories x two AST-size halves, seed 20261015, chosen from public metadata only, no scores; not a new sample. Nested inside the 614. tinyBenchmarks-style subset study; status "pilot, not frontier validated" | 256 | `.../expt_v1/manifests/core_256.json` |
 | **Tiny96** | The earlier 96-task nested pilot of TinyVeriBench-256 (same design) | 96 | `.../expt_v1/manifests/core_96.json` |
-| **VeriBench-Infinity** (VB-Inf, VBV3) | Differential proving against curated Lean references for correct and deliberately incorrect Python variants | 24 pairs | [Current task packages on main](https://github.com/brando90/veribench-infinity/tree/main/tasks) |
+| **VeriBench-Infinity** (VB-Inf, VBV3) | Differential proving against curated Lean references for correct and deliberately incorrect Python variants | 24 pairs | [Current task packages on main](https://github.com/brando90/veribench-inf/tree/main/tasks) |
 | **VB private** | Vals/BMG held-out set; target 180 accepted tasks, separate from the public set | 180 target | `brando90/vb-priv-bmg` (not public) |
 
-The GitHub repository is `brando90/veribench-infinity` (formerly `brando90/veribench-dt`). VeriBench-DT refers to the earlier differential-testing work. Differential testing is planned for V1 and VeriBench Private. There is currently no private differential-proving edition (`vb-priv-inf`).
+The GitHub repository is `brando90/veribench-inf` (previous GitHub names: `veribench-dt` and `veribench-infinity`). VeriBench-DT refers to the earlier differential-testing work. Differential testing is planned for V1 and VeriBench Private. There is currently no private differential-proving edition (`vb-priv-inf`).
 
 Rules of use:
 
