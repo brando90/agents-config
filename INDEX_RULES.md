@@ -110,7 +110,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [71](rules/services.md#trigger-rule-71) | Session start, shared state, or need the assistant → `agent_sync.py check` the SYNC.md, name conflicts; read `[FROM-UB9]` in the repo's inbox issue (#68); ask with `[TO-UB9]` + email. |
 | [72](rules/services.md#trigger-rule-72) | Launch/resume a Vals-paid run → one large experiment at a time across projects (`valk` gate); queue, estimate cost; only Brando overrides. |
 | [75](rules/workers.md#trigger-rule-75) | Run pending, capped or failed on one cluster → try every reachable cluster yourself on empty GPUs, free hardware, no Duo; release idle. |
-| [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando ones, dated title; unpin when done. |
+| [73](rules/workers.md#trigger-rule-73) | Desktop session pins → only active or awaiting-Brando sessions, dated title; unpin sessions when done (never Projects, Rule 86). |
 | [76](rules/research.md#trigger-rule-76) | Design, launch or interpret an experiment, benchmark, agent eval, scorer or parser feeding a reported number, or a surprising number → load `workflows/ml-research-practice.md`: predict every metric (incl. literal compliance) before running, trace one item, controls, look at the data. |
 | [77](rules/research.md#trigger-rule-77) | Build, select, validate or deploy an LLM judge/grader/reward model, or a claim it "agrees with humans" → load `workflows/llm-judge-recipe.md`: input audit, label-reproduction test, controls, test once, ICC. |
 | [78](rules/hosts.md#trigger-rule-78) | Write/submit an `sbatch` script on any Slurm cluster → `--mail-type=END,FAIL` to brando.science only (Brando, 10-29-2026); `BEGIN` only if long/key; one mail per array. |
@@ -121,6 +121,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [83](rules/research.md#trigger-rule-83) | Research/startup/eval with unknown need → ask if it should exist; run the quickest de-risking test locally, email results, write repo MD files; endpoints/logins in parallel; once it covers the main risk, push velocity. |
 | [84](rules/research.md#trigger-rule-84) | Run/score/report vb-priv (or new VeriBench runs) → int_ref is the most important metric: run it once, save per-task results, derive int from it, lead updates with it. |
 | [85](rules/writing.md#trigger-rule-85) | Write/edit/review ML research text (papers, reports, research Docs, updates) → load `skills/scientific-terminology`: one term per concept, reuse exactly, no stylistic synonyms. |
+| [86](rules/workers.md#trigger-rule-86) | Claude app/claude.ai session start, Project change, new account sign-in, or Projects missing from the left → every Project of every account stays pinned in the sidebar; pin missing ones, run the session sync with `--all-accounts`, report counts; never wait to be asked. |
 
 ## Guidelines (best practices)
 
