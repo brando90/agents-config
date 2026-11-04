@@ -153,6 +153,10 @@ Use matching trigger links first. The [workflow catalog](CATALOG.md#workflows) i
 
 The [writing catalog](CATALOG.md#writing) routes paper, blog and announcement work. Colocate all artifacts for a project/event; do not split them into top-level directories by file type.
 
+## Automatic jobs
+
+Unattended Claude/Codex jobs (cron, launchd, queues, loops, tmux): follow [automation rules](rules/automation.md) and list each in the [manifest](automation/manifest.md).
+
 ## Abbreviations
 
 `ac` = agents-config; `cc` = Claude Code. [Launcher/profile aliases](rules/services.md#abbreviations) are labels, not proof of account access or independent budget.
