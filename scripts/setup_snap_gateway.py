@@ -71,7 +71,13 @@ def with_block(text, block):
     lines = without_block(text).splitlines(keepends=True)
     if lines and not lines[-1].endswith("\n"):
         lines[-1] += "\n"
-    i = next((n for n, line in enumerate(lines) if HOST_RE.match(line)), len(lines))
+    # The five-host admission ProxyCommand must precede this broader ProxyJump block.
+    # ssh uses whichever of ProxyCommand/ProxyJump appears first.
+    guard_end = next((n + 1 for n, line in enumerate(lines)
+                      if line.rstrip() == "# <<< agents-config snap-reconnect <<<"), None)
+    i = (guard_end + 1 if guard_end is not None and guard_end < len(lines)
+         and lines[guard_end].strip() == "Host *" else
+         next((n for n, line in enumerate(lines) if HOST_RE.match(line)), len(lines)))
     return "".join(lines[:i]) + block + ("\n" if i < len(lines) else "") + "".join(lines[i:])
 
 
@@ -116,7 +122,9 @@ def route_problems(user, gateway, config_args):
     for node in NODES:
         for name in (node, fqdn(node)):
             v = effective(name, config_args)
-            if v.get("hostname") != fqdn(node) or v.get("proxyjump") != f"{user}@{gateway}":
+            guarded = (node in OPEN_NODES and "snap_reconnect.py" in v.get("proxycommand", "")
+                       and user == "brando9" and gateway == "whale.stanford.edu")
+            if v.get("hostname") != fqdn(node) or (not guarded and v.get("proxyjump") != f"{user}@{gateway}"):
                 problems.append(f"{name}: hostname={v.get('hostname')} proxyjump={v.get('proxyjump', 'none')}")
     if effective(gateway, config_args).get("proxyjump", "none") != "none":
         problems.append(f"{gateway} is itself proxied (would recurse)")

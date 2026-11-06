@@ -74,7 +74,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [35](rules/writing.md#trigger-rule-35) | Semantic paper-source edit → compile and commit fresh PDFs beside active paper sources; verify build and references. |
 | [36](rules/workers.md#trigger-rule-36) | Handoff/reusable/scheduled prompt → use the appropriate summary format; selection advice stays outside, execution facts inside; preserve schedule settings. |
 | [37](rules/research.md#trigger-rule-37) | Long/dispatched run → maintain and publish live canonical results.md from launch; Markdown record + Google findings (Rule 16); dashboards opt-in. |
-| [38](rules/hosts.md#trigger-rule-38) | SNAP connection or dispatch → check the official gateway (never flood it) before Cisco/Duo escalation; run health preflight, fix relevant failures, use owned checkout; token-spending checks remain opt-in. |
+| [38](rules/hosts.md#trigger-rule-38) | SNAP connection or dispatch → check the official gateway before Cisco/Duo escalation; automatic reconnect is allowed with one shared five-host cooldown/backoff (never flood it); run relevant health preflight; token-spending checks remain opt-in. |
 | [39](rules/research.md#trigger-rule-39) | Start/continue/finish experiment → canonical setup-named home/index, colocated artifacts, results tables in git, frozen evidence, lifecycle. |
 | [40](rules/writing.md#trigger-rule-40) | Commit slide deck → fresh PDF, applicable text sibling and hash manifest in the same commit. |
 | [41](rules/responses.md#trigger-rule-41) | End substantive replies with a ranked `[p N/10]` list; start 9-10 items without spending or rule violations. |
