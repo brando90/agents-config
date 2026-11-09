@@ -122,6 +122,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [84](rules/research.md#trigger-rule-84) | Run/score/report vb-priv (or new VeriBench runs) → int_ref is the most important metric: run it once, save per-task results, derive int from it, lead updates with it. |
 | [85](rules/writing.md#trigger-rule-85) | Write/edit/review ML research text (papers, reports, research Docs, updates) → load `skills/scientific-terminology`: one term per concept, reuse exactly, no stylistic synonyms. |
 | [86](rules/workers.md#trigger-rule-86) | Claude app/claude.ai session start, Project change, new account sign-in, or Projects missing from the left → every Project of every account stays pinned in the sidebar; pin missing ones, run the session sync with `--all-accounts`, report counts; never wait to be asked. |
+| [87](rules/responses.md#trigger-rule-87) | Report results, hand off, or send/change anything in Brando's name → load `skills/assistant`: label what ran (Lean/reading, DT, harness, model), short results-first, no branches. |
 
 ## Guidelines (best practices)
 
