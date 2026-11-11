@@ -4,6 +4,10 @@
 
 **TLDR:** Automatic sync captures portable ordinary-Pi settings and canonical skill/resource edits through a private hub, checks for conflicting edits, and applies updates in the background. `install.py --check` and Pi’s `/config-sync` report drift; the full installer also configures named providers, keeping credentials outside Git.
 
+## Automatic Pi software updates on this Mac — 11-11-2026
+
+Pi **1.5.2** is installed and enrolled in the shared [Mac agent updater](../../dotfiles/agent-updates/README.md). It runs `pi update --self --no-approve` on the scheduled maintenance pass, using Pi's own installation-aware updater. This updates the application, not extension pins, account selection, or model defaults. It is separate from the settings/skills synchronization service described below; no remote Pi installation was changed by this Mac enrollment.
+
 ## Current default rollout and authentication limits — 10-28-2026
 
 The requested ordinary-Pi default `vals-codex/gpt-6.1-sol`, medium thinking, is saved on the Mac and skampere1–3/mercury1–2, including each existing automatic-settings overlay. New sessions use these preferences when the model is available; existing sessions retain their selected model until explicitly changed. Specialized local/Gemini launchers remain separate. No automatic API-key or other-payer fallback was installed.

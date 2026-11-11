@@ -46,7 +46,7 @@ bash ~/agents-config/scripts/install_agent_clis.sh --status
 
 On SNAP the script detects `/dfs/scratch0/brando9`, installs binaries under that DFS home, and writes wrappers in `/dfs/scratch0/brando9/bin` (`agent`, `cursor-agent`, `grok`, `agy`, `antigravity`). One node is enough; the other direct-SSH nodes pick the wrappers up from the shared `PATH`. From a Mac, SSH to the FQDN (`skampere1.stanford.edu`); short names are not in `~/.ssh/config`. `snap_health.sh` now appends `.stanford.edu` for you.
 
-`~/agents-config/scripts/auto-update-tools.sh` calls this installer after the Claude Code / Codex NVM updates.
+On Linux/SNAP, `~/agents-config/scripts/auto-update-tools.sh` calls this installer after the Claude Code / Codex NVM updates. On macOS it delegates to the shared, locked [automatic agent updater](../dotfiles/agent-updates/README.md), which maintains installed clients through their actual package managers/native maintenance commands and retains desktop-native updaters. Enroll a Mac with `python3 ~/agents-config/scripts/install_agent_updates.py --apply`; the job then runs at login, daily at 10:17, and hourly for freshness checks/retries.
 
 ## Login (human browser once per machine class)
 

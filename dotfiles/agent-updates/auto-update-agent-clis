@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# TLDR: Shared, locked Mac agent updater; logs and receipts live in ~/.local/state/agent-cli-updates.
+set -eu
+umask 077
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+exec python3 "${AGENTS_CONFIG_DIR:-$HOME/agents-config}/scripts/auto_update_agent_apps.py" "$@"

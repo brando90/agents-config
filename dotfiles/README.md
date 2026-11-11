@@ -35,7 +35,11 @@ All 14 files tracked at `.dotfiles` revision `86f080658c572fcaa09b15fe1930c08433
 
 **Legacy does not mean active:** these older scripts include machine-specific paths and historical package choices. Preserve them as references; do not source or install them wholesale over the current Mac or remote hosts. New maintained configuration belongs under `~/agents-config/dotfiles/` (or an existing app-specific `config/` directory), with an explicit installer and host verification. Secrets stay outside Git.
 
-Only this Mac's Cursor/Ghostty configuration is installed by this task. Remote hosts and other Macs are not implicitly changed, and running agents do not reload their instruction files merely because this repository is updated.
+The initial migration installed only this Mac's Cursor/Ghostty configuration. Zed and automatic agent updates have separate installers below. Remote hosts and other Macs are not implicitly changed, and running agents do not reload their instruction files merely because this repository is updated.
+
+## Automatic agent updates — 11-11-2026
+
+[Agent-update configuration](agent-updates/README.md) maintains installed Mac command-line tools through one locked LaunchAgent and enables supported desktop automatic-update preferences. Run `python3 ~/agents-config/scripts/install_agent_updates.py --apply` once to enroll a Mac; routine updates then run without manual commands. This is separate from Pi settings synchronization and does not change accounts or model defaults.
 
 ## Zed — 10-26-2026
 

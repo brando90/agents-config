@@ -15,36 +15,16 @@ FORCE=0
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(uname)" = Darwin ]; then
-  # 10-28-2026: every Claude Code session start ran this unlocked global npm install; concurrent sessions raced
-  # and left @openai/codex without its codex-darwin-arm64 binary, failing every new `codex exec` mid-batch
-  # (vb-priv reviews, 10-27 15:26 and 10-28 01:33 PDT). Same lock + freshness stamp as the SNAP branch below;
-  # batch launchers set AGENT_CLI_UPDATE_SKIP=1 so worker sessions never update CLIs under running jobs.
+  # One updater/lock for the daily LaunchAgent and session-start hook. Concurrent
+  # npm installs broke Codex on 10-28-2026; do not restore a separate npm updater.
+  # Keep session startup nonblocking, and never kill an already running update.
   [ "${AGENT_CLI_UPDATE_SKIP:-0}" = 1 ] && exit 0
-  MAC_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}"
-  mkdir -p "$MAC_CACHE"
-  MAC_STAMP="$MAC_CACHE/agent-cli-update.stamp"
-  MAC_LOCK="$MAC_CACHE/agent-cli-update.lock"
-  if [ "$FORCE" -eq 0 ] && [ -f "$MAC_STAMP" ] &&
-     [ -n "$(command -p find "$MAC_STAMP" -mmin -"$MAX_AGE_MINUTES" 2>/dev/null)" ]; then
-    exit 0
+  service="gui/$(id -u)/com.brando90.agent-cli-updates"
+  if [ "$FORCE" -eq 0 ] && launchctl print "$service" >/dev/null 2>&1; then
+    launchctl kickstart "$service" >/dev/null 2>&1
+    exit $?
   fi
-  if ! mkdir "$MAC_LOCK" 2>/dev/null; then
-    if [ -n "$(command -p find "$MAC_LOCK" -maxdepth 0 -mmin +20 2>/dev/null)" ]; then
-      rmdir "$MAC_LOCK" 2>/dev/null || true
-      mkdir "$MAC_LOCK" 2>/dev/null || exit 0
-    else
-      exit 0
-    fi
-  fi
-  trap 'rmdir "$MAC_LOCK" 2>/dev/null || true' EXIT
-  npm install -g @anthropic-ai/claude-code@latest @openai/codex@latest || true
-  if command -v brew >/dev/null 2>&1; then
-    brew upgrade --cask antigravity >/dev/null 2>&1 || true
-  fi
-  bash "$HERE/install_agent_clis.sh" --update
-  rc=$?
-  touch "$MAC_STAMP"
-  exit $rc
+  exec python3 "$HERE/auto_update_agent_apps.py" "$@"
 fi
 
 umask 077
