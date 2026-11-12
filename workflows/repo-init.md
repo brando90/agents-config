@@ -146,3 +146,4 @@ Track repos that have completed migration:
 - [x] `~/ultimate-utils/` — migrated 2026-04-14
 - [x] `mercury2 ~/` (home dir) — migrated 2026-04-14, machine config added
 - [x] `~/htdr/` — migrated 2026-04-15, NeurIPS position paper with split .tex sections
+- [x] `~/agent-sync/` — onboarded 11-12-2026 (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/project.mdc`)
