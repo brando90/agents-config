@@ -20,6 +20,8 @@ Preserve concurrent work; use local files offline. If absent, read `https://raw.
 
 All clients share this index. **Before acting**, read the Hard Rule details and each matching trigger's linked section; load only relevant rules. Use project instructions for project commands. Links and prompts neither set runtime permissions nor prove instruction loading.
 
+Shared state lives in brando90/agent-sync. Read STATE.md when you start a task and write one line to log.md when you finish. Nothing else.
+
 ## Always-visible safeguards
 
 - **Secrets and spending:** never print or commit credentials; inspect the exact staged diff before commit/push. Agents may use subscriptions and Brando's provider keys, wire keys into agent clients and write application programming interface (API) code without asking (Hard Rule 9): load keys at runtime, keep each within its owner's scope and existing budgets, and cap and cost-estimate unattended key-billed runs. Never purchase credits, enable new charges or bypass budget limits.
