@@ -63,6 +63,7 @@ description: "How Brando works, in one place: say what ran and whether it was Le
 
 ## 7. Repos and work flow
 
+- **Shared state (`brando90/agent-sync`, 11-12-2026):** Read `PRIORITIES.md`, your side's `STATE.md` (`coding/STATE.md` or `assistants/STATE.md`) and the last 20 lines of your side's `log.md` at task start; open a file in your side's `requests/` only if it is addressed to you. At task end append one line to your side's `log.md` (`date | agent | what | link`), and update your side's `STATE.md` (and `chats/BRIEF.md` when coding agents change state) only if state changed.
 - **No branches.** Everything goes to `main`; experiments live in their own experiment folder so main is safe. Brando, 10-26-2026: "No branches, everything to main, goddammit." Before merging, QA first, ideally by a different model that is as smart or smarter (Brando, 10-26-2026; Hard Rule 3 still decides which QA tier he asked for); do not leave an unmerged branch or PR behind.
 - Superseded duplicates of our own work can be archived or removed; otherwise do not delete. Append notes in reverse chronological order.
 - Put his notes and photos for a research project in both his Google Doc and the matching GitHub repo; blog drafts stay unpublished until he reviews them.
