@@ -19,17 +19,24 @@ Layout:
 - `assistants/STATE.md` and `coding/STATE.md`: each under one page, one short block per project (what is in flight, owner, next step, blockers; mark unknowns `unknown`, never invent)
 - `assistants/log.md` and `coding/log.md`: append-only, one line per finished task: `date | agent | what | link`
 - `assistants/requests/` and `coding/requests/`: one small file per ask, named `<to-agent>-<date>-<slug>.md`, plus `.gitkeep`. A request from one side to the other goes in the other side's `requests/`.
+- `chats/BRIEF.md`: one-page read-only brief for web/mobile chat apps (ChatGPT, Claude.ai Projects, Gemini Import code) that can read `brando90/agent-sync` but cannot push commits; kept up to date by coding agents whenever `PRIORITIES.md` or `STATE.md` changes.
 - `archive/`: old state and finished requests, agents never open it, plus `.gitkeep`
 
 Rules for every agent:
 - At task start: read `PRIORITIES.md`, your side's `STATE.md` and the last 20 lines of your side's `log.md`; open a request file only if it is addressed to you.
-- At task end: add one line to your side's `log.md`, and update your side's `STATE.md` only if the state changed.
-- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` under one page; move old things to `archive/`.
+- At task end: add one line to your side's `log.md`, and update your side's `STATE.md` only if the state changed (coding agents also update `chats/BRIEF.md` when `PRIORITIES.md` or `STATE.md` changes).
+- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` and `chats/BRIEF.md` under one page; move old things to `archive/`.
 
 Paste-in for assistants outside git (Dot, Grokbot, chat apps):
 
 ```text
 Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it.
+```
+
+Paste-in for read-only web/mobile chat apps (ChatGPT GitHub connector, Claude.ai Project GitHub integration, Gemini Import code):
+
+```text
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. Read chats/BRIEF.md (and PRIORITIES.md) at the start of a task. Since chat apps are read-only for GitHub, never claim you pushed to the repo; when something should be written back or dispatched, give me a short copy-paste block for my coding agent or assistant (with suggested model + effort + harness).
 ```
 
 ---

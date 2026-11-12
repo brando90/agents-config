@@ -23,8 +23,8 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 Shared state for all of Brando's coding agents (`coding/`: Claude Code, Codex, Pi, Antigravity, and other CLI/desktop agents) and assistants (`assistants/`: `ub9sc`, Dot, Grokbot, chat apps) lives in the private repository `brando90/agent-sync` ([workflow](workflows/agent-sync.md), [Rule 71](rules/services.md#trigger-rule-71)):
 
 - At task start: read `PRIORITIES.md`, your side's `STATE.md` (`coding/STATE.md` or `assistants/STATE.md`) and the last 20 lines of your side's `log.md`; open a request file in your side's `requests/` (`<to-agent>-<date>-<slug>.md`) only if it is addressed to you. A request from one side to the other goes in the other side's `requests/`.
-- At task end: add one line to your side's `log.md` (`date | agent | what | link`), and update your side's `STATE.md` only if the state changed.
-- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` under one page; move old things to `archive/`.
+- At task end: add one line to your side's `log.md` (`date | agent | what | link`), and update your side's `STATE.md` only if the state changed (coding agents also update `chats/BRIEF.md` for read-only chat apps when `PRIORITIES.md` or `STATE.md` changes).
+- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` and `chats/BRIEF.md` under one page; move old things to `archive/`.
 
 Paste-in for assistants outside git (Dot, Grokbot, chat apps):
 
