@@ -11,6 +11,7 @@
 | [`assistant`](assistant/SKILL.md) | How Brando works: label what ran (Lean-checked or reading, DT or no DT, harness, model), suggest model + effort + harness, short results-first replies, no branches. Loaded by Trigger Rule 87; reviewed every Monday. |
 | [`atlas`](atlas/SKILL.md) | macOS AppleScript control of the ChatGPT Atlas desktop app (tabs, bookmarks, history). |
 | [`claude-app-session-sync`](claude-app-session-sync/SKILL.md) | Keep every Claude profile on the machine (any account, no hardcoded names) on the same agents-config (CLAUDE.md, skills, hooks) and list all their sessions in the Claude desktop app. |
+| [`experiment-dates`](experiment-dates/SKILL.md) | Apply, advance or backfill `_start_<DDMonYYYY>` and `_end_<DDMonYYYY>` lifecycle suffixes on experiment folders safely without breaking freeze hashes or cross-repo links. Loaded by Trigger Rule 88. |
 | [`pi-local-herdr`](pi-local-herdr/SKILL.md) | Local Pi (Gemini and Ollama) and Herdr machine profiles. |
 | [`research-launch-stack`](research-launch-stack/SKILL.md) | Kesh-style paper launch bundle: project page, tweprint, blog draft, links, asset manifest. |
 | [`review-paper`](review-paper/SKILL.md) | Paper review in Brando's words (moved here from `writing/ml_research/`). |

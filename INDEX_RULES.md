@@ -6,9 +6,9 @@
 
 ## How to load these rules
 
-Refresh `~/agents-config` with `git -C ~/agents-config pull --ff-only` at each new non-trivial task and after an hour; preserve dirty/concurrent work and use the local copy if offline. Reread this index and relevant changed rules. When editing agents-config in an isolated checkout, use that checkout's index and detail files after refreshing the home checkout.
+Refresh `~/agents-config` with `git -C ~/agents-config pull --ff-only` at each new non-trivial task and after an hour; preserve dirty/concurrent work and use the local copy if offline. Reread this index and relevant changed rules. In an isolated agents-config checkout, refresh the home clone first, then read that checkout's index/details.
 
-All Hard Rule **Details** links and matching Trigger Rule/Guideline links are mandatory routing: **before the action they govern, read that detail section and its applicable workflow**, including secret overrides, spending and review decisions. Do not read every topic file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If files are unavailable locally, fetch the same path under `https://raw.githubusercontent.com/brando90/agents-config/main/`. A Markdown link is a reading instruction, not proof the client loaded it. Never eagerly import this index or the detail collection into an entry file; read them as task files.
+Hard Rule **Details** and matching Trigger/Guideline links are mandatory routing: **before the action they govern, read that detail section and applicable workflow** (secrets, spend, reviews included). Do not read every file. Rule numbers are stable; paths below resolve beneath `~/agents-config/` (or the active agents-config checkout). If absent locally, fetch `https://raw.githubusercontent.com/brando90/agents-config/main/<path>`. A link is a reading instruction, not proof it loaded. Never inline this index or detail files into entry files; read them on demand.
 
 Hard rules govern conflicts with older wording in a triggered procedure. Explicit user instructions and platform/tool constraints retain their normal precedence. The SNAP pre-approval in Trigger Rule 51 is scoped to authorized work and existing budgets. Detail pages retain the procedures, examples and exceptions; the catalog is optional lookup.
 
@@ -89,11 +89,11 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |
 | [52](rules/workers.md#trigger-rule-52) | Board-visible job → run-bound fresh receipts, ordinary-code liveness and verified board row; separate coordinator and execution state. |
-| [53](rules/responses.md#trigger-rule-53) | Human-facing dates/new dated names → MM-DD-YYYY; preserve machine formats, existing names and frozen records. |
+| [53](rules/responses.md#trigger-rule-53) | Human-facing dates/new dated names → MM-DD-YYYY (expt folder suffixes use Rule 88); preserve machine/frozen formats. |
 | [54](rules/responses.md#trigger-rule-54) | Experiment → full folder name (first mention per section, each table row, summary). Paper no. → add title. |
 | [55](rules/hosts.md#trigger-rule-55) | Run jobs → prefer remote compute; bounded local CPU fallback needs no approval; verify execution. |
 | [56](rules/services.md#trigger-rule-56) | New day/planning/pasted task list → read weekly-notes source when available, compare latest section, disclose gaps; edit it only when Brando asks, additively. |
-| [57](rules/workers.md#trigger-rule-57), [74](rules/workers.md#trigger-rule-74) | Would stall on scope, routing, approval or a click → decide (no-human route), record it; no self-made gates; to-dos only Brando's own. Grade next steps /10; do ≥9 now. |
+| [57](rules/workers.md#trigger-rule-57), [74](rules/workers.md#trigger-rule-74) | Would stall on scope, routing, approval, edge cases or a click → always proceed without asking (pick recommended, record it; no self-made gates). Grade next steps /10; do ≥9 now. |
 | [58](rules/workers.md#trigger-rule-58) | Capacity/tool gap → checkpoint and continue through eligible existing accounts/agents; one failed route is not all accounts exhausted. |
 | [59](rules/services.md#trigger-rule-59) | Mac freeze/Chrome zombie leak → load diagnosis playbook and repair the responsible parent, preserving tripwire. |
 | [60](rules/writing.md#trigger-rule-60) | Technical explainer/teaching → use explainer style; paper prose uses its separate research style. |
@@ -121,8 +121,9 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [83](rules/research.md#trigger-rule-83) | Research/startup/eval with unknown need → ask if it should exist; run the quickest de-risking test locally, email results, write repo MD files; endpoints/logins in parallel; once it covers the main risk, push velocity. |
 | [84](rules/research.md#trigger-rule-84) | Run/score/report vb-priv (or new VeriBench runs) → int_ref is the most important metric: run it once, save per-task results, derive int from it, lead updates with it. |
 | [85](rules/writing.md#trigger-rule-85) | Write/edit/review ML research text (papers, reports, research Docs, updates) → load `skills/scientific-terminology`: one term per concept, reuse exactly, no stylistic synonyms. |
-| [86](rules/workers.md#trigger-rule-86) | Claude app/claude.ai session start, Project change, new account sign-in, or Projects missing from the left → every Project of every account stays pinned in the sidebar; pin missing ones, run the session sync with `--all-accounts`, report counts; never wait to be asked. |
+| [86](rules/workers.md#trigger-rule-86) | Claude app/claude.ai start, Project/account change, or Projects missing on left → keep every Project of every account pinned; pin missing, run session sync `--all-accounts`, report counts. |
 | [87](rules/responses.md#trigger-rule-87) | Report results, hand off, or send/change anything in Brando's name → load `skills/assistant`: label what ran (Lean/reading, DT, harness, model), short results-first, no branches. |
+| [88](rules/research.md#trigger-rule-88) | Create, finish, archive or backfill an experiment folder → suffix `_start_<DDMonYYYY>` (`12Nov2026`), append `_end_<DDMonYYYY>` only when done; load `skills/experiment-dates` for renames. |
 
 ## Guidelines (best practices)
 

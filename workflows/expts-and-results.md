@@ -3,7 +3,7 @@
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/expts-and-results.md>
 
 **TLDR:** The canonical experiment-folder convention for this account:
-`experiments/<NN>_<name>/` with mandatory `README.md`, versioned
+`experiments/<NN>_<descriptive_setup>_start_<DDMonYYYY>/` (plus `_end_<DDMonYYYY>` when done, [Rule 88](../rules/research.md#trigger-rule-88)) with mandatory `README.md`, versioned
 sub-experiments, experiment-folder Markdown reports, optional explicitly requested
 Weights & Biases (W&B) reporting, GPU rules, and narrowly
 scoped completion notifications for user-triggered big/mega QA or explicitly
@@ -18,7 +18,7 @@ Read end-to-end before starting, opening, or reviewing any experiment dir.
 
 Every **active experiment** must have the following; deferred proposals use the lightweight [ideas convention](#optional-research-ideas) instead:
 
-- [ ] **Numbered directory** — `experiments/<NN>_<name>/` (sequential numbering, descriptive name), or the user-authorized `experiments/ideas/<name>/` home
+- [ ] **Numbered dated directory** — `experiments/<NN>_<descriptive_setup>_start_<DDMonYYYY>/` while active/paused, appending `_end_<DDMonYYYY>` when completed ([Rule 88](../rules/research.md#trigger-rule-88), [`skills/experiment-dates`](../skills/experiment-dates/SKILL.md)); unstarted `experiments/ideas/<descriptive_setup>/` proposals omit `_start_`/`_end_` until started
 - [ ] **Data and code together** — all experiment-specific material under its canonical home; shared-code/external-storage exceptions linked in its README ([details](#keep-data-and-code-together))
 - [ ] **Experiment-index row** — canonical home, setup/goal and current status in the project's existing index (normally `experiments/README.md`; ideas use their own index)
 - [ ] **README.md at root** — goal/hypothesis, decision criterion, structure tree, method, dependencies, status table
