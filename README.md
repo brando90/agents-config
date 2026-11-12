@@ -20,6 +20,8 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 
 ## agent-sync (`brando90/agent-sync`)
 
+**Why two repos (`agents-config` vs `agent-sync`):** If privacy were not an issue, everything in `brando90/agent-sync` would live directly in `brando90/agents-config`. Because `brando90/agents-config` is **public** (for portable rules, skills, workflows and dotfiles), live operational state across projects (priorities, in-flight status on private benchmarks like `vb-priv` and unpublished papers, task logs, and cross-agent requests) lives in the **private** repository `brando90/agent-sync`. It is fine to name and link `brando90/agent-sync` here because GitHub keeps the repository itself private.
+
 Shared state for all of Brando's coding agents (`coding/`: Claude Code, Codex, Pi, Antigravity, and other CLI/desktop agents) and assistants (`assistants/`: `ub9sc`, Dot, Grokbot, chat apps) lives in the private repository `brando90/agent-sync` ([workflow](workflows/agent-sync.md), [Rule 71](rules/services.md#trigger-rule-71)):
 
 - At task start: read `PRIORITIES.md`, your side's `STATE.md` (`coding/STATE.md` or `assistants/STATE.md`) and the last 20 lines of your side's `log.md`; open a request file in your side's `requests/` (`<to-agent>-<date>-<slug>.md`) only if it is addressed to you. A request from one side to the other goes in the other side's `requests/`.

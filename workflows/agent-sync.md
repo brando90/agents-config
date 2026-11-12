@@ -9,6 +9,8 @@
 
 ## `brando90/agent-sync` (shared state across all agents and assistants)
 
+**Why `brando90/agents-config` (AC) and `brando90/agent-sync` are separate:** If privacy were not a constraint, everything in `brando90/agent-sync` would live inside `brando90/agents-config`. Because `brando90/agents-config` is **public** (reusable rules, skills, workflows, machine guides and dotfiles), live cross-project state (`PRIORITIES.md`, `STATE.md`, `log.md`, `requests/`, `chats/BRIEF.md`—including private benchmark status and unpublished paper work) lives in the **private** repo `brando90/agent-sync`. Naming or linking `brando90/agent-sync` in the public AC repo is fine since GitHub restricts access to the private repo.
+
 Two sides in one private repository (`brando90/agent-sync`, local clone `~/agent-sync`):
 - **`assistants/`**: `ub9sc` (Brando's assistant `ultimate_brando9`), Dot, Grokbot, chat apps
 - **`coding/`**: Claude Code, Codex, Pi, Antigravity, and any other CLI or desktop agent
