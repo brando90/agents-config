@@ -6,8 +6,9 @@ Usage:
   home_clutter_audit.py --snapshot FILE     # record current top-level entries (run at task start)
   home_clutter_audit.py --diff FILE         # show entries created since the snapshot (run before reporting done)
 
-It never moves or deletes anything. Exit code 1 when --diff finds new entries or the
-default audit flags anything, so it can gate a task's completion step.
+It never moves or deletes anything. Name matches are review candidates, not proof
+that a folder is temporary. Exit code 1 when --diff finds new entries or the default
+audit flags anything, so it can gate a task's completion step.
 """
 from pathlib import Path
 import argparse
@@ -46,24 +47,34 @@ def audit():
     for p in entries():
         why = []
         if DATED.search(p.name):
-            why.append('dated task folder')
+            why.append('dated-name candidate; inspect ownership and contents')
         if SCRATCH.search(p.stem):
-            why.append('temporary/scratch name')
+            why.append('temporary/scratch-name candidate; name alone is not evidence')
         if p.is_file() and p.parent == HOME and p.suffix.lower() in LOOSE_EXT and p.name not in KEEP_FILES:
             why.append('loose file in ~')
         if p.is_dir() and p.parent == HOME:
             o = origin(p)
             if o:
-                remotes.setdefault(o, []).append(p)
+                # A renamed project often retains a compatibility symlink. Count
+                # physical directories, not aliases, when finding extra checkouts.
+                remotes.setdefault(o, {}).setdefault(p.resolve(), []).append(p)
         if why:
             flagged.append((p, why))
-    for o, paths in remotes.items():
-        if len(paths) > 1:
-            canon = [p for p in paths if p.name == o.split('/')[-1]]
-            for p in paths:
-                if p not in canon:
-                    flagged.append((p, [f'second clone of {o}' + (f' (canonical: ~/{canon[0].name})' if canon else '')]))
-    return flagged
+    for o, physical in remotes.items():
+        if len(physical) > 1:
+            canon = [real for real, aliases in physical.items()
+                     if any(p.name == o.split('/')[-1] for p in aliases)]
+            canonical_alias = next((p for real in canon for p in physical[real]
+                                    if p.name == o.split('/')[-1]), None)
+            for real, aliases in physical.items():
+                if real not in canon:
+                    p = next((p for p in aliases if not p.is_symlink()), aliases[0])
+                    hint = f' (name-matched checkout: ~/{canonical_alias.name})' if canonical_alias else ''
+                    flagged.append((p, [f'additional checkout candidate for {o}{hint}; verify ownership and unique work']))
+    combined = {}
+    for path, reasons in flagged:
+        combined.setdefault(path, []).extend(reasons)
+    return list(combined.items())
 
 
 def main():

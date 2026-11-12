@@ -1,13 +1,18 @@
 """Tests for stale_checkout_sweep.py: only worktrees with nothing unique are removed."""
 
 import json
+import importlib.util
+import contextlib
+import io
 import os
 from pathlib import Path
 import subprocess
+import shlex
 import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "stale_checkout_sweep.py"
 
@@ -147,6 +152,147 @@ class StaleCheckoutSweepTest(unittest.TestCase):
         self.assertTrue(any("REMOVED" in a and "deleted merged local branch clean" in a for a in actions), actions)
         self.assertNotIn("clean", git(self.main, "branch", "--format=%(refname:short)").split())
         self.assertIn("dirty", git(self.main, "branch", "--format=%(refname:short)").split())
+
+    def test_conservative_preserves_all_local_content(self):
+        self.worktree('clean')
+        cached = self.worktree('cached')
+        (cached / '__pycache__').mkdir()
+        (cached / '__pycache__' / 'unique.pyc').write_text('keep')
+        staged = self.worktree('staged')
+        (staged / 'a.txt').write_text('staged-only content')
+        git(staged, 'add', 'a.txt')
+        (staged / 'a.txt').write_text('a\n')
+        copied = self.worktree('copied')
+        for root in (copied, self.main):
+            (root / 'notes.md').write_text('same')
+        res, _ = self.sweep('--conservative')
+        self.assertEqual(res['clean']['status'], 'SAFE')
+        for name in ('cached', 'staged', 'copied'):
+            self.assertEqual(res[name]['status'], 'KEEP')
+
+    def test_conservative_keeps_unlanded_remote_branch(self):
+        wt = self.worktree('unlanded')
+        (wt / 'unique.txt').write_text('not on main')
+        git(wt, 'add', 'unique.txt')
+        git(wt, 'commit', '-qm', 'unique')
+        git(wt, 'push', '-q', 'origin', 'unlanded')
+        res, _ = self.sweep('--conservative')
+        self.assertEqual(res['unlanded']['status'], 'KEEP')
+
+    def test_conservative_apply_is_scoped_and_keeps_branch(self):
+        clean = self.worktree('clean')
+        other = self.worktree('other')
+        _, actions = self.sweep('--conservative', '--fetch', '--only', str(clean), '--apply')
+        self.assertFalse(clean.exists(), actions)
+        self.assertTrue(other.exists())
+        self.assertIn('clean', git(self.main, 'branch', '--format=%(refname:short)').split())
+
+    def test_conservative_apply_requires_explicit_scope_and_fetch(self):
+        clean = self.worktree('clean')
+        for args in ([], ['--fetch'], ['--only', str(clean)]):
+            r = subprocess.run([sys.executable, str(SCRIPT), '--conservative', '--apply', *args],
+                               capture_output=True, text=True)
+            self.assertEqual(r.returncode, 2)
+        self.assertTrue(clean.exists())
+
+    def test_failed_fetch_preserves_checkout_and_exits_nonzero(self):
+        clean = self.worktree('clean')
+        git(self.main, 'remote', 'set-url', 'origin', str(self.main / 'missing.git'))
+        r = subprocess.run([sys.executable, str(SCRIPT), '--conservative', '--fetch', '--only', str(clean),
+                            '--min-age-hours', '0', '--apply', '--json'], capture_output=True, text=True)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertTrue(clean.exists())
+        self.assertIn('fetch failed', r.stdout)
+
+    def test_process_inventory_failure_is_not_idle(self):
+        spec = importlib.util.spec_from_file_location('sweep', SCRIPT)
+        sweep = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sweep)
+        with mock.patch.object(sweep.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1, '', 'denied')):
+            with self.assertRaises(RuntimeError):
+                sweep.busy_paths()
+
+    def test_conservative_keeps_hidden_index_changes(self):
+        for name, flag in [('skipped', '--skip-worktree'), ('assumed', '--assume-unchanged')]:
+            wt = self.worktree(name)
+            git(wt, 'update-index', flag, 'a.txt')
+            (wt / 'a.txt').write_text('unique local content hidden from git status')
+        res, _ = self.sweep('--conservative')
+        for name in ('skipped', 'assumed'):
+            self.assertEqual(res[name]['status'], 'KEEP')
+
+    def test_conservative_keeps_detached_recovery_history(self):
+        wt = self.worktree('recovery')
+        git(wt, 'checkout', '--detach')
+        (wt / 'only.txt').write_text('unique detached commit')
+        git(wt, 'add', 'only.txt')
+        git(wt, 'commit', '-qm', 'only detached')
+        git(wt, 'checkout', '--detach', 'origin/main')
+        res, _ = self.sweep('--conservative')
+        self.assertEqual(res['recovery']['status'], 'KEEP')
+        self.assertTrue(any('recovery history' in reason for reason in res['recovery']['reasons']))
+
+    def test_hidden_untracked_config_cannot_delete_local_files(self):
+        wt = self.worktree('hidden-untracked')
+        git(wt, 'config', 'status.showUntrackedFiles', 'no')
+        (wt / 'unique.txt').write_text('untracked')
+        (wt / 'results').mkdir()
+        (wt / 'results' / 'unique.txt').write_text('ignored')
+        res, actions = self.sweep('--conservative', '--fetch', '--only', str(wt), '--apply')
+        self.assertEqual(res[wt.name]['status'], 'KEEP', actions)
+        self.assertEqual((wt / 'unique.txt').read_text(), 'untracked')
+        self.assertEqual((wt / 'results' / 'unique.txt').read_text(), 'ignored')
+
+    def test_wrapper_shell_argv_does_not_prevent_clean_removal(self):
+        wt = self.worktree('shell-wrapper')
+        args = [sys.executable, str(SCRIPT), '--conservative', '--fetch', '--only', str(wt),
+                '--min-age-hours', '0', '--apply', '--json']
+        command = shlex.join(args) + '; sweep_rc=$?; exit "$sweep_rc"'
+        r = subprocess.run(['sh', '-c', command], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertFalse(wt.exists(), r.stdout)
+
+    def test_app_managed_parent_alias_is_kept(self):
+        wt = self.worktree('app-path')
+        managed = self.wts / '.codex' / 'worktrees'
+        managed.mkdir(parents=True)
+        git(self.main, 'worktree', 'move', str(wt), str(managed / 'app-path'))
+        alias = self.wts / 'alias'
+        alias.symlink_to(managed, target_is_directory=True)
+        res, _ = self.sweep('--conservative', '--only', str(alias / 'app-path'))
+        self.assertEqual(res['app-path']['status'], 'KEEP')
+        self.assertTrue(any('app-managed' in x for x in res['app-path']['reasons']))
+
+    def test_per_worktree_refs_and_bisect_state_are_kept(self):
+        saved = self.worktree('saved-local-ref')
+        git(saved, 'checkout', '--detach')
+        (saved / 'only.txt').write_text('unique')
+        git(saved, 'add', 'only.txt')
+        git(saved, 'commit', '-qm', 'only detached')
+        git(saved, 'update-ref', 'refs/worktree/wip', 'HEAD')
+        git(saved, 'checkout', '--detach', 'origin/main')
+        bisect = self.worktree('bisect')
+        git(bisect, 'bisect', 'start')
+        res, _ = self.sweep('--conservative')
+        self.assertEqual(res['saved-local-ref']['status'], 'KEEP')
+        self.assertEqual(res['bisect']['status'], 'KEEP')
+
+    def test_mid_apply_inventory_failure_preserves_prior_receipt(self):
+        first, second = self.worktree('a-first'), self.worktree('b-second')
+        spec = importlib.util.spec_from_file_location('sweep', SCRIPT)
+        sweep = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sweep)
+        args = [str(SCRIPT), '--conservative', '--fetch', '--only', str(first), '--only', str(second),
+                '--min-age-hours', '0', '--apply', '--json']
+        output = io.StringIO()
+        with mock.patch.object(sys, 'argv', args), contextlib.redirect_stdout(output):
+            with mock.patch.object(sweep, 'busy_paths', side_effect=[(set(), []), (set(), []), RuntimeError('inventory failed')]):
+                self.assertEqual(sweep.main(), 1)
+        receipt = json.loads(output.getvalue())
+        self.assertTrue(any(x.startswith('REMOVED ') for x in receipt['actions']))
+        self.assertTrue(any(x.startswith('FAILED ') for x in receipt['actions']))
+        self.assertFalse(first.exists())
+        self.assertTrue(second.exists())
 
 
 if __name__ == "__main__":

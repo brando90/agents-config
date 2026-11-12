@@ -5,9 +5,13 @@ Usage:
   stale_checkout_sweep.py                   # dry run: classify every agent worktree as SAFE or KEEP
   stale_checkout_sweep.py --apply           # remove only the SAFE ones
   stale_checkout_sweep.py --fetch --min-age-hours 48 --json
+  stale_checkout_sweep.py --conservative --json
+  stale_checkout_sweep.py --conservative --fetch --only ~/.worktrees/project/finished-task --apply
 
 Agents that run out of credits, context or turns die before their cleanup step, so their
 worktrees stay behind. This sweep is the backstop any later agent (or a scheduled job) runs.
+Scheduled jobs use --conservative and verify active task/schedule ownership before applying
+explicit --only paths. That mode never forces removal or deletes branches/containers.
 
 A worktree is SAFE only when every check passes: not locked; no process has its working
 directory inside or names it on its command line; untouched for --min-age-hours; every path it
@@ -26,6 +30,7 @@ import argparse
 import filecmp
 import functools
 import json
+import math
 import os
 import subprocess
 import sys
@@ -52,7 +57,7 @@ def default_roots():
 def git(path, *args, stdin=None):
     # --no-optional-locks: never refresh the index, so the sweep itself does not reset a worktree's age
     return subprocess.run(['git', '--no-optional-locks', '-C', str(path), *args], capture_output=True, text=True,
-                          input=stdin)
+                          input=stdin, timeout=60, env={**os.environ, 'GIT_TERMINAL_PROMPT': '0'})
 
 
 def tilde(p):
@@ -131,10 +136,84 @@ def remove_empty(d):
 
 
 def busy_paths():
-    r = subprocess.run(['lsof', '-a', '-d', 'cwd', '-u', str(os.getuid()), '-Fn'], capture_output=True, text=True)
+    r = subprocess.run(['lsof', '-a', '-d', 'cwd', '-u', str(os.getuid()), '-Fn'], capture_output=True, text=True,
+                       timeout=30)
+    if r.returncode or not r.stdout.strip() or r.stderr.strip():
+        raise RuntimeError('cannot establish process working directories; cleanup withheld')
     cwds = {Path(l[1:]) for l in r.stdout.splitlines() if l.startswith('n/')}
-    r = subprocess.run(['ps', '-axo', 'command='], capture_output=True, text=True)
-    return cwds, r.stdout.splitlines()
+    r = subprocess.run(['ps', '-axo', 'pid=,ppid=,command='], capture_output=True, text=True, timeout=30)
+    if r.returncode or not r.stdout.strip():
+        raise RuntimeError('cannot establish process commands; cleanup withheld')
+    processes = {int(parts[0]): (int(parts[1]), parts[2]) for line in r.stdout.splitlines()
+                 if len(parts := line.strip().split(None, 2)) == 3}
+    ancestors, pid = set(), os.getpid()
+    while pid and pid not in ancestors:
+        ancestors.add(pid)
+        pid = processes.get(pid, (0, ''))[0]
+    # A wrapper shell repeats --only in argv. Exclude its argv, but retain
+    # ALL working directories above, so a launcher inside a checkout protects it.
+    commands = [cmd for pid, (_, cmd) in processes.items() if pid not in ancestors]
+    return cwds, commands
+
+
+def classify_conservative(p, busy, min_age_hours, now):
+    """Periodic cleanup: require a clean, landed checkout; preserve every local file.
+
+    The caller must also establish that no scheduled consumer or active task owns it.
+    Never infer that staged content or ignored files are expendable from their names.
+    """
+    info = {'path': str(p), 'status': 'KEEP', 'reasons': [], 'notes': [],
+            'force': False, 'branch': None, 'common': None}
+    why = info['reasons']
+    gd = git(p, 'rev-parse', '--absolute-git-dir')
+    cd = git(p, 'rev-parse', '--path-format=absolute', '--git-common-dir')
+    if gd.returncode or cd.returncode:
+        why.append('not a readable linked worktree')
+        return info
+    gitdir, common = Path(gd.stdout.strip()), Path(cd.stdout.strip())
+    info['common'] = str(common)
+    if gitdir == common or not (p / '.git').is_file() or p.is_symlink():
+        why.append('not a standalone linked worktree path')
+    if any(x in p.parts or x in p.resolve().parts for x in ('.claude', '.codex', '.cursor')):
+        why.append('app-managed worktree: use the owning app cleanup')
+    if (gitdir / 'locked').exists():
+        why.append('locked')
+    real = p.resolve()
+    cwds, cmds = busy
+    if any(c == real or real in c.parents for c in cwds) or any(str(p) in c or str(real) in c for c in cmds):
+        why.append('in use by a running process')
+    rc, entries = status_entries(p)
+    if rc or entries:
+        why.append('git status failed' if rc else 'local changes, untracked or ignored files require owner reconciliation')
+    index = git(p, 'ls-files', '-v', '-z')
+    if index.returncode or any(x and (x[0] == 'S' or x[0].islower()) for x in index.stdout.split('\0')):
+        why.append('index may hide local modifications (skip-worktree/assume-unchanged)')
+    # A clean, landed HEAD may still have unique detached commits in its own
+    # reflog. Removing the worktree would discard that recovery handle.
+    reflog = git(p, 'reflog', 'show', '--format=%H', 'HEAD')
+    if reflog.returncode:
+        why.append('HEAD recovery history could not be inspected')
+    elif reflog.stdout.strip():
+        unique = git(p, 'rev-list', '--stdin', '--not', '--branches', '--tags', '--remotes', stdin=reflog.stdout)
+        if unique.returncode or unique.stdout.strip():
+            why.append('HEAD recovery history contains commits not preserved by repository refs')
+    if (any((gitdir / 'refs').rglob('*')) or any(gitdir.glob('BISECT_*'))
+            or any((gitdir / x).exists() for x in ('rebase-merge', 'rebase-apply', 'sequencer',
+                                                  'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD'))):
+        why.append('worktree-local refs or in-progress Git operation require owner reconciliation')
+    if (p / '.gitmodules').exists():
+        why.append('submodules require owner reconciliation')
+    base = default_branch(p)
+    if not base or git(p, 'merge-base', '--is-ancestor', 'HEAD', base).returncode:
+        why.append('HEAD is not proven landed on the remote default branch')
+    age = (now - last_activity(p, gitdir)) / 3600
+    if age < min_age_hours:
+        why.append(f'touched {age:.0f}h ago (< {min_age_hours:g}h)')
+    # Keep shared branch refs; the worktree's own HEAD reflog is removed by Git,
+    # so its unique history must already have been rejected above.
+    if not why:
+        info['status'] = 'SAFE'
+    return info
 
 
 def is_cache(rel):
@@ -167,8 +246,8 @@ def last_activity(p, gitdir, files=()):
 
 def status_entries(p):
     """(returncode, [(XY, path)]) from `git status --porcelain -z --ignored`; a rename's old path counts as deleted."""
-    r = subprocess.run(['git', '--no-optional-locks', '-C', str(p), 'status', '--porcelain', '-z', '--ignored'],
-                       capture_output=True)
+    r = subprocess.run(['git', '--no-optional-locks', '-C', str(p), 'status', '--porcelain', '-z',
+                        '--ignored', '--untracked-files=normal'], capture_output=True, timeout=60)
     toks, out, i = r.stdout.decode(errors='surrogateescape').split('\0'), [], 0
     while i < len(toks):
         t = toks[i]
@@ -387,12 +466,21 @@ def main():
     ap.add_argument('--min-age-hours', type=float, default=24.0)
     ap.add_argument('--root', action='append', metavar='DIR[:DEPTH]', help='scan these roots instead of the defaults')
     ap.add_argument('--json', action='store_true')
+    ap.add_argument('--conservative', action='store_true',
+                    help='require clean landed worktrees; retain all local/ignored files and app-managed worktrees')
+    ap.add_argument('--only', action='append', metavar='PATH',
+                    help='inspect/apply only this exact linked worktree (repeatable); verify task/schedule ownership first')
     a = ap.parse_args()
+    if not math.isfinite(a.min_age_hours) or a.min_age_hours < 0:
+        ap.error('--min-age-hours must be finite and nonnegative')
+    if a.conservative and a.apply and (not a.fetch or not a.only):
+        ap.error('conservative apply requires --fetch and explicit --only paths after ownership checks')
     roots = [(Path(s.rsplit(':', 1)[0]).expanduser(), int(s.rsplit(':', 1)[1]) if ':' in s else 3)
              for s in a.root] if a.root else default_roots()
 
-    found = {p.resolve(): p for r, depth in roots if r.is_dir() for p in find_worktrees(r, depth)}
-    mains = {p for r, _ in roots if r.is_dir() for p in r.iterdir() if (p / '.git').is_dir()}
+    found = ({Path(p).expanduser().absolute(): Path(p).expanduser().absolute() for p in a.only}
+             if a.only else {p.resolve(): p for r, depth in roots if r.is_dir() for p in find_worktrees(r, depth)})
+    mains = set() if a.only else {p for r, _ in roots if r.is_dir() for p in r.iterdir() if (p / '.git').is_dir()}
     for m in sorted(mains):
         for w in registered(m):
             if w['path'].is_dir():
@@ -401,29 +489,56 @@ def main():
                for p in found.values()}
     owners = {c.parent if c.name == '.git' else c for c in commons if str(c) != '.'}
     repos = mains | owners
+    failed_fetch = set()
     if a.fetch:
         for m in sorted(owners):
-            git(m, 'fetch', '--quiet', 'origin')
+            if git(m, 'fetch', '--quiet', 'origin').returncode:
+                failed_fetch.add(str(m))
 
     busy, now = busy_paths(), time.time()
-    results = [classify(p, busy, a.min_age_hours, now) for p in sorted(found.values())]
+    classifier = classify_conservative if a.conservative else classify
+    results = [classifier(p, busy, a.min_age_hours, now) for p in sorted(found.values())]
+    for i in results:
+        common = Path(i['common']) if i['common'] else None
+        owner = common.parent if common and common.name == '.git' else common
+        if str(owner) in failed_fetch:
+            i['status'] = 'KEEP'
+            i['reasons'].append('fetch failed; remote state not verified')
     prunable = sorted(m for m in repos if any(w['prunable'] for w in registered(m)))
-    empty, clones = leftovers(roots, a.min_age_hours, now)
+    empty, clones = ([], []) if a.only else leftovers(roots, a.min_age_hours, now)
     actions = []
     if a.apply:
-        actions = [remove(i, roots) for i in results if i['status'] == 'SAFE']
-        for d in empty:
+        for i in results:
+            if i['status'] != 'SAFE':
+                continue
+            if a.conservative:
+                try:
+                    fresh = classifier(Path(i['path']), busy_paths(), a.min_age_hours, time.time())
+                except (RuntimeError, OSError, subprocess.TimeoutExpired) as exc:
+                    i['status'] = 'KEEP'
+                    i['reasons'].append(f'pre-removal check failed: {type(exc).__name__}')
+                    actions.append(f'FAILED  {tilde(Path(i["path"]))}: pre-removal check failed; remaining cleanup withheld')
+                    break
+                i.update(fresh)
+                if i['status'] != 'SAFE':
+                    continue
+            try:
+                actions.append(remove(i, [] if a.conservative else roots))
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                actions.append(f'FAILED  {tilde(Path(i["path"]))}: removal interrupted ({type(exc).__name__}); inspect path')
+                break
+        for d in ([] if a.conservative else empty):
             if d.exists() and only_markers(d):
                 remove_empty(d)
                 actions.append(f'REMOVED empty folder {tilde(d)}')
-        for m in prunable:
+        for m in ([] if a.conservative else prunable):
             git(m, 'worktree', 'prune')
             actions.append(f'PRUNED  stale registrations in {tilde(m)}')
 
     if a.json:
         print(json.dumps({'results': results, 'actions': actions, 'prunable': list(map(str, prunable)),
                           'empty': list(map(str, empty)), 'clones': list(map(str, clones))}, indent=1))
-        return 0
+        return 1 if failed_fetch or any(x.startswith('FAILED') for x in actions) else 0
     for i in results:
         extra = i['reasons'] or i['notes']
         print(f'{i["status"]:4}  {tilde(i["path"])}' + (f'  [{"; ".join(extra)}]' if extra else ''))
@@ -436,10 +551,11 @@ def main():
     for line in actions:
         print(line)
     safe = sum(i['status'] == 'SAFE' for i in results)
-    mode = 'removed' if a.apply else 'would remove (dry run; rerun with --apply)'
+    removed = sum(x.startswith('REMOVED ') and not x.startswith('REMOVED empty folder') for x in actions)
+    mode = f'eligible, {removed} removed' if a.apply else 'eligible (dry run)'
     print(f'{len(results)} worktrees: {safe} SAFE {mode}, {len(results) - safe} KEEP; '
           f'{len(empty)} empty folders, {len(prunable)} repos with stale registrations, {len(clones)} full clones')
-    return 0
+    return 1 if failed_fetch or any(x.startswith('FAILED') for x in actions) else 0
 
 
 if __name__ == '__main__':
