@@ -8,6 +8,8 @@
 
 **Install:** `python3 ~/agents-config/scripts/install_dotfiles.py --apply` (see `../README.md`). The installer adds `keymap.json` as one marked block and keeps your own bindings.
 
+**Markdown editing preference:** Brando wants formatted editing of the actual `.md` file, retaining Save and Copy Path, not a separate preview. See [Markdown editing: formatted text, real files](../../workflows/markdown-editing.md) for the checked Zed limitation, immediate path-copy workaround and Suzuri alternative. This preference is recorded; no live-editing setting has been enabled.
+
 Where the binding comes from: **Zed** = Zed's default, **preset** = Zed's Cursor preset, **here** = this `keymap.json`.
 
 ## Cursor-specific (agent and chat)
