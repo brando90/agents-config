@@ -20,7 +20,7 @@ Preserve concurrent work; use local files offline. If absent, read `https://raw.
 
 All clients share this index. **Before acting**, read the Hard Rule details and each matching trigger's linked section; load only relevant rules. Use project instructions for project commands. Links and prompts neither set runtime permissions nor prove instruction loading.
 
-Shared state lives in brando90/agent-sync. Read STATE.md when you start a task and write one line to log.md when you finish. Nothing else.
+Shared state lives in brando90/agent-sync. Read PRIORITIES.md and your side's STATE.md (coding/ or assistants/) when you start a task, and write one line to your side's log.md when you finish. Nothing else.
 
 ## Always-visible safeguards
 

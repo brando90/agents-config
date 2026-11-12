@@ -18,6 +18,20 @@ Follow Markdown links explicitly; they are not imports. Keep detailed rules in o
 
 [Result notifications (Rule 14)](rules/services.md#trigger-rule-14) apply to every agent and project: when new verified experiment, evaluation or analysis results are ready, ping Brando and email him, including `brandojazz@gmail.com` and `brando.science@gmail.com`. Verify delivery, keep one notification owner and avoid duplicate completion emails.
 
+## agent-sync (`brando90/agent-sync`)
+
+Shared state for all of Brando's coding agents (`coding/`: Claude Code, Codex, Pi, Antigravity, and other CLI/desktop agents) and assistants (`assistants/`: `ub9sc`, Dot, Grokbot, chat apps) lives in the private repository `brando90/agent-sync` ([workflow](workflows/agent-sync.md), [Rule 71](rules/services.md#trigger-rule-71)):
+
+- At task start: read `PRIORITIES.md`, your side's `STATE.md` (`coding/STATE.md` or `assistants/STATE.md`) and the last 20 lines of your side's `log.md`; open a request file in your side's `requests/` (`<to-agent>-<date>-<slug>.md`) only if it is addressed to you. A request from one side to the other goes in the other side's `requests/`.
+- At task end: add one line to your side's `log.md` (`date | agent | what | link`), and update your side's `STATE.md` only if the state changed.
+- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` under one page; move old things to `archive/`.
+
+Paste-in for assistants outside git (Dot, Grokbot, chat apps):
+
+```text
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it.
+```
+
 ## Dotfiles and shared app shortcuts
 
 This repository is also the canonical home for [dotfiles and shared pane shortcuts](dotfiles/README.md). The former `brando90/.dotfiles` content is preserved under `dotfiles/legacy/`; new shared configuration belongs here, not in the retired repository.

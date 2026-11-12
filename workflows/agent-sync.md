@@ -2,10 +2,35 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/agent-sync.md>
 
-**TLDR:** Codex, Claude Code and ultimate_brando9 agree on a project's state through one `SYNC.md` per project, checked
-across every branch by `scripts/agent_sync.py check`; every push to `codex/*` or `claude/*` posts `[PUSH]` in the repo's
-agent inbox issue, which wakes the assistant by GitHub's email. Brando never relays state or pushes. Rule:
+**TLDR:** Shared state across all of Brando's agents and assistants lives in the private repository `brando90/agent-sync` (`PRIORITIES.md`, `assistants/`, `coding/`, `archive/`). Per-project `SYNC.md` files and `[PUSH]` inbox pings remain as documented below. Rule:
 [Trigger Rule 71](../rules/services.md#trigger-rule-71).
+
+---
+
+## `brando90/agent-sync` (shared state across all agents and assistants)
+
+Two sides in one private repository (`brando90/agent-sync`, local clone `~/agent-sync`):
+- **`assistants/`**: `ub9sc` (Brando's assistant `ultimate_brando9`), Dot, Grokbot, chat apps
+- **`coding/`**: Claude Code, Codex, Pi, Antigravity, and any other CLI or desktop agent
+
+Layout:
+- `README.md`: what the repo is and the rules below
+- `PRIORITIES.md`: under 15 lines, true for both sides
+- `assistants/STATE.md` and `coding/STATE.md`: each under one page, one short block per project (what is in flight, owner, next step, blockers; mark unknowns `unknown`, never invent)
+- `assistants/log.md` and `coding/log.md`: append-only, one line per finished task: `date | agent | what | link`
+- `assistants/requests/` and `coding/requests/`: one small file per ask, named `<to-agent>-<date>-<slug>.md`, plus `.gitkeep`. A request from one side to the other goes in the other side's `requests/`.
+- `archive/`: old state and finished requests, agents never open it, plus `.gitkeep`
+
+Rules for every agent:
+- At task start: read `PRIORITIES.md`, your side's `STATE.md` and the last 20 lines of your side's `log.md`; open a request file only if it is addressed to you.
+- At task end: add one line to your side's `log.md`, and update your side's `STATE.md` only if the state changed.
+- Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` under one page; move old things to `archive/`.
+
+Paste-in for assistants outside git (Dot, Grokbot, chat apps):
+
+```text
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it.
+```
 
 ---
 
