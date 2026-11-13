@@ -123,7 +123,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [85](rules/writing.md#trigger-rule-85) | Write/edit/review ML research text (papers, reports, research Docs, updates) → load `skills/scientific-terminology`: one term per concept, reuse exactly, no stylistic synonyms. |
 | [86](rules/workers.md#trigger-rule-86) | Claude app/claude.ai start, Project/account change, or Projects missing on left → keep every Project of every account pinned; pin missing, run session sync `--all-accounts`, report counts. |
 | [87](rules/responses.md#trigger-rule-87) | Report results, hand off, or send/change anything in Brando's name → load `skills/assistant`: label what ran (Lean/reading, DT, harness, model), short results-first, no branches. |
-| [88](rules/research.md#trigger-rule-88) | Create, finish, archive or backfill an experiment folder → suffix `_start_<DDMonYYYY>` (`12Nov2026`), `_end_<DDMonYYYY>` only when done; backfill via upstream git history, the date authority (`skills/experiment-dates`). |
+| [88](rules/research.md#trigger-rule-88) | Create, finish, archive or backfill an experiment folder → suffix `_start_<DDMonYYYY>` (`12Nov2026`), `_end_<DDMonYYYY>` only on archiving; backfill via upstream git history, the date authority (`skills/experiment-dates`). |
 
 ## Guidelines (best practices)
 

@@ -14,8 +14,8 @@ For every directory under `experiments/` and `experiments/archive/` (and `experi
 | Lifecycle state | Folder pattern | Rule |
 |---|---|---|
 | **Proposed, not started** | `<descriptive_setup>` (no `_start_`, no `_end_`) | Unnumbered proposals and `DEFERRED — NOT RUN` ideas carry neither suffix until work actually starts. |
-| **Active, paused, or pending gate** | `<NN>_<descriptive_setup>_start_<DDMonYYYY>` | Used while in flight, paused with unstarted phases, or archived with a `Pending` phase/review row in `results.md`. Never add `_end_`. |
-| **Completed** | `<NN>_<descriptive_setup>_start_<DDMonYYYY>_end_<DDMonYYYY>` | Appended when the experiment reaches `COMPLETE`, `DONE`, or `STOPPED` with no `PENDING` phase rows (same-day `_start_09Nov2026_end_09Nov2026` or multi-day `_start_10Nov2026_end_11Nov2026`). |
+| **Active, paused, or pending gate** | `experiments/<NN>_<descriptive_setup>_start_<DDMonYYYY>` | Every folder directly under `experiments/`: in flight, paused with unstarted phases, a `Pending` phase/review row in `results.md`, or a finished run kept active by a live dependency (paper integration). Never add `_end_` outside the archive. |
+| **Completed (archived)** | `experiments/archive/<NN>_<descriptive_setup>_start_<DDMonYYYY>_end_<DDMonYYYY>` | Only archived folders carry `_end_`. Append it in the same commit that moves the folder to `experiments/archive/`, once the experiment reaches `COMPLETE`, `DONE`, or `STOPPED` with no `PENDING` phase rows (same-day `_start_09Nov2026_end_09Nov2026` or multi-day `_start_10Nov2026_end_11Nov2026`). |
 
 - **Date token (`<DDMonYYYY>`):** Two-digit day (`01`–`31`), TitleCase three-letter English month (`Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, `Dec`), four-digit year (`America/Los_Angeles` date unless pinned otherwise). Prose and files inside the folder still use `MM-DD-YYYY` (Trigger Rule 53).
 - **Live creation/closure vs backfilling unlabeled "old" experiments:**
