@@ -54,10 +54,14 @@ class RuntimeTests(unittest.TestCase):
     def test_shared_model_defaults_replace_local_choices_and_preserve_auth(self):
         shared = sync.read_json(Path(__file__).with_name('runtime.json'))['settings']
         expected = {
-            'defaultProvider': 'vals-codex',
-            'defaultModel': 'gpt-6.1-sol',
+            'defaultProvider': 'koyejolab-openai-bm',
+            'defaultModel': 'gpt-6-astra',
             'defaultThinkingLevel': 'medium',
-            'modelThinkingLevels': {'vals-codex/gpt-6.1-sol': 'medium'},
+            'modelThinkingLevels': {
+                'koyejolab-openai-bm/gpt-6-astra': 'medium',
+                'koyejolab-openai-bm/gpt-6.1-sol': 'medium',
+                'vals-codex/gpt-6.1-sol': 'medium',
+            },
         }
         for key, value in expected.items():
             self.assertEqual(shared[key], value)
@@ -67,7 +71,7 @@ class RuntimeTests(unittest.TestCase):
         sync.write_json(self.agent/'settings.json', {
             'defaultProvider': 'old', 'defaultModel': 'old',
             'defaultThinkingLevel': 'high', 'theme': 'dark',
-            'modelThinkingLevels': {'vals-codex/gpt-6.1-sol': 'high',
+            'modelThinkingLevels': {'koyejolab-openai-bm/gpt-6-astra': 'high',
                                     'other/model': 'low'},
         })
         auth = self.agent/'auth.json'
@@ -77,7 +81,7 @@ class RuntimeTests(unittest.TestCase):
         for key in ('defaultProvider', 'defaultModel', 'defaultThinkingLevel'):
             self.assertEqual(actual[key], expected[key])
         self.assertEqual(actual['modelThinkingLevels'], {
-            'vals-codex/gpt-6.1-sol': 'medium', 'other/model': 'low'})
+            **expected['modelThinkingLevels'], 'other/model': 'low'})
         self.assertEqual(actual['theme'], 'dark')
         self.assertEqual(auth.read_text(), 'private fixture: unchanged')
         self.assertEqual(self.run_sync(check=True), 0)

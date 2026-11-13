@@ -8,7 +8,13 @@
 
 Pi **1.5.2** is installed and enrolled in the shared [Mac agent updater](../../dotfiles/agent-updates/README.md). It runs `pi update --self --no-approve` on the scheduled maintenance pass, using Pi's own installation-aware updater. This updates the application, not extension pins, account selection, or model defaults. It is separate from the settings/skills synchronization service described below; no remote Pi installation was changed by this Mac enrollment.
 
-## Current default rollout and authentication limits — 10-28-2026
+## Current default — 11-13-2026
+
+Brando requested **`koyejolab-openai-bm / gpt-6-astra / medium`** as the ordinary-Pi default for now, replacing the Vals subscription default below. The existing named provider loads the Koyejo Lab OpenAI key at request time; no credential is embedded in shared configuration. This is an interactive startup preference, not authorization for uncapped unattended callers: owner scope, existing budgets and explicit batch/run caps still apply. Existing sessions retain their selected model until explicitly switched. No automatic payer fallback is installed.
+
+The Mac's live settings and private settings overlay were updated and the runtime check passes. Cross-machine propagation is not verified: the private automatic-sync hub reports pre-existing skill conflicts and a thinking-preference conflict. Those concurrent skill edits were left untouched; no global conflict-resolution preference was applied.
+
+## Historical default rollout and authentication limits — 10-28-2026
 
 The requested ordinary-Pi default `vals-codex/gpt-6.1-sol`, medium thinking, is saved on the Mac and skampere1–3/mercury1–2, including each existing automatic-settings overlay. New sessions use these preferences when the model is available; existing sessions retain their selected model until explicitly changed. Specialized local/Gemini launchers remain separate. No automatic API-key or other-payer fallback was installed.
 
@@ -77,9 +83,9 @@ Verified installation and two-way scheduled propagation on all six machines: [10
 
 ## Manual installer and shared defaults
 
-Brando's selected everyday default is **`vals-codex / gpt-6.1-sol / medium` through the Vals ChatGPT subscription** (10-28-2026). This supersedes the earlier Koyejo API-key default and the intervening unimplemented Opus fallback request; it does not install an automatic payer fallback. Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
+Brando's selected everyday default is **`koyejolab-openai-bm / gpt-6-astra / medium` through the Koyejo Lab OpenAI API key** (11-13-2026). This replaces the 10-28-2026 Vals subscription preference for now; it does not install an automatic payer fallback. Keep future ordinary-Pi preference decisions in this shared configuration, publish them to `main`, and apply/verify them on configured machines rather than stopping at a local settings edit. Explicit specialized profiles and host overrides remain intentional exceptions. Git publication alone does not update machines or running sessions.
 
-The credential stays in each machine's private key store; only the named route and preferences are shared. `vals-codex` uses that host's existing `.codex-vals` subscription login and account-verified Pi model cache (falling back to the Codex cache), not an OpenAI API key. On a machine without that provider, initialize/refresh the authorized Vals Codex profile and install the shared runtime configuration before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
+The credential stays in each machine's private key store; only the named route and preferences are shared. `koyejolab-openai-bm` uses the existing private `~/keys/openai_bm_key_koyejolab.txt` through a runtime secret command. On a machine without that provider, run the full installer with the existing authorized laboratory key available before using the default. Owner scope and unattended-run budget caps still apply. New sessions load the default; resumed sessions retain their previous selection.
 
 `runtime.json` supplies the portable baseline; enrolled profiles layer privately synchronized preferences over it. `sync_runtime.py` applies it to the selected Pi agent directory and stores a private receipt there. The default profile is `~/.pi/agent`; `--agent-dir` explicitly targets another profile. The installer does not copy authentication, sessions or credentials between machines, and the runtime-only path leaves model providers unchanged.
 
@@ -97,7 +103,7 @@ A normal `python3 ~/agents-config/config/pi/install.py` now applies both runtime
 
 ### What is managed
 
-- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. The shared ordinary-Pi default is `vals-codex/gpt-6.1-sol` with `medium` thinking, including its per-model thinking setting. Other undeclared settings remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
+- **Settings:** keys declared under `settings` are authoritative, with nested objects merged by leaf. The shared ordinary-Pi default is `koyejolab-openai-bm/gpt-6-astra` with `medium` thinking, including its per-model thinking setting. Other undeclared settings remain local. Removed formerly managed leaves are removed only if still equal to the last applied value; locally modified values remain local.
 - **Resource arrays:** `packages`, `extensions`, `skills`, `prompts` and `themes` are authoritative arrays. Apply replaces those lists (with a private timestamped backup), so add experiments you want to keep to the manifest or a host override before applying. Removing a package declaration stops loading it; its cached installation remains on disk.
 - **Shared extension code:** keep it under `config/pi/extensions/`, list its `${CONFIG_DIR}` path in `settings.extensions`, and add the relative filename to `trackedFiles`. Paths expand separately on each machine. The receipt hashes these files, so edits require a new apply even when paths stay the same.
 - **Packages:** use `npm:@scope/name@1.2.3`, `git:github.com/owner/repo@<full-40-character-commit>`, or `${CONFIG_DIR}/your-local-package`. npm ranges and moving Git branches are rejected. Missing or wrong versions are installed using the selected `pi` executable, in an empty working directory, under the selected profile. Git packages with local edits are preserved and reported instead of overwritten. Local package dependencies remain your responsibility, as in Pi itself.
@@ -193,7 +199,7 @@ The installer follows the selected Pi executable to find its catalog before cons
 Pi reloads `models.json` on `/model`. Restart or `/reload` if a running selector remains stale.
 If only generic providers appear even though the runtime check passes, run the **full** `python3 ~/agents-config/config/pi/install.py`: `--runtime-only` and automatic sync intentionally do not install providers, and `--check` verifies runtime settings, not provider availability.
 The installer discovers the selected catalog for both package symlinks and managed Pi launchers (`install/current-version`); it does not require a separate global npm installation.
-Then choose `vals-codex/gpt-6.1-sol` in `/model` for the shared default; a resumed session retains its previous provider until explicitly switched. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
+Then choose `koyejolab-openai-bm/gpt-6-astra` in `/model` for the shared default; a resumed session retains its previous provider until explicitly switched. `pi-gemini` and `pi-local` intentionally use different agent directories; this installation targets **bare `pi`**, including new ordinary Herdr Pi sessions. It does not silently rewrite the scoped or local-only launchers.
 
 Examples visible in `/model`:
 
