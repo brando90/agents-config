@@ -24,6 +24,7 @@ For every directory under `experiments/` and `experiments/archive/` (and `experi
   - **Imported experiment vs new analysis on old cached data:** Distinguish **(a) an imported or migrated upstream experiment/collection** (inherits the upstream study's genuine `_start_` and `_end_` dates) from **(b) a brand-new experiment conceived to test a new question on an older frozen dataset** (uses the new experiment's own `_start_` and `_end_` dates, e.g., a retrospective prover-outcome or rubric audit conceived, frozen, and run today on cached scores).
   - **End-date stability:** `_end_<DDMonYYYY>` records when the study's execution and final report completed. Later clerical moves, byte-copied archival memos, or zero-call post-hoc bootstrap supplements at import keep the original `_end_` date; only reopening a study for a new experimental phase removes `_end_` while active and sets a new `_end_` on completion.
   - If a date cannot be verified from Git history or upstream/local repo artifacts, report `unknown` rather than guessing.
+  - **Git history is the authority.** Folder dates are day-level labels; for exact times or a doubtful label, `git log --follow -- <folder>` here and in the upstream repo settles it. In the repo's `experiments/README.md`, add a short **Folder dates** section that says this and lists, per folder, the start/end commits (hash and date) used as evidence.
 
 ## 2. Pre-Rename Safety Inventory
 
