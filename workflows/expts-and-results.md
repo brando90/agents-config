@@ -351,6 +351,8 @@ The local report must include:
 - **Config table** — all hyperparameters
 - **Results table** — final metrics
 - **Plots, when useful** — save locally and reference relative paths (e.g., `![Loss](plots/loss_<timestamp>.png)`)
+  - **Every axis label names its metric, data split and direction** (for example "Held-out test RPS excess over the true distribution (lower is better)"), never only the panel title or caption; a difference axis also states its order ("A minus B").
+  - **Gridlines on by default for data plots with numeric axes.** In matplotlib: `ax.grid(True, which="major", alpha=0.4)`, plus faint minor lines on log axes, `ax.grid(True, which="minor", ls=":", alpha=0.2)`. Skip them for diagrams and for bar charts that already print their values. **Why:** Brando, 11-13-2026: "I usually prefer .grid(true) for my plots ie to eye ball more easily the actual 'values' on my plots"; a before/after comparison on log-scaled learning curves confirmed values were easier to read.
 - **Artifact links** — local results and evidence; an existing external report URL may be included as an optional historical link. No W&B field, credential check, or publication step is required.
 
 File naming: `expt_vN/results/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for per-version reports, or `results_summary/results_summary_<MM-DD-YYYY__HH-MM-SS>.md` for experiment-level rollups.
