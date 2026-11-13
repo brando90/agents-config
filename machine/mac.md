@@ -4,6 +4,12 @@
 
 **Shell: zsh** (`~/.zshrc`). Read `~/.zshrc` for paths, envs, aliases, and tool locations.
 
+## Default assistant computer
+
+Brando's standing preference, 11-13-2026: **Sanmi's MacBook Air is the assistant's default machine; the MacBook Pro is his main laptop.** Use the Air for browser tabs, computer use, screen control and other visible app work so the assistant does not interrupt him on the Pro. Verify the selected computer before opening or manipulating an app, and carry the same choice into subagent handoffs and scheduled tasks.
+
+This is a default, not a blanket ban: **if Brando explicitly asks to use the Pro, use the Pro.** Do not silently fall back to the Pro for visible work when the Air is unavailable. Non-disruptive command-line work on an explicitly requested computer remains within the task's scope. A machine preference neither grants unrelated action permission nor bypasses authentication or platform requirements.
+
 ## Behavioral Constraints
 
 - **Shared agent access policy:** apply [routine authentication recovery and per-host client verification](../workflows/reliable-agent-dispatch.md#authentication-recovery) to Codex, Claude Code, Cursor Agent and Antigravity on both Macs. Restore authorized sign-ins through the existing browser when possible; verify each remote client independently and keep credentials out of agents-config.

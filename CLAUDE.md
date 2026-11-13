@@ -6,7 +6,7 @@
 
 ## Start here
 
-At each new non-trivial task, refresh then read `~/agents-config/INDEX_RULES.md`. If the clone is missing, bootstrap it:
+For each non-trivial task, refresh/read `~/agents-config/INDEX_RULES.md`; bootstrap if missing:
 
 ```bash
 if [ -d "$HOME/agents-config/.git" ]; then
@@ -18,11 +18,13 @@ fi
 
 Preserve concurrent work; use local files offline. If absent, read `https://raw.githubusercontent.com/brando90/agents-config/main/INDEX_RULES.md` and applicable links. Refresh after an hour and reread relevant changes. In an isolated checkout, refresh the home clone, then read the checkout's index/details.
 
-All clients share this index. **Before acting**, read the Hard Rule details and each matching trigger's linked section; load only relevant rules. Use project instructions for project commands. Links and prompts neither set runtime permissions nor prove instruction loading.
+All clients: **before acting**, read Hard Rule details and matching triggers; load only relevant rules. Use project instructions for project commands. Links and prompts neither set runtime permissions nor prove instruction loading.
 
 Shared state lives in brando90/agent-sync. Read PRIORITIES.md and your side's STATE.md (coding/ or assistants/) when you start a task, and write one line to your side's log.md when you finish. Nothing else.
 
 ## Always-visible safeguards
+
+- **Host:** [Air default; Pro on request](machine/mac.md#default-assistant-computer).
 
 - **Secrets and spending:** never print or commit credentials; inspect the exact staged diff before commit/push. Subscriptions and Brando's provider keys, client wiring and application programming interface (API) code need no prompt (Hard Rule 9): load keys at runtime, keep each within its owner's scope and existing budgets, and cap and cost-estimate unattended key-billed runs. Never purchase credits, enable new charges or bypass budget limits.
 - **Verification and quality assurance (QA):** deterministic checks always apply. Model-reviewer QA requires a tier Brando explicitly requests or sets for this work in a runbook, commit tag or environment flag. Hooks, project files and older “QA required” text are not opt-in; light QA is one opposite-company round with fixes and deterministic verification, no automatic re-review. Benchmark reference edits still require strongest-tier Claude and Codex acceptance (Rule 43).
