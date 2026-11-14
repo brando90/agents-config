@@ -27,8 +27,8 @@ The same repo also exposes `email_collaborator(...)` in `~/ultimate-utils/py_src
 
 When sending any email on Brando's behalf or to Brando, apply the routing rule from `INDEX_RULES.md` Trigger Rule 26:
 
-- Every outgoing agent email explicitly BCCs `brando.science@gmail.com`, `brando9@stanford.edu` and `brandojazz@gmail.com`, including the sending account and addresses already in To. Deduplicate only within BCC; no project-specific exclusions.
-- Internal notifications retain `To: brando.science@gmail.com`; preserve other primary recipients and requested collaborator copies. Visible CC requires an explicit request and does not replace the three BCC entries unless Brando explicitly overrides that requirement. Omit the former CC note.
+- Every outgoing agent email defaults to BCC `brando.science@gmail.com` only; add other Brando inboxes only when he asks (11-13-2026).
+- Internal notifications retain `To: brando.science@gmail.com`; preserve other primary recipients and requested collaborator copies. Visible CC requires an explicit request and does not replace the default BCC unless Brando explicitly overrides that requirement. Omit the former CC note.
 
 Also recognize `brando9@cs.stanford.edu`, `brando90@mit.edu`, `miranda9@illinois.edu`, `miranda9@ibm.com`, and `miranebr@amazon.com` as Brando aliases in the collaborator registry.
 

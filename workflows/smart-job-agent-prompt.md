@@ -90,4 +90,4 @@ The launcher's older automatic selection uses an obsolete Codex flag and does no
 The goal is a scannable completion receipt. Keep it to status, hostname, key log lines, artifact links, and next action if any.
 
 **Recipient acceptance test.**
-Every outgoing notification must preserve its primary recipient and explicitly BCC `brando.science@gmail.com,brando9@stanford.edu,brandojazz@gmail.com,brando@vals.ai`, including the sender and any To address. Deduplicate only within BCC. For internal notifications use `To: brando.science@gmail.com`; visible CC requires an explicit request. Follow Trigger Rule 26.
+Every outgoing notification must preserve its primary recipient and default to BCC `brando.science@gmail.com` only; add other Brando inboxes only when he asks. Internal notifications use `To: brando.science@gmail.com`; visible CC requires an explicit request. Include `Assistant: <actual assistant name>` in the body. Follow Trigger Rule 26.

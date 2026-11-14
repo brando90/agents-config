@@ -13,7 +13,7 @@ Copies: agents-config/skills is canonical. Put a Drive copy in the Marketing fol
 
 ## Limits that bind
 - **The FO submits.** GrantEd needs the FO's own SUNet login and completed training, so agents prepare exact field values and attachments and stop there. Agents never sign in with someone's credentials. They never submit GrantEd funding or payment requests or assuepay payments, and never send money (Venmo, Zelle, bank). Brando or the FO does those steps.
-- **Messages are drafts until Brando says "send".** When he does, follow the club email copy rule in `CLAUDE.md` (BCC `brandojazz@gmail.com` and `brando9@stanford.edu`).
+- **Messages are drafts until Brando says "send".** When he does, follow Trigger Rule 26 (default BCC only `brando.science@gmail.com`; other copies only when requested).
 - **The repository is public.** Invoices, chat extracts, payee contact or tax details, statements, balances and receipts go in `events/MM-DD-YYYY-fo-<task>/private/`. Give that folder a `.gitignore` containing `private/`, and confirm it with `git check-ignore`. Commit only skill or process changes.
 - **Chats are personal.** Extract finance facts only (date, chat name, amount, who taught, who paid), never surrounding conversation.
 

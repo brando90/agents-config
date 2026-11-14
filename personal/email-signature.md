@@ -2,10 +2,14 @@
 
 ## Default send address
 - **From:** whichever of Brando's accounts the agent already has signed in: the client's mail connector if it has one, otherwise SMTP from `brandojazz@gmail.com` (or a configured alias such as `brando.science@gmail.com`). Never hold an email for a particular sender address.
-- **Every outgoing email:** explicitly BCC `brando.science@gmail.com`, `brando9@stanford.edu` and `brandojazz@gmail.com`. Include all three even if an address is the sender or already in To; deduplicate only within BCC. This applies to every agent, project, external email and internal notification, with no project substitutions (Brando, 10-16-2026).
+- **Every outgoing email:** default BCC is only `brando.science@gmail.com`. Do not add Brando's other inboxes unless he asks (Brando, 11-13-2026).
 - **Primary recipients:** preserve intended addressees and collaborators' requested copies. Internal notifications use `To: brando.science@gmail.com`; existing notification triggers remain unchanged.
-- **Visible copies:** CC requires an explicit request for that message and does not replace the three BCC entries unless Brando explicitly says so. Omit the former CC reply note; BCC does not automatically include recipients on later replies. Do not resend old emails merely to apply this policy. See Trigger Rule 26.
+- **Visible copies:** CC requires an explicit request for that message and does not replace the default BCC unless Brando explicitly says so. Omit the former CC reply note; BCC does not automatically include recipients on later replies. Do not resend old emails merely to apply this policy. See Trigger Rule 26.
 - **Alias:** `brando9@cs.stanford.edu` is a Brando alias, but automation should follow `~/agents-config/INDEX_RULES.md` Trigger Rule 26 for routing.
+
+## Assistant attribution
+
+Every assistant-generated email, including signature-free notifications, must include `Assistant: <actual assistant name>` in the body; name writer and sender separately if different.
 
 ## Voice rules for emails sent as Brando
 
