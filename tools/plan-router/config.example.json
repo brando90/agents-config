@@ -1,0 +1,241 @@
+{
+  "default_plan": "personal-agy",
+  "plans": [
+    {
+      "id": "personal-claude",
+      "provider": "claude",
+      "model": "claude-fable-5-1",
+      "argv": [
+        "claude-personal",
+        "-p",
+        "--model",
+        "claude-fable-5-1",
+        "--max-turns",
+        "8",
+        "--output-format",
+        "json"
+      ],
+      "auth": {
+        "argv": [
+          "claude-personal",
+          "auth",
+          "status"
+        ]
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": true,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Replace after confirming this profile's entitlement and disabled extra usage"
+      },
+      "enabled": false
+    },
+    {
+      "id": "sponsored-claude",
+      "provider": "claude",
+      "model": "claude-fable-5-1",
+      "argv": [
+        "claude-sponsored",
+        "-p",
+        "--model",
+        "claude-fable-5-1",
+        "--max-turns",
+        "8",
+        "--output-format",
+        "json"
+      ],
+      "auth": {
+        "argv": [
+          "claude-sponsored",
+          "auth",
+          "status"
+        ]
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": false,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Verify subscription-only billing and the sponsor's scope for this job"
+      },
+      "enabled": false
+    },
+    {
+      "id": "personal-codex",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "argv": [
+        "codex",
+        "--ask-for-approval",
+        "never",
+        "exec",
+        "--json",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "workspace-write",
+        "--model",
+        "gpt-6-astra",
+        "--ignore-user-config",
+        "-c",
+        "forced_login_method=chatgpt",
+        "-"
+      ],
+      "auth": {
+        "argv": [
+          "codex",
+          "login",
+          "status"
+        ]
+      },
+      "env": {
+        "CODEX_HOME": "~/.codex"
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": true,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Confirm ChatGPT profile, entitlement and no paid overflow"
+      },
+      "enabled": false
+    },
+    {
+      "id": "sponsored-codex",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "argv": [
+        "codex",
+        "--ask-for-approval",
+        "never",
+        "exec",
+        "--json",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "workspace-write",
+        "--model",
+        "gpt-6-astra",
+        "--ignore-user-config",
+        "-c",
+        "forced_login_method=chatgpt",
+        "-"
+      ],
+      "auth": {
+        "argv": [
+          "codex",
+          "login",
+          "status"
+        ]
+      },
+      "env": {
+        "CODEX_HOME": "~/.codex-sponsored"
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": false,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Confirm subscription-only billing and sponsor's scope"
+      },
+      "enabled": false
+    },
+    {
+      "id": "personal-agy",
+      "provider": "agy",
+      "model": "gemini-4-argon-high",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-4-argon-high",
+        "--output-format",
+        "json",
+        "--print-timeout",
+        "180s",
+        "-p",
+        "{prompt}"
+      ],
+      "auth": {
+        "observation": true
+      },
+      "timeout_seconds": 190,
+      "generic_fallback": true,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Confirm native Google subscription identity and no paid overflow"
+      },
+      "refresh_argv": [
+        "agy",
+        "-p",
+        "/usage"
+      ],
+      "refresh_group": "Gemini Models",
+      "enabled": false
+    },
+    {
+      "id": "personal-cursor",
+      "provider": "cursor",
+      "model": "grok-4.6",
+      "argv": [
+        "agent",
+        "-p",
+        "{prompt}",
+        "--mode",
+        "ask",
+        "--sandbox",
+        "enabled",
+        "--output-format",
+        "json",
+        "--model",
+        "grok-4.6"
+      ],
+      "auth": {
+        "argv": [
+          "agent",
+          "status"
+        ],
+        "match": "Logged in|Authenticated"
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": true,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Confirm exact model in agent models and disable on-demand/paid spillover outside this tool"
+      },
+      "enabled": false
+    },
+    {
+      "id": "personal-grok",
+      "provider": "grok",
+      "model": "grok-4.6",
+      "argv": [
+        "grok",
+        "--no-auto-update",
+        "-p",
+        "{prompt}",
+        "--model",
+        "grok-4.6",
+        "--output-format",
+        "json",
+        "--max-turns",
+        "8",
+        "--sandbox",
+        "workspace",
+        "--no-subagents",
+        "--no-memory"
+      ],
+      "auth": {
+        "observation": true
+      },
+      "timeout_seconds": 180,
+      "generic_fallback": true,
+      "subscription_only": {
+        "verified": false,
+        "expires_at": "1970-01-01T00:00:00Z",
+        "evidence": "Confirm subscription entitlement, model and disabled additional credits / auto top-up"
+      },
+      "enabled": false
+    }
+  ]
+}
