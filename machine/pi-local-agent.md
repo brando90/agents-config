@@ -58,3 +58,24 @@ Sherlock gotchas that cost three failed runs (Pi in `-p` mode prints nothing whe
 - Put Lean's folder on `PATH` if a job also compiles Lean.
 
 Not tested: quality against a paid agent on these clusters (no paid agent was run), and larger coder models (the 30B model above needs an A100-class GPU or two). Qwen3-4B writes simple fixes but, per the 256-task run, its Lean is poor, so use it as a fallback for small edits.
+
+## Same Pi setup on every node (Thu 10-22-2026)
+Reference node: skampere1. All seven (skampere1, skampere2, skampere3, mercury1, mercury2, Sherlock, FarmShare) have Pi 1.4.0, rg 15.2.0, gh 2.103.0, node, claude, codex and `git credential.helper=store`, in bash; FarmShare zsh was fixed with `~/.zshenv` that adds `~/.local/bin` to PATH. Each SNAP node has its own local home, so every tool is installed per node.
+
+Recipe on a SNAP node, no sudo: put the shared Node 24 on PATH (`/dfs/scratch0/brando9/.nvm/versions/node/v24.14.0/bin`), run `npm install -g --prefix ~/.local --ignore-scripts @earendil-works/pi-coding-agent@1.4.0`, then copy `~/.pi/agent/models.json` and `settings.json` from skampere1 (mode 600; they hold the local-endpoint key, never print or paste them), plus `fd` and `rg`. Check: `bash -lc 'pi --version'`.
+
+- The `snap-qwen` provider (127.0.0.1:18127) exists only where a vLLM is up; Sherlock and FarmShare use the per-job `vllm` provider above.
+- Claude Code needs its postinstall: install it WITHOUT `--ignore-scripts` (with it: "claude native binary not installed"). Pi and codex are fine with it.
+- Not the same everywhere: `gh` is logged in only on skampere1/2/3; mercury tmux is 3.0a (OS).
+- Not tested: the CPU servers (rambo, trinity, furiosa, madmax); they are Slurm-gated.
+
+## Herdr on the clusters (tested Thu 10-22-2026)
+Herdr 0.9.5, installed per machine with its official script (`curl -fsSL https://herdr.dev/install.sh | sh`), lands in `~/.local/bin`, no sudo; works on Sherlock's glibc 2.17 and FarmShare's 2.39. In non-interactive shells run `export PATH=$HOME/.local/bin:$PATH` first. skampere1, skampere2, mercury1, mercury2, Sherlock and FarmShare each ran `herdr server` and answered `herdr status` (endpoint compatible: yes) and `herdr api snapshot`.
+
+- Start: `nohup setsid herdr server > server.log 2>&1 < /dev/null &`; stop: `herdr server stop`. Servers do not survive a node reboot or a session end (FarmShare's ran inside a JupyterLab session that was then cancelled).
+- Sherlock login nodes are only a control point; jobs go through Slurm.
+- From the Mac each machine needs an ssh Host entry, then `herdr machine add <label>` and `herdr machine status`; reconnect when Duo or the Kerberos ticket lapses.
+- As of 10-23-2026 the Mac-to-Sherlock and Mac-to-FarmShare profiles still failed at authentication; see [herdr-stanford-access.md](herdr-stanford-access.md). Not verified: whether a saved profile forwards to the cluster servers from the Mac.
+
+## How this page ages
+Model quality notes are dated 10-22-2026 and 11-16-2026 (Qwen3-Coder-30B-A3B, Qwen3-4B). Versions (Pi 1.4.0, Herdr 0.9.5, vLLM 0.30 to 0.32) change fast; re-check flags before reuse. Google Doc copy: <https://docs.google.com/document/d/1Az0APH7bTGWycBBoiwZMRwuXslTbdj3mnJ0qiFfFl9o/edit>.
