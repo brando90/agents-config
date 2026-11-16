@@ -1,8 +1,8 @@
-# Pi coding agent on a local open-weight model (SNAP nodes)
+# Pi coding agent on a local open-weight model (SNAP nodes, FarmShare, Sherlock)
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/machine/pi-local-agent.md>
 
-**TLDR:** Pi 1.4.0 installs with no sudo (`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent`) and works on skampere1, skampere2, mercury1 and mercury2 against a vLLM-served Qwen3-Coder-30B-A3B (FP8) on one idle A100. One small real task (pytest for `scripts/paper_watch.py`) took 38 s on skampere1, 92 s on skampere2, 176 s on mercury1 and 54 s on mercury2 (the last three through a tunnel to skampere1), and the tests passed on every node. No credits used. skampere3 was not tested. Tested Thu 10-22-2026.
+**TLDR:** Pi 1.4.0 installs with no sudo (`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent`) and works on skampere1, skampere2, mercury1 and mercury2 against a vLLM-served Qwen3-Coder-30B-A3B (FP8) on one idle A100. One small real task (pytest for `scripts/paper_watch.py`) took 38 s on skampere1, 92 s on skampere2, 176 s on mercury1 and 54 s on mercury2 (the last three through a tunnel to skampere1), and the tests passed on every node. No credits used. skampere3 was not tested. Tested Thu 10-22-2026. FarmShare and Sherlock (added Mon 11-16-2026, see the last section): Pi installs there with no sudo and works against a local Qwen3-4B-Instruct-2507 served by vLLM in a GPU session or job; FarmShare repaired a small bug and passed its test, Sherlock ran Pi on 256 VeriBench tasks (0 compiled, a model limit).
 
 This is the SNAP-side, vLLM-served recipe. The Mac-side free local route (`pi-local`, Ollama) and the shared `pi` configuration sync are documented in [`../config/pi/README.md`](../config/pi/README.md) and [`../skills/pi-local-herdr/SKILL.md`](../skills/pi-local-herdr/SKILL.md); this recipe uses its own `PI_CODING_AGENT_DIR` and does not change those. Follow [GPU selection](snap.md#choose-gpus-for-new-work) before starting the server.
 
@@ -39,3 +39,22 @@ Quality: the tests were correct and ran green on every node (re-run with pytest 
 - mercury A4000 has 16 GB: a 30B model needs 4-bit weights and 2 GPUs. Small coder models (7B to 14B AWQ) fit one GPU.
 - Take only idle GPUs and pin them with `CUDA_VISIBLE_DEVICES`. Stop the server when done (it holds about 65 GB). The test server on skampere1 GPU 2 and its 38 GB of weights and caches were removed after the tests.
 - System python on mercury1 is 3.8 and breaks pytest; make a venv (`uv venv --python 3.12 vt && uv pip install pytest`).
+
+## FarmShare and Sherlock (tested Oct 22 to Nov 16, 2026; model Qwen3-4B-Instruct-2507, vLLM, no paid API)
+Both clusters have no always-on GPU, so the model is served inside a GPU session or job and Pi runs on the same node. Pi is 1.4.0 on both.
+
+| Cluster | Install | Result |
+|---|---|---|
+| FarmShare | Nodes have no Node.js: unpack the official Node 24 tarball into `~/.local` (`--strip-components=1`), then `npm install -g --prefix ~/.local --ignore-scripts @earendil-works/pi-coding-agent` (13 s) | works: on one L40S (JupyterLab "Allocate a GPU", Large, 2 h, queue wait about 13 min) vLLM was up in about 170 s and Pi fixed `a - b` to `a + b` in a small `calc.py`; the test passed (exit 0) |
+| Sherlock | `module load nodejs/24.13.0` (loaded by default), then the same `npm install` (18 s); `pi` lands in `~/.local/bin` | works: in a Slurm GPU job on one L40S (node sh04-01n10, vLLM from an Apptainer image) Pi wrote a solution file for 242 of 256 VeriBench Tiny256 tasks in 42 min with 16 tasks at a time; 0 of 256 compiled in Lean, which is the 4B model's Lean, not the setup (3 known-good files pass the same grader) |
+
+FarmShare recipe: a script that installs Node and Pi, downloads the model with `huggingface_hub` into `~/pi_test/models`, starts vLLM on the session GPU (`--enable-auto-tool-choice --tool-call-parser hermes`, `--max-model-len 16384`), writes `models.json` and runs one task. Run it inside a JupyterLab terminal started with "Allocate a GPU", then cancel the session.
+
+Sherlock recipe: weights under `$SCRATCH`, a `gpu` job pinned with `-C "GPU_SKU:L40S|GPU_SKU:H100_SXM5"` (the `dev` partition's GPU is a 5.8 GiB MIG slice, too small for vLLM), vLLM in Apptainer on 127.0.0.1, then Pi against it. The GPU queue wait was hours, so submit one job and use it for the whole task; no filler jobs.
+
+Sherlock gotchas that cost three failed runs (Pi in `-p` mode prints nothing when vLLM answers 400, so check the vLLM log):
+- vLLM 0.30 rejected Pi's default request fields. Add to the provider in `models.json`: `"compat":{"supportsStore":false,"supportsDeveloperRole":false,"supportsReasoningEffort":false,"supportsUsageInStreaming":false,"maxTokensField":"max_tokens"}`.
+- With vLLM at its default `--max-model-len 16384`, Pi asked for `max_tokens` 16384 on top of the prompt, so the request exceeded the context and got a 400. Serve with `--max-model-len 32768` and set the model entry to `"contextWindow":32768,"maxTokens":4096`. This config is the one that ran the 256 tasks.
+- Put Lean's folder on `PATH` if a job also compiles Lean.
+
+Not tested: quality against a paid agent on these clusters (no paid agent was run), and larger coder models (the 30B model above needs an A100-class GPU or two). Qwen3-4B writes simple fixes but, per the 256-task run, its Lean is poor, so use it as a fallback for small edits.
