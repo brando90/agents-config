@@ -1,0 +1,120 @@
+{
+  "date": "11-16-2026",
+  "client": "Native Antigravity agy",
+  "scope": "Access and deterministic clamp smoke checks; not a model quality benchmark or general entitlement guarantee",
+  "models_checked": 22,
+  "models_passed": 22,
+  "method": "Native SUCCESS; numeric outputs normalized from JSON arrays/objects; expression evaluated independently on 18 boundary cases. Some models needed a clearer bug-fix prompt. Two timed-out requests and a transient service error were retained and followed by new disposable checks. Orchestrators passed without an unsupported separate effort flag.",
+  "models": [
+    {
+      "id": "gemini-4-carbon-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-carbon-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-carbon-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-argon-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-argon-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-argon-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-hydrogen-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-hydrogen-xhigh",
+      "effort": "xhigh",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-hydrogen-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "gemini-4-hydrogen-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "gemini-pro-orchestrator",
+      "effort": "default",
+      "passed": true
+    },
+    {
+      "id": "gemini-pro-orchestrator-argon",
+      "effort": "default",
+      "passed": true
+    },
+    {
+      "id": "gemini-3.8-flash-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "gemini-3.8-flash-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "gemini-3.8-flash-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "claude-opus-5-5-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "claude-opus-5-5-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "claude-opus-5-5-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "claude-sonnet-5-5-low",
+      "effort": "low",
+      "passed": true
+    },
+    {
+      "id": "claude-sonnet-5-5-medium",
+      "effort": "medium",
+      "passed": true
+    },
+    {
+      "id": "claude-sonnet-5-5-high",
+      "effort": "high",
+      "passed": true
+    },
+    {
+      "id": "gpt-oss-120b-medium",
+      "effort": "medium",
+      "passed": true
+    }
+  ]
+}

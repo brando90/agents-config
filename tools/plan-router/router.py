@@ -92,11 +92,93 @@ def config(path):
             raise ValueError('Claude bare mode does not use subscription login')
         if set(p.get('env', {})) - {'CODEX_HOME', 'CLAUDE_CONFIG_DIR'}:
             raise ValueError('env accepts only native account profile directories')
+        if p.get('effort_flag') not in (None, '--effort'):
+            raise ValueError('effort_flag must be --effort when the native client supports it')
+        if p.get('allow_unknown_native') and (p['provider'] not in ('claude', 'codex') or not p.get('auth', {}).get('argv')):
+            raise ValueError('unknown native allowance requires Claude/Codex native authentication status')
         if not math.isfinite(float(p.get('timeout_seconds', 180))) or not 0 < float(p.get('timeout_seconds', 180)) <= 14400:
             raise ValueError('timeout must be positive and at most four hours')
+        catalog = p.get('models', [])
+        if not isinstance(catalog, list) or len({m['id'] for m in catalog}) != len(catalog):
+            raise ValueError('model catalog IDs must be unique within a plan')
+        for model in catalog:
+            if any(not isinstance(model.get(k), str) or not model[k] for k in ('id', 'label', 'family', 'effort', 'refresh_group', 'quota_group')):
+                raise ValueError('catalog requires id, label, family, effort and quota pool names')
+            if any(not isinstance(model.get(k), bool) for k in ('frontier', 'enabled', 'verified')):
+                raise ValueError('catalog requires explicit frontier, enabled and verified booleans')
+        if catalog and p['model'] not in {m['id'] for m in catalog}:
+            raise ValueError('pinned model must exist in its catalog')
     if data.get('default_plan', ids[0]) not in ids:
         raise ValueError('default_plan is unknown')
     return data
+
+
+def predict_difficulty(prompt):
+    """Transparent local routing hint, not an estimate of model quality."""
+    text = prompt.lower()
+    rules = [('multistep', r'\b(multi[- ]step|end[- ]to[- ]end|across (?:multiple |several )?(?:files|repos)|implement.*(?:test|deploy))\b'),
+             ('hard', r'\b(prove|theorem|formal verification|architecture|complex|root cause|research|optimi[sz]e)\b'),
+             ('easy', r'\b(typo|spelling|format(?:ting)?|rename|simple|summari[sz]e|translate)\b')]
+    for difficulty, pattern in rules:
+        found = re.search(pattern, text, re.S)
+        if found:
+            return difficulty, 'local keyword heuristic: ' + found.group(0)
+    return 'medium', 'local keyword heuristic: medium default'
+
+
+def model_copy(plan, model):
+    selected = dict(plan, model=model['id'], effort=model['effort'],
+                    refresh_group=model['refresh_group'], quota_group=model['quota_group'],
+                    model_frontier=model['frontier'])
+    selected['argv'] = list(plan['argv'])
+    for index, arg in enumerate(selected['argv'][:-1]):
+        if arg in ('--model', '-m'):
+            selected['argv'][index + 1] = model['id']
+    if '--effort' in selected['argv']:
+        selected['argv'][selected['argv'].index('--effort') + 1] = model['effort']
+    elif plan.get('effort_flag'):
+        selected['argv'] += [plan['effort_flag'], model['effort']]
+    return selected
+
+
+def select_model(plan, args, data, prompt):
+    """Explicit plans and scientific jobs keep their pin absent a model override."""
+    catalog = plan.get('models', [])
+    requested, effort = args.model, args.effort
+    difficulty, reason = None, 'configured plan/model pin'
+    automatic = args.generic and not args.plan and not requested and not effort
+    if args.difficulty != 'auto' and (not args.generic or args.plan):
+        raise ValueError('--difficulty requires --generic without --plan; explicit plans stay pinned')
+    if automatic:
+        difficulty, reason = predict_difficulty(prompt) if args.difficulty == 'auto' else (args.difficulty, 'explicit difficulty')
+        mapping_key = 'frontier_difficulty_defaults' if args.frontier_only else 'difficulty_defaults'
+        mapping = plan.get(mapping_key, data.get(mapping_key, {})) if catalog else {}
+        requested = mapping.get(difficulty)
+        if requested:
+            reason += '; configured difficulty default'
+    elif requested or effort:
+        reason = 'explicit model/effort override'
+    if not catalog:
+        if requested and requested != plan['model'] or effort:
+            raise ValueError('model/effort override requires a matching verified catalog entry')
+        if args.frontier_only and not (plan.get('frontier') is True and plan.get('model_verified') is True):
+            raise ValueError('frontier-only requires verified frontier model metadata')
+        return dict(plan, difficulty=difficulty, selection_reason=reason)
+    exact = next((m for m in catalog if m['id'] == (requested or plan['model'])), None)
+    if exact and not effort:
+        model = exact
+    else:
+        family = exact['family'] if exact else (requested or next(m['family'] for m in catalog if m['id'] == plan['model']))
+        wanted_effort = effort or 'medium'
+        matches = [m for m in catalog if m['family'] == family and m['effort'] == wanted_effort]
+        if len(matches) != 1:
+            raise ValueError('unsupported or ambiguous model/effort: ' + family + '/' + wanted_effort)
+        model = matches[0]
+    if not model['enabled'] or not model['verified']:
+        raise ValueError('selected model disabled or unverified: ' + model['id'])
+    if args.frontier_only and not model['frontier']:
+        raise ValueError('selected model is not frontier: ' + model['id'])
+    return dict(model_copy(plan, model), difficulty=difficulty, selection_reason=reason)
 
 
 def environment(plan):
@@ -118,6 +200,9 @@ def fresh(item, now):
 def gate(plan, obs, now):
     if plan.get('enabled', True) is not True:
         return 'plan disabled'
+    model = next((m for m in plan.get('models', []) if m['id'] == plan['model']), None)
+    if model and (not model['enabled'] or not model['verified']):
+        return 'selected model disabled or unverified'
     proof = plan.get('subscription_only', {})
     if proof.get('verified') is not True or not proof.get('evidence') or epoch(proof.get('expires_at', '1970-01-01T00:00:00Z')) <= now:
         return 'subscription entitlement / no-extra-usage verification missing or expired'
@@ -125,6 +210,8 @@ def gate(plan, obs, now):
     for window, ceiling in [('weekly', 80), ('short', 100)]:
         item = obs.get(group, {}).get(window)
         if not fresh(item, now) or epoch(item['reset_at']) <= now:
+            if plan.get('allow_unknown_native'):
+                continue  # Explicitly approved native subscription; quota remains unknown.
             availability = obs.get(plan['id'], {}).get('availability')
             if plan.get('allow_unknown_once') and fresh(availability, now) and availability['status'] == 'ready' and not availability.get('consumed'):
                 continue
@@ -263,7 +350,7 @@ def admit(plan, state):
         if reason:
             raise ValueError(reason)
         windows = obs.get(plan.get('quota_group', plan['id']), {})
-        if any(not fresh(windows.get(w), time.time()) or epoch(windows[w]['reset_at']) <= time.time() for w in ('weekly', 'short')):
+        if not plan.get('allow_unknown_native') and any(not fresh(windows.get(w), time.time()) or epoch(windows[w]['reset_at']) <= time.time() for w in ('weekly', 'short')):
             obs[plan['id']]['availability']['consumed'] = True
             save(state / 'observations.json', obs)
 
@@ -292,18 +379,41 @@ def observe(args, plans, state):
 
 def status(plans, state):
     obs, now = observations(state), time.time()
+    all_jobs = [json.loads(p.read_text()) for p in (state / 'jobs').glob('*/receipt.json')]
     for plan in plans:
         windows = {}
         for window in ('weekly', 'short'):
             item = obs.get(plan.get('quota_group', plan['id']), {}).get(window)
             windows[window] = {**(item or {}), 'freshness': 'fresh' if fresh(item, now) and epoch(item['reset_at']) > now else ('stale' if item else 'unknown')}
-        jobs = [json.loads(p.read_text()) for p in (state / 'jobs').glob('*/receipt.json')]
-        jobs = [j for j in jobs if j['plan'] == plan['id']]
-        tokens = {}
-        for job in jobs:
-            for key, value in (job.get('tokens') or {}).items():
-                tokens[key] = tokens.get(key, 0) + value
-        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), 'jobs': len(jobs), 'completed': sum(j['status'] == 'completed' for j in jobs), 'tokens': tokens or None, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
+        jobs = [j for j in all_jobs if j['plan'] == plan['id']]
+        per_model = []
+        for model_id in sorted({m['id'] for m in plan.get('models', [])} | {j['model'] for j in jobs} | {plan['model']}):
+            model = next((m for m in plan.get('models', []) if m['id'] == model_id), None)
+            item = {'model': model_id, **job_summary([j for j in jobs if j['model'] == model_id])}
+            if model:
+                item.update(effort=model['effort'], quota_group=model['quota_group'],
+                            windows={w: {**obs.get(model['quota_group'], {}).get(w, {}),
+                                         'freshness': 'fresh' if fresh(obs.get(model['quota_group'], {}).get(w), now) and epoch(obs[model['quota_group']][w]['reset_at']) > now else ('stale' if obs.get(model['quota_group'], {}).get(w) else 'unknown')}
+                                     for w in ('weekly', 'short')})
+            per_model.append(item)
+        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), **job_summary(jobs), 'models': per_model, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
+
+
+def job_summary(jobs):
+    tokens = {}
+    for job in jobs:
+        for key, value in (job.get('tokens') or {}).items():
+            tokens[key] = tokens.get(key, 0) + value
+    return {'jobs': len(jobs), 'completed': sum(j['status'] == 'completed' for j in jobs), 'tokens': tokens or None}
+
+
+def list_models(plans, plan_id=None):
+    if plan_id and plan_id not in {p['id'] for p in plans}:
+        raise ValueError('unknown plan')
+    for plan in plans:
+        if not plan_id or plan['id'] == plan_id:
+            for model in plan.get('models', []):
+                print(json.dumps({'plan': plan['id'], **model, 'pinned_default': model['id'] == plan['model']}))
 
 
 def run(args, data, state):
@@ -321,12 +431,27 @@ def run(args, data, state):
     if not workspace.is_dir():
         raise ValueError('workspace must be a directory')
     prompt = Path(args.prompt_file).expanduser().read_text()
+    primary = select_model(primary, args, data, prompt)
+    candidates[0] = primary
     locks = private_dir(Path('/tmp') / ('plan-router-' + str(os.getuid())))
     key = hashlib.sha256(str(workspace).encode()).hexdigest()
     if state == workspace or workspace in state.parents:
         raise ValueError('private state must be outside the job workspace')
     with locked(locks / (key + '.lock'), nonblocking=True) as lock_fd:
-        for plan in candidates:
+        for index, plan in enumerate(candidates):
+            if index:
+                try:
+                    fallback_args = argparse.Namespace(**vars(args))
+                    fallback_args.plan, fallback_args.difficulty = plan['id'], 'auto'
+                    plan = select_model(plan, fallback_args, data, prompt)
+                    plan['difficulty'] = primary['difficulty']
+                    plan['selection_reason'] = 'explicitly permitted preflight fallback; ' + plan['selection_reason']
+                except ValueError as error:
+                    print(json.dumps({'plan': plan['id'], 'skipped': str(error)}), file=sys.stderr)
+                    continue
+            if plan.get('enabled', True) is not True:
+                print(json.dumps({'plan': plan['id'], 'skipped': 'plan disabled'}), file=sys.stderr)
+                continue
             if plan.get('refresh_argv'):
                 refresh(plan, state)
             reason = gate(plan, observations(state), time.time())
@@ -352,7 +477,7 @@ def run(args, data, state):
                 continue
             admit(plan, state)
             argv = [arg.replace('{prompt}', prompt).replace('{workspace}', str(workspace)) for arg in plan['argv']]
-            receipt = {'plan': plan['id'], 'model': plan['model'], 'workspace': str(workspace), 'started_at': stamp(), 'status': 'running', 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
+            receipt = {'plan': plan['id'], 'model': plan['model'], 'effort': plan.get('effort'), 'difficulty': plan.get('difficulty'), 'selection_reason': plan['selection_reason'], 'workspace': str(workspace), 'started_at': stamp(), 'status': 'running', 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
             save(job / 'receipt.json', receipt)
             try:
                 rc, timeout = execute(argv, '' if any('{prompt}' in x for x in plan['argv']) else prompt, workspace, environment(plan), float(plan.get('timeout_seconds', 180)), job / 'stdout', job / 'stderr', lock_fd)
@@ -361,6 +486,18 @@ def run(args, data, state):
                 receipt.update(status='failed', error=str(error), tokens=None)
             receipt['finished_at'] = stamp()
             save(job / 'receipt.json', receipt)
+            if receipt['status'] == 'completed' and plan.get('allow_unknown_once') and plan.get('renew_availability_on_success'):
+                # A successful native request can admit the next bounded job. A
+                # failure leaves the previous one-shot observation consumed.
+                now = time.time()
+                expires = min(now + 900, epoch(plan['subscription_only']['expires_at']))
+                with locked(state / 'state.lock'):
+                    obs = observations(state)
+                    obs.setdefault(plan['id'], {})['availability'] = {
+                        'observed_at': stamp(),
+                        'expires_at': dt.datetime.fromtimestamp(expires, UTC).isoformat(),
+                        'status': 'ready', 'source': 'native CLI completed job; remaining allowance unknown'}
+                    save(state / 'observations.json', obs)
             print(json.dumps({**receipt, 'logs': str(job)}))
             return 0 if receipt['status'] == 'completed' else 1
     raise ValueError('no eligible plan; no inference command started')
@@ -373,6 +510,7 @@ def main():
     sub = parser.add_subparsers(dest='command', required=True)
     sub.add_parser('status').add_argument('--refresh', action='store_true')
     sub.add_parser('refresh').add_argument('--plan')
+    sub.add_parser('models').add_argument('--plan')
     p = sub.add_parser('observe')
     p.add_argument('--plan', required=True)
     p.add_argument('--window', choices=['weekly', 'short', 'auth', 'availability'], required=True)
@@ -387,18 +525,32 @@ def main():
     p.add_argument('--workspace', required=True)
     p.add_argument('--generic', action='store_true')
     p.add_argument('--allow-fallback', action='store_true')
+    p.add_argument('--model')
+    p.add_argument('--effort')
+    p.add_argument('--difficulty', choices=['auto', 'easy', 'medium', 'hard', 'multistep'], default='auto')
+    p.add_argument('--frontier-only', action='store_true')
     args = parser.parse_args()
     try:
         repo = next((p for p in Path(__file__).resolve().parents if (p / '.git').exists()), None)
         data, state = config(args.config), private_dir(args.state_dir, repo)
         if args.command == 'refresh' or (args.command == 'status' and args.refresh):
+            refreshed = set()
             for plan in data['plans']:
-                if not getattr(args, 'plan', None) or plan['id'] == args.plan:
-                    refresh(plan, state)
+                if plan.get('enabled', True) is True and (not getattr(args, 'plan', None) or plan['id'] == args.plan):
+                    selections = [plan] + [model_copy(plan, m) for m in plan.get('models', [])
+                                           if m['enabled'] and m['verified']]
+                    for selected in selections:
+                        key = (tuple(selected.get('refresh_argv', [])), selected.get('refresh_group'),
+                               selected.get('quota_group', selected['id']))
+                        if key not in refreshed:
+                            refresh(selected, state)
+                            refreshed.add(key)
         if args.command in ('status', 'refresh'):
             status(data['plans'], state)
         elif args.command == 'observe':
             observe(args, data['plans'], state)
+        elif args.command == 'models':
+            list_models(data['plans'], args.plan)
         else:
             return run(args, data, state)
         return 0

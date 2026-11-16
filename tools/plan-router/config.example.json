@@ -170,7 +170,253 @@
         "/usage"
       ],
       "refresh_group": "Gemini Models",
-      "enabled": false
+      "enabled": false,
+      "models": [
+        {
+          "id": "gemini-4-carbon-medium",
+          "label": "Gemini 4 Carbon (Medium)",
+          "family": "gemini-4-carbon",
+          "effort": "medium",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-carbon-high",
+          "label": "Gemini 4 Carbon (High)",
+          "family": "gemini-4-carbon",
+          "effort": "high",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-carbon-low",
+          "label": "Gemini 4 Carbon (Low)",
+          "family": "gemini-4-carbon",
+          "effort": "low",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-argon-medium",
+          "label": "Gemini 4 Argon (Medium)",
+          "family": "gemini-4-argon",
+          "effort": "medium",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-argon-high",
+          "label": "Gemini 4 Argon (High)",
+          "family": "gemini-4-argon",
+          "effort": "high",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-argon-low",
+          "label": "Gemini 4 Argon (Low)",
+          "family": "gemini-4-argon",
+          "effort": "low",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-hydrogen-high",
+          "label": "Gemini 4 Hydrogen (High)",
+          "family": "gemini-4-hydrogen",
+          "effort": "high",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-hydrogen-xhigh",
+          "label": "Gemini 4 Hydrogen (XHigh)",
+          "family": "gemini-4-hydrogen",
+          "effort": "xhigh",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-hydrogen-medium",
+          "label": "Gemini 4 Hydrogen (Medium)",
+          "family": "gemini-4-hydrogen",
+          "effort": "medium",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-4-hydrogen-low",
+          "label": "Gemini 4 Hydrogen (Low)",
+          "family": "gemini-4-hydrogen",
+          "effort": "low",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-pro-orchestrator",
+          "label": "Orchestrator (Carbon)",
+          "family": "gemini-pro-orchestrator",
+          "effort": "default",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-pro-orchestrator-argon",
+          "label": "Orchestrator (Argon)",
+          "family": "gemini-pro-orchestrator-argon",
+          "effort": "default",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-3.8-flash-high",
+          "label": "Gemini 3.8 Flash (High)",
+          "family": "gemini-3.8-flash",
+          "effort": "high",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": false,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-3.8-flash-medium",
+          "label": "Gemini 3.8 Flash (Medium)",
+          "family": "gemini-3.8-flash",
+          "effort": "medium",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": false,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gemini-3.8-flash-low",
+          "label": "Gemini 3.8 Flash (Low)",
+          "family": "gemini-3.8-flash",
+          "effort": "low",
+          "refresh_group": "Gemini Models",
+          "quota_group": "personal-agy",
+          "frontier": false,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-opus-5-5-low",
+          "label": "Claude Opus 5.5 (Low)",
+          "family": "claude-opus-5-5",
+          "effort": "low",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-opus-5-5-medium",
+          "label": "Claude Opus 5.5 (Medium)",
+          "family": "claude-opus-5-5",
+          "effort": "medium",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-opus-5-5-high",
+          "label": "Claude Opus 5.5 (High)",
+          "family": "claude-opus-5-5",
+          "effort": "high",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-sonnet-5-5-low",
+          "label": "Claude Sonnet 5.5 (Low)",
+          "family": "claude-sonnet-5-5",
+          "effort": "low",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-sonnet-5-5-medium",
+          "label": "Claude Sonnet 5.5 (Medium)",
+          "family": "claude-sonnet-5-5",
+          "effort": "medium",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "claude-sonnet-5-5-high",
+          "label": "Claude Sonnet 5.5 (High)",
+          "family": "claude-sonnet-5-5",
+          "effort": "high",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": true,
+          "enabled": false,
+          "verified": false
+        },
+        {
+          "id": "gpt-oss-120b-medium",
+          "label": "GPT-OSS 120B (Medium)",
+          "family": "gpt-oss-120b",
+          "effort": "medium",
+          "refresh_group": "Claude and GPT models",
+          "quota_group": "personal-agy-partner",
+          "frontier": false,
+          "enabled": false,
+          "verified": false
+        }
+      ],
+      "quota_group": "personal-agy",
+      "status_note": "Google FAQ excludes consumer-plan wrapping in a third-party assistant; off pending account risk decision. Direct user scripting is a different scope."
     },
     {
       "id": "personal-cursor",
@@ -237,5 +483,17 @@
       },
       "enabled": false
     }
-  ]
+  ],
+  "difficulty_defaults": {
+    "easy": "gemini-3.8-flash-low",
+    "medium": "gemini-4-argon-medium",
+    "hard": "gemini-4-argon-high",
+    "multistep": "gemini-pro-orchestrator-argon"
+  },
+  "frontier_difficulty_defaults": {
+    "easy": "claude-sonnet-5-5-medium",
+    "medium": "gemini-4-argon-medium",
+    "hard": "gemini-4-argon-high",
+    "multistep": "gemini-pro-orchestrator-argon"
+  }
 }

@@ -84,7 +84,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [45](rules/workers.md#trigger-rule-45) | Ongoing coordinator → stable uniquely identified master checkpoint linking owned workers, watches and next commands. |
 | [46](rules/hosts.md#trigger-rule-46) | Remote publishable phase → PR, exact-revision checks, requested review, immediate merge, receipt, safe sync. |
 | [47](rules/services.md#trigger-rule-47) | Question about another agent → read its task context; distinguish chat activity, schedule and actual execution/results. |
-| [48](rules/workers.md#trigger-rule-48) | Dispatch or account/provider/context/turn limit → inventory authorized existing accounts; bound/verify handoff; keep one writer and scientific limits. “ac-scheduler” → host watch, master check-in, authorized notifications. |
+| [48](rules/workers.md#trigger-rule-48) | Heavy jobs → [subscription routing](workflows/subscription-plan-routing.md). Dispatch or account/provider/context/turn limits → inventory accounts; bounded handoff, one writer, scientific limits. “ac-scheduler” → watch, master check-in, notify. |
 | [49](rules/research.md#trigger-rule-49) | Research root layout/tidy → four content buckets and root allowlist; inventory live consumers before moves. |
 | [50](rules/research.md#trigger-rule-50) | Uncertain research/design → choose consequential uncertainty and cheapest valid test; record criterion before measuring. |
 | [51](rules/hosts.md#trigger-rule-51) | Launch/resume/supervise any agent → verify effective full access/no routine approvals and first useful action; queued approval is not recovery; preserve task/platform/budget limits and exact SNAP pre-approval. |

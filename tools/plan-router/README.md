@@ -4,6 +4,8 @@ Run one bounded job through an existing native subscription client. Python 3.9+ 
 
 The adapters are argument arrays, never shell commands. Prompts go to standard input unless an argument contains `{prompt}`; `{workspace}` expands to the canonical workspace path. Native account wrappers/profiles retain their own credentials. This program never reads a credential file.
 
+Google consumer-plan assistant dispatch is currently held: [Google's FAQ](https://antigravity.google/docs/faq) excludes wrapping native `agy` in a third-party assistant and warns of suspension. Direct user scripting differs from assistant orchestration. The included adapter and passing access tests do not establish policy permission. Keep that profile disabled pending the account owner's explicit risk decision; see the [workflow](../../workflows/subscription-plan-routing.md). Disabled routes make no native refresh or inference calls.
+
 ## Quick start
 
 From the repository root, after preparing a private configuration and fresh account observations:
@@ -29,6 +31,8 @@ Optional fields:
 - Without `auth.argv`, record a fresh `auth` observation after checking the native account.
 - `quota_group`: the same value for aliases sharing allowance; otherwise defaults to plan ID. Aliases must also share the configured vendor model pool. It does not reserve allowance against unrelated clients.
 - `refresh_argv` and `refresh_group`: native Antigravity `agy -p /usage` reads the matching TSV pool (`Gemini Models`, or `Claude and GPT models`) only. Remaining percentages become used percentages. The observation expires after 15 minutes or at reset, whichever comes first. Native refresh runs before each job; `status --refresh` is optional. Missing/invalid refresh results stop the invocation.
+- `allow_unknown_native`: explicit approval for bounded native Claude/Codex subscription jobs when those clients expose no percentage meter. Requires their native authentication-status command and the current subscription-only attestation. Remaining allowance stays unknown and the native client enforces its own limit; a known fresh quota threshold still blocks. This avoids requiring a separate token-consuming probe before every job after an idle period.
+- `renew_availability_on_success`: with `allow_unknown_once`, a completed native job renews one admission for at most 15 minutes (bounded by entitlement expiry). Failed/partial/timed-out jobs never renew it. This supports an approved native subscription without pretending it exposes a percentage; known quota thresholds still win. Leave disabled unless that route and existing billing scope have been checked.
 - `generic_fallback`: permits this plan as an alternative only for jobs explicitly invoked with both `--generic --allow-fallback`. Sponsor-limited plans are excluded in the example. Default execution stays on the selected plan and model.
 - `allow_unknown_once`: permits one bounded job from a fresh `availability` observation when the vendor exposes no remaining-allowance meter. Record this only after a successful request on that exact route. It reports unknown remaining allowance; it never invents a percentage. That observation is consumed atomically at admission, even if the subsequent job fails. A known threshold still blocks it.
 
@@ -74,9 +78,19 @@ python3 router.py --config ~/.config/plan-router/config.json observe \
 
 Those example timestamps expire: replace them with real current evidence. Do not reset an availability observation merely to retry a failed/partial job.
 
+## Model and effort selection
+
+`models --plan personal-agy` lists exact native IDs and their verified/enabled state. Each optional `models` entry contains `id`, `label`, `family`, `effort`, `refresh_group`, `quota_group`, and boolean `frontier`, `enabled`, `verified` fields. The configured pinned `model` must exist in the catalog. Effort embedded in an ID is sufficient; set `effort_flag: "--effort"` only for clients and models that support a separate switch. Orchestrator uses `effort: "default"` and no independent effort switch.
+
+`run --model ID` selects an exact entry; a family name selects its medium variant unless `--effort` is given. An effort-only override selects that variant of the pinned family. Unsupported, disabled, unverified or ambiguous choices are rejected before dispatch. `--frontier-only` rejects nonfrontier selections; frontier tags are explicit local metadata and must reflect the project's requirements.
+
+Generic jobs without an explicit plan use `difficulty_defaults` (or `frontier_difficulty_defaults`) mapping `easy`, `medium`, `hard`, `multistep` to exact IDs. `--difficulty auto` uses a transparent keyword heuristic; an explicit difficulty overrides it. Research runs and explicit plans stay model-pinned unless a model/effort override is explicitly given. No capability comparison is inferred from the heuristic. See the [routing workflow](../../workflows/subscription-plan-routing.md).
+
+Model copies share the account's credentials and their configured native quota pool. `status` keeps one account row and adds local per-model token/job counts plus the corresponding shared-pool windows. It does not treat multiple variants as independent allowances. Receipts record selected effort, difficulty and selection reason.
+
 ## Bounds and receipts
 
-Admission stops at **80% used weekly** or **100% used in the short window**. Both observations must be current unless the explicit one-job unknown-allowance option applies. Observations are snapshots; concurrent use elsewhere can consume allowance after observation. The threshold is an admission rule, not an in-flight spend cap. Native turn limits, where configured, and an outer timeout bound each job.
+Admission stops at **80% used weekly** or **100% used in the short window**. Both observations must be current unless an explicitly configured unknown-allowance option applies. Observations are snapshots; concurrent use elsewhere can consume allowance after observation. The threshold is an admission rule, not an in-flight spend cap. Native turn limits, where configured, and an outer timeout bound each job.
 
 A nonblocking lock covers the canonical workspace across router processes, including different configuration/state directories. The child inherits the lock descriptor, so the native client continues to hold it if the parent is abruptly killed. Normal completion, interruption or timeout terminates the owned process group. Clients that deliberately detach into a different process group are outside this containment contract; use native bounded, non-detaching CLI modes.
 
@@ -97,5 +111,7 @@ Tests use fake clients and temporary owned files only: exact prompt transport, A
 ## Live verification (11-16-2026)
 
 A native Antigravity `gemini-4-argon-high` job passed through this runner on Linux. It corrected `min(lo, max(hi, x))` to `max(lo, min(hi, x))`; an independent assertion checked outputs `[5, 0, 10]` for the three requested clamp cases. The native JSON reported success and token counters, and `/usage` supplied both matching Gemini quota windows. This verifies that installation and account at that time; every other installation must verify its own login, entitlement and allowance. Adapters and example entries alone do not establish live access.
+
+The [catalog smoke-check record](live-checks.json) covers 22 native model/effort choices. Each returned a successful clamp correction, independently checked on 18 edge cases. Some required a clarified prompt or a new disposable check after timeout/service error; Orchestrators reject a separate effort switch. These are access checks, not a quality ranking. `status --refresh` reads each configured shared quota pool once.
 
 Provider references: [Codex noninteractive mode](https://developers.openai.com/codex/noninteractive), [Codex authentication](https://developers.openai.com/codex/auth), [Claude CLI](https://code.claude.com/docs/en/cli-reference), [Claude authentication](https://code.claude.com/docs/en/authentication), [Cursor CLI authentication](https://cursor.com/docs/cli/reference/authentication), [Cursor headless mode](https://cursor.com/docs/cli/headless), [Grok CLI reference](https://docs.x.ai/build/cli/reference), [Grok headless scripting](https://docs.x.ai/build/cli/headless-scripting). Use Google's native Antigravity client for the Google adapter.

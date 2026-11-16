@@ -138,7 +138,7 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         second = copy.deepcopy(self.plan)
         second['id'] = 'second'
         self.ready('second')
-        self.plan.update(timeout_seconds=0.25)
+        self.plan.update(timeout_seconds=1.5)
         self.plan['argv'][2] = 'sleep'
         self.write_config([self.plan, second])
         result = self.call(*self.run_args('--generic', '--allow-fallback'))
@@ -195,6 +195,23 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         obs['first']['weekly']['used_percent'] = 80
         self.assertIn('threshold', r.gate(self.plan, obs, time.time()))
 
+    def test_native_success_can_renew_unknown_availability_but_failure_cannot(self):
+        self.plan.update(allow_unknown_once=True, renew_availability_on_success=True)
+        self.write_config([self.plan])
+        obs = {'first': {'availability': {'observed_at': r.stamp(), 'expires_at': FUTURE,
+                                         'status': 'ready', 'source': 'native success'}}}
+        r.save(self.state / 'observations.json', obs)
+        for _ in range(2):
+            result = self.call(*self.run_args())
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.plan['argv'][2] = 'fail'
+        self.write_config([self.plan])
+        self.assertEqual(self.call(*self.run_args()).returncode, 1)
+        result = self.call(*self.run_args())
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(len(self.receipts()), 3)
+        self.assertEqual(sorted(x['status'] for x in self.receipts()), ['completed', 'completed', 'failed'])
+
     def test_native_refresh_selects_model_pool(self):
         meter = self.base / 'meter.py'
         meter.write_text("print('Gemini Models\\tWeekly Limit Remaining\\t94%\\t2099-01-01T00:00:00Z'); print('Gemini Models\\tFive Hour Limit Remaining\\t91%\\t2099-01-01T00:00:00Z'); print('Claude and GPT models\\tWeekly Limit Remaining\\t1%\\t2099-01-01T00:00:00Z')".replace('\\t', '\\t'))
@@ -245,6 +262,154 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         (repo / '.git').mkdir(parents=True)
         with self.assertRaisesRegex(ValueError, 'Git'):
             r.private_dir(repo / 'logs', repo)
+
+    def catalog_config(self):
+        self.plan['models'] = [
+            {'id': name, 'label': name, 'family': family, 'effort': effort,
+             'refresh_group': pool, 'quota_group': pool,
+             'frontier': frontier, 'enabled': True, 'verified': True}
+            for name, family, effort, pool, frontier in [
+                ('frontier-test', 'argon', 'medium', 'gemini', True),
+                ('argon-high', 'argon', 'high', 'gemini', True),
+                ('argon-low', 'argon', 'low', 'gemini', True),
+                ('fast-medium', 'fast', 'medium', 'other', False)]]
+        data = {'default_plan': 'first', 'plans': [self.plan],
+                'difficulty_defaults': {'easy': 'fast-medium', 'medium': 'frontier-test',
+                                        'hard': 'argon-high', 'multistep': 'argon-high'},
+                'frontier_difficulty_defaults': {'easy': 'argon-low', 'medium': 'frontier-test',
+                                                 'hard': 'argon-high', 'multistep': 'argon-high'}}
+        self.config.write_text(json.dumps(data))
+        self.ready('gemini')
+        self.ready('other')
+        return data
+
+    def test_difficulty_selection_generic_only_and_scientific_pin(self):
+        self.catalog_config()
+        self.prompt.write_text('Prove the theorem and explain the root cause')
+        result = self.call(*self.run_args())
+        self.assertEqual(result.returncode, 0, result.stderr)
+        receipt = json.loads(result.stdout)
+        self.assertEqual(receipt['model'], 'frontier-test')
+        self.assertIsNone(receipt['difficulty'])
+        result = self.call(*self.run_args('--generic'))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        receipt = json.loads(result.stdout)
+        self.assertEqual((receipt['model'], receipt['effort'], receipt['difficulty']), ('argon-high', 'high', 'hard'))
+        self.assertIn('keyword heuristic', receipt['selection_reason'])
+        self.assertNotEqual(self.call(*self.run_args('--difficulty', 'easy')).returncode, 0)
+
+    def test_explicit_plan_pin_and_model_family_effort_overrides(self):
+        self.catalog_config()
+        self.prompt.write_text('Prove a theorem')
+        for flags, expected, effort in [(['--generic', '--plan', 'first'], 'frontier-test', 'medium'),
+                                        (['--model', 'argon-low'], 'argon-low', 'low'),
+                                        (['--model', 'argon'], 'frontier-test', 'medium'),
+                                        (['--model', 'argon', '--effort', 'high'], 'argon-high', 'high'),
+                                        (['--effort', 'low'], 'argon-low', 'low')]:
+            result = self.call(*self.run_args(*flags))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            receipt = json.loads(result.stdout)
+            self.assertEqual((receipt['model'], receipt['effort']), (expected, effort))
+        self.assertNotEqual(self.call(*self.run_args('--generic', '--plan', 'first', '--difficulty', 'hard')).returncode, 0)
+
+    def test_unsupported_effort_and_unverified_model_never_launch(self):
+        data = self.catalog_config()
+        self.assertIn('unsupported', self.call(*self.run_args('--model', 'argon', '--effort', 'extreme')).stderr)
+        self.assertEqual(self.receipts(), [])
+        data['plans'][0]['models'][1]['verified'] = False
+        self.config.write_text(json.dumps(data))
+        result = self.call(*self.run_args('--model', 'argon-high'))
+        self.assertIn('unverified', result.stderr)
+        self.assertEqual(self.receipts(), [])
+
+    def test_frontier_filter_changes_defaults_but_rejects_explicit_nonfrontier(self):
+        self.catalog_config()
+        self.prompt.write_text('Fix a typo')
+        generic = self.call(*self.run_args('--generic', '--frontier-only'))
+        self.assertEqual(generic.returncode, 0, generic.stderr)
+        self.assertEqual(json.loads(generic.stdout)['model'], 'argon-low')
+        self.assertIn('not frontier', self.call(*self.run_args('--model', 'fast-medium', '--frontier-only')).stderr)
+
+    def test_selected_model_pool_and_per_model_meter(self):
+        self.catalog_config()
+        obs = r.observations(self.state)
+        obs['gemini']['weekly']['used_percent'] = 80
+        r.save(self.state / 'observations.json', obs)
+        self.assertNotEqual(self.call(*self.run_args('--model', 'argon-high')).returncode, 0)
+        passed = self.call(*self.run_args('--model', 'fast-medium'))
+        self.assertEqual(passed.returncode, 0, passed.stderr)
+        status = json.loads(self.call('status').stdout)
+        self.assertEqual(status['jobs'], 1)
+        rows = {m['model']: m for m in status['models']}
+        self.assertEqual(rows['fast-medium']['completed'], 1)
+        self.assertEqual(rows['fast-medium']['tokens']['input_tokens'], 7)
+        self.assertEqual(rows['argon-high']['windows']['weekly']['used_percent'], 80)
+        self.assertEqual(rows['fast-medium']['windows']['weekly']['used_percent'], 5)
+        models = [json.loads(line) for line in self.call('models', '--plan', 'first').stdout.splitlines()]
+        self.assertEqual(len(models), 4)
+
+    def test_disabled_route_never_calls_native_refresh_or_inference(self):
+        marker = self.base / 'called'
+        self.plan.update(enabled=False, refresh_argv=[sys.executable, '-c', "from pathlib import Path; Path("+repr(str(marker))+").touch()"])
+        self.write_config([self.plan])
+        self.assertEqual(self.call('status', '--refresh').returncode, 0)
+        self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+        self.assertFalse(marker.exists())
+        self.assertEqual(self.receipts(), [])
+
+    def test_approved_native_unknown_allowance_retains_known_limit(self):
+        self.plan['allow_unknown_native'] = True
+        self.write_config([self.plan])
+        r.save(self.state / 'observations.json', {})
+        result = self.call(*self.run_args('--generic'))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.call(*self.run_args('--generic')).returncode, 0)
+        self.ready('first')
+        obs = r.observations(self.state)
+        obs['first']['weekly']['used_percent'] = 80
+        r.save(self.state / 'observations.json', obs)
+        self.assertNotEqual(self.call(*self.run_args('--generic')).returncode, 0)
+        self.plan['provider'] = 'agy'
+        self.write_config([self.plan])
+        self.assertNotEqual(self.call('status').returncode, 0)
+
+    def test_uncatalogued_default_does_not_inherit_other_plans_model(self):
+        data = self.write_config([self.plan])
+        data = json.loads(self.config.read_text())
+        data['difficulty_defaults'] = {'easy': 'other-provider-model'}
+        self.config.write_text(json.dumps(data))
+        result = self.call(*self.run_args('--generic', '--difficulty', 'easy'))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['model'], self.plan['model'])
+
+    def test_status_refreshes_each_shared_catalog_pool_once(self):
+        self.catalog_config()
+        meter = self.base / 'pool-meter.py'
+        calls = self.base / 'pool-calls.txt'
+        meter.write_text("from pathlib import Path\np=Path(" + repr(str(calls)) + "); p.write_text(p.read_text()+'x' if p.exists() else 'x')\n" +
+                         "for group,left in [('gemini',91),('partner',72)]:\n for window in ['Weekly Limit Remaining','Five Hour Limit Remaining']: print(group+'\\t'+window+'\\t'+str(left)+'%\\t2099-01-01T00:00:00Z')\n")
+        for model in self.plan['models']:
+            model['refresh_group'] = model['quota_group'] = 'gemini' if model['family'] == 'argon' else 'partner'
+        self.plan.update(refresh_argv=[sys.executable, str(meter)], refresh_group='gemini', quota_group='gemini')
+        self.write_config([self.plan])
+        result = self.call('status', '--refresh')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(calls.read_text(), 'xx')
+        obs = r.observations(self.state)
+        self.assertEqual(obs['gemini']['weekly']['used_percent'], 9)
+        self.assertEqual(obs['partner']['weekly']['used_percent'], 28)
+
+    def test_model_copy_updates_only_supported_effort_argument(self):
+        self.catalog_config()
+        target = self.plan['models'][1]
+        selected = r.model_copy(self.plan, target)
+        self.assertEqual(selected['argv'][selected['argv'].index('--model') + 1], 'argon-high')
+        self.assertNotIn('--effort', selected['argv'])  # agy effort is part of its exact model ID
+        self.plan['effort_flag'] = '--effort'
+        selected = r.model_copy(self.plan, target)
+        self.assertEqual(selected['argv'][-2:], ['--effort', 'high'])
+        self.plan['argv'] += ['--effort', 'medium']
+        self.assertEqual(r.model_copy(self.plan, target)['argv'][-2:], ['--effort', 'high'])
 
 
 if __name__ == '__main__':
