@@ -1,0 +1,51 @@
+{
+  "date": "11-16-2026",
+  "scope": "Native installed-router access smoke tests in read-only analysis modes; not a model quality benchmark or general entitlement guarantee",
+  "method": "Each native result reports completion; returned clamp expression independently evaluated on 18 boundary cases across three intervals. Expected sample outputs are [5,0,10].",
+  "routes": [
+    {
+      "provider": "cursor",
+      "selected_model": "grok-4.7-high",
+      "reported_models": null,
+      "cases": 18,
+      "status": "pass",
+      "result": {
+        "expression": "min(hi, max(lo, x))",
+        "outputs": [
+          5,
+          0,
+          10
+        ]
+      },
+      "started_at": "2026-11-16T19:54:45.226092+00:00",
+      "finished_at": "2026-11-16T19:55:09.935376+00:00"
+    },
+    {
+      "provider": "grok",
+      "selected_model": "grok-4.7",
+      "reported_models": [
+        "grok-4.7-build"
+      ],
+      "cases": 18,
+      "status": "pass",
+      "result": {
+        "expression": "max(lo, min(hi, x))",
+        "outputs": [
+          5,
+          0,
+          10
+        ]
+      },
+      "started_at": "2026-11-16T19:55:28.985893+00:00",
+      "finished_at": "2026-11-16T19:56:14.031911+00:00"
+    }
+  ],
+  "deterministic_tests_passed": 26,
+  "limitations": [
+    "Cursor response omits backend model metadata; selected ID comes from exact invocation",
+    "Grok selected ID grok-4.7 reports grok-4.7-build in native output",
+    "Read-only modes; optional kernel sandbox unavailable on test host",
+    "Short-window allowance percentage unknown",
+    "Only tested first-party Grok selections enabled; third-party Cursor models not inferred as included"
+  ]
+}

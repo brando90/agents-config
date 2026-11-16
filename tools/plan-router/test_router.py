@@ -38,6 +38,10 @@ if args[0]=='auth':
     print(json.dumps({'authMethod':'claude.ai','loggedIn':True,'apiProvider':'firstParty'})); sys.exit(0)
 if args[0]=='bad-auth':
     print(json.dumps({'authMethod':'api_key'})); sys.exit(0)
+if args[0]=='cursor-auth':
+    print('Logged in as test@example.invalid'); sys.exit(0)
+if args[0]=='grok-auth':
+    print('You are logged in with grok.com.'); sys.exit(0)
 if args[0]=='sleep':
     child=subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(60)'])
     pathlib.Path('child-pid').write_text(str(child.pid))
@@ -249,6 +253,32 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         path.write_text(json.dumps({'authMethod':'oauth_token','loggedIn':False,'apiProvider':'firstParty'}))
         self.assertFalse(r.auth_ok(self.plan, path))
 
+    def test_mixed_native_auth_failure_overrides_positive_status(self):
+        path = self.base / 'auth.stdout'
+        path.with_suffix('.stderr').write_text('')
+        for provider, positive in [('cursor', 'Logged in as test@example.invalid'),
+                                   ('grok', 'You are logged in with grok.com')]:
+            plan = {'provider': provider, 'auth': {'match': 'Logged in as|logged in with'}}
+            path.write_text(positive)
+            self.assertTrue(r.auth_ok(plan, path))
+            for failure in ['Authentication required', 'not signed in',
+                            'unable to fetch user details', 'invalid session']:
+                with self.subTest(provider=provider, failure=failure):
+                    path.with_suffix('.stderr').write_text(failure)
+                    self.assertFalse(r.auth_ok(plan, path))
+            path.with_suffix('.stderr').write_text('')
+
+    def test_cursor_native_token_counters_do_not_double_count_model_usage(self):
+        path = self.base / 'cursor.stdout'
+        path.write_text(json.dumps({
+            'type': 'result', 'subtype': 'success',
+            'usage': {'inputTokens': 14045, 'outputTokens': 1128,
+                      'cacheReadTokens': 6144, 'cacheWriteTokens': 0},
+            'modelUsage': {'selected': {'inputTokens': 14045, 'outputTokens': 1128}}}))
+        self.assertEqual(r.token_usage(path), {'input_tokens': 14045, 'output_tokens': 1128,
+                                             'cache_read_input_tokens': 6144,
+                                             'cache_creation_input_tokens': 0})
+
     def test_native_auth_and_config_guards(self):
         for method, expected in [('api_key', False), ('claude.ai', True), ('oauth_token', True)]:
             path = self.base / 'auth.stdout'
@@ -372,6 +402,29 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         self.plan['provider'] = 'agy'
         self.write_config([self.plan])
         self.assertNotEqual(self.call('status').returncode, 0)
+
+    def test_cursor_grok_native_unknown_requires_auth_and_keeps_shared_limit(self):
+        for provider, status, match in [('cursor', 'cursor-auth', 'Logged in as'),
+                                        ('grok', 'grok-auth', 'logged in with grok\\.com')]:
+            with self.subTest(provider=provider):
+                plan = copy.deepcopy(self.plan)
+                plan.update(provider=provider, allow_unknown_native=True, quota_group='shared-pool')
+                plan['auth'] = {'argv': [sys.executable, str(self.fake), status], 'match': match}
+                self.write_config([plan])
+                r.save(self.state / 'observations.json', {})
+                self.assertEqual(self.call(*self.run_args()).returncode, 0)
+                self.ready('shared-pool')
+                obs = r.observations(self.state)
+                obs['shared-pool']['weekly']['used_percent'] = 80
+                r.save(self.state / 'observations.json', obs)
+                self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+                plan['auth']['argv'][-1] = 'bad-auth'
+                self.write_config([plan])
+                r.save(self.state / 'observations.json', {})
+                self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+                plan['auth'] = {}
+                self.write_config([plan])
+                self.assertNotEqual(self.call('status').returncode, 0)
 
     def test_uncatalogued_default_does_not_inherit_other_plans_model(self):
         data = self.write_config([self.plan])

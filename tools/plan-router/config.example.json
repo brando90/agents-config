@@ -421,67 +421,71 @@
     {
       "id": "personal-cursor",
       "provider": "cursor",
-      "model": "grok-4.6",
+      "model": "grok-4.7-high",
       "argv": [
         "agent",
         "-p",
         "{prompt}",
+        "--trust",
         "--mode",
         "ask",
-        "--sandbox",
-        "enabled",
         "--output-format",
         "json",
         "--model",
-        "grok-4.6"
+        "grok-4.7-high"
       ],
       "auth": {
         "argv": [
           "agent",
           "status"
         ],
-        "match": "Logged in|Authenticated"
+        "match": "Logged in as"
       },
       "timeout_seconds": 180,
       "generic_fallback": true,
       "subscription_only": {
         "verified": false,
         "expires_at": "1970-01-01T00:00:00Z",
-        "evidence": "Confirm exact model in agent models and disable on-demand/paid spillover outside this tool"
+        "evidence": "Verify first-party model, included pool, prepaid balance and auto top-up in the shared account dashboard before enabling"
       },
-      "enabled": false
+      "enabled": false,
+      "quota_group": "personal-x-firstparty"
     },
     {
       "id": "personal-grok",
       "provider": "grok",
-      "model": "grok-4.6",
+      "model": "grok-4.7",
       "argv": [
         "grok",
         "--no-auto-update",
         "-p",
         "{prompt}",
         "--model",
-        "grok-4.6",
+        "grok-4.7",
         "--output-format",
         "json",
         "--max-turns",
         "8",
-        "--sandbox",
-        "workspace",
-        "--no-subagents",
-        "--no-memory"
+        "--permission-mode",
+        "plan",
+        "--no-subagents"
       ],
       "auth": {
-        "observation": true
+        "argv": [
+          "grok",
+          "models"
+        ],
+        "match": "You are logged in with grok\\.com"
       },
       "timeout_seconds": 180,
       "generic_fallback": true,
       "subscription_only": {
         "verified": false,
         "expires_at": "1970-01-01T00:00:00Z",
-        "evidence": "Confirm subscription entitlement, model and disabled additional credits / auto top-up"
+        "evidence": "Verify first-party model, included pool, prepaid balance and auto top-up in the shared account dashboard before enabling"
       },
-      "enabled": false
+      "enabled": false,
+      "quota_group": "personal-x-firstparty"
     }
   ],
   "difficulty_defaults": {

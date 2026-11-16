@@ -94,8 +94,8 @@ def config(path):
             raise ValueError('env accepts only native account profile directories')
         if p.get('effort_flag') not in (None, '--effort'):
             raise ValueError('effort_flag must be --effort when the native client supports it')
-        if p.get('allow_unknown_native') and (p['provider'] not in ('claude', 'codex') or not p.get('auth', {}).get('argv')):
-            raise ValueError('unknown native allowance requires Claude/Codex native authentication status')
+        if p.get('allow_unknown_native') and (p['provider'] not in ('claude', 'codex', 'cursor', 'grok') or not p.get('auth', {}).get('argv')):
+            raise ValueError('unknown native allowance requires a supported native authentication status command')
         if not math.isfinite(float(p.get('timeout_seconds', 180))) or not 0 < float(p.get('timeout_seconds', 180)) <= 14400:
             raise ValueError('timeout must be positive and at most four hours')
         catalog = p.get('models', [])
@@ -250,7 +250,7 @@ def auth_ok(plan, path):
     text = path.read_text(errors='replace')[:100000]
     if plan['provider'] != 'claude':
         text += path.with_suffix('.stderr').read_text(errors='replace')[:100000]
-    if re.search(r'not (?:logged in|authenticated)|unauthenticated|login required|unable to fetch user details', text, re.I):
+    if re.search(r'not (?:logged in|signed in|authenticated)|unauthenticated|(?:login|authentication) required|unable to fetch user details|invalid (?:session|token)', text, re.I):
         return False
     if plan['provider'] == 'claude':
         try:
@@ -306,6 +306,15 @@ def token_usage(path):
         usage = event.get('usage') or (result.get('usage') if isinstance(result, dict) else None)
         if not isinstance(usage, dict):
             continue
+        # Cursor's native result uses camelCase. Normalize its aggregate once;
+        # never add the same aggregate again from per-model metadata.
+        usage = dict(usage)
+        for native, canonical in [('inputTokens', 'input_tokens'),
+                                  ('outputTokens', 'output_tokens'),
+                                  ('cacheReadTokens', 'cache_read_input_tokens'),
+                                  ('cacheWriteTokens', 'cache_creation_input_tokens')]:
+            if native in usage and canonical not in usage:
+                usage[canonical] = usage[native]
         counters = {k: v for k, v in usage.items() if k.endswith('tokens') and isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0}
         if counters:
             found.append(counters)
