@@ -9,7 +9,7 @@
 
 ## Assistant attribution
 
-Every assistant-generated email, including signature-free notifications, must include `Assistant: <actual assistant name>` in the body; name writer and sender separately if different.
+Every assistant-generated email addressed only to Brando himself, including signature-free notifications, must include `Assistant: <actual assistant name>` in the body; name writer and sender separately if different. Emails to other people (collaborators, raters, outside contacts) carry no `Assistant:` or `TLDR-end:` line; the `Brando (drafted with <agent>)` sign-off names the assistant (Brando, 11-17-2026).
 
 ## Voice rules for emails sent as Brando
 
@@ -21,16 +21,18 @@ Every assistant-generated email, including signature-free notifications, must in
 
 ## Closing summary
 
-Every drafted or sent email ends its substantive body with `TLDR-end: [proj: task]` and 1–2 sentences, following [Hard Rule 4](../rules/responses.md#hard-rule-4). State the outcome and any real decision/deadline; do not invent an action or deadline. Put the summary after any decisions, links or verification evidence and immediately before the drafted-with sign-off and signature. For internal notifications that omit a signature under Rule 70, it is the final body text.
+Every drafted or sent email addressed only to Brando himself (`brando.science@gmail.com`, `[RUN START]`/`[RUN DONE]` notifications, results emails to him) ends its substantive body with `TLDR-end: [proj: task]` and 1–2 sentences, following [Hard Rule 4](../rules/responses.md#hard-rule-4). State the outcome and any real decision/deadline; do not invent an action or deadline. Put the summary after any decisions, links or verification evidence and immediately before the drafted-with sign-off and signature. For internal notifications that omit a signature under Rule 70, it is the final body text.
 
-Before sending, check that the closing summary is present, matches the final body and precedes any sign-off/signature. An opening status sentence does not replace it. Keep existing send triggers; do not resend old emails just to change their format.
+Emails to other people (collaborators, raters, outside contacts) carry no `TLDR-end:` line; they end like a normal email, with the drafted-with sign-off and signature below. Brando, 11-17-2026, on a rater email that ended with `TLDR-end:` and `Assistant:` lines: "it should be something we are not embarrassed to send my team".
+
+Before sending an email to Brando himself, check that the closing summary is present, matches the final body and precedes any sign-off/signature; an opening status sentence does not replace it. Before sending to anyone else, check that no `TLDR-end:` or `Assistant:` line is left. Keep existing send triggers; do not resend old emails just to change their format.
 
 ## Research-result emails
 
 _Trigger: an agent emails collaborators about experiment or research results._ Collaborators asked for these to be interpretable, with less jargon and a slide (Varun, relayed by Brando, 10-16-2026).
 
 - **Takeaway first, in plain words.** The first 2-3 sentences say what was tested, what was found and why it matters for the project. A collaborator who missed the last few meetings should get the point from them alone.
-- **No internal labels in the body.** Do not put experiment slugs, run IDs, branch or folder names (e.g. `the-difficulty-confound`) in the collaborator-facing body; describe the idea in words. Expand every acronym and define every term of art on first use (Hard Rule 10). The full experiment folder name that [Trigger Rule 54](../rules/responses.md#trigger-rule-54) requires goes in the linked doc or report, and in the `TLDR-end:` line, which Brando reads.
+- **No internal labels in the body.** Do not put experiment slugs, run IDs, branch or folder names (e.g. `the-difficulty-confound`) in the collaborator-facing body; describe the idea in words. Expand every acronym and define every term of art on first use (Hard Rule 10). The full experiment folder name that [Trigger Rule 54](../rules/responses.md#trigger-rule-54) requires goes in the linked doc or report.
 - **Short.** After the takeaway: at most 5 bullets of key numbers, each against its baseline and with its uncertainty (Hard Rule 11), then one line on the next step. Methods and extra tables go in the linked doc, not the body.
 - **One summary slide when there are results.** Make a one-slide Google Slides deck: a title that states the finding, the key plot or table, a one-line caption. Share it by link ([Trigger Rule 68](../rules/services.md#trigger-rule-68)) and put the link right after the takeaway. No results, no slide.
 

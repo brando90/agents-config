@@ -17,7 +17,7 @@
 
 26. **Use visible CC only when requested.** On authorized email, default BCC is only `brando.science@gmail.com`; add other Brando inboxes only when he asks (11-13-2026). Keep the intended primary recipients and any requested collaborator copies. Internal notifications go to `brando.science@gmail.com`. Send from Brando’s signed-in account and verify delivery.
 
-   Every assistant-generated email, including signature-free notifications, must include `Assistant: <actual assistant name>` in the body; name writer and sender separately if different.
+   Every assistant-generated email addressed only to Brando himself, including signature-free notifications, must include `Assistant: <actual assistant name>` in the body; name writer and sender separately if different. Emails to other people (collaborators, raters, outside contacts) carry no `Assistant:` or `TLDR-end:` line; the `Brando (drafted with <agent>)` sign-off names the assistant (Brando, 11-17-2026).
 
    Follow the [email signature and research-result guidance](../personal/email-signature.md). Get Brando’s approval of the exact text before emailing collaborators about VeriBench ratings.
 
