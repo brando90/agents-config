@@ -263,6 +263,21 @@ class StaleCheckoutSweepTest(unittest.TestCase):
         self.assertEqual(res['app-path']['status'], 'KEEP')
         self.assertTrue(any('app-managed' in x for x in res['app-path']['reasons']))
 
+    def test_antigravity_checkout_is_not_removed_by_either_mode(self):
+        wt = self.worktree('antigravity-path')
+        managed = self.wts / '.gemini' / 'antigravity' / 'worktrees' / 'session'
+        managed.mkdir(parents=True)
+        target = managed / wt.name
+        git(self.main, 'worktree', 'move', str(wt), str(target))
+        alias = self.wts / 'antigravity-alias'
+        alias.symlink_to(managed, target_is_directory=True)
+        for mode in ([], ['--conservative']):
+            with self.subTest(mode=mode):
+                res, actions = self.sweep(*mode, '--fetch', '--only', str(alias / wt.name), '--apply')
+                self.assertTrue(target.exists(), actions)
+                self.assertEqual(res[wt.name]['status'], 'KEEP')
+                self.assertTrue(any('app-managed' in reason for reason in res[wt.name]['reasons']))
+
     def test_per_worktree_refs_and_bisect_state_are_kept(self):
         saved = self.worktree('saved-local-ref')
         git(saved, 'checkout', '--detach')

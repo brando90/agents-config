@@ -18,8 +18,8 @@ directory inside or names it on its command line; untouched for --min-age-hours;
 changed (uncommitted, untracked or in commits on no remote) has its exact content on the remote
 default branch, anywhere in that branch's history (so renamed or superseded files count), or in the
 main checkout; ignored files are rebuildable caches or copies found in those same places. Anything
-else is KEEP with its reasons. Main checkouts and full clones are never removed. Claude desktop worktrees (<repo>/.claude/worktrees) are reported, not removed: the app's
-own cleanup owns them. --apply runs `git worktree remove` (adding --force only when the dirty paths
+else is KEEP with its reasons. Main checkouts and full clones are never removed. App-managed worktrees (Claude, Codex,
+Cursor and Antigravity) are reported, not removed: the owning app handles their cleanup. --apply runs `git worktree remove` (adding --force only when the dirty paths
 were verified identical on the default branch), deletes the local task branch when it is merged
 into the remote default branch, prunes registrations whose folder is gone, and removes empty
 parent folders and empty container folders (or ones holding only a Codex
@@ -42,6 +42,7 @@ CACHE_NAMES = {'__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.l
 CACHE_SUFFIXES = ('.pyc', '.egg-info', '.aux', '.bbl', '.blg', '.bcf', '.fls', '.fdb_latexmk', '.synctex.gz',
                   '.run.xml', '.toc', '.lof', '.lot', '.nav', '.snm', '.vrb')
 PROTECTED_BRANCHES = {'main', 'master', 'develop', 'release'}
+APP_MANAGED_PARTS = {'.claude', '.codex', '.cursor', '.gemini'}
 EMPTY_MARKERS = {'.codex-worktree-name', '.DS_Store'}  # a parent folder holding only these counts as empty
 MAX_FILES = 5000              # compare at most this many changed or ignored files per worktree
 MAX_COMPARE_BYTES = 2 << 30   # and at most this many bytes of ignored files
@@ -174,7 +175,7 @@ def classify_conservative(p, busy, min_age_hours, now):
     info['common'] = str(common)
     if gitdir == common or not (p / '.git').is_file() or p.is_symlink():
         why.append('not a standalone linked worktree path')
-    if any(x in p.parts or x in p.resolve().parts for x in ('.claude', '.codex', '.cursor')):
+    if any(x in p.parts or x in p.resolve().parts for x in APP_MANAGED_PARTS):
         why.append('app-managed worktree: use the owning app cleanup')
     if (gitdir / 'locked').exists():
         why.append('locked')
@@ -375,8 +376,8 @@ def classify(p, busy, min_age_hours, now):
         return info
     why, notes = info['reasons'], info['notes']
     main = common.parent if common.name == '.git' else None
-    if '.claude' in p.parts and p.parent.name == 'worktrees':
-        why.append('Claude desktop worktree: use the app cleanup')
+    if any(x in p.parts or x in p.resolve().parts for x in APP_MANAGED_PARTS):
+        why.append('app-managed worktree: use the owning app cleanup')
     if (gitdir / 'locked').exists():
         why.append('locked')
     cwds, cmds = busy
