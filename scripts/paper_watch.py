@@ -7,7 +7,7 @@ hook. Runs forever; meant to be started by launchd (see install_paper_watch.sh).
 
 Usage: python3 paper_watch.py [--interval 2] [--once] REPO [REPO ...]
 """
-import argparse, json, os, subprocess, sys, time
+import argparse, json, os, stat, subprocess, sys, time
 from pathlib import Path
 
 WATCHED_SUFFIXES = {".tex", ".bib", ".sty", ".bst", ".cls", ".png", ".pdf", ".jpg", ".jpeg", ".csv", ".txt"}
@@ -36,17 +36,27 @@ def snapshot(venue: Path):
     """{relative path: mtime_ns} for watched sources under a paper dir (committed PDFs excluded: they are outputs)."""
     snap = {}
     mains = {p.stem for p in venue.glob("00_main_*.tex")}
-    for p in venue.rglob("*"):
-        if not p.is_file() or any(part in SKIP_DIRS for part in p.relative_to(venue).parts):
-            continue
-        if p.suffix.lower() not in WATCHED_SUFFIXES:
-            continue
-        if p.suffix.lower() == ".pdf" and (p.parent == venue and p.stem in mains):
-            continue  # the compiled outputs, not inputs
-        try:
-            snap[str(p.relative_to(venue))] = p.stat().st_mtime_ns
-        except OSError:
-            pass
+    venue_str = str(venue)
+    for root, dirnames, filenames in os.walk(venue_str):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        rel_root = os.path.relpath(root, venue_str)
+        is_top = rel_root == "."
+        for fn in filenames:
+            stem, ext = os.path.splitext(fn)
+            ext_low = ext.lower()
+            if ext_low not in WATCHED_SUFFIXES:
+                continue
+            if is_top and ext_low == ".pdf" and stem in mains:
+                continue  # the compiled outputs, not inputs
+            full = os.path.join(root, fn)
+            try:
+                st = os.stat(full)
+            except OSError:
+                continue
+            if not stat.S_ISREG(st.st_mode):
+                continue
+            rel = fn if is_top else os.path.join(rel_root, fn)
+            snap[rel] = st.st_mtime_ns
     return snap
 
 
