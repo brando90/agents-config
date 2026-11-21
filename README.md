@@ -28,10 +28,12 @@ Shared state for all of Brando's coding agents (`coding/`: Claude Code, Codex, P
 - At task end: add one line to your side's `log.md` (`date | agent | what | link`), and update your side's `STATE.md` only if the state changed (coding agents also update `chats/BRIEF.md` for read-only chat apps when `PRIORITIES.md` or `STATE.md` changes).
 - Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` and `chats/BRIEF.md` under one page; move old things to `archive/`.
 
+Human-readable files Brando reads (screenshots, plots, advisor or reviewer feedback, slides, PDFs, notes) go in the Google Drive folder [Agent Sync (human-readable)](https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6), one subfolder per project or repo ([Rule 91](rules/services.md#trigger-rule-91)). `brando90/agent-sync` stores the Drive link in the log line. The file stays out of that repo. Per-project `SYNC.md` is a third system: a fact file inside a project repo ([workflow](workflows/agent-sync.md)).
+
 Paste-in for assistants outside git (Dot, Grokbot, chat apps):
 
 ```text
-Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it.
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it. Human-readable files for Brando (screenshots, plots, advisor feedback, slides, PDFs, notes) go in the Google Drive folder Agent Sync (human-readable) at https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6, in a subfolder per project, named YYYY-MM-DD_<source>_<what>.<ext>; the log link is that Drive link, and the file stays out of this repo.
 ```
 
 ## Dotfiles and shared app shortcuts
