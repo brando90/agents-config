@@ -337,6 +337,11 @@ def token_usage(path):
 def refresh(plan, state):
     if not plan.get('refresh_argv'):
         return False
+    if plan.get('refresh_format') == 'timed-weekly-json':
+        with locked(state / 'state.lock'):
+            obs = observations(state)
+            obs.setdefault(plan.get('quota_group', plan['id']), {}).pop('weekly', None)
+            save(state / 'observations.json', obs)
     folder = state / ('refresh-' + uuid.uuid4().hex)
     folder.mkdir(mode=0o700)
     rc, timeout = execute(plan['refresh_argv'], '', str(state), environment(plan), 20,
@@ -344,6 +349,30 @@ def refresh(plan, state):
     if timeout or rc:
         raise ValueError(plan['id'] + ': quota refresh failed; no inference started')
     now, found = time.time(), {}
+    if plan.get('refresh_format') == 'timed-weekly-json':
+        # Browser producer timestamps survive every import. Never stamp cached text as fresh.
+        item = json.loads((folder / 'stdout').read_text())
+        if not isinstance(item, dict) or item.get('schema') != 'xai-weekly-v1' or item.get('status') != 'ready' or item.get('url') != 'https://grok.com/dashboard':
+            raise ValueError('weekly browser observation missing or unreadable; no inference started')
+        try:
+            times = [dt.datetime.fromisoformat(item[k].replace('Z', '+00:00')) for k in ('observed_at', 'expires_at', 'reset_at')]
+            if any(t.tzinfo is None for t in times):
+                raise ValueError('timezone missing')
+            seen, expiry, reset = (t.timestamp() for t in times)
+        except (KeyError, TypeError, ValueError, AttributeError, OverflowError) as error:
+            raise ValueError('weekly browser timestamps missing or malformed; no inference started') from error
+        used = item.get('used_percent')
+        if not now - 600 < seen <= now or not now < expiry <= min(seen + 600, reset) or reset <= now:
+            raise ValueError('weekly browser observation stale, future-dated or reset; no inference started')
+        if isinstance(used, bool) or not isinstance(used, (int, float)) or not math.isfinite(used) or not 0 <= used <= 100:
+            raise ValueError('weekly browser percentage malformed; no inference started')
+        found['weekly'] = {k: item[k] for k in ('observed_at','expires_at','reset_at','used_percent','status')}
+        found['weekly']['source'] = 'signed-in browser grok.com/dashboard; original capture time retained'
+        with locked(state / 'state.lock'):
+            obs = observations(state)
+            obs.setdefault(plan.get('quota_group', plan['id']), {}).update(found)
+            save(state / 'observations.json', obs)
+        return True
     for line in (folder / 'stdout').read_text().splitlines():
         parts = line.split('\t')
         if len(parts) != 4 or parts[0] != plan.get('refresh_group', 'Gemini Models'):
@@ -475,7 +504,13 @@ def run(args, data, state):
                 print(json.dumps({'plan': plan['id'], 'skipped': 'plan disabled'}), file=sys.stderr)
                 continue
             if plan.get('refresh_argv'):
-                refresh(plan, state)
+                try:
+                    refresh(plan, state)
+                except (ValueError, OSError) as error:
+                    if plan.get('refresh_format') != 'timed-weekly-json':
+                        raise
+                    print(json.dumps({'plan': plan['id'], 'skipped': str(error)}), file=sys.stderr)
+                    continue
             reason = gate(plan, observations(state), time.time())
             if reason:
                 print(json.dumps({'plan': plan['id'], 'skipped': reason}), file=sys.stderr)

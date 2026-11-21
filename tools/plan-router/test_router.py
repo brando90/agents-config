@@ -427,6 +427,94 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
                 self.write_config([plan])
                 self.assertNotEqual(self.call('status').returncode, 0)
 
+    def test_round_robin_native_entries_cannot_bypass_router_gate(self):
+        import ast
+        tree = ast.parse((HERE / 'plan-rr.py').read_text())
+        native = [n for n in ast.walk(tree) if isinstance(n, ast.If) and isinstance(n.test, ast.Call) and isinstance(n.test.func, ast.Attribute) and n.test.func.attr == 'startswith' and n.test.args and isinstance(n.test.args[0], ast.Constant) and n.test.args[0].value == 'native:']
+        self.assertEqual(len(native), 1)
+        # Branch only maps to the configured plan. A regression adding an execute call fails.
+        self.assertFalse(any(isinstance(n, ast.Call) for node in native[0].body for n in ast.walk(node)))
+        branches = ast.get_source_segment((HERE / 'plan-rr.py').read_text(), native[0])
+        self.assertIn('personal-cursor', branches)
+        self.assertIn('personal-grok', branches)
+
+    def timed_plan(self):
+        plan = self.reserve_plan()
+        plan.update(refresh_format='timed-weekly-json', refresh_argv=['fake-reader'])
+        return plan
+
+    def timed_item(self):
+        def at(seconds):
+            return r.dt.datetime.fromtimestamp(seconds, r.UTC).isoformat()
+        return dict(schema='xai-weekly-v1', status='ready', url='https://grok.com/dashboard',
+                    observed_at=at(995), expires_at=at(1595), reset_at=at(5000), used_percent=2)
+
+    def timed_execute(self, item, rc=0):
+        def execute(argv, prompt, workspace, env, timeout, stdout, stderr):
+            stdout.write_text(json.dumps(item) if not isinstance(item, str) else item)
+            stderr.write_text('')
+            return rc, False
+        return execute
+
+    def test_timed_refresh_preserves_capture_and_gate_boundaries(self):
+        plan = self.timed_plan()
+        for provider in ('cursor', 'grok'):
+            plan['provider'] = provider
+            for used, blocked in ((0, False), (2.1235, False), (79.99, False), (80, True), (100, True)):
+                item = dict(self.timed_item(), used_percent=used)
+                with self.subTest(provider=provider, used=used), mock.patch.object(r.time, 'time', return_value=1000), mock.patch.object(r, 'execute', side_effect=self.timed_execute(item)):
+                    self.assertTrue(r.refresh(plan, self.state))
+                    obs = r.observations(self.state)
+                    self.assertEqual(obs['shared-pool']['weekly']['observed_at'], item['observed_at'])
+                    self.assertEqual(obs['shared-pool']['weekly']['expires_at'], item['expires_at'])
+                    self.assertEqual(bool(r.gate(plan, obs, 1000)), blocked)
+
+    def test_timed_refresh_invalidates_previous_success_on_every_read_failure(self):
+        item = self.timed_item()
+        cases = [('not JSON', '{broken'), ('array', []), ('missing schema', {}), ('producer failed', dict(item, status='error')),
+                 ('wrong origin', dict(item, url='https://example.invalid/dashboard')),
+                 ('old read', dict(item, observed_at='1970-01-01T00:06:39+00:00')),
+                 ('future read', dict(item, observed_at='1970-01-01T00:16:41+00:00')),
+                 ('expired', dict(item, expires_at='1970-01-01T00:16:39+00:00')),
+                 ('excess lifetime', dict(item, expires_at='1970-01-01T00:26:36+00:00')),
+                 ('reset passed', dict(item, reset_at='1970-01-01T00:16:39+00:00')),
+                 ('negative', dict(item, used_percent=-1)), ('over100', dict(item, used_percent=101)),
+                 ('nan', dict(item, used_percent=float('nan'))), ('infinite', dict(item, used_percent=float('inf'))),
+                 ('text percent', dict(item, used_percent='2')), ('bool percent', dict(item, used_percent=True)),
+                 ('missing percent', {k:v for k,v in item.items() if k!='used_percent'}),
+                 ('missing date', {k:v for k,v in item.items() if k!='observed_at'}),
+                 ('date no timezone', dict(item, observed_at='1970-01-01T00:16:35')),
+                 ('date null', dict(item, observed_at=None))]
+        plan = self.timed_plan()
+        for name, bad in cases:
+            with self.subTest(name=name), mock.patch.object(r.time, 'time', return_value=1000):
+                with mock.patch.object(r, 'execute', side_effect=self.timed_execute(item)):
+                    r.refresh(plan, self.state)
+                with mock.patch.object(r, 'execute', side_effect=self.timed_execute(bad)):
+                    with self.assertRaises(ValueError):
+                        r.refresh(plan, self.state)
+                self.assertNotIn('weekly', r.observations(self.state)['shared-pool'])
+                self.assertIsNotNone(r.gate(plan, r.observations(self.state), 1000))
+        for rc in (1, 2):
+            with self.subTest(rc=rc), mock.patch.object(r.time, 'time', return_value=1000):
+                with mock.patch.object(r, 'execute', side_effect=self.timed_execute(item)):
+                    r.refresh(plan, self.state)
+                with mock.patch.object(r, 'execute', side_effect=self.timed_execute(item, rc=rc)):
+                    with self.assertRaises(ValueError): r.refresh(plan, self.state)
+                self.assertNotIn('weekly', r.observations(self.state)['shared-pool'])
+
+    def test_timed_failed_refresh_never_launches_with_old_good_observation(self):
+        plan = self.reserve_plan()
+        plan.update(refresh_format='timed-weekly-json', refresh_argv=[sys.executable, '-c', 'print("not JSON")'])
+        # Real CLI path: valid previous capture must be removed when the next read fails.
+        self.ready('shared-pool')
+        self.write_config([plan])
+        result = self.call(*self.run_args())
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('skipped', result.stderr)
+        self.assertEqual(self.receipts(), [])
+        self.assertNotIn('weekly', r.observations(self.state)['shared-pool'])
+
     def reserve_plan(self, provider='cursor'):
         plan = copy.deepcopy(self.plan)
         plan.update(provider=provider, allow_unknown_native=True, require_fresh_weekly=True,

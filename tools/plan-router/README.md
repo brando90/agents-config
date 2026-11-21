@@ -128,3 +128,35 @@ A native Antigravity `gemini-4-argon-high` job passed through this runner on Lin
 The [catalog smoke-check record](live-checks.json) covers 22 native model/effort choices. Each returned a successful clamp correction, independently checked on 18 edge cases. Some required a clarified prompt or a new disposable check after timeout/service error; Orchestrators reject a separate effort switch. These are access checks, not a quality ranking. `status --refresh` reads each configured shared quota pool once.
 
 Provider references: [Codex noninteractive mode](https://developers.openai.com/codex/noninteractive), [Codex authentication](https://developers.openai.com/codex/auth), [Claude CLI](https://code.claude.com/docs/en/cli-reference), [Claude authentication](https://code.claude.com/docs/en/authentication), [Cursor CLI authentication](https://cursor.com/docs/cli/reference/authentication), [Cursor headless mode](https://cursor.com/docs/cli/headless), [Grok CLI reference](https://docs.x.ai/build/cli/reference), [Grok headless scripting](https://docs.x.ai/build/cli/headless-scripting). Use Google's native Antigravity client for the Google adapter.
+
+
+## Timed weekly browser observation (2026-11-21)
+
+Cursor and Grok can import a shared Premium observation from a browser producer.
+This imports a capture; it does **not** fetch the dashboard from a headless host.
+The producer must navigate to the signed-in dashboard and extract current visible
+usage before submitting each job. Do not copy browser cookies or credentials.
+If no producer/browser session is available, starts stop once the original capture
+is ten minutes old. This is not an unattended server-side browser service.
+
+Set `refresh_format` to `timed-weekly-json` and `refresh_argv` to a command that
+prints one JSON object with these fields (values below describe the format):
+
+- `schema`: `xai-weekly-v1`; `status`: `ready`.
+- `url`: `https://grok.com/dashboard`.
+- `observed_at`, `expires_at`, `reset_at`: timezone-aware ISO timestamps from the
+  original capture. Expiry is at most capture + 600 seconds and no later than reset.
+- `used_percent`: a finite JSON number from 0 through 100.
+
+Capture time cannot be in the future or ten minutes old. The router removes the
+previous weekly observation before refresh, imports the original timestamps and
+checks the existing below-80%-used gate before authentication and admission.
+Malformed/missing data, failed commands, stale dates and 80% or more block starts.
+There is no fabricated short-window measurement. Importing old JSON never renews it.
+A failed read must publish an error rather than leave an earlier successful capture.
+
+`plan-rr.py` preserves the installed rotation and routes both `native:cursor` and
+`native:grok` through the main router, with its quota, entitlement and read-only
+clamp. These two entries no longer launch native commands directly or trust the
+legacy expiry-only `xai-usage-guard` file. Other entries retain their existing routes.
+No billing, spending-limit, credit or auto-top-up setting is changed.
