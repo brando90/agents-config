@@ -94,6 +94,10 @@ def config(path):
             raise ValueError('env accepts only native account profile directories')
         if p.get('effort_flag') not in (None, '--effort'):
             raise ValueError('effort_flag must be --effort when the native client supports it')
+        if not isinstance(p.get('require_fresh_weekly', False), bool):
+            raise ValueError('require_fresh_weekly must be true or false')
+        if p.get('allow_unknown_native') and p['provider'] in ('cursor', 'grok') and p.get('require_fresh_weekly') is not True:
+            raise ValueError('Cursor/Grok unknown native allowance requires require_fresh_weekly')
         if p.get('allow_unknown_native') and (p['provider'] not in ('claude', 'codex', 'cursor', 'grok') or not p.get('auth', {}).get('argv')):
             raise ValueError('unknown native allowance requires a supported native authentication status command')
         if not math.isfinite(float(p.get('timeout_seconds', 180))) or not 0 < float(p.get('timeout_seconds', 180)) <= 14400:
@@ -207,6 +211,15 @@ def gate(plan, obs, now):
     if proof.get('verified') is not True or not proof.get('evidence') or epoch(proof.get('expires_at', '1970-01-01T00:00:00Z')) <= now:
         return 'subscription entitlement / no-extra-usage verification missing or expired'
     group = plan.get('quota_group', plan['id'])
+    if plan.get('require_fresh_weekly'):
+        # Reserve gate: a real, unexpired, ready weekly observation is mandatory even when
+        # allow_unknown_native tolerates an unmetered short window.
+        item = obs.get(group, {}).get('weekly')
+        if not fresh(item, now) or epoch(item['reset_at']) <= now:
+            return 'weekly quota unknown or stale; fresh weekly observation required'
+        used = item.get('used_percent')
+        if item.get('status') != 'ready' or isinstance(used, bool) or not isinstance(used, (int, float)) or not math.isfinite(used) or used >= 80:
+            return 'weekly quota threshold reached'
     for window, ceiling in [('weekly', 80), ('short', 100)]:
         item = obs.get(group, {}).get(window)
         if not fresh(item, now) or epoch(item['reset_at']) <= now:

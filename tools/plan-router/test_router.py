@@ -408,23 +408,105 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
                                         ('grok', 'grok-auth', 'logged in with grok\\.com')]:
             with self.subTest(provider=provider):
                 plan = copy.deepcopy(self.plan)
-                plan.update(provider=provider, allow_unknown_native=True, quota_group='shared-pool')
+                plan.update(provider=provider, allow_unknown_native=True, require_fresh_weekly=True, quota_group='shared-pool')
                 plan['auth'] = {'argv': [sys.executable, str(self.fake), status], 'match': match}
                 self.write_config([plan])
                 r.save(self.state / 'observations.json', {})
-                self.assertEqual(self.call(*self.run_args()).returncode, 0)
+                self.assertNotEqual(self.call(*self.run_args()).returncode, 0)  # no weekly observation
                 self.ready('shared-pool')
+                self.assertEqual(self.call(*self.run_args()).returncode, 0)
                 obs = r.observations(self.state)
                 obs['shared-pool']['weekly']['used_percent'] = 80
                 r.save(self.state / 'observations.json', obs)
                 self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+                self.ready('shared-pool')
                 plan['auth']['argv'][-1] = 'bad-auth'
                 self.write_config([plan])
-                r.save(self.state / 'observations.json', {})
                 self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
                 plan['auth'] = {}
                 self.write_config([plan])
                 self.assertNotEqual(self.call('status').returncode, 0)
+
+    def reserve_plan(self, provider='cursor'):
+        plan = copy.deepcopy(self.plan)
+        plan.update(provider=provider, allow_unknown_native=True, require_fresh_weekly=True,
+                    quota_group='shared-pool')
+        plan['auth'] = {'argv': [sys.executable, str(self.fake), provider + '-auth'],
+                        'match': 'Logged in as' if provider == 'cursor' else 'logged in with grok\\.com'}
+        return plan
+
+    def test_fresh_weekly_reserve_gate_boundaries_and_unknown_short_window(self):
+        plan = self.reserve_plan()
+        weekly = {'observed_at': r.stamp(), 'expires_at': FUTURE, 'reset_at': FUTURE,
+                  'status': 'ready', 'used_percent': 5}
+        now = time.time() + 5
+        for used, blocked in [(0, False), (79, False), (79.99, False), (80, True), (80.01, True), (100, True)]:
+            with self.subTest(used=used):
+                obs = {'shared-pool': {'weekly': {**weekly, 'used_percent': used}}}  # short window unknown
+                reason = r.gate(plan, obs, now)
+                self.assertEqual(bool(reason), blocked, reason)
+                if blocked:
+                    self.assertIn('threshold', reason)
+        for name, obs in [('no observations', {}),
+                          ('no weekly', {'shared-pool': {'short': dict(weekly)}}),
+                          ('stale', {'shared-pool': {'weekly': {**weekly, 'expires_at': PAST}}}),
+                          ('reset passed', {'shared-pool': {'weekly': {**weekly, 'reset_at': PAST}}}),
+                          ('not yet observed', {'shared-pool': {'weekly': {**weekly, 'observed_at': FUTURE}}}),
+                          ('not ready', {'shared-pool': {'weekly': {**weekly, 'status': 'unknown'}}}),
+                          ('missing percent', {'shared-pool': {'weekly': {k: v for k, v in weekly.items() if k != 'used_percent'}}}),
+                          ('nan percent', {'shared-pool': {'weekly': {**weekly, 'used_percent': float('nan')}}}),
+                          ('string percent', {'shared-pool': {'weekly': {**weekly, 'used_percent': '5'}}}),
+                          ('other group only', {'other': {'weekly': dict(weekly)}})]:
+            with self.subTest(name=name):
+                self.assertIn('weekly', r.gate(plan, obs, now))
+        # A fresh weekly observation alone admits; an observed short window at 100 still blocks.
+        self.assertIsNone(r.gate(plan, {'shared-pool': {'weekly': dict(weekly)}}, now))
+        both = {'shared-pool': {'weekly': dict(weekly), 'short': {**weekly, 'used_percent': 100}}}
+        self.assertIn('short', r.gate(plan, both, now))
+        # Entitlement and disabled checks still come first.
+        expired = copy.deepcopy(plan)
+        expired['subscription_only']['expires_at'] = PAST
+        self.assertIn('verification', r.gate(expired, {'shared-pool': {'weekly': dict(weekly)}}, now))
+        disabled = {**plan, 'enabled': False}
+        self.assertEqual(r.gate(disabled, {'shared-pool': {'weekly': dict(weekly)}}, now), 'plan disabled')
+        # Other plans keep their unknown-native behaviour without the flag.
+        other = {**plan}
+        del other['require_fresh_weekly']
+        self.assertIsNone(r.gate(other, {}, now))
+        self.assertIsNone(r.gate({**self.plan, 'allow_unknown_native': True}, {}, now))
+
+    def test_fresh_weekly_reserve_blocks_inference_end_to_end_and_config_requires_it(self):
+        for provider in ('cursor', 'grok'):
+            with self.subTest(provider=provider):
+                plan = self.reserve_plan(provider)
+                self.write_config([plan])
+                before = len(self.receipts())
+                r.save(self.state / 'observations.json', {})
+                marker = self.workspace / 'started'
+                plan['argv'][2] = 'wait'
+                self.write_config([plan])
+                self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+                self.assertFalse(marker.exists())
+                self.assertEqual(len(self.receipts()), before)
+                plan['argv'][2] = 'ok'
+                self.write_config([plan])
+                self.ready('shared-pool')
+                obs = r.observations(self.state)
+                del obs['shared-pool']['short']  # weekly fresh, short unmetered
+                r.save(self.state / 'observations.json', obs)
+                self.assertEqual(self.call(*self.run_args()).returncode, 0)
+                obs['shared-pool']['weekly']['used_percent'] = 80
+                r.save(self.state / 'observations.json', obs)
+                self.assertNotEqual(self.call(*self.run_args()).returncode, 0)
+                self.assertEqual(len(self.receipts()), before + 1)
+                del plan['require_fresh_weekly']
+                self.write_config([plan])
+                with self.assertRaisesRegex(ValueError, 'require_fresh_weekly'):
+                    r.config(self.config)
+                plan['require_fresh_weekly'] = 'yes'
+                self.write_config([plan])
+                with self.assertRaisesRegex(ValueError, 'true or false'):
+                    r.config(self.config)
 
     def test_uncatalogued_default_does_not_inherit_other_plans_model(self):
         data = self.write_config([self.plan])
