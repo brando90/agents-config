@@ -2,10 +2,19 @@
 
 **Doc link:** <https://github.com/brando90/agents-config/blob/main/workflows/agent-sync.md>
 
-**TLDR:** Shared state across all of Brando's agents and assistants lives in the private repository `brando90/agent-sync` (`PRIORITIES.md`, `assistants/`, `coding/`, `archive/`). Per-project `SYNC.md` files and `[PUSH]` inbox pings remain as documented below. Rule:
-[Trigger Rule 71](../rules/services.md#trigger-rule-71).
+**TLDR:** Agent-facing state lives in the private repository `brando90/agent-sync`. Human-readable artifacts Brando reads go in the Google Drive folder Agent Sync (human-readable), with the Drive link in that repo's log ([Trigger Rule 91](../rules/services.md#trigger-rule-91)). Per-project `SYNC.md` files are a separate fact-sync system, documented below with `[PUSH]` inbox pings ([Trigger Rule 71](../rules/services.md#trigger-rule-71)).
 
 ---
+
+## Human-readable artifacts (Google Drive)
+
+Brando reads Google Drive. `brando90/agent-sync` is for agents, and he rarely reads it. Canonical text: [Trigger Rule 91](../rules/services.md#trigger-rule-91).
+
+Save a screenshot, figure or plot, advisor or reviewer note, result write-up, slide, PDF or note meant for Brando in [Agent Sync (human-readable)](https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6), in a subfolder named for the project or repo (create it if missing). Example: [judges-dont-need-psychometrics-or-corr](https://drive.google.com/drive/folders/1QKHpBRLFOaYIw5IHwv2yAqZaHvBq-moG). Filename: `YYYY-MM-DD_<source>_<what>.<ext>` (example: `2026-11-16_sanmi_discord_judges_feedback.png`). Prose dates stay `MM-DD-YYYY` (Rule 53). Inherit the parent folder's sharing.
+
+On that save, append `MM-DD-YYYY | agent | what | <Drive link>` to your side's `log.md`, and update `STATE.md` only when in-flight work changes. Leave the file out of `brando90/agent-sync`. Before telling Brando the artifact is missing, search the Drive project subfolder and parent folder, then both sides' `log.md` and `STATE.md`.
+
+Experiment tables, paper-source PDFs and repo `assets/` stay in git (Rules 28, 35, 39, 40). This folder is the copy every agent can find.
 
 ## `brando90/agent-sync` (shared state across all agents and assistants)
 
@@ -28,22 +37,25 @@ Rules for every agent:
 - At task start: read `PRIORITIES.md`, your side's `STATE.md` and the last 20 lines of your side's `log.md`; open a request file only if it is addressed to you.
 - At task end: add one line to your side's `log.md`, and update your side's `STATE.md` only if the state changed (coding agents also update `chats/BRIEF.md` when `PRIORITIES.md` or `STATE.md` changes).
 - Push straight to `main`, no branches. Pull before writing. Never poll the repo on a schedule. Never write keys, passwords or private notes anywhere. Keep each `STATE.md` and `chats/BRIEF.md` under one page; move old things to `archive/`.
+- Human-readable files for Brando go in the Drive folder above. The log line's link is the Drive link. Leave the file out of this repo.
 
 Paste-in for assistants outside git (Dot, Grokbot, chat apps):
 
 ```text
-Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it.
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. At the start of a task, read PRIORITIES.md and assistants/STATE.md and the last 20 lines of assistants/log.md. At the end, add one line to assistants/log.md: date | agent | what | link. Open a file in assistants/requests/ only if its name starts with your name. Never poll it, and never put keys or private notes in it. Human-readable files for Brando (screenshots, plots, advisor feedback, slides, PDFs, notes) go in the Google Drive folder Agent Sync (human-readable) at https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6, in a subfolder per project, named YYYY-MM-DD_<source>_<what>.<ext>; the log link is that Drive link, and the file stays out of this repo.
 ```
 
 Paste-in for read-only web/mobile chat apps (ChatGPT GitHub connector, Claude.ai Project GitHub integration, Gemini Import code):
 
 ```text
-Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. Read chats/BRIEF.md (and PRIORITIES.md) at the start of a task. Since chat apps are read-only for GitHub, never claim you pushed to the repo; when something should be written back or dispatched, give me a short copy-paste block for my coding agent or assistant (with suggested model + effort + harness).
+Shared state for all my agents lives in the private GitHub repo brando90/agent-sync. Read chats/BRIEF.md (and PRIORITIES.md) at the start of a task. Since chat apps are read-only for GitHub, never claim you pushed to the repo; when something should be written back or dispatched, give me a short copy-paste block for my coding agent or assistant (with suggested model + effort + harness). Before saying a screenshot, note or write-up is missing, check the Google Drive folder Agent Sync (human-readable) at https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6 and this repo's logs.
 ```
 
 ---
 
 ## SYNC.md
+
+This per-project `SYNC.md` is a fact file inside a project repository. It is separate from the private `brando90/agent-sync` repository and from the Google Drive folder Agent Sync (human-readable).
 
 One file per project, next to its work: `experiments/vb-priv/SYNC.md`, or `SYNC.md` at the root of a one-project repo.
 One `## <agent>` section per agent; each agent rewrites **only its own section**:

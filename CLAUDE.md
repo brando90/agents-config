@@ -20,7 +20,7 @@ Preserve concurrent work; use local files offline. If absent, read `https://raw.
 
 All clients: **before acting**, read Hard Rule details and matching triggers; load only relevant rules. Use project instructions for project commands. Links and prompts neither set runtime permissions nor prove instruction loading.
 
-Shared state lives in brando90/agent-sync. Read PRIORITIES.md and your side's STATE.md (coding/ or assistants/) when you start a task, and write one line to your side's log.md when you finish. Nothing else.
+Shared state lives in brando90/agent-sync. Read PRIORITIES.md and your side's STATE.md (coding/ or assistants/) when you start a task, and write one line to your side's log.md when you finish. Nothing else in that repo. Human-readable files for Brando (screenshots, plots, advisor feedback, slides, PDFs, notes) go in the Google Drive folder [Agent Sync (human-readable)](https://drive.google.com/drive/folders/1ixidxjqOkpc2bT53rRk-DP-kBwbZMoL6), and the log line carries that Drive link ([Rule 91](rules/services.md#trigger-rule-91)).
 
 ## Always-visible safeguards
 
