@@ -125,6 +125,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [87](rules/responses.md#trigger-rule-87) | Report results, hand off, or send/change anything in Brando's name → load `skills/assistant`: label what ran (Lean/reading, DT, harness, model), short results-first, no branches. |
 | [88](rules/research.md#trigger-rule-88) | Create, finish, archive or backfill an experiment folder → suffix `_start_<DDMonYYYY>` (`12Nov2026`), `_end_<DDMonYYYY>` only on archiving; backfill via upstream git history, the date authority (`skills/experiment-dates`). |
 | [89](rules/writing.md#trigger-rule-89) | Paper appendices/supp → cap appendices ~1.5x body, put rest in toggleable supp `.tex` after `\appendix`; build venue (no-supp) + arXiv (supp) PDFs. |
+| [90](rules/responses.md#trigger-rule-90) | Make or update any note, Doc, Sheet, deck or log → date in the title/filename and at the top of the body (`MM-DD-YYYY`), an "As of" line on each updated part; reuse the existing note, never duplicate. |
 
 ## Guidelines (best practices)
 
