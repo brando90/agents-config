@@ -1,0 +1,12 @@
+{
+  "name": "brando-eight-sleep",
+  "owner": { "name": "Brando Miranda" },
+  "description": "Eight Sleep connector plugin for Claude Code (11-22-2026).",
+  "plugins": [
+    {
+      "name": "eight-sleep",
+      "source": "./claude-code",
+      "description": "Eight Sleep hosted MCP server (OAuth, read scopes by default)."
+    }
+  ]
+}

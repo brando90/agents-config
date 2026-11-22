@@ -1,0 +1,11 @@
+{
+  "name": "eight-sleep",
+  "displayName": "Eight Sleep",
+  "version": "0.1.0",
+  "description": "Eight Sleep's hosted MCP server: sleep data, Pod status, alarms (read scopes by default). Dated 11-22-2026.",
+  "author": { "name": "Brando Miranda" },
+  "homepage": "https://public-api.8slp.net/connectors",
+  "repository": "https://github.com/brando90/agents-config",
+  "license": "MIT",
+  "keywords": ["eight-sleep", "sleep", "mcp"]
+}

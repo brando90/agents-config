@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "eight-sleep": {
+      "url": "https://public-api.8slp.net/mcp"
+    }
+  }
+}
