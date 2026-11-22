@@ -41,6 +41,10 @@ The last 7 change things and need `write_device`. With read scopes only, use the
 | ChatGPT (and Codex app) | private plugin "Eight Sleep" v0.1.0 already created in Brando's ChatGPT account (per Brando's 11-22-2026 paste from ChatGPT's Plugin Creator): Plugins -> Created by you -> Eight Sleep -> install, sign in. Public listing needs OpenAI's domain-verification token on public-api.8slp.net or 8slp.net, which only Eight Sleep can host | created, not signed in yet, live read unverified |
 | Claude apps (claude.ai, desktop) | add the address as a custom connector (Eight Sleep's page names Claude as an example; client-specific steps not confirmed) | not signed in yet |
 
+## Do assistants need this repo (or Brando's GitHub)?
+
+No. The address and each assistant's own Eight Sleep sign-in are enough for any assistant that speaks remote MCP over HTTP with OAuth. This folder is only a shared copy of the steps and configs (11-22-2026).
+
 ## Claude Code
 
 Docs checked 11-22-2026: https://code.claude.com/docs/en/plugins-reference (manifest at `.claude-plugin/plugin.json`, servers in `.mcp.json` at plugin root), https://code.claude.com/docs/en/mcp (add and login commands). `claude plugin validate` passes on both `claude-code/` and the marketplace (Claude Code 2.1.304).
