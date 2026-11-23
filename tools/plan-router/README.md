@@ -160,3 +160,6 @@ A failed read must publish an error rather than leave an earlier successful capt
 clamp. These two entries no longer launch native commands directly or trust the
 legacy expiry-only `xai-usage-guard` file. Other entries retain their existing routes.
 No billing, spending-limit, credit or auto-top-up setting is changed.
+
+## Lane limit events (11-23-2026, AT-3335)
+A Claude plan with `"limit_events": true` (argv must carry `--output-format stream-json --verbose`) needs no dashboard reading or browser sign-in. It starts as "no reading yet". After each job the router stores the lane's own `rate_limit_event` (status, window, `resetsAt`, fraction used from `unifiedWindows`, `isUsingOverage`). The plan then pauses until `resetsAt` on `allowed_warning`, `rejected`, a `rate_limit` error, any overage in use, or a reported fraction used of 80% or more (the 20% reserve). Used by `stanford-claude` (one-year setup-token lane). Real first event, Stanford seat, 11-23-2026: `status allowed`, `five_hour`, `utilization 0`, `overageStatus rejected` (`org_level_disabled`), `isUsingOverage false`.

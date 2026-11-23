@@ -645,6 +645,73 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         self.assertEqual(r.model_copy(self.plan, target)['argv'][-2:], ['--effort', 'high'])
 
 
+    def limit_plan(self):
+        fake = self.base / 'stream_fake.py'
+        fake.write_text('''import json, sys, time
+mode = sys.argv[1]
+print(json.dumps({'type': 'system', 'subtype': 'init'}))
+if mode != 'none':
+    status = {'allowed': 'allowed', 'warning': 'allowed_warning', 'rejected': 'rejected', 'overage': 'allowed', 'reserve': 'allowed'}[mode]
+    info = {'status': status, 'resetsAt': int(time.time()) + 3600, 'rateLimitType': 'five_hour', 'isUsingOverage': mode == 'overage'}
+    info['unifiedWindows'] = {'five_hour': {'utilization': {'warning': 0.85, 'reserve': 0.8}.get(mode, 0), 'resetsAt': info['resetsAt'], 'status': status}}
+    print(json.dumps({'type': 'rate_limit_event', 'rate_limit_info': info}))
+print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': 'ok', 'usage': {'input_tokens': 5, 'output_tokens': 2}}))
+''')
+        plan = copy.deepcopy(self.plan)
+        plan.update(allow_unknown_native=True, limit_events=True)
+        plan['argv'] = [sys.executable, str(fake), 'allowed', '--model', 'frontier-test', '--output-format', 'stream-json', '--verbose']
+        return plan
+
+    def test_limit_events_start_unknown_then_pause_on_warning_rejected_or_overage(self):
+        plan = self.limit_plan()
+        self.write_config([plan])
+        # No reading yet: starts. A stream with no limit event records nothing and stays usable.
+        plan['argv'][2] = 'none'
+        self.write_config([plan])
+        self.assertEqual(self.call('run', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)).returncode, 0)
+        self.assertEqual(r.observations(self.state).get('first', {}).get('limit_events'), None)
+        for mode, word in [('allowed', None), ('warning', 'allowed_warning'), ('rejected', 'rejected'), ('overage', 'overage'), ('reserve', '(five_hour)')]:
+            with self.subTest(mode=mode):
+                r.save(self.state / 'observations.json', {})
+                plan['argv'][2] = mode
+                self.write_config([plan])
+                run = ['run', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)]
+                self.assertEqual(self.call(*run).returncode, 0)
+                item = r.observations(self.state)['first']['limit_events']['five_hour']
+                self.assertEqual(item['status'], 'rejected' if mode == 'rejected' else ('allowed_warning' if mode == 'warning' else 'allowed'))
+                self.assertEqual(item['is_using_overage'], mode == 'overage')
+                self.assertEqual(item['utilization'], {'warning': 0.85, 'reserve': 0.8}.get(mode, 0))
+                reason = r.gate(plan, r.observations(self.state), time.time())
+                if word is None:
+                    self.assertIsNone(reason)
+                    self.assertIsNone(item['blocked_until'])
+                    self.assertEqual(self.call(*run).returncode, 0)
+                else:
+                    self.assertIn(word, reason)
+                    before = len(self.receipts())
+                    self.assertNotEqual(self.call(*run).returncode, 0)
+                    self.assertEqual(len(self.receipts()), before)  # paused: no inference started
+                    # After the reset time the lane opens again.
+                    later = time.time() + 7200
+                    self.assertIsNone(r.gate(plan, r.observations(self.state), later))
+
+    def test_limit_events_need_stream_json_verbose_and_status_lists_them(self):
+        plan = self.limit_plan()
+        for drop in ('--verbose', 'stream-json'):
+            bad = copy.deepcopy(plan)
+            bad['argv'].remove(drop)
+            self.write_config([bad])
+            with self.assertRaises(ValueError):
+                r.config(self.config)
+        self.write_config([plan])
+        self.assertEqual(self.call('run', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)).returncode, 0)
+        out = self.call('status')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        row = next(json.loads(x) for x in out.stdout.splitlines() if json.loads(x)['plan'] == 'first')
+        self.assertEqual(row['limit_events']['five_hour']['status'], 'allowed')
+        self.assertEqual(row['gate'], 'eligible; authentication checked at launch')
+
+
 if __name__ == '__main__':
     from unittest import mock
     unittest.main()

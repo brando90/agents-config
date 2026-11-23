@@ -94,6 +94,8 @@ def config(path):
             raise ValueError('env accepts only native account profile directories')
         if p.get('effort_flag') not in (None, '--effort'):
             raise ValueError('effort_flag must be --effort when the native client supports it')
+        if p.get('limit_events') and (p['provider'] != 'claude' or '--verbose' not in p['argv'] or 'stream-json' not in p['argv']):
+            raise ValueError('limit_events needs a Claude plan run with --output-format stream-json --verbose')
         if not isinstance(p.get('require_fresh_weekly', False), bool):
             raise ValueError('require_fresh_weekly must be true or false')
         if p.get('allow_unknown_native') and p['provider'] in ('cursor', 'grok') and p.get('require_fresh_weekly') is not True:
@@ -211,6 +213,10 @@ def gate(plan, obs, now):
     if proof.get('verified') is not True or not proof.get('evidence') or epoch(proof.get('expires_at', '1970-01-01T00:00:00Z')) <= now:
         return 'subscription entitlement / no-extra-usage verification missing or expired'
     group = plan.get('quota_group', plan['id'])
+    if plan.get('limit_events'):
+        blocked = limit_gate(plan, obs, now)
+        if blocked:
+            return blocked
     if plan.get('require_fresh_weekly'):
         # Reserve gate: a real, unexpired, ready weekly observation is mandatory even when
         # allow_unknown_native tolerates an unmetered short window.
@@ -334,6 +340,74 @@ def token_usage(path):
     return {k: sum(row.get(k, 0) for row in found) for k in {k for row in found for k in row}} or None
 
 
+def stream_events(path):
+    text = path.read_text(errors='replace')
+    events = []
+    for line in text.splitlines():
+        with contextlib.suppress(ValueError):
+            events.append(json.loads(line))
+    return [e for e in events if isinstance(e, dict)]
+
+
+def reset_epoch(value):
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value) / (1000 if value > 1e11 else 1) if math.isfinite(value) and value > 0 else None
+    with contextlib.suppress(ValueError, TypeError, AttributeError):
+        return epoch(value)
+    return None
+
+
+def limit_status(path):
+    """Claude Code's own plan limit reports (rate_limit_event, or a rate_limit error) in a stream-json job."""
+    found = {}
+    for event in stream_events(path):
+        info = event.get('rate_limit_info') if event.get('type') == 'rate_limit_event' else None
+        if isinstance(info, dict):
+            kind = str(info.get('rateLimitType') or info.get('rate_limit_type') or 'unknown')
+            windows = info.get('unifiedWindows') if isinstance(info.get('unifiedWindows'), dict) else {}
+            used = info.get('utilization')
+            if used is None and isinstance(windows.get(kind), dict):
+                used = windows[kind].get('utilization')  # Claude Code nests the fraction used here (0..1)
+            found[kind] = {'status': str(info.get('status', 'unknown')), 'resets_at': reset_epoch(info.get('resetsAt', info.get('resets_at'))),
+                           'utilization': used if isinstance(used, (int, float)) and not isinstance(used, bool) else None,
+                           'is_using_overage': info.get('isUsingOverage', info.get('is_using_overage')) is True,
+                           'overage_status': info.get('overageStatus'), 'fields': sorted(info)}
+        elif event.get('error') == 'rate_limit' or event.get('api_error_status') == 429:
+            found.setdefault('error', {'status': 'rejected', 'resets_at': None, 'utilization': None, 'is_using_overage': False, 'overage_status': None, 'fields': ['rate_limit error']})
+    return found
+
+
+def record_limit_status(plan, state, path):
+    found = limit_status(path)
+    if not found:
+        return None
+    now = time.time()
+    with locked(state / 'state.lock'):
+        obs = observations(state)
+        slot = obs.setdefault(plan.get('quota_group', plan['id']), {}).setdefault('limit_events', {})
+        for kind, item in found.items():
+            used = item['utilization']
+            reserve = used is not None and (used if used > 1 else used * 100) >= 80  # keep a 20% reserve when a fraction is reported
+            bad = item['status'] != 'allowed' or item['is_using_overage'] or reserve
+            until = item['resets_at'] if item['resets_at'] and item['resets_at'] > now else now + 3600
+            slot[kind] = {**item, 'observed_at': stamp(), 'blocked_until': dt.datetime.fromtimestamp(until, UTC).isoformat() if bad else None,
+                          'resets_at': dt.datetime.fromtimestamp(item['resets_at'], UTC).isoformat() if item['resets_at'] else None}
+        save(state / 'observations.json', obs)
+    return found
+
+
+def limit_gate(plan, obs, now):
+    for kind, item in obs.get(plan.get('quota_group', plan['id']), {}).get('limit_events', {}).items():
+        until = item.get('blocked_until')
+        if until and epoch(until) > now:
+            if item.get('is_using_overage'):
+                return 'plan limit event: overage in use (' + kind + '); no extra charges, paused until ' + until
+            return 'plan limit event ' + str(item.get('status')) + ' (' + kind + '); work moved off until ' + until
+    return None
+
+
 def refresh(plan, state):
     if not plan.get('refresh_argv'):
         return False
@@ -452,7 +526,7 @@ def status(plans, state):
                                          'freshness': 'fresh' if fresh(obs.get(model['quota_group'], {}).get(w), now) and epoch(obs[model['quota_group']][w]['reset_at']) > now else ('stale' if obs.get(model['quota_group'], {}).get(w) else 'unknown')}
                                      for w in ('weekly', 'short')})
             per_model.append(item)
-        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), **job_summary(jobs), 'models': per_model, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
+        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), 'limit_events': obs.get(plan.get('quota_group', plan['id']), {}).get('limit_events') if plan.get('limit_events') else None, **job_summary(jobs), 'models': per_model, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
 
 
 def job_summary(jobs):
@@ -546,6 +620,8 @@ def run(args, data, state):
                 receipt.update(status='timeout' if timeout else ('completed' if rc == 0 and not result_error(job / 'stdout') else 'failed'), returncode=rc, tokens=token_usage(job / 'stdout'))
             except OSError as error:
                 receipt.update(status='failed', error=str(error), tokens=None)
+            if plan.get('limit_events') and (job / 'stdout').exists():
+                receipt['limit_events'] = record_limit_status(plan, state, job / 'stdout')
             receipt['finished_at'] = stamp()
             save(job / 'receipt.json', receipt)
             if receipt['status'] == 'completed' and plan.get('allow_unknown_once') and plan.get('renew_availability_on_success'):
