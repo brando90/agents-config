@@ -228,6 +228,16 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         self.assertEqual(obs['short']['used_percent'], 9)
         self.assertLess(r.epoch(obs['weekly']['expires_at']), time.time() + 901)
 
+    def test_native_refresh_treats_disabled_window_as_used(self):
+        meter = self.base / 'meter.py'
+        meter.write_text("print('Claude and GPT models\\tWeekly Limit Remaining\\t0%\\t2099-01-01T00:00:00Z'); print('Claude and GPT models\\tFive Hour Limit Remaining\\tdisabled\\t')")
+        self.plan.update(refresh_argv=[sys.executable, str(meter)], refresh_group='Claude and GPT models')
+        self.write_config([self.plan])
+        self.assertEqual(self.call('status', '--refresh').returncode, 0)
+        obs = r.observations(self.state)['first']
+        self.assertEqual(obs['short']['used_percent'], 100)
+        self.assertEqual(obs['weekly']['used_percent'], 100)
+
     def test_codex_native_status_stderr_and_no_api_acceptance(self):
         path = self.base / 'native.stdout'
         path.write_text('')

@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""plan-attest: renew one plan's subscription-only attestation in the plan router config, after the actual account page was checked.
+Use: plan-attest --plan personal-cursor --hours 24 --evidence "dashboard read <date>: additional usage $0, prepaid $0, no auto top-up" [--enable] [--disable --note "why"]
+Only run it after reading the real account page (spend/extra-usage settings). Never enables paid fallback; edits only that plan's entry."""
+import argparse, json, os, datetime as dt, shutil
+ap = argparse.ArgumentParser(); ap.add_argument('--plan', required=True); ap.add_argument('--hours', type=float, default=24)
+ap.add_argument('--evidence'); ap.add_argument('--enable', action='store_true'); ap.add_argument('--disable', action='store_true'); ap.add_argument('--note')
+a = ap.parse_args()
+p = os.path.expanduser('~/.config/plan-router/config.json'); shutil.copy(p, p + '.bak-attest')
+c = json.load(open(p)); pl = next(x for x in c['plans'] if x['id'] == a.plan)
+if a.evidence:
+    pl['subscription_only'] = {'verified': True, 'evidence': a.evidence,
+        'expires_at': (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=a.hours)).isoformat()}
+if a.enable: pl['enabled'] = True
+if a.disable: pl['enabled'] = False
+if a.note: pl['status_note'] = a.note
+json.dump(c, open(p, 'w'), indent=2); print('ok', a.plan, pl.get('enabled'), pl.get('subscription_only', {}).get('expires_at'))

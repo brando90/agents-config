@@ -380,6 +380,11 @@ def refresh(plan, state):
         window = {'Weekly Limit Remaining': 'weekly', 'Five Hour Limit Remaining': 'short'}.get(parts[1])
         if not window:
             continue
+        if parts[2].strip().lower() == 'disabled' and not parts[3].strip():
+            # The CLI reports a window it does not offer as "disabled" with no reset time: count it as fully used (blocked), valid for 15 minutes.
+            expiry = dt.datetime.fromtimestamp(now + 900, UTC).isoformat()
+            found[window] = {'observed_at': stamp(), 'expires_at': expiry, 'reset_at': expiry, 'used_percent': 100, 'status': 'ready', 'source': 'native CLI /usage; ' + parts[0] + ' (window disabled)'}
+            continue
         remaining = float(parts[2].rstrip('%'))
         reset = epoch(parts[3])
         if not math.isfinite(remaining) or not 0 <= remaining <= 100 or reset <= now:
@@ -600,7 +605,12 @@ def main():
                         key = (tuple(selected.get('refresh_argv', [])), selected.get('refresh_group'),
                                selected.get('quota_group', selected['id']))
                         if key not in refreshed:
-                            refresh(selected, state)
+                            try:
+                                refresh(selected, state)
+                            except (ValueError, KeyError, OSError) as error:
+                                if args.command != 'status':
+                                    raise
+                                print('plan-router: refresh skipped for ' + selected['id'] + ': ' + str(error), file=sys.stderr)
                             refreshed.add(key)
         if args.command in ('status', 'refresh'):
             status(data['plans'], state)
