@@ -1,8 +1,11 @@
 # Eight Sleep connector for all assistants
 
-Date: 11-22-2026
+**Doc link:** <https://github.com/brando90/agents-config/blob/main/plugins/eight-sleep/README.md>
 
-**TLDR:** Eight Sleep runs a hosted MCP server at `https://public-api.8slp.net/mcp` (OAuth, no API key). Each assistant signs in once with Brando's Eight Sleep account. Request read scopes only (`read_sleep`, `read_device`). Nothing here is signed in yet, and no token or code lives in this repo.
+Date: 11-22-2026
+As of 11-23-2026: added Antigravity (`agy`) plugin bundle (`antigravity/`), fixed the read/write tool counts (`6` read + `6` write), added deterministic/live verification (`scripts/test_eight_sleep_connector.py`), and recorded live Eight Sleep OAuth allowlist status.
+
+**TLDR:** Eight Sleep runs a hosted MCP server at `https://public-api.8slp.net/mcp` (OAuth, no API key). Each assistant signs in once with Brando's Eight Sleep account. Request read scopes only (`read_sleep`, `read_device`). Nothing here is signed in yet, and no token or secret lives in this repo.
 
 ## Address and sign-in
 
@@ -28,12 +31,13 @@ Where a client lets you set scopes (Codex), set the two read scopes. Elsewhere, 
 - Alarms (4): `list_alarms`, `create_alarm`, `update_alarm`, `delete_alarm`
 - Changes (3): `set_pod_power`, `set_temperature`, `update_temperature_schedule`
 
-The last 7 change things and need `write_device`. With read scopes only, use the first 5 plus `list_alarms`. Rate limit: 60 calls per minute per connection, plus 10 change requests per 5 minutes and 50 per day.
+The `6` write tools (`create_alarm`, `update_alarm`, `delete_alarm`, `set_pod_power`, `set_temperature`, `update_temperature_schedule`) need `write_device`. The `6` read tools (`get_sleep_days`, `get_sleep_sessions`, `get_sleep_session`, `get_device_status`, `get_temperature_settings`, `list_alarms`) work with `read_sleep` and `read_device` only. Rate limit: 60 calls per minute per connection, plus 10 change requests per 5 minutes and 50 per day.
 
-## Assistants and sign-in status (as of 11-22-2026)
+## Assistants and sign-in status (as of 11-23-2026)
 
 | Assistant | How | Status |
 | --- | --- | --- |
+| Antigravity (`agy`) | plugin in [`antigravity/`](antigravity/README.md) or `agy mcp add --type http eight-sleep https://public-api.8slp.net/mcp` | configured locally (`mcp_config.json`, `agy mcp list` enabled); blocked upstream by Eight Sleep OAuth allowlist as of 11-23-2026 |
 | Claude Code | plugin in `claude-code/` | not signed in yet |
 | Codex | `codex/config.toml.snippet` | not signed in yet |
 | Cursor | marketplace plugin or `cursor/mcp.json` | not signed in yet |
@@ -44,6 +48,21 @@ The last 7 change things and need `write_device`. With read scopes only, use the
 ## Do assistants need this repo (or Brando's GitHub)?
 
 No. The address and each assistant's own Eight Sleep sign-in are enough for any assistant that speaks remote MCP over HTTP with OAuth. This folder is only a shared copy of the steps and configs (11-22-2026).
+
+## Antigravity (agy)
+
+Docs checked 11-23-2026: https://antigravity.google/docs/mcp.md, https://antigravity.google/docs/build-plugins.md, and `agy plugin validate --strict`. Install **either** the plugin bundle **or** the standalone global MCP entry (not both, to avoid registering duplicate Eight Sleep MCP servers: the plugin namespaces its server as `eight-sleep_eight-sleep` alongside the global `eight-sleep` entry):
+
+```bash
+# Option A: install the Antigravity plugin bundle (includes read-only rules/AGENTS.md)
+agy plugin validate --strict ~/agents-config/plugins/eight-sleep/antigravity
+agy plugin install ~/agents-config/plugins/eight-sleep/antigravity
+
+# Option B: add only the global MCP entry in ~/.gemini/config/mcp_config.json
+agy mcp add --type http eight-sleep https://public-api.8slp.net/mcp
+```
+
+See [`antigravity/README.md`](antigravity/README.md) for UI sign-in steps (**Customizations -> Installed -> MCP Servers -> `eight-sleep_eight-sleep` (Option A) or `eight-sleep` (Option B) -> Authenticate**) and read-only scope selection (Antigravity's `mcp_config.json` has no OAuth `scopes` key, so untick "control your device" on Eight Sleep's consent screen). Live probes on 11-22-2026 and 11-23-2026 confirmed Eight Sleep's `https://auth-api.8slp.net` currently returns `"Eight - Uh, oh"` on `/v1/ui/authorize` for Antigravity's Client Identifier Metadata Document (`https://antigravity.google/oauth/client-metadata.json`) and HTTP `400 invalid_redirect_uri` on `/v1/oauth/register` for both `https://antigravity.google/oauth-callback` and RFC 8252 loopback URIs (`http://127.0.0.1:...`, `http://localhost:...`). Do not install or use the deprecated Gemini CLI (`gemini`) per Hard Rule 7.
 
 ## Claude Code
 
@@ -75,6 +94,13 @@ Fallback that matches the docs: copy `cursor/mcp.json` into `~/.cursor/mcp.json`
 ## Grok Bot
 
 See `grok-bot/README.md`. xAI's page (https://docs.x.ai/grok-bot/computer-and-apps) gives the custom connector steps (Connect apps -> Add a custom connector -> Remote HTTPS). It does not mention Settings -> Plugins or an Eight Sleep catalog entry; both come from the Cursor README only.
+
+## Verification
+
+```bash
+agy plugin validate --strict ~/agents-config/plugins/eight-sleep/antigravity
+python3 ~/agents-config/plugins/eight-sleep/scripts/test_eight_sleep_connector.py --live
+```
 
 ## Safety
 

@@ -11,7 +11,7 @@ Load the one matching your current environment. Machine docs contain only behavi
 - [`machine/ampere1.md`](machine/ampere1.md) — SNAP ampere1 node (8x A100-80GB)
 - [`machine/mercury1.md`](machine/mercury1.md) — SNAP mercury1 node (10x A4000-16GB)
 - [`machine/mercury2.md`](machine/mercury2.md) — SNAP mercury2 node (10x RTX A4000-16GB)
-- [`plugins/eight-sleep/README.md`](plugins/eight-sleep/README.md) — Eight Sleep hosted MCP connector for Claude Code, Codex, Cursor, Grok Bot, ChatGPT: address, read scopes, 12 tools, per-client steps (11-22-2026)
+- [`plugins/eight-sleep/README.md`](plugins/eight-sleep/README.md) — Eight Sleep hosted MCP connector for Antigravity (`agy`), Claude Code, Codex, Cursor, Grok Bot, ChatGPT: address, read scopes, 12 tools, per-client steps, and verification script (11-23-2026)
 - [`machine/toggl.md`](machine/toggl.md) — Toggl Track through Pipedream MCP (shared by all agents; coordination note)
 - [`machine/skampere1.md`](machine/skampere1.md) — SNAP skampere1 node
 - [`machine/skampere2.md`](machine/skampere2.md) — SNAP skampere2 node

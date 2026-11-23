@@ -1,0 +1,17 @@
+{
+  "name": "eight-sleep",
+  "displayName": "Eight Sleep",
+  "version": "0.1.0",
+  "description": "Connect Antigravity to Eight Sleep's hosted MCP server for read-only sleep summaries, Pod status, temperature settings, and alarms.",
+  "author": {
+    "name": "Brando Miranda",
+    "url": "https://github.com/brando90"
+  },
+  "homepage": "https://public-api.8slp.net/connectors",
+  "repository": "https://github.com/brando90/agents-config",
+  "suggestedPrompts": [
+    "Summarize last night's sleep duration, score, stages, and heart rate variability",
+    "Check my Eight Sleep Pod status and current temperature settings",
+    "List my active Eight Sleep alarms and their next scheduled rings"
+  ]
+}
