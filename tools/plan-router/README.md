@@ -174,3 +174,18 @@ The restored skampere1 lane uses its own native profile, `~/.codex-vals-skampere
 The guard verifies the intended Vals Pro account and current included usage through the native app server, rejects credits/unavailable usage, requires a reported weekly window, and stops at 80% used in any reported window. The actual account currently reports a weekly primary window and no secondary window; missing short-window data remains unknown. `allow_unknown_native` permits that absent short-window observation while the guard enforces the actual weekly reserve on every launch. The metadata-only `--check` makes no model request. A full job holds a nonblocking profile lock, first requires a real `OK` response from the configured model, rechecks allowance, then starts the requested command. Inherited provider-key overrides are removed. The full child inherits the profile lock descriptor.
 
 Native Codex keeps and renews the saved sign-in. Revocation or failed refresh blocks the pre-job request before the requested work starts; an authenticated metadata row alone is insufficient. Today's successful native and routed requests establish working saved access, not a future renewal guarantee. The guard's deterministic tests cover the weekly-only response, wrong/missing account, reserve, credits, stale/nonfinite readings, real-response failure and a competing profile lock.
+
+## Wait rule, difficulty tags and the 80% gate on personal lanes (11-24-2026, AT-3455)
+
+Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford lane was only paused for a short time, and the personal lanes had no usage gate, so personal Codex ran to 100% weekly. Brando's rules: Vals and Stanford first, personal last, 80% reserve, included usage only, no extra charges.
+
+- **80% gate on personal Codex**: its router `auth` step is `codex-usage.py --gate 80 --expect <account>`: reads `account/rateLimits/read` (no inference, no key printed), refuses at 80% used on any window, without ordinary usage, or if credits could exist. Same for Vals Codex (`vals-codex --check`) and Stanford Codex (`stanford-plan-auth.py`).
+- **Personal Claude**: `--output-format stream-json --verbose` with `limit_events: true`, so Claude Code's own limit report pauses it at 80% used until the window resets.
+- **`plan-rr --difficulty light|medium|heavy` (default medium), `--urgent`**:
+  - light: small lanes first (Cursor, Grok, Pi keys, Stanford gateway), then Vals and Stanford; never a personal lane.
+  - medium: the normal order. A personal lane only when no Vals or Stanford lane returns within 3 hours (or `--urgent`), and not once that lane is 50% used.
+  - heavy: Vals Codex, Vals Claude, Stanford Codex, Stanford Claude, STAIR Claude only. A personal lane only with `--urgent`; otherwise the job is queued for the first lane that returns.
+- **Queue, no loss**: a job that would fall to personal while a Vals or Stanford lane returns in time is not run: exit 5, `plan-rr: WAIT until <time> for <lane>`, and a file in `~/.local/state/plan-router/queue/`. `plan-rr --queue` lists it, `plan-rr --resume <id>` runs it again (`--force` skips the wait). Exit 3 = no route.
+- **Vals Codex takes one job at a time**: `plan-rr` waits up to 2 minutes for its lock before using a lower lane, and counts a busy lane as back in minutes.
+- Return times come from the lane's own limit events (`observations.json`) and from `codex-usage.py` reads (cached 5 minutes).
+- Tests: `python3 -m unittest test_plan_rr` (13 tests, stubs only) and `python3 -m unittest test_router`.
