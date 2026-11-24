@@ -695,6 +695,27 @@ print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 're
                     later = time.time() + 7200
                     self.assertIsNone(r.gate(plan, r.observations(self.state), later))
 
+    def test_warn_gate_false_pauses_only_at_80_percent_rejected_or_overage(self):
+        """AT-3491 / AT-3494: personal, Vals and Stanford Claude run with warn_gate false: a warning below 80% does not pause."""
+        plan = self.limit_plan()
+        plan['warn_gate'] = False
+        cases = [('allowed_warning', 0.29, False), ('allowed_warning', 0.79, False), ('allowed_warning', None, False),
+                 ('allowed_warning', 0.8, True), ('allowed_warning', 85, True), ('allowed', 0.81, True),
+                 ('rejected', 0.1, True), ('allowed', 0.1, False)]
+        for status, used, blocked in cases:
+            with self.subTest(status=status, used=used):
+                self.assertEqual(r.item_blocks(plan, {'status': status, 'utilization': used, 'is_using_overage': False}), blocked)
+        self.assertTrue(r.item_blocks(plan, {'status': 'allowed', 'utilization': 0.1, 'is_using_overage': True}))
+        # Default (warn_gate not false): any warning pauses.
+        self.assertTrue(r.item_blocks(copy.deepcopy(self.plan), {'status': 'allowed_warning', 'utilization': 0.29, 'is_using_overage': False}))
+        # A stored old warning event (blocked_until set) is re-judged by the gate and self-heals.
+        now = time.time()
+        stored = {'first': {'limit_events': {'seven_day': {'status': 'allowed_warning', 'utilization': 0.3, 'is_using_overage': False,
+                                                            'resets_at': FUTURE, 'blocked_until': FUTURE}}}}
+        self.assertIsNone(r.limit_gate(plan, stored, now))
+        stored['first']['limit_events']['seven_day']['utilization'] = 0.8
+        self.assertIn('until', r.limit_gate(plan, stored, now))
+
     def test_limit_events_need_stream_json_verbose_and_status_lists_them(self):
         plan = self.limit_plan()
         for drop in ('--verbose', 'stream-json'):

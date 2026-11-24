@@ -182,6 +182,7 @@ Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford l
 
 - **80% gate on personal Codex**: its router `auth` step is `codex-usage.py --gate 80 --expect <account>`: reads `account/rateLimits/read` (no inference, no key printed), refuses at 80% used on any window, without ordinary usage, or if credits could exist. Same for Vals Codex (`vals-codex --check`) and Stanford Codex (`stanford-plan-auth.py`).
 - **Personal Claude**: `--output-format stream-json --verbose` with `limit_events: true`, so Claude Code's own limit report pauses it at 80% used until the window resets.
+- **Claude lanes, `warn_gate: false` and `limit_probe: true` (11-24-2026, AT-3491 personal, AT-3494 Vals and Stanford)**: an `allowed_warning` alone no longer pauses the lane; only `rejected`, another non-allowed status, overage or 80% used (`item_blocks`). A stored old event is re-judged, so it self-heals. `limit_probe` makes one one-word `claude -p` call to refresh the stored limit event when it is older than 10 minutes, at `status --refresh` and before each run. Included usage only, no extra charges.
 - **`plan-rr --difficulty light|medium|heavy` (default medium), `--urgent`**:
   - light: small lanes first (Cursor, Grok, Pi keys, Stanford gateway), then Vals and Stanford; never a personal lane.
   - medium: the normal order. A personal lane only when no Vals or Stanford lane returns within 3 hours (or `--urgent`), and not once that lane is 50% used.

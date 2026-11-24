@@ -379,6 +379,41 @@ def limit_status(path):
     return found
 
 
+def item_blocks(plan, item):
+    """Whether one limit event pauses the lane. Default: anything but 'allowed', overage, or 80% used. With warn_gate false (AT-3491,
+    Brando's personal Claude): an 'allowed_warning' alone does not pause; only 'rejected', any other non-allowed status, overage,
+    or 80% used (a fraction 0..1 or a percent) does."""
+    used = item.get('utilization')
+    reserve = isinstance(used, (int, float)) and not isinstance(used, bool) and (used if used > 1 else used * 100) >= 80
+    if item.get('is_using_overage') or reserve:
+        return True
+    status = str(item.get('status'))
+    if plan.get('warn_gate', True) is False and status == 'allowed_warning':
+        return False
+    return status != 'allowed'
+
+
+def limit_probe(plan, state, max_age=600):
+    """Live limit read (AT-3491): one tiny Claude Code job whose rate_limit_event refreshes the stored limit event, so the gate
+    never rests on an old event. Skipped when the stored event is younger than max_age seconds."""
+    if not plan.get('limit_probe') or not plan.get('limit_events'):
+        return False
+    now = time.time()
+    events = observations(state).get(plan.get('quota_group', plan['id']), {}).get('limit_events', {})
+    if events and all(now - epoch(e['observed_at']) < max_age for e in events.values()):
+        return False
+    folder = state / ('probe-' + uuid.uuid4().hex)
+    folder.mkdir(mode=0o700)
+    argv = [a for a in plan['argv']]
+    if '--max-turns' in argv:
+        argv[argv.index('--max-turns') + 1] = '1'
+    try:
+        execute(argv, 'Reply with the single word OK.', str(state), environment(plan), 90, folder / 'stdout', folder / 'stderr')
+    except OSError:
+        return False
+    return bool(record_limit_status(plan, state, folder / 'stdout'))
+
+
 def record_limit_status(plan, state, path):
     found = limit_status(path)
     if not found:
@@ -390,7 +425,7 @@ def record_limit_status(plan, state, path):
         for kind, item in found.items():
             used = item['utilization']
             reserve = used is not None and (used if used > 1 else used * 100) >= 80  # keep a 20% reserve when a fraction is reported
-            bad = item['status'] != 'allowed' or item['is_using_overage'] or reserve
+            bad = item_blocks(plan, item)
             until = item['resets_at'] if item['resets_at'] and item['resets_at'] > now else now + 3600
             slot[kind] = {**item, 'observed_at': stamp(), 'blocked_until': dt.datetime.fromtimestamp(until, UTC).isoformat() if bad else None,
                           'resets_at': dt.datetime.fromtimestamp(item['resets_at'], UTC).isoformat() if item['resets_at'] else None}
@@ -401,6 +436,8 @@ def record_limit_status(plan, state, path):
 def limit_gate(plan, obs, now):
     for kind, item in obs.get(plan.get('quota_group', plan['id']), {}).get('limit_events', {}).items():
         until = item.get('blocked_until')
+        if plan.get('warn_gate', True) is False and until:
+            until = (item.get('resets_at') or until) if item_blocks(plan, item) else None  # recompute: old events self-heal
         if until and epoch(until) > now:
             if item.get('is_using_overage'):
                 return 'plan limit event: overage in use (' + kind + '); no extra charges, paused until ' + until
@@ -409,6 +446,7 @@ def limit_gate(plan, obs, now):
 
 
 def refresh(plan, state):
+    limit_probe(plan, state)
     if not plan.get('refresh_argv'):
         return False
     if plan.get('refresh_format') == 'timed-weekly-json':
@@ -582,6 +620,7 @@ def run(args, data, state):
             if plan.get('enabled', True) is not True:
                 print(json.dumps({'plan': plan['id'], 'skipped': 'plan disabled'}), file=sys.stderr)
                 continue
+            limit_probe(plan, state)
             if plan.get('refresh_argv'):
                 try:
                     refresh(plan, state)
