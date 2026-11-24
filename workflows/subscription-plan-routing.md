@@ -55,3 +55,6 @@ Use existing authorized account profiles and wrappers. Keep sponsor scope, clien
 Receipts retain actual selected route/model/effort, selection reason, timestamps, status and available native token counters. Token counters are local usage records, not billing totals. Inspect native model metadata for scientific reporting. A returned answer or exit code alone does not establish correctness; run the job's acceptance checks.
 
 **TLDR-end:** [Subscription routing] Use a tested native subscription for heavy generic work; choose by difficulty, preserve research pins, refresh the shared allowance meter and verify the result.
+
+## Route order (11-23-2026)
+Start with the Vals and Stanford accounts, then the personal Codex and Claude plans, then the remaining routes, and the Google plan last and never for real experiment runs ([tools/plan-router/README.md](../tools/plan-router/README.md), "Order of routes"). Fall to the next route only when a route is off, gated or low (20% left).
