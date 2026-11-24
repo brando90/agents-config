@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """plan-rr: run one bounded job on Brando's own AI accounts via the plan router, in priority order (2026-11-23, AT-3397; was round robin 2026-11-21).
-Order (Brando, Nov 23 17:25: "always start with vals and stanford first before my personal accounts"): Vals and Stanford routes, then personal Codex and Claude, then Cursor/Grok, Allen's key, and the Google plan last. A route is skipped only when gated, off, or low (router gate, 20% left).
+Order 2026-11-24 (Brando 09:58): vals-codex, vals-claude-opus, stanford-codex, stanford-claude, STAIR Claude, Sundial (writing only), Koyejo lab key, Cursor, Grok, then Vals key, STAIR/Stanford gateway sol, personal Codex, personal Claude, Allen, Google plan last. Was (Brando, Nov 23 17:25: "always start with vals and stanford first before my personal accounts"): Vals and Stanford routes, then personal Codex and Claude, then Cursor/Grok, Allen's key, and the Google plan last. A route is skipped only when gated, off, or low (router gate, 20% left).
 Flags: --experiment (real experiment runs: never the Google plan, Brando Nov 23 12:10), --order (print the order and exit).
 Use: plan-rr --prompt-file /abs/job.md --workspace /abs/dir [--skip personal-agy,...]
 Google-plan (agy) jobs need the prompt file to start with 'MY VOICE REQUEST' (Brando's format: a request in his voice,
@@ -10,16 +10,19 @@ import argparse, json, os, subprocess, sys, time, datetime as dt
 H = os.path.expanduser('~')
 ROUTER = [sys.executable, H + '/.local/lib/plan-router/router.py', '--config', H + '/.config/plan-router/config.json']
 STATE = H + '/.local/state/plan-router/rr-counter'
-ROT = [('vals-claude-opus', 'claude-opus-5-5'), ('stanford-claude', None), ('stanford-codex', None),
-       ('pi:vals-openai-bm', 'gpt-6.1-sol'), ('pi:stanford-stair-bm', 'claude-opus-5-5'), ('pi:stanford-stair-bm', 'gpt-6.1-sol'), ('pi:koyejolab-openai-bm', 'gpt-6.1-sol'),
-       ('personal-codex', None), ('personal-claude', None),
-       ('native:cursor', 'grok-4.7-high'), ('native:grok', 'grok-4.7'), ('pi:allen-google-veribench', 'gemini-4-argon'),
+ROT = [('vals-codex', None), ('vals-claude-opus', 'claude-opus-5-5'), ('stanford-codex', None), ('stanford-claude', None),
+       ('pi:stanford-stair-bm', 'claude-opus-5-5'),  # STAIR Claude: Brando's TODO, key change waits for Zeyu's approval (2026-11-24)
+       ('sundial', None),  # writing jobs only (--writing): a skill, not a model lane
+       ('pi:koyejolab-openai-bm', 'gpt-6.1-sol'), ('native:cursor', 'grok-4.7-high'), ('native:grok', 'grok-4.7'),
+       ('pi:vals-openai-bm', 'gpt-6.1-sol'), ('pi:stanford-stair-bm', 'gpt-6.1-sol'),
+       ('personal-codex', None), ('personal-claude', None), ('pi:allen-google-veribench', 'gemini-4-argon'),
        ('personal-agy', 'gemini-4-argon-high'), ('personal-agy', 'gemini-4-carbon-medium'), ('personal-agy', 'claude-opus-5-5-high'), ('personal-agy', 'gemini-pro-orchestrator-argon')]
 PI_PATH = '/dfs/scratch0/brando9/bin'
 ap = argparse.ArgumentParser(); ap.add_argument('--prompt-file', required=True); ap.add_argument('--workspace', required=True)
 ap.add_argument('--skip', default='')
 ap.add_argument('--experiment', action='store_true')
 ap.add_argument('--order', action='store_true')
+ap.add_argument('--writing', action='store_true')  # scientific-writing job: the Sundial slot is live
 a = ap.parse_args()
 voice = open(a.prompt_file).read().lstrip().startswith('MY VOICE REQUEST')
 skip = set(filter(None, a.skip.split(',')))
@@ -38,6 +41,9 @@ checked = False
 for i in range(len(ROT)):
     plan, model = ROT[(n + i) % len(ROT)]
     if plan in skip: continue
+    if plan == 'sundial':
+        if not a.writing: continue
+        print('plan-rr: sundial slot reached: do this scientific-writing pass with the Sundial skill (curl -fsSL https://www.sundial.md/start); no model lane ran', file=sys.stderr); sys.exit(4)
     if plan.startswith('native:'):
         # Same quota refresh, entitlement and read-only clamp as direct router jobs.
         plan = {'native:cursor': 'personal-cursor', 'native:grok': 'personal-grok'}[plan]
