@@ -6,7 +6,7 @@ Flags: --experiment (real experiment runs: never the Google plan, Brando Nov 23 
 --difficulty light|medium|heavy (default medium) and --urgent.
   light: small lanes first (Cursor, Grok, keys, Stanford gateway), then Vals and Stanford; never a personal lane.
   medium: the order above. A personal lane only when no Vals or Stanford lane returns within 3 hours (or --urgent), and not once that personal lane is 50% used (unless --urgent).
-  heavy: the strong Vals and Stanford lanes (Codex, Claude, STAIR Claude) only; a personal lane only with --urgent.
+  heavy: Vals and Stanford lanes (Codex, Claude, STAIR Claude), then Cursor and Grok (Brando 11:28: heavy is allowed there, native CLIs, light quota use, 80% reserve); a personal lane only with --urgent.
 A job that would fall to a personal lane while a Vals or Stanford lane returns in time is queued, not run: exit 5, a line "plan-rr: WAIT until <time> for <lane>", and a queue file. `plan-rr --queue` lists the queue, `plan-rr --resume <id>` runs it again (--force skips the wait). Exit 3 = no route.
 The router itself gates both personal lanes at 80% used (reads the account's own usage before each launch).
 Use: plan-rr --prompt-file /abs/job.md --workspace /abs/dir [--skip personal-agy,...] [--difficulty light|medium|heavy] [--urgent]
@@ -39,7 +39,7 @@ def order_for(difficulty, writing):
         rest = [x for x in ROT if x not in SMALL and x[0] not in PERSONAL]
         return SMALL + rest
     if difficulty == 'heavy':
-        return [x for x in ROT if x[0] in STRONG or x == ('pi:stanford-stair-bm', 'claude-opus-5-5') or x[0] == 'sundial'] + [x for x in ROT if x[0] in PERSONAL]
+        return [x for x in ROT if x[0] in STRONG or x == ('pi:stanford-stair-bm', 'claude-opus-5-5') or x[0] in ('sundial', 'native:cursor', 'native:grok')] + [x for x in ROT if x[0] in PERSONAL]
     return list(ROT)
 
 

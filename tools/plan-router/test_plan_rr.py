@@ -112,6 +112,16 @@ class Difficulty(Base):
         self.assertTrue(lines[0].startswith('native:cursor'))
         self.assertFalse(any(l.startswith('personal') for l in lines))
 
+    def test_heavy_order_includes_cursor_and_grok_but_not_the_small_keys(self):
+        env = dict(os.environ, HOME=str(self.home))
+        r = subprocess.run([sys.executable, str(RR), '--order', '--difficulty', 'heavy'], capture_output=True, text=True, env=env)
+        names = [l.split()[0] for l in r.stdout.splitlines()[1:]]
+        self.assertIn('native:cursor', names)
+        self.assertIn('native:grok', names)
+        self.assertNotIn('pi:koyejolab-openai-bm', names)
+        self.assertLess(names.index('stanford-claude'), names.index('native:cursor'))
+        self.assertLess(names.index('native:grok'), names.index('personal-codex'))
+
     def test_heavy_without_urgent_does_not_use_personal(self):
         r = self.rr('--difficulty', 'heavy')
         self.assertEqual(r.returncode, 3, r.stderr)
@@ -141,7 +151,7 @@ def fake_codex(home, used):
     """A fake `codex app-server --stdio` that answers account/read and account/rateLimits/read."""
     bin_dir = home / 'fakebin'; bin_dir.mkdir()
     exe = bin_dir / 'codex'
-    exe.write_text(textwrap.dedent('''#!/usr/bin/env python3
+    exe.write_text('#!/usr/bin/env python3\n' + textwrap.dedent('''
         import json, sys, time
         for line in sys.stdin:
             m = json.loads(line)

@@ -184,7 +184,7 @@ Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford l
 - **`plan-rr --difficulty light|medium|heavy` (default medium), `--urgent`**:
   - light: small lanes first (Cursor, Grok, Pi keys, Stanford gateway), then Vals and Stanford; never a personal lane.
   - medium: the normal order. A personal lane only when no Vals or Stanford lane returns within 3 hours (or `--urgent`), and not once that lane is 50% used.
-  - heavy: Vals Codex, Vals Claude, Stanford Codex, Stanford Claude, STAIR Claude only. A personal lane only with `--urgent`; otherwise the job is queued for the first lane that returns.
+  - heavy: Vals Codex, Vals Claude, Stanford Codex, Stanford Claude, STAIR Claude, then Cursor and Grok (Brando 11:28: heavy is allowed there; native CLIs, included allowance, 80% reserve and the fresh-reading guard stay). A personal lane only with `--urgent`; otherwise the job is queued for the first lane that returns.
 - **Queue, no loss**: a job that would fall to personal while a Vals or Stanford lane returns in time is not run: exit 5, `plan-rr: WAIT until <time> for <lane>`, and a file in `~/.local/state/plan-router/queue/`. `plan-rr --queue` lists it, `plan-rr --resume <id>` runs it again (`--force` skips the wait). Exit 3 = no route.
 - **Vals Codex takes one job at a time**: `plan-rr` waits up to 2 minutes for its lock before using a lower lane, and counts a busy lane as back in minutes.
 - Return times come from the lane's own limit events (`observations.json`) and from `codex-usage.py` reads (cached 5 minutes).
