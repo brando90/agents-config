@@ -195,3 +195,14 @@ Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford l
 
 ## Daily Stanford Claude attestation (2026-11-24, AT-3467)
 `plan-attest-auto.py` (installed as `~/.local/bin/plan-attest-auto`, run by `plan-rr` before each job) renews the `stanford-claude` attestation by itself. When under 6 h are left (or it expired) it makes one tiny native `claude -p` call on the lane (same argv, `--max-turns 1`, API keys scrubbed) and renews for 24 h only if Claude's own `rate_limit_event` shows status `allowed`, `overageStatus` `rejected`, `isUsingOverage` false and the window under 80% used. Otherwise the old attestation lapses and the reason goes to `~/.local/state/plan-router/attest-auto.jsonl`; a failed try is not repeated for 10 minutes. It edits only that plan's proof, never enables a plan or paid fallback. Tests: `python3 -m unittest tools/plan-router/test_attest_auto.py`.
+
+## Cursor/Grok prelaunch and allowance tools (AT-3497, 11-24-2026)
+
+`screen-tools/` holds the local helpers that sit beside the router on skampere1 (they run on the machine that holds the signed-in grok.com Chrome, not on the host):
+
+- `grok_weekly_read.py`: reads the signed-in grok.com dashboard weekly allowance into a reading file (screen script).
+- `xai_plan_launch.py`: imports a reading (original capture time kept) and runs one bounded Cursor/Grok job through the router.
+- `xai_auto_launch.js`: coordinator: if the reading is missing, invalid, stale or within one minute of its 10-minute expiry, it captures the dashboard itself, rechecks, stops at 80% used, then launches (no step from the owner).
+- `allowance_refresh.py`: refreshes the allowance block of the tracker Doc from the router's stored limit events (personal, Vals and Stanford Claude read from the router's stored events since AT-3491 and AT-3494).
+
+The router itself cannot start a browser capture, so the Cursor/Grok refresh lives in this launch procedure.
