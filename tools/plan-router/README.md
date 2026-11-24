@@ -175,6 +175,7 @@ The guard verifies the intended Vals Pro account and current included usage thro
 
 Native Codex keeps and renews the saved sign-in. Revocation or failed refresh blocks the pre-job request before the requested work starts; an authenticated metadata row alone is insufficient. Today's successful native and routed requests establish working saved access, not a future renewal guarantee. The guard's deterministic tests cover the weekly-only response, wrong/missing account, reserve, credits, stale/nonfinite readings, real-response failure and a competing profile lock.
 
+
 ## Wait rule, difficulty tags and the 80% gate on personal lanes (11-24-2026, AT-3455)
 
 Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford lane was only paused for a short time, and the personal lanes had no usage gate, so personal Codex ran to 100% weekly. Brando's rules: Vals and Stanford first, personal last, 80% reserve, included usage only, no extra charges.
@@ -188,4 +189,5 @@ Why: on 11-24 jobs fell to Brando's personal Codex whenever a Vals or Stanford l
 - **Queue, no loss**: a job that would fall to personal while a Vals or Stanford lane returns in time is not run: exit 5, `plan-rr: WAIT until <time> for <lane>`, and a file in `~/.local/state/plan-router/queue/`. `plan-rr --queue` lists it, `plan-rr --resume <id>` runs it again (`--force` skips the wait). Exit 3 = no route.
 - **Vals Codex takes one job at a time**: `plan-rr` waits up to 2 minutes for its lock before using a lower lane, and counts a busy lane as back in minutes.
 - Return times come from the lane's own limit events (`observations.json`) and from `codex-usage.py` reads (cached 5 minutes).
-- Tests: `python3 -m unittest test_plan_rr` (13 tests, stubs only) and `python3 -m unittest test_router`.
+- Tests: `python3 -m unittest test_plan_rr` (17 tests, stubs only) and `python3 -m unittest test_router`.
+- **Prompts and the Google plan (Brando 2026-11-24 11:31)**: every lane takes a plain precise prompt; no "MY VOICE REQUEST" header or voice text to agy, Cursor or Grok. agy (`personal-agy`) stays last, light and medium jobs only, at most 10 a day (`~/.local/state/plan-router/agy-log.jsonl`), never bulk grids or experiment runs, no timing tricks.

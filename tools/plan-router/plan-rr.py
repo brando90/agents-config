@@ -10,8 +10,8 @@ Flags: --experiment (real experiment runs: never the Google plan, Brando Nov 23 
 A job that would fall to a personal lane while a Vals or Stanford lane returns in time is queued, not run: exit 5, a line "plan-rr: WAIT until <time> for <lane>", and a queue file. `plan-rr --queue` lists the queue, `plan-rr --resume <id>` runs it again (--force skips the wait). Exit 3 = no route.
 The router itself gates both personal lanes at 80% used (reads the account's own usage before each launch).
 Use: plan-rr --prompt-file /abs/job.md --workspace /abs/dir [--skip personal-agy,...] [--difficulty light|medium|heavy] [--urgent]
-Google-plan (agy) jobs need the prompt file to start with 'MY VOICE REQUEST' (Brando's format: a request in his voice,
-then the precise prompt in triple quotes); other accounts take any prompt. Skips gated or limited plans, moves to the next.
+Prompts go to every account as plain precise prompts (Brando 2026-11-24 11:31: no 'MY VOICE REQUEST' header or voice text to agy, Cursor or Grok; no timing tricks).
+Google plan (agy): last, light and medium jobs only, at most 10 a day, never bulk or experiment runs. Skips gated or limited plans, moves to the next.
 Uses configured subscriptions and explicitly bounded Pi provider routes; never buys credits. Foreground only."""
 import argparse, fcntl, hashlib, json, os, subprocess, sys, time, datetime as dt
 H = os.path.expanduser('~')
@@ -25,7 +25,8 @@ ROT = [('vals-codex', None), ('vals-claude-opus', 'claude-opus-5-5'), ('stanford
        ('pi:vals-openai-bm', 'gpt-6.1-sol'), ('pi:stanford-stair-bm', 'gpt-6.1-sol'),
        ('personal-codex', None), ('personal-claude', None), ('pi:allen-google-veribench', 'gemini-4-argon'),
        ('personal-agy', 'gemini-4-argon-high'), ('personal-agy', 'gemini-4-carbon-medium'), ('personal-agy', 'claude-opus-5-5-high'), ('personal-agy', 'gemini-pro-orchestrator-argon')]
-PERSONAL = ('personal-codex', 'personal-claude', 'personal-agy')
+PERSONAL = ('personal-codex', 'personal-claude')
+AGY_DAILY_CAP = 10  # Google-plan jobs a day (Brando 11:31: keep it to normal use)
 STRONG = ('vals-codex', 'vals-claude-opus', 'stanford-codex', 'stanford-claude')  # the Vals and Stanford subscription lanes whose return time we can read
 SMALL = [('native:cursor', 'grok-4.7-high'), ('native:grok', 'grok-4.7'), ('pi:koyejolab-openai-bm', 'gpt-6.1-sol'), ('pi:vals-openai-bm', 'gpt-6.1-sol'), ('pi:stanford-stair-bm', 'gpt-6.1-sol'), ('pi:allen-google-veribench', 'gemini-4-argon')]
 WAIT_HOURS = 3
@@ -150,7 +151,6 @@ if a.resume:
     if r.get('not_before') and r['not_before'] > time.time() and not a.force and not a.urgent:
         print('plan-rr: WAIT until', r['not_before_local'], 'for', r.get('lane'), '(still queued: ' + a.resume + ')', file=sys.stderr); sys.exit(5)
 if not a.order and not (a.prompt_file and a.workspace): ap.error('--prompt-file and --workspace are required')
-voice = bool(a.prompt_file) and open(a.prompt_file).read().lstrip().startswith('MY VOICE REQUEST')
 skip = set(filter(None, a.skip.split(',')))
 if a.experiment: skip.add('personal-agy')
 LIST = order_for(a.difficulty, a.writing)
@@ -202,7 +202,6 @@ for plan, model in LIST:
         used = sum(1 for l in (open(LOG) if os.path.exists(LOG) else []) if json.loads(l)['day'] == today and json.loads(l)['plan'] == plan)
         if used >= 6 or len(open(a.prompt_file).read()) > 20000:  # paid keys: small jobs, 6 a day each until Brando sets a cap
             print('plan-rr: skipped', plan, 'pay-per-call cap (6 jobs a day, 20k characters)', file=sys.stderr); continue
-        if plan == 'pi:allen-google-veribench' and not voice: continue
         env = dict(os.environ, PATH=PI_PATH + ':' + os.environ.get('PATH', ''))
         # 2026-11-21 (AT-3285): Allen's key runs Argon at high effort; on a 503 or no answer, 3.1 Pro high. Carbon is not used (times out).
         tries = [(model, ['--thinking', 'high']), ('gemini-3.1-pro-preview', ['--thinking', 'high'])] if plan == 'pi:allen-google-veribench' else [(model, [])]
@@ -216,7 +215,11 @@ for plan, model in LIST:
         open(LOG, 'a').write(json.dumps({'day': today, 'plan': plan, 'model': model, 'prompt_chars': len(open(a.prompt_file).read()), 'out_chars': len(r.stdout)}) + '\n')
         print('plan-rr: ran', plan, model, file=sys.stderr); sys.stdout.write(r.stdout); sys.exit(0)
     if plan == 'personal-agy':
-        if not voice: continue
+        AGY_LOG = STATE_DIR + '/agy-log.jsonl'
+        today = dt.date.today().isoformat()
+        used = sum(1 for l in (open(AGY_LOG) if os.path.exists(AGY_LOG) else []) if json.loads(l)['day'] == today)
+        if a.difficulty == 'heavy' or used >= AGY_DAILY_CAP:
+            print('plan-rr: skipped personal-agy', 'heavy job' if a.difficulty == 'heavy' else 'daily cap of %d jobs reached' % AGY_DAILY_CAP, file=sys.stderr); skip.add(plan); continue
         if not checked: checked = agy_ready()
         if not checked: skip.add(plan); continue
     cmd = ROUTER + ['run', '--plan', plan, '--prompt-file', a.prompt_file, '--workspace', a.workspace]
@@ -226,6 +229,7 @@ for plan, model in LIST:
     if '"skipped"' in out or 'no eligible plan' in out:
         print('plan-rr: skipped', plan, model or '', out.strip()[:200], file=sys.stderr); continue
     pass
+    if plan == 'personal-agy': open(STATE_DIR + '/agy-log.jsonl', 'a').write(json.dumps({'day': dt.date.today().isoformat(), 'model': model}) + '\n')
     print('plan-rr: ran', plan, model or '(plan default)', 'difficulty', a.difficulty, file=sys.stderr)
     sys.stdout.write(r.stdout); sys.stderr.write(r.stderr); sys.exit(r.returncode)
 print('plan-rr: no route ran', file=sys.stderr); sys.exit(3)

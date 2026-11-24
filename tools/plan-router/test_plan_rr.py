@@ -101,7 +101,7 @@ class WaitRule(Base):
 
 class Difficulty(Base):
     def test_light_never_uses_personal(self):
-        r = self.rr('--difficulty', 'light')
+        r = self.rr('--difficulty', 'light', skip=NON_PERSONAL + ',personal-agy')
         self.assertEqual(r.returncode, 3, r.stderr)
         self.assertNotIn('ran personal', r.stderr)
 
@@ -110,7 +110,7 @@ class Difficulty(Base):
         r = subprocess.run([sys.executable, str(RR), '--order', '--difficulty', 'light'], capture_output=True, text=True, env=env)
         lines = r.stdout.splitlines()[1:]
         self.assertTrue(lines[0].startswith('native:cursor'))
-        self.assertFalse(any(l.startswith('personal') for l in lines))
+        self.assertFalse(any(l.startswith(('personal-codex', 'personal-claude')) for l in lines))
 
     def test_heavy_order_includes_cursor_and_grok_but_not_the_small_keys(self):
         env = dict(os.environ, HOME=str(self.home))
@@ -145,6 +145,30 @@ class Difficulty(Base):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn('skipped personal-codex', r.stderr)
         self.assertIn('ran personal-claude', r.stderr)
+
+
+class Agy(Base):
+    SKIP_ALL_BUT_AGY = NON_PERSONAL + ',personal-codex,personal-claude'
+
+    def test_light_and_medium_orders_end_with_agy_and_heavy_has_none(self):
+        env = dict(os.environ, HOME=str(self.home))
+        for d, expect in (('light', True), ('medium', True), ('heavy', False)):
+            r = subprocess.run([sys.executable, str(RR), '--order', '--difficulty', d], capture_output=True, text=True, env=env)
+            names = [l.split()[0] for l in r.stdout.splitlines()[1:]]
+            self.assertEqual('personal-agy' in names, expect, d)
+            if expect: self.assertEqual(names[-1].split()[0], 'personal-agy')
+
+    def test_plain_prompt_is_not_refused_for_lacking_a_voice_header(self):
+        r = self.rr('--difficulty', 'light', skip=self.SKIP_ALL_BUT_AGY)
+        self.assertNotIn('MY VOICE', r.stderr)
+        self.assertNotIn('skipped personal-agy heavy', r.stderr)
+
+    def test_daily_cap_of_10_stops_agy(self):
+        log = self.home / '.local/state/plan-router/agy-log.jsonl'
+        log.write_text(''.join(json.dumps({'day': dt.date.today().isoformat(), 'model': 'x'}) + '\n' for _ in range(10)))
+        r = self.rr('--difficulty', 'light', skip=self.SKIP_ALL_BUT_AGY)
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertIn('daily cap of 10', r.stderr)
 
 
 def fake_codex(home, used):
