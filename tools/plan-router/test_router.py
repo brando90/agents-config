@@ -66,7 +66,7 @@ print(json.dumps({'usage':{'input_tokens':7, 'output_tokens':3},'received':value
         self.ready('first')
 
     def write_config(self, plans):
-        self.config.write_text(json.dumps({'default_plan': 'first', 'plans': plans}))
+        self.config.write_text(json.dumps({'default_plan': 'first' if any(p['id'] == 'first' for p in plans) else plans[0]['id'], 'plans': plans}))
 
     def ready(self, name):
         obs = r.observations(self.state)
@@ -731,6 +731,155 @@ print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 're
         row = next(json.loads(x) for x in out.stdout.splitlines() if json.loads(x)['plan'] == 'first')
         self.assertEqual(row['limit_events']['five_hour']['status'], 'allowed')
         self.assertEqual(row['gate'], 'eligible; authentication checked at launch')
+
+    # --- AT-3529: per-lane Codex sign-in folders, and the Cursor/Grok estimate gate ---
+    def codex_plan(self, name, home):
+        plan = copy.deepcopy(self.plan)
+        plan.update(id=name, provider='codex', model='gpt-test', env={'CODEX_HOME': str(home)},
+                    argv=[sys.executable, str(self.fake), 'ok', '--sandbox', 'workspace-write', '--model', 'gpt-test',
+                          '-c', 'forced_login_method=chatgpt'])
+        plan['auth'] = {'argv': [sys.executable, str(self.fake), 'codex-auth']}
+        return plan
+
+    def fake_codex_on_path(self):
+        bin_dir = self.base / 'bin'
+        bin_dir.mkdir(exist_ok=True)
+        script = bin_dir / 'codex'
+        script.write_text('#!%s\nimport os, sys\nif sys.argv[1:3] == ["login", "status"]:\n    print("Logged in using ChatGPT" if os.path.exists(os.path.join(os.environ["CODEX_HOME"], "auth.json")) else "Not logged in")\n    sys.exit(0)\nsys.exit(2)\n' % sys.executable)
+        script.chmod(0o755)
+        return mock.patch.dict(os.environ, {'PATH': str(bin_dir) + os.pathsep + os.environ['PATH']})
+
+    def test_codex_lanes_must_have_their_own_sign_in_folder(self):
+        a, b = self.codex_plan('lane-a', self.base / 'home-a'), self.codex_plan('lane-b', self.base / 'home-a')
+        self.write_config([a, b])
+        with self.assertRaisesRegex(ValueError, 'share one CODEX_HOME'):
+            r.config(self.config)
+        b['env']['CODEX_HOME'] = str(self.base / 'home-b')
+        self.write_config([a, b])
+        self.assertEqual(len(r.config(self.config)['plans']), 2)
+        b['enabled'] = False  # a disabled lane may keep an old folder
+        b['env']['CODEX_HOME'] = str(self.base / 'home-a')
+        self.write_config([a, b])
+        self.assertEqual(len(r.config(self.config)['plans']), 2)
+
+    def test_codex_job_records_login_status_and_waits_for_its_folder(self):
+        home = self.base / 'home-a'
+        home.mkdir()
+        (home / 'auth.json').write_text('{}')
+        plan = self.codex_plan('lane-a', home)
+        plan['auth'] = {'argv': [sys.executable, str(self.fake), 'argument', 'Logged in using ChatGPT']}
+        plan['home_lock_wait_seconds'] = 1
+        self.write_config([plan])
+        self.ready('lane-a')
+        with self.fake_codex_on_path():
+            done = subprocess.run(
+                self.command('run', '--plan', 'lane-a', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)),
+                capture_output=True, text=True, timeout=10)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            receipt = self.receipts()[0]
+            self.assertEqual(receipt['codex_home'], os.path.realpath(home))
+            self.assertEqual(receipt['codex_login_status'], 'Logged in using ChatGPT')
+            # Another job already using this folder: this one waits its turn, then skips instead of sharing auth.json.
+            locks = r.private_dir(Path('/tmp') / ('plan-router-' + str(os.getuid())))
+            path = locks / ('codex-home-' + __import__('hashlib').sha256(r.codex_home(plan).encode()).hexdigest()[:16] + '.lock')
+            with r.home_locked(path, 1):
+                busy = subprocess.run(self.command('run', '--plan', 'lane-a', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)),
+                                      capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(busy.returncode, 0)
+            self.assertIn('another job is using this Codex sign-in folder', busy.stderr)
+            self.assertEqual(len(self.receipts()), 1)
+            # A folder with no sign-in never starts a job.
+            (home / 'auth.json').unlink()
+            signed_out = subprocess.run(self.command('run', '--plan', 'lane-a', '--workspace', str(self.workspace), '--prompt-file', str(self.prompt)),
+                                        capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(signed_out.returncode, 0)
+            self.assertEqual(len(self.receipts()), 1)
+
+    def estimate_plan(self, **settings):
+        plan = self.reserve_plan()
+        plan['estimate_between_readings'] = settings
+        return plan
+
+    def old_reading(self, hours_ago, used, reset=FUTURE):
+        seen = time.time() - hours_ago * 3600
+        stamp = r.dt.datetime.fromtimestamp(seen, r.UTC).isoformat()
+        return {'observed_at': stamp, 'reset_at': reset, 'used_percent': used}
+
+    def add_jobs(self, plan_id, hours_ago_list):
+        for n, hours in enumerate(hours_ago_list):
+            folder = self.state / 'jobs' / ('fake-%s-%d-%s' % (plan_id, n, hours))
+            folder.mkdir(parents=True)
+            (folder / 'receipt.json').write_text(json.dumps({'plan': plan_id, 'status': 'completed',
+                'started_at': r.dt.datetime.fromtimestamp(time.time() - hours * 3600, r.UTC).isoformat()}))
+
+    def test_estimate_between_readings_stops_at_30_percent_left(self):
+        plan = self.estimate_plan()
+        self.write_config([plan])
+        plan = r.config(self.config)['plans'][0]
+        item = {**self.old_reading(10, 50), 'expires_at': FUTURE, 'status': 'ready'}
+        obs = {'shared-pool': {'weekly': item}}
+        now = time.time()
+        # No calibration yet: default 1% per job. 50 + 19 jobs = 69 passes, the 20th makes 70 and stops.
+        self.add_jobs('first', [5] * 19)
+        self.assertIsNone(r.gate(plan, obs, now, self.state))
+        self.add_jobs('first', [4])
+        reason = r.gate(plan, obs, now, self.state)
+        self.assertIn('estimated 70.0% used', reason)
+        self.assertIn('stop at 70% used', reason)
+        # The reading alone stops at 70, not 80.
+        self.assertIn('threshold', r.gate(plan, {'shared-pool': {'weekly': {**item, 'used_percent': 70}}}, now))
+        self.assertIsNone(r.gate(plan, {'shared-pool': {'weekly': {**item, 'used_percent': 69.9}}}, now))
+        # Jobs of other pools do not count; jobs before the reading do not count.
+        self.add_jobs('other', [1] * 30)
+        self.add_jobs('first', [20] * 30)
+        self.assertEqual(r.estimated_used(plan, self.state, item)[1], 20)
+
+    def test_cost_per_job_is_calibrated_from_daily_readings(self):
+        plan = self.estimate_plan()
+        self.write_config([plan])
+        plan = r.config(self.config)['plans'][0]
+        self.assertEqual(r.calibrated_cost(plan, self.state), (1.0, 0))  # default before any pair of readings
+        for row in (self.old_reading(80, 10), self.old_reading(56, 14), self.old_reading(32, 15), self.old_reading(8, 16)):
+            r.record_reading(self.state, row)
+            r.record_reading(self.state, row)  # a reading is kept once
+        self.assertEqual(len(r.readings(self.state)), 4)
+        self.add_jobs('first', [70, 68, 66, 64, 45, 44, 20, 19])  # 4 jobs for +4, 2 jobs for +1, 2 jobs for +1
+        cost, samples = r.calibrated_cost(plan, self.state)
+        self.assertEqual(samples, 3)
+        self.assertAlmostEqual(cost, 0.5)  # samples 1.0, 0.5, 0.5: median 0.5, latest 0.5
+        self.add_jobs('first', [6, 5, 3])  # a latest interval that cost more per job wins over the median
+        r.record_reading(self.state, self.old_reading(1, 19))
+        self.assertAlmostEqual(r.calibrated_cost(plan, self.state)[0], 1.0)
+
+    def test_refresh_accepts_a_daily_reading_in_estimate_mode_only(self):
+        feed = self.base / 'feed.json'
+        argv = [sys.executable, '-c', 'import sys;sys.stdout.write(open(%r).read())' % str(feed)]
+        for mode, hours, ok in [('estimate', 10, True), ('estimate', 30, False), ('plain', 10, False)]:
+            with self.subTest(mode=mode, hours=hours):
+                plan = self.estimate_plan() if mode == 'estimate' else self.reserve_plan()
+                plan.update(refresh_argv=argv, refresh_format='timed-weekly-json')
+                self.write_config([plan])
+                plan = r.config(self.config)['plans'][0]
+                row = self.old_reading(hours, 20, reset='2099-01-01T00:00:00+00:00')
+                feed.write_text(json.dumps({**row, 'schema': 'xai-weekly-v1', 'status': 'ready', 'url': 'https://grok.com/dashboard',
+                                            'expires_at': r.dt.datetime.fromtimestamp(time.time() - hours * 3600 + 600, r.UTC).isoformat()}))
+                r.save(self.state / 'observations.json', {})
+                if ok:
+                    self.assertTrue(r.refresh(plan, self.state))
+                    weekly = r.observations(self.state)['shared-pool']['weekly']
+                    self.assertEqual(weekly['used_percent'], 20)
+                    self.assertTrue(r.fresh(weekly, time.time()))
+                    self.assertEqual(len(r.readings(self.state)), 1)
+                else:
+                    with self.assertRaisesRegex(ValueError, 'stale'):
+                        r.refresh(plan, self.state)
+        # A feed that fails keeps the earlier reading while it is still inside its window.
+        plan = self.estimate_plan()
+        plan.update(refresh_argv=[sys.executable, '-c', 'import sys;sys.exit(1)'], refresh_format='timed-weekly-json')
+        self.write_config([plan])
+        plan = r.config(self.config)['plans'][0]
+        r.save(self.state / 'observations.json', {'shared-pool': {'weekly': {**self.old_reading(5, 20), 'expires_at': FUTURE, 'status': 'ready'}}})
+        self.assertTrue(r.refresh(plan, self.state))
 
 
 if __name__ == '__main__':

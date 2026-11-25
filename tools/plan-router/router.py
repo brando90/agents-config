@@ -102,6 +102,12 @@ def config(path):
             raise ValueError('Cursor/Grok unknown native allowance requires require_fresh_weekly')
         if p.get('allow_unknown_native') and (p['provider'] not in ('claude', 'codex', 'cursor', 'grok') or not p.get('auth', {}).get('argv')):
             raise ValueError('unknown native allowance requires a supported native authentication status command')
+        if p.get('estimate_between_readings') is not None:
+            e = p['estimate_between_readings']
+            if not isinstance(e, dict) or p.get('require_fresh_weekly') is not True or p['provider'] not in ('cursor', 'grok'):
+                raise ValueError('estimate_between_readings needs a Cursor/Grok plan with require_fresh_weekly')
+            if not 0 < estimate_settings(p)['reserve'] < 100 or not 0 < estimate_settings(p)['max_age'] <= 48 * 3600 or estimate_settings(p)['default_cost'] <= 0:
+                raise ValueError('estimate_between_readings values out of range')
         if not math.isfinite(float(p.get('timeout_seconds', 180))) or not 0 < float(p.get('timeout_seconds', 180)) <= 14400:
             raise ValueError('timeout must be positive and at most four hours')
         catalog = p.get('models', [])
@@ -116,6 +122,17 @@ def config(path):
             raise ValueError('pinned model must exist in its catalog')
     if data.get('default_plan', ids[0]) not in ids:
         raise ValueError('default_plan is unknown')
+    homes = {}
+    for p in plans:
+        if p['provider'] == 'codex' and p.get('enabled', True) is True:
+            if codex_home(p) in homes:
+                raise ValueError('Codex plans ' + homes[codex_home(p)] + ' and ' + p['id'] + ' share one CODEX_HOME; each lane needs its own sign-in folder')
+            homes[codex_home(p)] = p['id']
+    groups = {}
+    for p in plans:
+        groups.setdefault(p.get('quota_group', p['id']), []).append(p['id'])
+    for p in plans:
+        p['_group_plans'] = groups[p.get('quota_group', p['id'])]
     return data
 
 
@@ -203,7 +220,7 @@ def fresh(item, now):
     return bool(item and epoch(item['observed_at']) <= now < epoch(item['expires_at']))
 
 
-def gate(plan, obs, now):
+def gate(plan, obs, now, state=None):
     if plan.get('enabled', True) is not True:
         return 'plan disabled'
     model = next((m for m in plan.get('models', []) if m['id'] == plan['model']), None)
@@ -224,8 +241,15 @@ def gate(plan, obs, now):
         if not fresh(item, now) or epoch(item['reset_at']) <= now:
             return 'weekly quota unknown or stale; fresh weekly observation required'
         used = item.get('used_percent')
-        if item.get('status') != 'ready' or isinstance(used, bool) or not isinstance(used, (int, float)) or not math.isfinite(used) or used >= 80:
+        cfg = estimate_settings(plan)
+        ceiling = 100 - cfg['reserve'] if cfg else 80
+        if item.get('status') != 'ready' or isinstance(used, bool) or not isinstance(used, (int, float)) or not math.isfinite(used) or used >= ceiling:
             return 'weekly quota threshold reached'
+        if cfg and state is not None:
+            estimate, since, cost = estimated_used(plan, state, item)
+            if estimate >= ceiling:
+                return ('weekly quota threshold reached: estimated %.1f%% used (reading %.1f%% + %d jobs since at %.2f%% each), stop at %.0f%% used'
+                        % (estimate, used, since, cost, ceiling))
     for window, ceiling in [('weekly', 80), ('short', 100)]:
         item = obs.get(group, {}).get(window)
         if not fresh(item, now) or epoch(item['reset_at']) <= now:
@@ -238,6 +262,101 @@ def gate(plan, obs, now):
         if item['status'] != 'ready' or item['used_percent'] >= ceiling:
             return window + ' quota threshold reached'
     return None
+
+
+def codex_home(plan):
+    """The CODEX_HOME a Codex plan signs in with (its own folder; default ~/.codex)."""
+    return os.path.realpath(os.path.expanduser(plan.get('env', {}).get('CODEX_HOME', '~/.codex')))
+
+
+@contextlib.contextmanager
+def home_locked(path, wait_seconds):
+    """Wait for the one job that may use a Codex sign-in folder at a time (auth.json is never shared by concurrent jobs)."""
+    with open(path, 'a', encoding='utf-8') as stream:
+        os.chmod(path, 0o600)
+        deadline = time.time() + wait_seconds
+        while True:
+            try:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.time() >= deadline:
+                    raise ValueError('another job is using this Codex sign-in folder') from None
+                time.sleep(1)
+        yield stream.fileno()
+
+
+def estimate_settings(plan):
+    """Settings of the between-readings estimate (Cursor/Grok), or None when the plan needs a fresh reading each launch."""
+    e = plan.get('estimate_between_readings')
+    if e is None:
+        return None
+    return {'reserve': float(e.get('reserve_percent', 30)),
+            'max_age': float(e.get('max_reading_age_hours', 26)) * 3600,
+            'default_cost': float(e.get('default_cost_percent_per_job', 1.0)),
+            'floor_cost': float(e.get('floor_cost_percent_per_job', 0.25)),
+            'min_gap': float(e.get('min_calibration_gap_hours', 6)) * 3600}
+
+
+def readings(state):
+    path = state / 'xai-readings.jsonl'
+    rows = []
+    if path.exists():
+        for line in path.read_text().splitlines():
+            with contextlib.suppress(ValueError, KeyError):
+                row = json.loads(line)
+                row['_seen'] = epoch(row['observed_at'])
+                rows.append(row)
+    return sorted(rows, key=lambda x: x['_seen'])
+
+
+def record_reading(state, item):
+    """Keep every dashboard reading once (the daily calibration reads this)."""
+    if any(row['observed_at'] == item['observed_at'] for row in readings(state)):
+        return
+    keep = {k: item[k] for k in ('observed_at', 'reset_at', 'used_percent') if k in item}
+    with open(state / 'xai-readings.jsonl', 'a', encoding='utf-8') as stream:
+        os.chmod(state / 'xai-readings.jsonl', 0o600)
+        stream.write(json.dumps(keep) + '\n')
+
+
+def group_jobs(plan, state):
+    """Start times of every job (any outcome) that the plan's quota group launched."""
+    ids = set(plan.get('_group_plans') or [plan['id']])
+    found = []
+    for path in (state / 'jobs').glob('*/receipt.json'):
+        with contextlib.suppress(ValueError, KeyError, OSError):
+            receipt = json.loads(path.read_text())
+            if receipt.get('plan') in ids:
+                found.append(epoch(receipt['started_at']))
+    return sorted(found)
+
+
+def calibrated_cost(plan, state, jobs=None):
+    """Percent of the weekly pool one job costs: from consecutive daily readings, the larger of the median and the latest of the last three."""
+    cfg = estimate_settings(plan)
+    jobs = group_jobs(plan, state) if jobs is None else jobs
+    rows, samples = readings(state), []
+    for a, b in zip(rows, rows[1:]):
+        if b['_seen'] - a['_seen'] < cfg['min_gap'] or a.get('reset_at') != b.get('reset_at'):
+            continue
+        n = sum(1 for t in jobs if a['_seen'] <= t < b['_seen'])
+        if n:
+            samples.append(max(0.0, b['used_percent'] - a['used_percent']) / n)
+    samples = samples[-3:]
+    if not samples:
+        return cfg['default_cost'], 0
+    median = sorted(samples)[len(samples) // 2]
+    return max(median, samples[-1], cfg['floor_cost']), len(samples)
+
+
+def estimated_used(plan, state, item):
+    """(estimate, jobs since the reading, cost per job): the reading plus the jobs launched since, at the calibrated cost."""
+    seen = epoch(item['observed_at'])
+    jobs = group_jobs(plan, state)
+    cost, _ = calibrated_cost(plan, state, jobs)
+    since = sum(1 for t in jobs if t > seen)
+    return item['used_percent'] + since * cost, since, cost
 
 
 def execute(argv, prompt, workspace, env, timeout, stdout, stderr, lock_fd=None):
@@ -449,21 +568,36 @@ def refresh(plan, state):
     limit_probe(plan, state)
     if not plan.get('refresh_argv'):
         return False
+    cfg = estimate_settings(plan)
     if plan.get('refresh_format') == 'timed-weekly-json':
         with locked(state / 'state.lock'):
             obs = observations(state)
-            obs.setdefault(plan.get('quota_group', plan['id']), {}).pop('weekly', None)
+            if cfg:
+                # A reading up to max_reading_age_hours old stays usable; the gate adds the jobs launched since.
+                kept = obs.get(plan.get('quota_group', plan['id']), {}).get('weekly')
+                if kept and kept.get('expires_at') and not (fresh(kept, time.time()) and epoch(kept['reset_at']) > time.time()):
+                    obs[plan.get('quota_group', plan['id'])].pop('weekly', None)
+            else:
+                obs.setdefault(plan.get('quota_group', plan['id']), {}).pop('weekly', None)
             save(state / 'observations.json', obs)
     folder = state / ('refresh-' + uuid.uuid4().hex)
     folder.mkdir(mode=0o700)
     rc, timeout = execute(plan['refresh_argv'], '', str(state), environment(plan), 20,
                           folder / 'stdout', folder / 'stderr')
     if timeout or rc:
+        if cfg and fresh(observations(state).get(plan.get('quota_group', plan['id']), {}).get('weekly'), time.time()):
+            return True
         raise ValueError(plan['id'] + ': quota refresh failed; no inference started')
     now, found = time.time(), {}
     if plan.get('refresh_format') == 'timed-weekly-json':
         # Browser producer timestamps survive every import. Never stamp cached text as fresh.
-        item = json.loads((folder / 'stdout').read_text())
+        try:
+            item = json.loads((folder / 'stdout').read_text())
+        except ValueError:
+            item = None
+        if cfg and (not isinstance(item, dict) or item.get('schema') != 'xai-weekly-v1' or item.get('status') != 'ready'):
+            if fresh(observations(state).get(plan.get('quota_group', plan['id']), {}).get('weekly'), time.time()):
+                return True
         if not isinstance(item, dict) or item.get('schema') != 'xai-weekly-v1' or item.get('status') != 'ready' or item.get('url') != 'https://grok.com/dashboard':
             raise ValueError('weekly browser observation missing or unreadable; no inference started')
         try:
@@ -474,12 +608,22 @@ def refresh(plan, state):
         except (KeyError, TypeError, ValueError, AttributeError, OverflowError) as error:
             raise ValueError('weekly browser timestamps missing or malformed; no inference started') from error
         used = item.get('used_percent')
-        if not now - 600 < seen <= now or not now < expiry <= min(seen + 600, reset) or reset <= now:
+        if cfg:
+            # Estimate mode: the reading counts until max_reading_age_hours or the reset, whichever is first.
+            expiry = min(seen + cfg['max_age'], reset)
+            item = {**item, 'expires_at': dt.datetime.fromtimestamp(expiry, UTC).isoformat()}
+            if not now - cfg['max_age'] < seen <= now or reset <= now:
+                if fresh(observations(state).get(plan.get('quota_group', plan['id']), {}).get('weekly'), now):
+                    return True
+                raise ValueError('weekly browser observation stale, future-dated or reset; no inference started')
+        elif not now - 600 < seen <= now or not now < expiry <= min(seen + 600, reset) or reset <= now:
             raise ValueError('weekly browser observation stale, future-dated or reset; no inference started')
         if isinstance(used, bool) or not isinstance(used, (int, float)) or not math.isfinite(used) or not 0 <= used <= 100:
             raise ValueError('weekly browser percentage malformed; no inference started')
         found['weekly'] = {k: item[k] for k in ('observed_at','expires_at','reset_at','used_percent','status')}
         found['weekly']['source'] = 'signed-in browser grok.com/dashboard; original capture time retained'
+        if cfg:
+            record_reading(state, item)
         with locked(state / 'state.lock'):
             obs = observations(state)
             obs.setdefault(plan.get('quota_group', plan['id']), {}).update(found)
@@ -514,7 +658,7 @@ def refresh(plan, state):
 def admit(plan, state):
     with locked(state / 'state.lock'):
         obs = observations(state)
-        reason = gate(plan, obs, time.time())
+        reason = gate(plan, obs, time.time(), state)
         if reason:
             raise ValueError(reason)
         windows = obs.get(plan.get('quota_group', plan['id']), {})
@@ -564,7 +708,7 @@ def status(plans, state):
                                          'freshness': 'fresh' if fresh(obs.get(model['quota_group'], {}).get(w), now) and epoch(obs[model['quota_group']][w]['reset_at']) > now else ('stale' if obs.get(model['quota_group'], {}).get(w) else 'unknown')}
                                      for w in ('weekly', 'short')})
             per_model.append(item)
-        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), 'limit_events': obs.get(plan.get('quota_group', plan['id']), {}).get('limit_events') if plan.get('limit_events') else None, **job_summary(jobs), 'models': per_model, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
+        print(json.dumps({'plan': plan['id'], 'model': plan['model'], 'note': plan.get('status_note'), 'gate': gate(plan, obs, now, state) or 'eligible; authentication checked at launch', 'windows': windows, 'availability': obs.get(plan['id'], {}).get('availability'), 'limit_events': obs.get(plan.get('quota_group', plan['id']), {}).get('limit_events') if plan.get('limit_events') else None, **job_summary(jobs), 'models': per_model, 'usage_note': 'reported JSON tokens only; not subscription allowance or billing'}))
 
 
 def job_summary(jobs):
@@ -605,7 +749,7 @@ def run(args, data, state):
     key = hashlib.sha256(str(workspace).encode()).hexdigest()
     if state == workspace or workspace in state.parents:
         raise ValueError('private state must be outside the job workspace')
-    with locked(locks / (key + '.lock'), nonblocking=True) as lock_fd:
+    with locked(locks / (key + '.lock'), nonblocking=True) as lock_fd, contextlib.ExitStack() as stack:
         for index, plan in enumerate(candidates):
             if index:
                 try:
@@ -629,10 +773,23 @@ def run(args, data, state):
                         raise
                     print(json.dumps({'plan': plan['id'], 'skipped': str(error)}), file=sys.stderr)
                     continue
-            reason = gate(plan, observations(state), time.time())
+            reason = gate(plan, observations(state), time.time(), state)
             if reason:
                 print(json.dumps({'plan': plan['id'], 'skipped': reason}), file=sys.stderr)
                 continue
+            home_note = {}
+            if plan['provider'] == 'codex':
+                # One job at a time per sign-in folder, then the folder's own `codex login status` is the job's evidence.
+                try:
+                    stack.enter_context(home_locked(locks / ('codex-home-' + hashlib.sha256(codex_home(plan).encode()).hexdigest()[:16] + '.lock'), float(plan.get('home_lock_wait_seconds', 1800))))
+                except ValueError as error:
+                    print(json.dumps({'plan': plan['id'], 'skipped': str(error)}), file=sys.stderr)
+                    continue
+                reason = gate(plan, observations(state), time.time(), state)
+                if reason:
+                    print(json.dumps({'plan': plan['id'], 'skipped': reason}), file=sys.stderr)
+                    continue
+                home_note = {'codex_home': codex_home(plan)}
             job = state / 'jobs' / (dt.datetime.now(UTC).strftime('%Y%m%dT%H%M%S') + '-' + uuid.uuid4().hex[:10])
             job.mkdir(mode=0o700, parents=True)
             auth = plan.get('auth', {})
@@ -650,9 +807,20 @@ def run(args, data, state):
             elif not fresh(observations(state).get(plan['id'], {}).get('auth'), time.time()) or observations(state)[plan['id']]['auth']['status'] != 'ready':
                 print(json.dumps({'plan': plan['id'], 'skipped': 'authentication observation missing or stale'}), file=sys.stderr)
                 continue
+            if plan['provider'] == 'codex':
+                try:
+                    rc, timeout = execute(['codex', 'login', 'status'], '', workspace, environment(plan), 20, job / 'login-status.stdout', job / 'login-status.stderr', lock_fd)
+                except FileNotFoundError:
+                    print(json.dumps({'plan': plan['id'], 'skipped': 'client missing'}), file=sys.stderr)
+                    continue
+                said = ((job / 'login-status.stdout').read_text(errors='replace') + (job / 'login-status.stderr').read_text(errors='replace')).strip()[:300]
+                if timeout or rc or not re.search(r'Logged in using ChatGPT', said):
+                    print(json.dumps({'plan': plan['id'], 'skipped': 'codex login status did not confirm a ChatGPT sign-in in ' + home_note['codex_home']}), file=sys.stderr)
+                    continue
+                home_note['codex_login_status'] = said
             admit(plan, state)
             argv = [arg.replace('{prompt}', prompt).replace('{workspace}', str(workspace)) for arg in plan['argv']]
-            receipt = {'plan': plan['id'], 'model': plan['model'], 'effort': plan.get('effort'), 'difficulty': plan.get('difficulty'), 'selection_reason': plan['selection_reason'], 'workspace': str(workspace), 'started_at': stamp(), 'status': 'running', 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
+            receipt = {**home_note, 'plan': plan['id'], 'model': plan['model'], 'effort': plan.get('effort'), 'difficulty': plan.get('difficulty'), 'selection_reason': plan['selection_reason'], 'workspace': str(workspace), 'started_at': stamp(), 'status': 'running', 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
             save(job / 'receipt.json', receipt)
             try:
                 rc, timeout = execute(argv, '' if any('{prompt}' in x for x in plan['argv']) else prompt, workspace, environment(plan), float(plan.get('timeout_seconds', 180)), job / 'stdout', job / 'stderr', lock_fd)
