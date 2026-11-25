@@ -343,7 +343,7 @@ Experiment-folder Markdown reports preserve partial progress and completed resul
 
 ## Local Experiment Reports
 
-**Experiment-folder Markdown (`.md`) reports are the canonical reproducible record**. Also mirror substantial findings to the relevant Google document or deck under [Rule 16](../rules/responses.md#trigger-rule-16) (Brando, 10-16-2026). Every reported research result also gets one dated, specifically titled Google Doc, with its link and the commit link in the message ([Rule 92](../rules/research.md#trigger-rule-92), Brando, 11-24-2026). Save the report in the canonical experiment folder, normally the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
+**Experiment-folder Markdown (`.md`) reports are the canonical reproducible record**. Also mirror substantial findings to the relevant Google document or deck under [Rule 16](../rules/responses.md#trigger-rule-16) (Brando, 10-16-2026). Every reported research result also gets one dated, specifically titled Google Doc, with its link and the commit link in the message ([Rule 92](../rules/research.md#trigger-rule-92), Brando, 11-24-2026), and one `.tex` per result in the repo's LaTeX folder, built into the chronological mega tech report ([Rule 93](../rules/research.md#trigger-rule-93), [skill](../skills/mega-tech-report/SKILL.md), Brando, 11-24-2026). Save the report in the canonical experiment folder, normally the active version's `results/` folder (for example, `expt_v2/results/`). Use the experiment-root `results_summary/` folder only for cross-version rollups.
 
 The local report must include:
 

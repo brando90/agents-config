@@ -1,0 +1,23 @@
+% Shared preamble of the mega tech report and of every standalone single-result build (Rule 93).
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,array,tabularx,makecell}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\renewcommand{\arraystretch}{1.1}
+% \ResultMeta{position}{experiment number}{result date [time]}{experiment folder}
+\newcommand{\ResultMeta}[4]{{\small\color{gray}Result #1 of \MegaCount\quad$\cdot$\quad experiment #2\quad$\cdot$\quad result date #3\\ folder \texttt{\path{#4}}}\par\medskip}
+% The proper scores come first in every metric table; correlations are secondary columns.
+\newcommand{\RPS}{RPS}\newcommand{\CE}{CE}\newcommand{\TVD}{TVD}
+% Circled formulation number, e.g. \F{3}, for results that name formulations 2, 3, 4.
+\newcommand{\F}[1]{\textcircled{\scriptsize #1}}
+% Shrink a table to the text width only when it is wider: \FitWidth{\begin{tabular}...\end{tabular}}
+\newcommand{\FitWidth}[1]{\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{#1}}

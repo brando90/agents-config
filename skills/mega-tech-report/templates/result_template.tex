@@ -1,0 +1,29 @@
+%% title: <What was measured, on what> (<MM-DD-YYYY>)
+%% result-date: MM-DD-YYYY
+%% result-time: HH:MM
+%% experiment: <NN_experiment_folder_name_start_DDMonYYYY>
+%% headline: <one line: the bottom line with its main number>
+% Fragment: no \documentclass. The build script writes the \section title and the date line from the header above.
+% Copy to results/NN_<slug>.tex. Date = day this result first landed on main (git log). No rater names in a public repo.
+% Links go here, in the body: results.md, the Google Doc, the commit.
+
+\subsection*{Bottom line}
+One paragraph: what was found, with RPS, CE and TVD and their 95\% intervals. Spearman and Pearson only as secondary.
+
+\subsection*{Results}
+\FitWidth{\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+Forecast & RPS & CE & TVD & Spearman & Pearson \\ \midrule
+% RPS, CE, TVD first; Spearman and Pearson last (secondary)
+\bottomrule
+\end{tabular}}
+
+\subsection*{Caveats}
+\begin{itemize}
+  \item One line each.
+\end{itemize}
+
+\subsection*{Appendix: methods, harness and model}
+\begin{itemize}
+  \item Harness and model for every result, data split, seeds, commit, the experiment's \texttt{results.md} and Google Doc links.
+\end{itemize}
