@@ -164,10 +164,11 @@ def agy_ready():
     subprocess.run(ROUTER + ['observe', '--plan', 'personal-agy', '--window', 'auth', '--status', 'ready', '--expires-at', exp,
                              '--source', 'native agy /usage answered'], capture_output=True, text=True)
     return True
-if 'stanford-claude' not in skip:
-    # AT-3467: the Stanford Claude attestation lapses every 24 h; renew it from a fresh native read (overage rejected, under 80% used) when under 6 h are left.
-    try: subprocess.run([sys.executable, H + '/.local/bin/plan-attest-auto', '--plan', 'stanford-claude'], stdout=sys.stderr, stderr=sys.stderr, timeout=150)
-    except Exception as e: print('plan-rr: attest-auto skipped:', type(e).__name__, file=sys.stderr)
+for _ap in ('stanford-claude', 'vals-claude-opus'):
+    if _ap in skip: continue
+    # AT-3467/AT-3415: the Claude lanes' attestations lapse every 24 h; renew each from a fresh native read (overage rejected, under 80% used) when under 6 h are left.
+    try: subprocess.run([sys.executable, H + '/.local/bin/plan-attest-auto', '--plan', _ap], stdout=sys.stderr, stderr=sys.stderr, timeout=150)
+    except Exception as e: print('plan-rr: attest-auto skipped:', _ap, type(e).__name__, file=sys.stderr)
 checked = False
 personal_cleared = False
 for plan, model in LIST:
