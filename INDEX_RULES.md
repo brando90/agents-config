@@ -129,6 +129,7 @@ Read the linked rule **before** its action. Multiple rows may apply. Stanford Ne
 | [91](rules/writing.md#trigger-rule-91) | Maths, derivation, equations, proof or loss/metric formula for Brando → LaTeX-typeset PDF with detailed derivation (every symbol defined, limits of the metric stated at the top); `.tex`/`.md`/`.pdf` in the project GitHub experiment folder on main and in Drive (anyone-with-link, comment else view); typeset equations in Docs; render and read pages before sending. |
 | [92](rules/research.md#trigger-rule-92) | Report/finish any research or experiment result → `results.md` in the experiment folder on main + one dated, well-titled Google Doc (bottom line, table of every eval metric, appendix); Doc and commit links in the message. |
 | [93](rules/research.md#trigger-rule-93) | Finish/report a research result or start numbering experiments → `NN_` experiment folders; one `results/NN_<slug>.tex` per result in the repo's LaTeX folder; `skills/mega-tech-report` builds `mega_tech_report.pdf` (all results, chronological); commit with `results.md`; Doc, commit and PDF links. |
+| [94](rules/services.md#trigger-rule-94) | Add/copy/move any event on Brando's calendar → his own addresses as guests, at the very least brandojazz@gmail.com (also brando.science@gmail.com, brando@vals.ai, brando9@stanford.edu); no other guests unless he says so. |
 
 ## Guidelines (best practices)
 
