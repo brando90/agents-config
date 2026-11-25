@@ -8,7 +8,7 @@
 
 Use this workflow for bulk reading, drafting, code analysis, document comparison, experiment analysis, and other bounded jobs that can consume substantial model context. Give the job its inputs, acceptance checks, permitted outputs and a workspace. Quick answers and account actions do not require a separate model job. Keep one writer per workspace and inspect the returned artifact before using it.
 
-Google consumer-plan assistant dispatch is currently held: [Google's FAQ](https://antigravity.google/docs/faq) excludes wrapping native `agy` in a third-party assistant and warns of account suspension. Direct user scripting and assistant orchestration are different scopes. A successful test does not resolve that restriction. Keep the consumer Google route off pending the account owner's explicit risk decision; no API billing is enabled as a replacement.
+Google plan (agy) lane, 11-25-2026: Brando (WhatsApp 09:45): "I think any job can run in it, we just need to make sure it looks like I am personally guiding it (which we are). Clear?" Any job may use the Google plan lane, real experiment runs included; this replaces his 11-23-2026 12:10 limit. It is his own guided work: send a plain precise prompt, no "YOUR VOICE" or "MY VOICE REQUEST" header (Brando 11-24-2026 11:33), act normally. Add nothing designed to disguise automated use from Google (no fake human timing, jitter or spoofed identity), change no billing settings, and incur no extra charges. [Google's FAQ](https://antigravity.google/docs/faq) still warns of suspension for wrapping native `agy` in a third-party assistant; the account risk is Brando's, accepted 11-21-2026 ("I 100% approve the google use"). Report any alert or suspension to him.
 
 Use the installed router on the host holding the native sign-ins. Account state and supported models are local configuration, never an assumption from this public example. Select from the enabled, verified catalog:
 
@@ -57,4 +57,4 @@ Receipts retain actual selected route/model/effort, selection reason, timestamps
 **TLDR-end:** [Subscription routing] Use a tested native subscription for heavy generic work; choose by difficulty, preserve research pins, refresh the shared allowance meter and verify the result.
 
 ## Route order (11-23-2026)
-Start with the Vals and Stanford accounts, then the personal Codex and Claude plans, then the remaining routes, and the Google plan last and never for real experiment runs ([tools/plan-router/README.md](../tools/plan-router/README.md), "Order of routes"). Fall to the next route only when a route is off, gated or low (20% left).
+Start with the Vals and Stanford accounts, then the personal Codex and Claude plans, then the remaining routes, and the Google plan last (any job, real experiment runs included, Brando 11-25-2026 09:45) ([tools/plan-router/README.md](../tools/plan-router/README.md), "Order of routes"). Fall to the next route only when a route is off, gated or low (20% left).

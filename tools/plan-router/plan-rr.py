@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """plan-rr: run one bounded job on Brando's own AI accounts via the plan router, in priority order (2026-11-23, AT-3397; was round robin 2026-11-21).
 Order 2026-11-24 (AT-3448, Brando 09:58): vals-codex, vals-claude-opus, stanford-codex, stanford-claude, STAIR Claude, Sundial (writing only), Koyejo lab key, Cursor, Grok, then Vals key, STAIR/Stanford gateway sol, personal Codex, personal Claude, Allen, Google plan last. Was (Brando, Nov 23 17:25: "always start with vals and stanford first before my personal accounts"): Vals and Stanford routes, then personal Codex and Claude, then Cursor/Grok, Allen's key, and the Google plan last. A route is skipped only when gated, off, or low (router gate, 20% left).
-Flags: --experiment (real experiment runs: never the Google plan, Brando Nov 23 12:10), --order (print the order and exit).
+Flags: --experiment (marks a real experiment run; the Google plan stays eligible, Brando 2026-11-25 09:45), --order (print the order and exit).
 2026-11-24 (AT-3455; Brando 10:25 "we should be using vals or rotating better, look my personal codex is so low already" and 11:09 "balance btw that percentage and difficulty of task"):
 --difficulty light|medium|heavy (default medium) and --urgent.
   light: small lanes first (Cursor, Grok, keys, Stanford gateway), then Vals and Stanford; never a personal lane.
@@ -11,7 +11,7 @@ A job that would fall to a personal lane while a Vals or Stanford lane returns i
 The router itself gates both personal lanes at 80% used (reads the account's own usage before each launch).
 Use: plan-rr --prompt-file /abs/job.md --workspace /abs/dir [--skip personal-agy,...] [--difficulty light|medium|heavy] [--urgent]
 Prompts go to every account as plain precise prompts (Brando 2026-11-24 11:31: no 'MY VOICE REQUEST' header or voice text to agy, Cursor or Grok; no timing tricks).
-Google plan (agy): last, light and medium jobs only, at most 10 a day, never bulk or experiment runs. Skips gated or limited plans, moves to the next.
+Google plan (agy): last in the order; any job may use it, real experiment runs and heavy jobs included (Brando 2026-11-25 09:45); at most 10 a day (my cap, not his). Skips gated or limited plans, moves to the next.
 Uses configured subscriptions and explicitly bounded Pi provider routes; never buys credits. Foreground only."""
 import argparse, fcntl, hashlib, json, os, subprocess, sys, time, datetime as dt
 H = os.path.expanduser('~')
@@ -152,7 +152,6 @@ if a.resume:
         print('plan-rr: WAIT until', r['not_before_local'], 'for', r.get('lane'), '(still queued: ' + a.resume + ')', file=sys.stderr); sys.exit(5)
 if not a.order and not (a.prompt_file and a.workspace): ap.error('--prompt-file and --workspace are required')
 skip = set(filter(None, a.skip.split(',')))
-if a.experiment: skip.add('personal-agy')
 LIST = order_for(a.difficulty, a.writing)
 if a.order:
     print('difficulty', a.difficulty, '(wait rule: personal lanes only when no Vals/Stanford lane returns within %dh, or --urgent)' % WAIT_HOURS)
@@ -223,8 +222,8 @@ for plan, model in LIST:
         AGY_LOG = STATE_DIR + '/agy-log.jsonl'
         today = dt.date.today().isoformat()
         used = sum(1 for l in (open(AGY_LOG) if os.path.exists(AGY_LOG) else []) if json.loads(l)['day'] == today)
-        if a.difficulty == 'heavy' or used >= AGY_DAILY_CAP:
-            print('plan-rr: skipped personal-agy', 'heavy job' if a.difficulty == 'heavy' else 'daily cap of %d jobs reached' % AGY_DAILY_CAP, file=sys.stderr); skip.add(plan); continue
+        if used >= AGY_DAILY_CAP:
+            print('plan-rr: skipped personal-agy', 'daily cap of %d jobs reached' % AGY_DAILY_CAP, file=sys.stderr); skip.add(plan); continue
         if not checked: checked = agy_ready()
         if not checked: skip.add(plan); continue
     cmd = ROUTER + ['run', '--plan', plan, '--prompt-file', a.prompt_file, '--workspace', a.workspace]

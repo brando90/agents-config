@@ -150,10 +150,10 @@ ag = (plans.get("personal-agy") or {}).get("windows", {})
 if ag.get("weekly", {}).get("used_percent") is not None:
     rows.append(["15", "Google plan (agy)", "%d%% left (Gemini, %d%% used)" % (100 - ag["short"]["used_percent"], ag["short"]["used_percent"]),
                  "%d%% left (Gemini, %d%% used)" % (100 - ag["weekly"]["used_percent"], ag["weekly"]["used_percent"]),
-                 "Being turned on lightly (cap 10 a day); last in the order; never for real experiments",
+                 "ON for any job incl. real experiments (Nov 25); cap 10 a day; last in the order",
                  fmt(t(ag["weekly"]["observed_at"]))])
 else:
-    rows.append(["15", "Google plan (agy)", "Not reported", "Not reported", "Last in the order; never for real experiments", "Not read"])
+    rows.append(["15", "Google plan (agy)", "Not reported", "Not reported", "Last in the order; any job incl. real experiments (Nov 25)", "Not read"])
 nxt = [dt.time(7, 0), dt.time(8, 30), dt.time(10, 0), dt.time(11, 30), dt.time(13, 0), dt.time(14, 30), dt.time(16, 0), dt.time(17, 30), dt.time(19, 0), dt.time(20, 30), dt.time(22, 0)]
 later = [x for x in nxt if x > now.time()]
 nxt_s = later[0].strftime("%-I:%M %p") if later else "7:00 AM tomorrow"
