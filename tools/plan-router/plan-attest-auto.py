@@ -10,6 +10,8 @@ H = os.path.expanduser('~')
 CONFIG = H + '/.config/plan-router/config.json'
 ROUTER_PY = os.environ.get('PLAN_ROUTER_PY', H + '/.local/lib/plan-router/router.py')
 LOG = os.environ.get('PLAN_ATTEST_LOG', H + '/.local/state/plan-router/attest-auto.jsonl')
+PRIOR = {'stanford-claude': 'Stanford Claude Education Enterprise seat, one-year setup-token lane.',
+         'vals-claude-opus': 'Vals first-party OAuth wrapper (claude-opus-5-5), org overage disabled until Nov 30 4:00 PM PST; set up in AT-3413.'}
 SCRUB = re.compile(r'(API_KEY|AUTH_TOKEN|OAUTH_TOKEN|_SECRET|PASSWORD)', re.I)
 
 
@@ -65,8 +67,8 @@ def native_read(plan, router):
         if i['overage_status'] != 'rejected': return False, 'overage status %r on %s, not rejected' % (i['overage_status'], kind)
         if pct is None or pct >= 80: return False, 'window %s utilization %r not under 80%%' % (kind, pct)
         bits.append('%s %.0f%% used' % (kind, pct))
-    return True, ('%s native read (claude -p, stream-json): rate_limit_event status allowed, %s, overageStatus rejected, isUsingOverage false; auto-renewed by plan-attest-auto; API keys scrubbed. Prior evidence: Stanford Claude Education Enterprise seat, one-year setup-token lane.'
-                  % (dt.datetime.now().strftime('%Y-%m-%d %H:%M %Z'), ', '.join(bits)))
+    return True, ('%s native read (claude -p, stream-json): rate_limit_event status allowed, %s, overageStatus rejected, isUsingOverage false; auto-renewed by plan-attest-auto; API keys scrubbed. Prior evidence: %s'
+                  % (dt.datetime.now().strftime('%Y-%m-%d %H:%M %Z'), ', '.join(bits), PRIOR.get(plan['id'], 'lane first set up with its own native read.')))
 
 
 def main():
