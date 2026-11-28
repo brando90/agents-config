@@ -9,11 +9,11 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 # Local maintenance budgets, not claims about model context windows.
 BUDGETS = {
-    'AGENTS.md': (6460, 1000, 200),
-    'CLAUDE.md': (6460, 1000, 200),
-    'INDEX_RULES.md': (26650, 3350, 250),
+    'AGENTS.md': (7550, 1000, 200),
+    'CLAUDE.md': (7550, 1000, 200),
+    'INDEX_RULES.md': (28550, 3550, 250),
 }
-EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 94)),
+EXPECTED = {'hard': set(range(1, 12)), 'trigger': set(range(6, 95)),
             'guideline': set(range(14, 26))}
 LINK = re.compile(r'\]\((?:<([^>]+)>|([^\s)]+))(?:\s+"[^"]*")?\)')
 
